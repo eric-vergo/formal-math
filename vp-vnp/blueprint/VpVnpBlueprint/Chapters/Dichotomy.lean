@@ -195,7 +195,9 @@ of bounded sets of prices ({bpref "def_price_facts"}[]); no construction of it i
 :::
 
 :::proof "thm_alt_extremal" (uses := "def_price_facts")
-The Lean proof follows the quoted argument: for every $`n` the failure of the contracting
+For a pair with difference of rank $`r`, its squared distance is one nonnegative summand in the sum
+that defines $`D(r)^2`. The number of terms is at most the square of the number of matrices, and
+Step 1 gives $`D(r)^2 \leq rD(1)^2`. This supplies the uniform bound. For every $`n` the failure of the contracting
 hypothesis with $`s^2 = \mu - 1/(n+1)` gives a price, scaled to $`D(1)^2 = 1` and bounded by the
 constant of `Paper.thm_alt_bounded`, with $`D(\mu)^2 \geq \mu - 1/(n+1)`; a limit point of these
 prices exists by compactness and is extremal by Step 1.

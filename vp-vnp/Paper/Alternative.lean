@@ -249,48 +249,30 @@ theorem meanSq_le (hw : IsPrice K w) {r : ℕ} (hr : r ≤ μ) : meanSq w r ≤ 
 /-- "Every distance is at most a constant, depending on μ, times D(1)." -/
 theorem thm_alt_bounded (K : Type) [Field K] (μ : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ w : Mt μ → Mt μ → ℝ, IsPrice K w → ∀ a b, w a b ≤ C * distAtRank w 1 := by
-  set c : ℝ := (Fintype.card (Mt μ) : ℝ) * ((univ : Finset (Mt μ)).filter (fun W => W.rank = 1)).card with hc
-  have hc0 : 0 ≤ c := by positivity
-  refine ⟨μ * √c, by positivity, fun w hw a b => ?_⟩
-  have hD : 0 ≤ distAtRank w 1 := Real.sqrt_nonneg _
-  have hstep : ∀ (e R : Mt μ), R.rank = 1 → w e (e + R) ≤ √c * distAtRank w 1 := by
-    intro e R hR
-    have hpos : 0 < c := by
-      have h1 : (0 : ℝ) < Fintype.card (Mt μ) := by exact_mod_cast Fintype.card_pos
-      have h2 : (0 : ℝ) < ((univ : Finset (Mt μ)).filter (fun W => W.rank = 1)).card := by
-        exact_mod_cast card_pos.2 ⟨R, mem_filter.2 ⟨mem_univ _, hR⟩⟩
-      positivity
-    have h1 : w e (e + R) ^ 2 ≤ ∑ a : Mt μ, ∑ W ∈ (univ : Finset (Mt μ)).filter (fun W => W.rank = 1),
-        w a (a + W) ^ 2 := by
-      refine le_trans ?_ (single_le_sum (f := fun a => ∑ W ∈ (univ : Finset (Mt μ)).filter (fun W => W.rank = 1),
-        w a (a + W) ^ 2) (fun _ _ => sum_nonneg fun _ _ => sq_nonneg _) (mem_univ e))
-      exact single_le_sum (f := fun W => w e (e + W) ^ 2) (fun _ _ => sq_nonneg _)
-        (mem_filter.2 ⟨mem_univ _, hR⟩)
-    have h2 : (∑ a : Mt μ, ∑ W ∈ (univ : Finset (Mt μ)).filter (fun W => W.rank = 1), w a (a + W) ^ 2) =
-        c * meanSq w 1 := by
-      rw [meanSq, ← hc, mul_div_cancel₀ _ hpos.ne']
-    rw [distAtRank, ← Real.sqrt_mul hc0]
-    exact Real.le_sqrt_of_sq_le (h1.trans h2.le)
-  obtain ⟨p, q, S, hM⟩ := exists_X (a + b)
-  have hS : ∀ S : Finset (Fin μ), w a (a + X p q S) ≤ S.card * (√c * distAtRank w 1) := by
-    intro S
-    induction S using Finset.induction_on with
-    | empty => simp [X_empty, hw.self]
-    | insert i S hi ih =>
-      have h2 := hw.triangle a (a + X p q S) (a + X p q S + X p q {i})
-      have h4 := hstep (a + X p q S) (X p q {i}) (by rw [rank_X, card_singleton])
-      rw [insert_eq, union_comm, X_union p q (by simpa using hi), ← add_assoc, card_union_of_disjoint (by simpa using hi),
-        card_singleton]
-      push_cast
-      linarith
-  have h2 := hS S
-  rw [← hM, add_cancel_left] at h2
-  have h3 : (S.card : ℝ) ≤ μ := by
-    have := card_le_univ S
-    rw [Fintype.card_fin] at this
-    exact_mod_cast this
-  calc w a b ≤ S.card * (√c * distAtRank w 1) := h2
-    _ ≤ μ * (√c * distAtRank w 1) := mul_le_mul_of_nonneg_right h3 (by positivity)
+  let N : ℝ := Fintype.card (Mt μ)
+  refine ⟨√(N ^ 2 * μ), Real.sqrt_nonneg _, fun w hw a b => ?_⟩
+  let R := a + b
+  let S := (univ : Finset (Mt μ)).filter fun W => W.rank = R.rank
+  have hR : R ∈ S := mem_filter.2 ⟨mem_univ _, rfl⟩
+  have hN : 0 < N := Nat.cast_pos.2 Fintype.card_pos
+  have hS : (0 : ℝ) < S.card := Nat.cast_pos.2 (card_pos.2 ⟨R, hR⟩)
+  have hcard : (S.card : ℝ) ≤ N := by
+    dsimp [N]
+    exact_mod_cast card_le_univ S
+  have hr : R.rank ≤ μ := by simpa using Matrix.rank_le_card_width R
+  have hterm : w a (a + R) ^ 2 ≤ ∑ e : Mt μ, ∑ W ∈ S, w e (e + W) ^ 2 :=
+    (single_le_sum (fun W _ => sq_nonneg (w a (a + W))) hR).trans
+      (single_le_sum (fun e _ => sum_nonneg fun W _ => sq_nonneg (w e (e + W))) (mem_univ a))
+  have hsum : (∑ e : Mt μ, ∑ W ∈ S, w e (e + W) ^ 2) = (N * S.card) * meanSq w R.rank := by
+    change _ = (N * S.card) * (_ / (N * S.card))
+    rw [mul_div_cancel₀ _ (by positivity)]
+  rw [hsum, show a + R = b from add_cancel_left a b] at hterm
+  rw [distAtRank, ← Real.sqrt_mul (by positivity)]
+  apply Real.le_sqrt_of_sq_le
+  calc w a b ^ 2 ≤ _ := hterm
+    _ ≤ (N * N) * (μ * meanSq w 1) := by
+      apply mul_le_mul (mul_le_mul_of_nonneg_left hcard hN.le) _ (meanSq_nonneg w _) (mul_nonneg hN.le hN.le)
+      exact (meanSq_le hw hr).trans (mul_le_mul_of_nonneg_right (by exact_mod_cast hr : (R.rank : ℝ) ≤ μ) (meanSq_nonneg w 1))
     _ = _ := by ring
 
 /-- "A price with D(1) = 1 and D(μ)² = μ." -/
