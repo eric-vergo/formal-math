@@ -252,6 +252,22 @@ theorem quartic_bound {C : ℕ} (hC : 700 ≤ C) : 40 * (n + 1) ^ 4 ≤ n ^ C + 
       _ ≤ n ^ C := Nat.pow_le_pow_right (by omega) (by omega)
       _ ≤ _ := Nat.le_add_right _ _
 
+/-- A grid polynomial is in VNP if its Boolean witness uses quadratically many bits
+and has quartic circuit size and degree. -/
+theorem mem_VNP_of_quartic_witness {F : Type*} [Field F]
+    (f : ∀ n, MvPolynomial (Fin n × Fin n) F) (m : ℕ → ℕ)
+    (w : ∀ n, MvPolynomial ((Fin n × Fin n) ⊕ Fin (m n)) F)
+    (hm : ∀ n, m n ≤ n * n + n) (hw : ∀ n, CSize (w n) (40 * (n + 1) ^ 4) (40 * (n + 1) ^ 4))
+    (hf : ∀ n, f n = ∑ e, bits (w n) e) :
+    ({ X := fun n => Fin n × Fin n, poly := f } : Family F) ∈ VNP F := by
+  refine ⟨m, w, ⟨700, fun n => ?_⟩, hf⟩
+  have hb := quartic_bound n (C := 700) le_rfl
+  obtain ⟨hs, hd⟩ := hw n
+  refine ⟨le_trans ?_ hb, hd.trans hb, hs.mono hb⟩
+  change Fintype.card ((Fin n × Fin n) ⊕ Fin (m n)) ≤ _
+  simp only [Fintype.card_sum, Fintype.card_prod, Fintype.card_fin]
+  nlinarith [hm n, Nat.zero_le (n ^ 4), Nat.zero_le (n ^ 3), Nat.zero_le (n ^ 2)]
+
 end Hc
 
 end Nc

@@ -27,6 +27,17 @@ def Approximates (f : MvPolynomial X F) (s : ℕ) : Prop :=
   ∃ p : MvPolynomial X (LaurentSeries F), Computes p s ∧
     ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (p.coeff d).coeff i = if i = 0 then f.coeff d else 0
 
+/-- Matching coefficients through degree zero is equivalent to vanishing in the
+negative degrees and matching the constant coefficient. -/
+theorem coeff_nonpos_iff {B : Type*} [Zero B] (c : ℤ → B) (b : B) :
+    (∀ i ≤ 0, c i = if i = 0 then b else 0) ↔ (∀ i < 0, c i = 0) ∧ c 0 = b := by
+  constructor
+  · exact fun h => ⟨fun i hi => by simpa [hi.ne] using h i hi.le, by simpa using h 0 le_rfl⟩
+  · rintro ⟨hn, hz⟩ i hi
+    rcases eq_or_lt_of_le hi with rfl | hi
+    · simpa using hz
+    · simpa [hi.ne] using hn i hi
+
 end Approx
 
 /-- The Hamiltonian cycle polynomial: the sum over the permutations with one cycle through all points. -/

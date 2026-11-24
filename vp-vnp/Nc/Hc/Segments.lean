@@ -233,7 +233,7 @@ theorem route_reaches (hnext : T.next.IsCycleOn Set.univ) {J : ∀ i, O i} (hJ :
   · exact hheads i
   · by_cases hs : s = T.side J g
     · exact hs ▸ (hgad g).1
-    · have : s = !T.side J g := by revert hs; cases s <;> cases T.side J g <;> simp
+    · have : s = !T.side J g := Bool.eq_not_of_ne hs
       exact this ▸ (hgad g).2.2
   · exact (hgad g).2.1
 
@@ -355,14 +355,14 @@ theorem exists_selection (hσ : σ.IsCycleOn Set.univ) (he : ∀ p, T.Edge p (σ
     · simp only [route]
       split_ifs with h
       · exact h ▸ (hd g).1
-      · have : s = !d g := by revert h; cases s <;> cases d g <;> simp
+      · have : s = !d g := Bool.eq_not_of_ne (Ne.symm h)
         rw [this, Bool.not_not]
         exact (hd g).2.2
     · exact (hd g).2.1
   have hactive : ∀ g s v, σ v = .tip g s → v ≠ .mid g → d g = s := by
     intro g s v hv hne
     by_contra hs
-    have : s = !d g := by revert hs; cases s <;> cases d g <;> simp
+    have : s = !d g := Bool.eq_not_of_ne (Ne.symm hs)
     exact hne (σ.injective (hv.trans (this ▸ (hd g).2.1).symm))
   have hchosen : ∀ i (j : ℕ) (hj : j < T.len ⟨i, J i⟩),
       d (T.slot.symm ⟨⟨i, J i⟩, j, hj⟩).1 = (T.slot.symm ⟨⟨i, J i⟩, j, hj⟩).2 := by
@@ -408,7 +408,7 @@ theorem exists_selection (hσ : σ.IsCycleOn Set.univ) (he : ∀ p, T.Edge p (σ
       · rw [hrouteD, route]
         split_ifs with h
         · exact hv
-        · have : (!s) = d g' := by revert h; cases s <;> cases d g' <;> simp
+        · have : (!s) = d g' := (Bool.eq_not_of_ne h).symm
           have hs : (T.slot (g', !s)).1 = ⟨(T.port (g', !s)).1, J (T.port (g', !s)).1⟩ :=
             (T.slot_fst _).trans (sel_eq (this ▸ hv))
           unfold after

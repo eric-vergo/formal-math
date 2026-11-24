@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 import Paper.Scales
 import Nc.Acc.ApproxMain
-import Nc.End.ApproxThm
+import Nc.Rate.Circuit
 import Paper.ApproxRound
 import NS1.ApproxMain
 
@@ -489,7 +489,7 @@ theorem lem_circuit_approx (hθ : (Function.support θ).Finite) {H : ℕ} (hH : 
   have hgates : 5 * v ^ a ≤ v ^ (a + 5) := by
     rw [pow_add, Nat.mul_comm]
     exact Nat.mul_le_mul_left _ (le_trans (by omega : 5 ≤ v) (Nat.le_self_pow (by norm_num) v))
-  obtain ⟨p, hp', hpf⟩ := (hs.substitute_affine Mat hMat).exists_laurentPolynomial
+  obtain ⟨p, hp', hpf⟩ := (hs.aeval Mat hMat).exists_laurentPolynomial
   obtain ⟨K, D, hD, hn, hsz, hht⟩ := hc v (a + 5) (by omega) hcv A F[T;T⁻¹] θ (5 * v ^ a) p hgates hp'
   have hle : v ^ (3 * (a + 5) + H + 20) ≤ v ^ ((H + 35) * (a + 1)) :=
     Nat.pow_le_pow_right (by omega) (by nlinarith)

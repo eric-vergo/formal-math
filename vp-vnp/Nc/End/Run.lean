@@ -27,9 +27,8 @@ theorem runVal_map {J : Type*} [DecidableEq J] [Fintype J] {K : Type*} [CommRing
   refine sum_congr rfl fun o _ => ?_
   have h : ∀ L : List (Letter S J Γ), (L.map fun a => (mu a).map φ).prod = ((L.map mu).prod).map φ := by
     intro L
-    induction L with
-    | nil => simp
-    | cons a L ih => rw [List.map_cons, List.prod_cons, ih, List.map_cons, List.prod_cons, Matrix.map_mul]
+    change (L.map (φ.mapMatrix ∘ mu)).prod = φ.mapMatrix (L.map mu).prod
+    rw [← List.map_map, ← map_list_prod]
   split_ifs
   · rw [h, Matrix.map_apply]
   · rw [map_zero]

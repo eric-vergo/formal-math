@@ -56,41 +56,46 @@ section Size
 
 variable {F : Type*} [CommSemiring F] {X Y : Type*}
 
+/-- Relabel a gate and its predecessors inside a larger gate list. -/
+theorem IsStep.reindex {l L : ℕ → MvPolynomial X F} {k : ℕ}
+    (h : IsStep l k) (f : ℕ → ℕ) (hf : StrictMono f) (he : ∀ i ≤ k, L (f i) = l i) : IsStep L (f k) := by
+  unfold IsStep
+  rw [he k le_rfl]
+  rcases h with e | e | ⟨i, hi, j, hj, e⟩ | ⟨i, hi, j, hj, e⟩
+  · exact Or.inl e
+  · exact Or.inr (Or.inl e)
+  · exact Or.inr (Or.inr (Or.inl ⟨f i, hf hi, f j, hf hj, by rw [he i hi.le, he j hj.le, e]⟩))
+  · exact Or.inr (Or.inr (Or.inr ⟨f i, hf hi, f j, hf hj, by rw [he i hi.le, he j hj.le, e]⟩))
+
 theorem Computes.mono {p : MvPolynomial X F} {s t : ℕ} (h : Computes p s) (hst : s ≤ t) : Computes p t := by
   obtain ⟨l, hl, a, ha, rfl⟩ := h
   refine ⟨fun k => if k < s then l k else MvPolynomial.C 0, fun k hk => ?_, a, by omega, if_pos ha⟩
   by_cases h : k < s
-  · have e : ∀ i < k, (if i < s then l i else MvPolynomial.C 0) = l i := fun i hi => if_pos (by omega)
-    rcases hl k h with ⟨i, h1⟩ | ⟨c, h1⟩ | ⟨i, hi, j, hj, h1⟩ | ⟨i, hi, j, hj, h1⟩
-    · exact Or.inl ⟨i, by simp only [h, if_true, h1]⟩
-    · exact Or.inr (Or.inl ⟨c, by simp only [h, if_true, h1]⟩)
-    · exact Or.inr (Or.inr (Or.inl ⟨i, hi, j, hj, by
-        simp only [h, if_true, h1, show i < s by omega, show j < s by omega]⟩))
-    · exact Or.inr (Or.inr (Or.inr ⟨i, hi, j, hj, by
-        simp only [h, if_true, h1, show i < s by omega, show j < s by omega]⟩))
+  · exact (hl k h).reindex id strictMono_id fun i hi => if_pos (hi.trans_lt h)
   · exact Or.inr (Or.inl ⟨0, by simp only [h, if_false]⟩)
+
+/-- Apply a ring map that sends input gates to inputs and constant gates to constants. -/
+private theorem Computes.map_gates {K : Type*} [CommSemiring K] {p : MvPolynomial X F} {s : ℕ}
+    (h : Computes p s) (φ : MvPolynomial X F →+* MvPolynomial Y K)
+    (hX : ∀ i, ∃ j, φ (MvPolynomial.X i) = MvPolynomial.X j)
+    (hC : ∀ c, ∃ b, φ (MvPolynomial.C c) = MvPolynomial.C b) : Computes (φ p) s := by
+  obtain ⟨l, hl, a, ha, rfl⟩ := h
+  refine ⟨φ ∘ l, fun k hk => ?_, a, ha, rfl⟩
+  rcases hl k hk with ⟨i, e⟩ | ⟨c, e⟩ | ⟨i, hi, j, hj, e⟩ | ⟨i, hi, j, hj, e⟩
+  · exact Or.inl (by simpa only [Function.comp_apply, e] using hX i)
+  · exact Or.inr (Or.inl (by simpa only [Function.comp_apply, e] using hC c))
+  · exact Or.inr (Or.inr (Or.inl ⟨i, hi, j, hj, by simp [Function.comp_apply, e]⟩))
+  · exact Or.inr (Or.inr (Or.inr ⟨i, hi, j, hj, by simp [Function.comp_apply, e]⟩))
 
 /-- Circuits over a larger ring. -/
 theorem Computes.map {K : Type*} [CommSemiring K] (φ : F →+* K) {p : MvPolynomial X F} {s : ℕ}
-    (h : Computes p s) : Computes (MvPolynomial.map φ p) s := by
-  obtain ⟨l, hl, a, ha, rfl⟩ := h
-  refine ⟨fun k => MvPolynomial.map φ (l k), fun k hk => ?_, a, ha, rfl⟩
-  rcases hl k hk with ⟨i, h1⟩ | ⟨c, h1⟩ | ⟨i, hi, j, hj, h1⟩ | ⟨i, hi, j, hj, h1⟩
-  · exact Or.inl ⟨i, by simp [h1]⟩
-  · exact Or.inr (Or.inl ⟨φ c, by simp [h1]⟩)
-  · exact Or.inr (Or.inr (Or.inl ⟨i, hi, j, hj, by simp [h1]⟩))
-  · exact Or.inr (Or.inr (Or.inr ⟨i, hi, j, hj, by simp [h1]⟩))
+    (h : Computes p s) : Computes (MvPolynomial.map φ p) s :=
+  h.map_gates (MvPolynomial.map φ) (fun i => ⟨i, by simp⟩) (fun c => ⟨φ c, by simp⟩)
 
 /-- Circuits with renamed variables. -/
 theorem Computes.rename (f : X → Y) {p : MvPolynomial X F} {s : ℕ} (h : Computes p s) :
-    Computes (MvPolynomial.rename f p) s := by
-  obtain ⟨l, hl, a, ha, rfl⟩ := h
-  refine ⟨fun k => MvPolynomial.rename f (l k), fun k hk => ?_, a, ha, rfl⟩
-  rcases hl k hk with ⟨i, h1⟩ | ⟨c, h1⟩ | ⟨i, hi, j, hj, h1⟩ | ⟨i, hi, j, hj, h1⟩
-  · exact Or.inl ⟨f i, by simp [h1]⟩
-  · exact Or.inr (Or.inl ⟨c, by simp [h1]⟩)
-  · exact Or.inr (Or.inr (Or.inl ⟨i, hi, j, hj, by simp [h1]⟩))
-  · exact Or.inr (Or.inr (Or.inr ⟨i, hi, j, hj, by simp [h1]⟩))
+    Computes (MvPolynomial.rename f p) s :=
+  h.map_gates (MvPolynomial.rename f).toRingHom (fun i => ⟨f i, by simp⟩) (fun c => ⟨c, by simp⟩)
 
 /-- Two circuits side by side, and one more gate. -/
 theorem Computes.join {p q r : MvPolynomial X F} {s t : ℕ} (hp : Computes p s) (hq : Computes q t)
@@ -107,25 +112,11 @@ theorem Computes.join {p q r : MvPolynomial X F} {s t : ℕ} (hp : Computes p s)
     rw [if_neg (by omega), if_neg (by omega)]
   refine ⟨L, fun k hk => ?_, s + t, by omega, L3⟩
   rcases lt_or_ge k s with h | h
-  · unfold IsStep
-    rw [L1 k h]
-    rcases hl k h with e | e | ⟨i, hi, j, hj, e⟩ | ⟨i, hi, j, hj, e⟩
-    · exact Or.inl e
-    · exact Or.inr (Or.inl e)
-    · exact Or.inr (Or.inr (Or.inl ⟨i, hi, j, hj, by rw [L1 i (by omega), L1 j (by omega), e]⟩))
-    · exact Or.inr (Or.inr (Or.inr ⟨i, hi, j, hj, by rw [L1 i (by omega), L1 j (by omega), e]⟩))
+  · exact (hl k h).reindex id strictMono_id fun i hi => L1 i (hi.trans_lt h)
   · rcases lt_or_ge k (s + t) with h' | h'
     · obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le h
       have hk' : k < t := by omega
-      unfold IsStep
-      rw [L2 k hk']
-      rcases hl' k hk' with e | e | ⟨i, hi, j, hj, e⟩ | ⟨i, hi, j, hj, e⟩
-      · exact Or.inl e
-      · exact Or.inr (Or.inl e)
-      · exact Or.inr (Or.inr (Or.inl ⟨s + i, by omega, s + j, by omega, by
-          rw [L2 i (by omega), L2 j (by omega), e]⟩))
-      · exact Or.inr (Or.inr (Or.inr ⟨s + i, by omega, s + j, by omega, by
-          rw [L2 i (by omega), L2 j (by omega), e]⟩))
+      exact (hl' k hk').reindex (s + ·) (fun _ _ hi => Nat.add_lt_add_left hi s) fun i hi => L2 i (hi.trans_lt hk')
     · obtain rfl : k = s + t := by omega
       unfold IsStep
       rw [L3]

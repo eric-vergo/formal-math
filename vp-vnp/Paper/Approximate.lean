@@ -28,14 +28,7 @@ Coefficientwise: no negative powers of ε, and the part of ε⁰ is f. -/
 theorem def_approx {F : Type u} {X : Type*} [Field F] (f : MvPolynomial X F) (s : ℕ) :
     Approximates f s ↔ ∃ p : MvPolynomial X (LaurentSeries F), Computes p s ∧
       ∀ d : X →₀ ℕ, (∀ i : ℤ, i < 0 → (p.coeff d).coeff i = 0) ∧ (p.coeff d).coeff 0 = f.coeff d := by
-  constructor
-  · rintro ⟨p, hp, h⟩
-    exact ⟨p, hp, fun d => ⟨fun i hi => by rw [h d i hi.le, if_neg hi.ne], by rw [h d 0 le_rfl, if_pos rfl]⟩⟩
-  · rintro ⟨p, hp, h⟩
-    refine ⟨p, hp, fun d i hi => ?_⟩
-    rcases eq_or_lt_of_le hi with rfl | hlt
-    · rw [if_pos rfl, (h d).2]
-    · rw [if_neg hlt.ne, (h d).1 i hlt]
+  simp only [Approximates, coeff_nonpos_iff]
 
 theorem coeff_mul_T {R : Type} [CommRing R] (f : LaurentPolynomial R) (N i : ℤ) :
     (f * LaurentPolynomial.T N).coeff i = f.coeff (i - N) := by
@@ -258,10 +251,8 @@ theorem approx_rate_closed {K : Type} [Field K] {G : ∀ S, MvPolynomial (Fin S 
     · obtain ⟨m₀, h⟩ := flat_rate_approx_complete κ
       exact ⟨m₀, h K hK _ hG⟩
     · exact thm_allfields_exceeds (contracting_approx_rate hK hG)
-  refine ⟨m₀, fun m hm s P hP hc => h m hm s (Approximates.of_laurentPolynomial hP fun d i hi => ?_)⟩
-  rcases eq_or_lt_of_le hi with rfl | hlt
-  · rw [if_pos rfl, (hc d).2]
-  · rw [if_neg hlt.ne, (hc d).1 i hlt]
+  exact ⟨m₀, fun m hm s P hP hc => h m hm s
+    (Approximates.of_laurentPolynomial hP fun d => (coeff_nonpos_iff _ _).2 (hc d))⟩
 
 /-- **Paper: Theorem thm:approx.** "The theorem on all fields holds for circuits that approximate HC_m, respectively
 PERM_m. In particular VNP is not contained in the closure of VP over every field." -/

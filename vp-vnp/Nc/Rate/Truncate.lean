@@ -32,11 +32,7 @@ theorem isStep_update {L : ℕ → MvPolynomial X A} {t : ℕ} (h : ∀ k < t, I
   have e : ∀ i < t, Function.update L t g i = L i := fun i hi => Function.update_of_ne (by omega) _ _
   intro k hk
   rcases Nat.lt_succ_iff_lt_or_eq.1 hk with hk | rfl
-  · rcases h k hk with ⟨i, h1⟩ | ⟨c, h1⟩ | ⟨i, hi, j, hj, h1⟩ | ⟨i, hi, j, hj, h1⟩
-    · exact Or.inl ⟨i, by rw [e k hk, h1]⟩
-    · exact Or.inr (Or.inl ⟨c, by rw [e k hk, h1]⟩)
-    · exact Or.inr (Or.inr (Or.inl ⟨i, hi, j, hj, by rw [e k hk, e i (by omega), e j (by omega), h1]⟩))
-    · exact Or.inr (Or.inr (Or.inr ⟨i, hi, j, hj, by rw [e k hk, e i (by omega), e j (by omega), h1]⟩))
+  · exact (h k hk).reindex id strictMono_id fun i hi => e i (hi.trans_lt hk)
   · rcases hg with ⟨i, h1⟩ | ⟨c, h1⟩ | ⟨i, hi, j, hj, h1⟩ | ⟨i, hi, j, hj, h1⟩
     · exact Or.inl ⟨i, by rw [Function.update_self, h1]⟩
     · exact Or.inr (Or.inl ⟨c, by rw [Function.update_self, h1]⟩)

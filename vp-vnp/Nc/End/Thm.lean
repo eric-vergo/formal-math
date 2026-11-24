@@ -117,23 +117,12 @@ theorem totalDegree_aeval_le {K : Type*} [Field K] {σ τ : Type*} (p : MvPolyno
   refine (sum_le_sum h1).trans ?_
   exact le_totalDegree hd
 
-theorem eval_aeval' {K : Type*} [Field K] {σ τ : Type*} (x : τ → K) (f : σ → MvPolynomial τ K)
-    (p : MvPolynomial σ K) : eval x (aeval f p) = eval (fun i => eval x (f i)) p := by
-  have h : ((eval x).comp (aeval f : MvPolynomial σ K →ₐ[K] MvPolynomial τ K).toRingHom) =
-      eval fun i => eval x (f i) := by
-    apply ringHom_ext
-    · intro r; simp
-    · intro i; simp
-  exact DFunLike.congr_fun h p
-
 theorem eval_sub {K : Type} [Field K] {Γ : Type} [DecidableEq Γ] {bt : Bool → Γ}
     (hb : Function.Injective bt) (N : ℕ) (w : List Bool) (p : MvPolynomial (Fin N × Option Γ) K) :
     eval (codeB K N w) (aeval (letS K bt N) p) =
       eval (fun q => if Nc.code N (fun _ : Fin 1 => w.map bt) q then (1 : K) else 0) p := by
-  have e1 : (fun q => eval (codeB K N w) (letS K bt N q)) =
-      fun q => if Nc.code N (fun _ : Fin 1 => w.map bt) q then (1 : K) else 0 := by
-    funext q
-    exact eval_letS hb N w q
-  exact (eval_aeval' (codeB K N w) (letS K bt N) p).trans (congrArg (fun g => eval g p) e1)
+  exact (eval_assoc (letS K bt N) (codeB K N w) p).symm.trans
+    (congrArg (fun g => eval g p) (funext (eval_letS hb N w)))
+
 
 end NS1
