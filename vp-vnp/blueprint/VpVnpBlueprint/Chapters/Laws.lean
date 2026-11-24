@@ -813,7 +813,7 @@ describes which statements are combined, as the statements and the assembling pr
 First, a calculus of moves for arbitrary laws and arbitrary plans, in which the invariance of the
 value is proved once ({bpref "thm_tree_moves"}[`thm_tree_moves`]). Second, one particular plan,
 the _tower plan_, defined for an abstract tower (a term of `Nc.Tow.Tower`) with routes on its
-bottom level (`Nc.Tow.Routes`) and laws at its vertices (`Nc.Tow.FlagLaws`), and analysed under
+bottom level (`Nc.Tow.Routes`) and laws at its vertices (`Nc.Tow.FlagLaws`, the specialization of `VLaws` to the tower’s chambers and near pairs), and analysed under
 numerical hypotheses collected in `Nc.Tow.TCst`. Third, the towers of Proposition H.1. The
 theorem `Paper.exists_thinTrees` builds a term of `ThinTrees` from the second, and
 `Paper.tree_towers` supplies the third.

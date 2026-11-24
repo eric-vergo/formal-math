@@ -125,7 +125,7 @@ theorem tmin_lt (hb : 0 < b) {L : Tg T m AA → ℕ} (hL : ∀ τ, L τ ≤ Wb R
   set s := Fintype.card (Sym2 T.Fl) with hs
   have h1 := tmin_le hb L l (n' := fun _ => w) fun q => hL _
   have hN : T.NN2 (fun _ => w) ≤ ((b * s * w : ℕ) : ℝ) ^ 2 := by
-    unfold Tower.NN2
+    unfold Tower.NN2 vN2
     have hb1 : (1 : ℝ) ≤ b := by exact_mod_cast hb
     have e1 : (∑ q : Sym2 T.Fl, if q.IsDiag then (0 : ℝ) else ((w : ℕ) : ℝ) ^ 2) ≤ s * (w : ℝ) ^ 2 := by
       refine (Finset.sum_le_card_nsmul _ _ ((w : ℝ) ^ 2) fun q _ => ?_).trans (by simp [hs])

@@ -86,19 +86,20 @@ def relay : Law F where
 
 end Relay
 
-/-- The laws at the vertices of a tower. -/
-structure FlagLaws (F : Type) [CommRing F] {h b D J r : ℕ} (T : Tower h b D J r) where
+/-- The laws for one local structure: chambers `Fl`, near pairs `Nr`. -/
+structure VLaws (F : Type) [CommRing F] {Fl Nr : Type} [Fintype Fl] [DecidableEq Fl] [Fintype Nr]
+    [DecidableEq Nr] (cN dN : Nr → Fl) (r b : ℕ) where
   /-- kinds of laws -/
   Di : Type
   [fD : Fintype Di]
   [dD : DecidableEq Di]
   /-- the laws -/
   L : Di → Law F
-  /-- roles are the chambers at a vertex -/
-  ro : ∀ d, (L d).Ro ≃ T.Fl
+  /-- roles are the chambers -/
+  ro : ∀ d, (L d).Ro ≃ Fl
   /-- channels are the near pairs -/
-  cn : ∀ d, (L d).Cn ≃ T.Nr
-  ends : ∀ d ν, s(ro d ((L d).c ν), ro d ((L d).d ν)) = s(T.cN (cn d ν), T.dN (cn d ν))
+  cn : ∀ d, (L d).Cn ≃ Nr
+  ends : ∀ d ν, s(ro d ((L d).c ν), ro d ((L d).d ν)) = s(cN (cn d ν), dN (cn d ν))
   lam_pos : ∀ d, 1 ≤ (L d).lam
   nonempty : ∀ d, Nonempty (L d).I
   /-- the scale -/
@@ -111,12 +112,16 @@ structure FlagLaws (F : Type) [CommRing F] {h b D J r : ℕ} (T : Tower h b D J 
   G₁ : ℕ
   G₁_le : (G₁ : ℝ) ≤ 2 * C₁ * (a₁ : ℝ) ^ 2
   /-- every load is below one of finitely many -/
-  L1 : ∀ (n : Sym2 T.Fl → ℕ) (t : ℕ), √(T.NN2 n) ≤ (a₁ : ℝ) * t → ∃ d, ∀ q : Sym2 T.Fl, ¬ q.IsDiag →
+  L1 : ∀ (n : Sym2 Fl → ℕ) (t : ℕ), √(vN2 b n) ≤ (a₁ : ℝ) * t → ∃ d, ∀ q : Sym2 Fl, ¬ q.IsDiag →
     n q ≤ (univ.filter fun e : (L d).Sl => s(ro d ((L d).a e), ro d ((L d).b e)) = q).card * t
   /-- the strings are short -/
   L2 : ∀ d i, r * b * ∑ ν, ((L d).lam + (L d).len i ν) ^ 2 ≤ G₁
 
-attribute [instance] FlagLaws.fD FlagLaws.dD
+attribute [instance] VLaws.fD VLaws.dD
+
+/-- The vertex laws for the local chambers and near pairs of a particular tower. -/
+abbrev FlagLaws (F : Type) [CommRing F] {h b D J r : ℕ} (T : Tower h b D J r) :=
+  VLaws F T.cN T.dN r b
 
 /-- A monotone enumeration of a finite set. -/
 theorem exists_mono_equiv {κ : Type} [Fintype κ] (time : κ → ℕ) :

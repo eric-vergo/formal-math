@@ -51,7 +51,7 @@ theorem isMin_le {L : Tg T m AA → ℕ} {j : Fin (J + 1)} {i : Fin h} (hi : IsM
 
 theorem NN2_mono {n n' : Sym2 T.Fl → ℕ} (hb : 0 < b) (hn : ∀ q, n q ≤ n' q) : T.NN2 n ≤ T.NN2 n' := by
   have hb1 : (1 : ℝ) ≤ b := by exact_mod_cast hb
-  unfold Tower.NN2
+  unfold Tower.NN2 vN2
   refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun q _ => ?_) ?_
   · split_ifs
     · exact le_rfl
@@ -59,23 +59,17 @@ theorem NN2_mono {n n' : Sym2 T.Fl → ℕ} (hb : 0 < b) (hn : ∀ q, n q ≤ n'
   · have : (0 : ℝ) ≤ b - 1 := by linarith
     positivity
 
-/-- Some number of units is enough. -/
-theorem exists_fits (L : Tg T m AA → ℕ) (l : LMv T FL) : ∃ t d, Fits FL L (withD FL l d) t := by
-  have ha : (0 : ℝ) < FL.a₁ := by exact_mod_cast FL.a₁_pos
-  obtain ⟨t, ht⟩ := exists_nat_ge (√(T.NN2 fun q => L (.seg l.1 l.2.1 l.2.2.1 q)) / FL.a₁)
-  obtain ⟨d, hd⟩ := FL.L1 (fun q => L (.seg l.1 l.2.1 l.2.2.1 q)) t (by
-    rw [div_le_iff₀ ha] at ht
-    linarith)
-  exact ⟨t, d, hd⟩
-
 theorem exists_fits_seg (L : Tg T m AA → ℕ) (j : Fin J) (i : Fin h) (ω : T.V (j + 1) i) :
     ∃ t d, Fits FL L (⟨j, i, ω, d⟩ : LMv T FL) t := by
   have ha : (0 : ℝ) < FL.a₁ := by exact_mod_cast FL.a₁_pos
   obtain ⟨t, ht⟩ := exists_nat_ge (√(T.NN2 fun q => L (.seg j i ω q)) / FL.a₁)
   obtain ⟨d, hd⟩ := FL.L1 (fun q => L (.seg j i ω q)) t (by
-    rw [div_le_iff₀ ha] at ht
-    linarith)
+    simpa only [Tower.NN2, mul_comm (t : ℝ)] using (div_le_iff₀ ha).mp ht)
   exact ⟨t, d, hd⟩
+
+/-- Some number of units is enough. -/
+theorem exists_fits (L : Tg T m AA → ℕ) (l : LMv T FL) : ∃ t d, Fits FL L (withD FL l d) t :=
+  exists_fits_seg L l.1 l.2.1 l.2.2.1
 
 theorem tmin_spec (L : Tg T m AA → ℕ) (l : LMv T FL) : ∃ d, Fits FL L (withD FL l d) (tmin FL L l) := by
   obtain ⟨t, ht⟩ := exists_fits L l
@@ -282,14 +276,7 @@ theorem _root_.Paper.thm_tree_kappa (hh : 0 < h) (hbD : b ≤ 2 * D) {ρ : ℝ} 
         √FL.C₁ * FL.a₁ / b * Fintype.card (T.X (j + 1)) := by
   classical
   obtain ⟨i, hi⟩ := exists_isMin hh (load R ch FL lhat n o) j.castSucc
-  have hd0 : ∃ d0 : FL.Di, True := by
-    by_contra hcon
-    push Not at hcon
-    have ha : (0 : ℝ) < FL.a₁ := by exact_mod_cast FL.a₁_pos
-    obtain ⟨t, ht⟩ := exists_nat_ge (√(T.NN2 fun _ => 0) / FL.a₁)
-    obtain ⟨d, -⟩ := FL.L1 (fun _ => 0) t (by rw [div_le_iff₀ ha] at ht; linarith)
-    exact hcon d
-  obtain ⟨d0, -⟩ := hd0
+  obtain ⟨d0, -⟩ := FL.L1 (fun _ => 0) 0 (by simp [vN2])
   refine Tower.load_step j.2 hr hb hbD FL.C₁_nonneg (Nat.cast_nonneg _) hρ hρ1 (i := i) ?_ ?_
     (fun ω => tmin FL (load R ch FL lhat n o) (⟨j, i, ω, d0⟩ : LMv T FL)) ?_ ?_
   · exact isMin_le hi

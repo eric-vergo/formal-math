@@ -17,6 +17,10 @@ open Finset
 
 variable {h b D J r : ℕ} (T : Tower h b D J r)
 
+/-- The norm of loads on pairs of chambers at a vertex. -/
+noncomputable def vN2 {Fl : Type} [Fintype Fl] [DecidableEq Fl] (b : ℕ) (n : Sym2 Fl → ℕ) : ℝ :=
+  ((b : ℝ) * (b - 1) / 2) * ∑ q : Sym2 Fl, if q.IsDiag then 0 else (n q : ℝ) ^ 2
+
 namespace Tower
 
 /-- The units of type `i` at a chamber. -/
@@ -28,8 +32,7 @@ def nEnd {j : ℕ} (i : Fin h) (n : T.Ed j → ℕ) (ω : T.V (j + 1) i) (q : Sy
   ∑ c : T.X j, if T.πV (T.vx i c) = ω ∧ s(T.co i (T.host i (T.vx i c)), T.co i c) = q then T.be i n c else 0
 
 /-- The square of the norm of a load on pairs. -/
-noncomputable def NN2 (n : Sym2 T.Fl → ℕ) : ℝ :=
-  ((b : ℝ) * (b - 1) / 2) * ∑ q : Sym2 T.Fl, if q.IsDiag then 0 else (n q : ℝ) ^ 2
+noncomputable def NN2 (n : Sym2 T.Fl → ℕ) : ℝ := vN2 b n
 
 /-- The norm of the loads at stage `j`. -/
 noncomputable def kap {j : ℕ} (n : T.Ed j → ℕ) : ℝ :=
@@ -188,28 +191,9 @@ end Stage
 /-- Minkowski's inequality, one summand constant. -/
 theorem minkowski {κ : Type*} [Fintype κ] (f : κ → ℝ) (hf : ∀ x, 0 ≤ f x) {a : ℝ} (ha : 0 ≤ a) :
     √(∑ x, (f x + a) ^ 2) ≤ √(∑ x, f x ^ 2) + √(Fintype.card κ) * a := by
-  have h1 : 0 ≤ ∑ x, f x ^ 2 := Finset.sum_nonneg fun x _ => sq_nonneg _
-  have hc : (0 : ℝ) ≤ Fintype.card κ := Nat.cast_nonneg _
-  have hcs : ∑ x, f x ≤ √(Fintype.card κ) * √(∑ x, f x ^ 2) := by
-    rw [← Real.sqrt_mul hc]
-    apply Real.le_sqrt_of_sq_le
-    have := sq_sum_le_card_mul_sum_sq (s := (univ : Finset κ)) (f := f)
-    rwa [card_univ] at this
-  apply Real.sqrt_le_iff.2
-  refine ⟨by positivity, ?_⟩
-  have e1 : ∑ x, (f x + a) ^ 2 = ∑ x, f x ^ 2 + 2 * a * ∑ x, f x + Fintype.card κ * a ^ 2 := by
-    simp only [add_sq, Finset.sum_add_distrib, Finset.mul_sum]
-    rw [Finset.sum_const, card_univ, nsmul_eq_mul]
-    congr 1
-    congr 1
-    exact Finset.sum_congr rfl fun x _ => by ring
-  have e2 : (√(∑ x, f x ^ 2) + √(Fintype.card κ) * a) ^ 2 =
-      ∑ x, f x ^ 2 + 2 * a * (√(Fintype.card κ) * √(∑ x, f x ^ 2)) + Fintype.card κ * a ^ 2 := by
-    rw [add_sq, mul_pow, Real.sq_sqrt h1, Real.sq_sqrt hc]
-    ring
-  rw [e1, e2]
-  have := mul_le_mul_of_nonneg_left hcs (by linarith : 0 ≤ 2 * a)
-  linarith
+  have h := norm_add_le (WithLp.toLp 2 f : EuclideanSpace ℝ κ)
+    (WithLp.toLp 2 (fun _ => a) : EuclideanSpace ℝ κ)
+  simpa [EuclideanSpace.norm_eq, Real.norm_eq_abs, Real.sqrt_mul, ha] using h
 
 theorem alg {C N y k : ℝ} (hC : 0 ≤ C) (hN : 0 ≤ N) (hy : 0 ≤ y) (hk : k ^ 2 ≤ N ^ 2 + C * (√8 * N + y) ^ 2) :
     k ≤ √(1 + 8 * C) * N + √C * y := by
@@ -242,7 +226,7 @@ theorem alg {C N y k : ℝ} (hC : 0 ≤ C) (hN : 0 ≤ N) (hy : 0 ≤ y) (hk : k
 
 theorem NN2_nonneg (hb : 0 < b) (m : Sym2 T.Fl → ℕ) : 0 ≤ T.NN2 m := by
   have hb1 : (1 : ℝ) ≤ b := by exact_mod_cast hb
-  unfold NN2
+  unfold NN2 vN2
   refine mul_nonneg ?_ (Finset.sum_nonneg fun q _ => ?_)
   · have : (0 : ℝ) ≤ b - 1 := by linarith
     positivity
@@ -268,7 +252,7 @@ theorem end_norm {j : ℕ} (hj : j < J) (hb : 0 < b) (hbD : b ≤ 2 * D) {i : Fi
   have h1 : ∀ ω, √(T.NN2 (T.nEnd i n ω)) ^ 2 ≤ (b : ℝ) ^ 2 / 2 * ∑ q : Sym2 T.Fl, (T.nEnd i n ω q : ℝ) ^ 2 := by
     intro ω
     rw [Real.sq_sqrt (NN2_nonneg hb _)]
-    unfold NN2
+    unfold NN2 vN2
     have h2 : (∑ q : Sym2 T.Fl, if q.IsDiag then (0 : ℝ) else (T.nEnd i n ω q : ℝ) ^ 2) ≤
         ∑ q : Sym2 T.Fl, (T.nEnd i n ω q : ℝ) ^ 2 := by
       refine Finset.sum_le_sum fun q _ => ?_
