@@ -366,10 +366,7 @@ theorem numS_congr (hr : 0 < r) (hb : 0 < b) {t : ℕ} (ho : ∀ mv : Mv T R ch 
     rw [numS, numS, ← ih']
     split_ifs with h1
     · refine numF_congr fun τ _ => ld_congr hr hb ?_ τ
-      intro mv' hmv'
-      refine ho mv' ?_
-      by_contra hcon
-      exact hmv' (numS_zero_of_le (by omega))
+      exact fun mv' hmv' => ho mv' (lt_of_not_ge fun h => hmv' (numS_zero_of_le (Nat.le_of_succ_le h)))
     · rfl
 
 theorem num_congr (hr : 0 < r) (hb : 0 < b) {mv : Mv T R ch FL}
@@ -377,20 +374,14 @@ theorem num_congr (hr : 0 < r) (hb : 0 < b) {mv : Mv T R ch FL}
     num R ch FL lhat n o mv = num R ch FL lhat n o' mv := by
   rw [num, num, numS_stable (timeM_lt mv), numS_stable (timeM_lt mv), numS_congr hr hb ho]
   refine numF_congr fun τ _ => ld_congr hr hb ?_ τ
-  intro mv' hmv'
-  refine ho mv' ?_
-  by_contra hcon
-  exact hmv' (numS_zero_of_le (by omega))
+  exact fun mv' hmv' => ho mv' (lt_of_not_ge fun h => hmv' (numS_zero_of_le h))
 
 theorem load_congr (hr : 0 < r) (hb : 0 < b) {τ : Tg T m AA} {t : ℕ} (hτ : tgTime τ ≤ t)
     (ho : ∀ mv' : Mv T R ch FL, timeM R ch FL mv' < t → ∀ c, o ⟨mv', c⟩ = o' ⟨mv', c⟩) :
     load R ch FL lhat n o τ = load R ch FL lhat n o' τ := by
   rw [← ld_numS hr hb hτ, ← ld_numS hr hb hτ, numS_congr hr hb ho]
   refine ld_congr hr hb ?_ τ
-  intro mv' hmv'
-  refine ho mv' ?_
-  by_contra hcon
-  exact hmv' (numS_zero_of_le (by omega))
+  exact fun mv' hmv' => ho mv' (lt_of_not_ge fun h => hmv' (numS_zero_of_le h))
 
 theorem good_congr (hr : 0 < r) (hb : 0 < b) {mv : Mv T R ch FL}
     (ho : ∀ mv' : Mv T R ch FL, timeM R ch FL mv' < timeM R ch FL mv → ∀ c, o ⟨mv', c⟩ = o' ⟨mv', c⟩)
