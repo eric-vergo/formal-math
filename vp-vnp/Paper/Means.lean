@@ -437,22 +437,11 @@ theorem lem_means_parallelogram_le (hN : Cat.Len N) (hh : Cat.Homog N) (a b : �
 
 end Parallelogram
 
-/-- **Paper: Lemma lem:means.** For prices W_n on two sheets of ℤ² with W_n(P,P+g) ≤ Λ|g| for points of one sheet, and
-N(g) = lim ν(Sg)/S = inf ν(Sg)/S: "N(a+b)² + N(a−b)² = 2N(a)² + 2N(b)² for all a, b ∈ ℤ²." -/
-theorem lem_means (W : ℕ → (Bool × ℤ × ℤ) → (Bool × ℤ × ℤ) → ℝ) (hW : ∀ n, IsPrice K (W n)) (Λ : ℝ)
-    (hΛ : ∀ n b (P g : ℤ × ℤ), W n (b, P) (b, P + g) ≤ Λ * (|(g.1 : ℝ)| + |(g.2 : ℝ)|)) :
-    ∃ N : ℤ × ℤ → ℝ,
-      (∀ g, Tendsto (fun S : ℕ => meanLength W (S • g) / S) atTop (𝓝 (N g)) ∧
-        IsGLB {r : ℝ | ∃ S : ℕ, 0 < S ∧ r = meanLength W (S • g) / S} (N g)) ∧
-      ∀ a b, N (a + b) ^ 2 + N (a - b) ^ 2 = 2 * N a ^ 2 + 2 * N b ^ 2 := by
-  refine ⟨meanNorm W, fun g => ⟨lem_means_limit hW hΛ g, meanNorm_isGLB W g⟩, fun a b => ?_⟩
-  have hom : Cat.Homog (meanNorm W) := lem_means_homogeneous hW hΛ
-  have hN : Cat.Len (meanNorm W) :=
-    { nonneg := meanNorm_nonneg W
-      zero := by simpa using hom 0 0
-      neg := (lem_means_seminorm hW hΛ).1
-      add := (lem_means_seminorm hW hΛ).2
-      q := fun x v y u o o' w w' _ hτ => lem_means_Q_norm hW hΛ x v y u o o' w w' hτ }
+/-- Lemma lem:means for the function N = meanNorm W. -/
+theorem lem_means_norm (hW : ∀ n, IsPrice K (W n))
+    (hΛ : ∀ n b (P g : ℤ × ℤ), W n (b, P) (b, P + g) ≤ Λ * (|(g.1 : ℝ)| + |(g.2 : ℝ)|)) (a b : ℤ × ℤ) :
+    meanNorm W (a + b) ^ 2 + meanNorm W (a - b) ^ 2 = 2 * meanNorm W a ^ 2 + 2 * meanNorm W b ^ 2 := by
+  obtain ⟨hN, hom⟩ := meanNorm_len hW hΛ
   refine le_antisymm (by linarith [lem_means_parallelogram_le hN hom a b]) ?_
   -- "applied to a+b, a−b it gives equality"
   have h := lem_means_parallelogram_le hN hom (a + b) (a - b)
@@ -461,13 +450,14 @@ theorem lem_means (W : ℕ → (Bool × ℤ × ℤ) → (Bool × ℤ × ℤ) →
   push_cast at h
   linarith
 
-/-- Lemma lem:means for the function N = meanNorm W. -/
-theorem lem_means_norm (hW : ∀ n, IsPrice K (W n))
-    (hΛ : ∀ n b (P g : ℤ × ℤ), W n (b, P) (b, P + g) ≤ Λ * (|(g.1 : ℝ)| + |(g.2 : ℝ)|)) (a b : ℤ × ℤ) :
-    meanNorm W (a + b) ^ 2 + meanNorm W (a - b) ^ 2 = 2 * meanNorm W a ^ 2 + 2 * meanNorm W b ^ 2 := by
-  obtain ⟨N, hN, h⟩ := lem_means W hW Λ hΛ
-  have e : N = meanNorm W := funext fun g => (hN g).2.unique (meanNorm_isGLB W g)
-  rw [← e]
-  exact h a b
+/-- **Paper: Lemma lem:means.** For prices W_n on two sheets of ℤ² with W_n(P,P+g) ≤ Λ|g| for points of one sheet, and
+N(g) = lim ν(Sg)/S = inf ν(Sg)/S: "N(a+b)² + N(a−b)² = 2N(a)² + 2N(b)² for all a, b ∈ ℤ²." -/
+theorem lem_means (W : ℕ → (Bool × ℤ × ℤ) → (Bool × ℤ × ℤ) → ℝ) (hW : ∀ n, IsPrice K (W n)) (Λ : ℝ)
+    (hΛ : ∀ n b (P g : ℤ × ℤ), W n (b, P) (b, P + g) ≤ Λ * (|(g.1 : ℝ)| + |(g.2 : ℝ)|)) :
+    ∃ N : ℤ × ℤ → ℝ,
+      (∀ g, Tendsto (fun S : ℕ => meanLength W (S • g) / S) atTop (𝓝 (N g)) ∧
+        IsGLB {r : ℝ | ∃ S : ℕ, 0 < S ∧ r = meanLength W (S • g) / S} (N g)) ∧
+      ∀ a b, N (a + b) ^ 2 + N (a - b) ^ 2 = 2 * N a ^ 2 + 2 * N b ^ 2 := by
+  exact ⟨meanNorm W, fun g => ⟨lem_means_limit hW hΛ g, meanNorm_isGLB W g⟩, lem_means_norm hW hΛ⟩
 
 end Paper
