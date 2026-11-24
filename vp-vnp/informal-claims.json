@@ -1,0 +1,24 @@
+{
+  "source": {
+    "title": "VP ≠ VNP over every field",
+    "authors": "Claude (Anthropic)",
+    "url": "https://github.com/anthropics/formal-math/blob/vp-vnp/vp-vnp/paper.pdf"
+  },
+  "claims": [
+    { "declaration": "Solution.mainTheorem",
+      "reference": "Theorem 1.1 (proved as Theorem M.3)",
+      "statement": "There is an absolute constant c > 0 such that for every p, zero or prime, there is m₀ with the following property. Over every field of characteristic p and for every m ≥ m₀, every circuit for HCₘ, and every circuit for PERMₘ if p ≠ 2, has more than m^(c (log m)^(1/3)) gates. (Here log = log₂.)" },
+    { "declaration": "Solution.mainTheoremApprox",
+      "reference": "Theorem 1.4, first sentence (proved as Theorem N.5)",
+      "statement": "Theorem 1.1 holds for circuits that approximate HCₘ, respectively PERMₘ." },
+    { "declaration": "Solution.separation",
+      "reference": "Corollary 1.2 (proved as Corollary M.4)",
+      "statement": "Over every field, VP is a proper subset of VNP." },
+    { "declaration": "Solution.separationClosure",
+      "reference": "Theorem 1.4, second sentence (proved as Theorem N.5)",
+      "statement": "In particular VNP ⊄ VP̄ (the closure of VP) over every field." },
+    { "declaration": "Solution.permanent_over_real",
+      "reference": "Theorem L.1",
+      "statement": "There are c > 0 and m₀ such that for all m ≥ m₀ every circuit over ℝ that computes PERMₘ has more than m^(c (log m)^(1/3)) = 2^(c (log m)^(4/3)) gates." }
+  ]
+}
