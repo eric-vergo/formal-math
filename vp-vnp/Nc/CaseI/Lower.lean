@@ -5,8 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 -/
 import Nc.CaseI.Fkl
 import Nc.CaseI.Geo
-import Nc.Price.Network
-import Nc.Price.Basic
 
 /-!
 # The complete network: ends, sums over the ends, and the numbers of the lower bound
@@ -14,7 +12,7 @@ import Nc.Price.Basic
 
 namespace Nc.CaseI
 
-open Finset Nc.Price Ov
+open Finset
 
 variable {k : ℕ}
 
@@ -76,9 +74,6 @@ theorem lower_numbers {k ℓ c N δ S1 S2 S3 lg : ℝ} (hk1 : 1 ≤ k) (hℓ0 : 
     have a1 := mul_le_mul_of_nonneg_left hw hℓ0
     have a2 := mul_le_mul_of_nonneg_left hh hℓ0
     have a3 := mul_le_mul_of_nonneg_right hm hlog
-    have e1 : c * (ℓ * S1) = ℓ * (c * S1) := by ring
-    have e2 : c * (k + ℓ * S2 + S3 * lg) = c * k + ℓ * (c * S2) + c * S3 * lg := by ring
-    rw [e1, e2] at h2
     linarith
   have hNδ : 3 * N * δ ≤ k / 100 := by
     have : N ≤ k * k / 2 := by rw [hN]; nlinarith
@@ -90,11 +85,6 @@ theorem lower_numbers {k ℓ c N δ S1 S2 S3 lg : ℝ} (hk1 : 1 ≤ k) (hℓ0 : 
   have hck : c * k ≤ ℓ * (k / 100) := by nlinarith
   have h5 : ℓ * (k * (19 / 300)) ≤ (1 / (3 * √k) + δ) * lg := by
     have h6 : ℓ * (3 * N * δ) ≤ ℓ * (k / 100) := mul_le_mul_of_nonneg_left hNδ hℓ0
-    have e3 : ℓ * (N * (1 - δ)) = ℓ * N - ℓ * (N * δ) := by ring
-    have e4 : ℓ * (N - k / 12 + 2 * N * δ) = ℓ * N - ℓ * k / 12 + 2 * (ℓ * (N * δ)) := by ring
-    have e5 : ℓ * (3 * N * δ) = 3 * (ℓ * (N * δ)) := by ring
-    rw [e3, e4] at h3
-    rw [e5] at h6
     linarith
   have hsq : √k * √k = k := Real.mul_self_sqrt hk0.le
   have hsq1 : 1 ≤ √k := by
@@ -114,8 +104,6 @@ theorem lower_numbers {k ℓ c N δ S1 S2 S3 lg : ℝ} (hk1 : 1 ≤ k) (hℓ0 : 
     h5.trans (mul_le_mul_of_nonneg_right h7 hlog)
   rw [div_mul_eq_mul_div, le_div_iff₀ hsq0] at h10
   have h11 : (0 : ℝ) ≤ ℓ * (k * √k) := by positivity
-  have e6 : ℓ * (k * (19 / 300)) * √k = 19 / 300 * (ℓ * (k * √k)) := by ring
-  rw [e6] at h10
   linarith
 
 /-- Sums over ends, with an error. -/
