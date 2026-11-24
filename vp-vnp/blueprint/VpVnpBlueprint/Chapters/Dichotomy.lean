@@ -83,7 +83,7 @@ pairs; `Paper.distAtRank w r` is its square root. `Paper.def_transversal` unfold
 subspaces, and so are the spans of the rows.
 :::
 
-:::definition "def_cases" (lean := "Paper.Flat, Paper.Contracting, Paper.def_cases, Nc.Flag.CaseOne") (parent := "part-common")
+:::definition "def_cases" (lean := "Paper.Flat, Paper.Contracting, Paper.def_cases") (parent := "part-common")
 *Definition D.1 of the paper* (page 30), quoted: “We consider two hypotheses on the field
 $`\Bbbk`, on which the notion of a price depends.
 
@@ -97,8 +97,8 @@ We say that we are in the _flat case_ if the flat hypothesis holds, and in the _
 if the contracting hypothesis holds.”
 
 `Paper.Contracting K` is the printed contracting hypothesis word for word, with `distAtRank`.
-`Paper.Flat K` is defined as `Nc.Flag.CaseOne K`: for every $`k`, every finite type `V` and every
-map `E` from `V` to $`\mathbb{R}^k` with the Euclidean metric (`EuclideanSpace ℝ (Fin k)`), the
+The definition of `Paper.Flat K` quantifies over every $`k`, every finite type `V` and every
+map `E` from `V` to $`\mathbb{R}^k` with the Euclidean metric (`EuclideanSpace ℝ (Fin k)`). It requires that the
 function $`(a, b) \mapsto \|E(a) - E(b)\|` is a price on `V`. `Paper.def_cases` proves that this
 is equivalent to the printed form, with finite subsets `S` of $`\mathbb{R}^n` for all $`n`, and
 restates the contracting hypothesis with the means written out. “Euclidean spaces” are thus the

@@ -3,11 +3,8 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-import Nc.Vp.Gen
-import Nc.Flag.Cases
 import Nc.Tower.Tower
 import Nc.Tow.FromPrice
-import Nc.CaseI.Lower
 
 /-!
 # Near pairs and laws at the vertices of the towers
@@ -17,7 +14,7 @@ set_option linter.unusedSectionVars false
 
 namespace Nc.Vp
 
-open Finset Nc.Price Nc.Tow Nc.CaseI
+open Nc.Tow
 open Nc.Tower (U x NN ee tower card_U sum_NN npair npair_sym x_mul_self x_ne_one)
 
 /-- One end of a near pair of U h. -/

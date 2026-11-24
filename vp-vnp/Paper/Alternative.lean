@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 import Paper.Curvature
 import Nc.Flag.Exchange
-import Nc.Flag.Cases
+import Nc.Price.Basic
 
 /-!
 # The paper, section "Flat or contracting"
@@ -35,7 +35,9 @@ theorem meanSq_nonneg (w : Mt μ → Mt μ → ℝ) (r : ℕ) : 0 ≤ meanSq w r
   div_nonneg (sum_nonneg fun _ _ => sum_nonneg fun _ _ => sq_nonneg _) (by positivity)
 
 /-- The flat case: "all finite subsets of all Euclidean spaces, with their metrics, are prices". -/
-def Flat (K : Type) [Field K] : Prop := CaseOne K
+def Flat (K : Type) [Field K] : Prop :=
+  ∀ (k : ℕ) (V : Type) [Finite V] (E : V → EuclideanSpace ℝ (Fin k)),
+    IsPrice K fun a b => dist (E a) (E b)
 
 /-- The contracting case: "there are an integer μ ≥ 2 and a real s with 1 ≤ s, s² < μ, such that D(μ) ≤ sD(1) for all
 prices on Mat_μ(F₂)". -/

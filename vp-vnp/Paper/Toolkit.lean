@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import Nc.Cat.Core
-import Nc.Cat.Prod
 
 /-!
 # The paper, section "Prices are nonpositively curved": CAT(0) spaces

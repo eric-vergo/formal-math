@@ -250,7 +250,7 @@ From “Notation and conventions” (pages 17–18).
 *
   * flat hypothesis, flat case
   * all finite subsets of all Euclidean spaces, with their metrics, are prices ({bpref "def_cases"}[Definition D.1])
-  * {InlineLean.name}`Paper.Flat`, {InlineLean.name}`Nc.Flag.CaseOne`
+  * {InlineLean.name}`Paper.Flat`
 *
   * contracting hypothesis, contracting case; $`\mu`, $`s`
   * $`D(\mu) \le s\, D(1)` for all prices on $`\mathrm{Mat}_\mu(\mathbb{F}_2)`, for some integer $`\mu \ge 2` and real $`s` with $`1 \le s`, $`s^2 < \mu` ({bpref "def_cases"}[Definition D.1])

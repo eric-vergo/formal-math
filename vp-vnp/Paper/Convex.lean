@@ -6,7 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 import Paper.Curvature
 import Paper.Alternative
 import Nc.Price.BorderFew
-import Nc.CaseI.Cube
+import Nc.CaseI.Geo
+import Nc.Price.Hyper
 
 /-!
 # The paper, section "The main theorem": sums with few terms and the price of a set

@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import Paper.Rate
+import Paper.Scales
 import Paper.HcGrid
 import Paper.Transfer
 import Paper.Ryser

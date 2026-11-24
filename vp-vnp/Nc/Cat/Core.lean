@@ -161,4 +161,48 @@ theorem le_two_mul_of_forall {S a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b)
       ring
     linarith
 
+/-! ### Formal midpoint terms -/
+
+/-- Formal midpoints. -/
+inductive Term (V : Type) : Type
+  | of : V → Term V
+  | mid : Term V → Term V → Term V
+
+namespace Term
+
+variable {V : Type}
+
+/-- The depth of a term. -/
+def depth : Term V → ℕ
+  | of _ => 0
+  | mid s t => max s.depth t.depth + 1
+
+/-- The first letter of a term. -/
+def base : Term V → V
+  | of v => v
+  | mid s _ => s.base
+
+/-- Where the terms of depth at most `n+1` stand when a new point is added for every pair of terms of depth at most `n`. -/
+def place (n : ℕ) (s : Term V) : Term V ⊕ (Term V × Term V) :=
+  if s.depth ≤ n then Sum.inl s else
+    match s with
+    | of v => Sum.inl (of v)
+    | Term.mid a b => Sum.inr (a, b)
+
+end Term
+
+/-! ### Finite Euclidean products -/
+
+section
+
+variable {ι : Type*} [Fintype ι] {X : ι → Type*} [∀ i, MetricSpace (X i)]
+
+theorem piLp_dist_sq (f g : PiLp 2 X) : dist f g ^ 2 = ∑ i, dist (f i) (g i) ^ 2 := by
+  rw [PiLp.dist_eq_sum (by norm_num)]
+  simp only [ENNReal.toReal_ofNat, Real.rpow_ofNat]
+  rw [← Real.sqrt_eq_rpow, Real.sq_sqrt]
+  exact Finset.sum_nonneg fun i _ => sq_nonneg _
+
+end
+
 end Cat

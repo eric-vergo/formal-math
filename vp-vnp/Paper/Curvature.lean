@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 import Paper.Fan
 import Paper.Toolkit
-import Nc.Cat.Space
+import Nc.Cat.Core
 
 /-!
 # The paper, section "Prices are nonpositively curved"
