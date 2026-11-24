@@ -25,12 +25,14 @@ number := false
 %%%
 
 This chapter follows Appendices G (pages 41–43) and H (pages 43–48) of the paper
-({repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). It establishes two things in the contracting case.
-Theorem G.2 turns the Poincaré inequality of {ref "chapter-poincare"}[the previous chapter] into
+({repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). It has two results, both in the contracting case.
+{bpref "thm_laws"}[Theorem G.2] turns the Poincaré inequality ({bpref "thm_poincare"}[Theorem F.6]
+of {ref "chapter-poincare"}[the previous chapter]) into
 finitely many identities between tensors, the _rerouting laws_: each writes a product of wires
 between arbitrary pairs of elements of $`U_h` as a sum of tensor networks whose wires run along
-edges of the Cayley graph, at a cost that a constant $`C_1` independent of $`h` controls. Theorem
-H.2 applies these laws repeatedly, along a tower of finite groups (Proposition H.1), to an
+edges of the Cayley graph, at a cost that a constant $`C_1` independent of $`h` controls.
+{bpref "thm_tree"}[Theorem H.2] applies these laws repeatedly, along a tower of finite groups
+({bpref "prop_tower"}[Proposition H.1]), to an
 arbitrary tensor network on $`M` nodes, and writes its value as a sum of values of networks whose
 nodes form a tree of small depth in which a node holds fewer packets, by a factor $`M^{\gamma}`,
 than the network holds in all. {ref "chapter-programs"}[Programs, automata and cutting] takes the
@@ -46,15 +48,19 @@ main result, rests on Lean at these points.” For Theorem H.2(d) and (e) this c
 describes, from the Lean code, what the construction is and how the Lean proof is organised (the
 section {ref "laws-lean-construction"}[The Lean construction behind Theorem H.2]). About Proposition
 H.1 and parts (a) to (c) of Theorem H.2 the sentence quoted from page 17 says nothing: they are
-neither among the proofs meant to be complete nor among those flagged. For them this chapter gives
-what the printed proof gives and what the Lean statement gives, and makes no claim about the
-completeness of the printed argument.
+neither among the proofs meant to be complete nor among the four flagged there. Proposition H.1
+has a formalization note of its own (page 44), on the exponent of part (d) only. For these
+statements this chapter gives what the printed proof gives and what the Lean statement gives, and
+makes no claim about the completeness of the printed argument.
 
 The Lean statements of this chapter differ from the printed ones in several ways, and all the
-differences recorded here are listed by the paper in Section Q.3 (pages 68–70). Definition G.1 is a
-Lean structure, `Nc.G.Law`; the clauses of Theorem H.2 are the fields of a Lean structure,
-`Paper.ThinTrees`; Proposition H.1(d) is stated with the exponent $`7` that Lean proves, where the
-printed argument gives $`3`; and Theorem H.2 takes the laws as a hypothesis. The Lean development
+differences of statement recorded here are listed by the paper in Section Q.3 (pages 68–70).
+Definition G.1 is a Lean structure, `Nc.G.Law`; the clauses of Theorem H.2 are the fields of a
+Lean structure, `Paper.ThinTrees`; and Theorem H.2 takes the laws as a hypothesis. Proposition
+H.1(d) is not a difference of statement: the printed statement already carries the exponent
+$`7` of the Lean theorem (“the proof gives the exponent $`3`; we state $`7` as in the formal
+development”, page 44), and the difference is between the printed proof, which gives $`3`, and
+the Lean proof, which gives $`7`. The Lean development
 says _unit_ for a packet, _table_ for a node tensor, _near pair_ for an edge of the Cayley graph of
 $`U_h`, _chamber_ for an element of a set $`V_j` of the tower and _vertex_ of type $`i` for a coset
 of type $`i` (Section Q.3, pages 66 and 68, for the first three; the last two are the words of the
@@ -225,7 +231,7 @@ $`x_j g` (`Nc.Tower.FU_iff`). This blueprint read that definition and that lemma
 find a theorem that states the conclusion either.
 :::
 
-:::proof "thm_laws"
+:::proof "thm_laws" (uses := "thm_duality, lem_exponents_parts")
 *The paper's proof* (page 43), summarised. “We apply the duality theorem to an inequality between
 spectral points that follows from the Poincaré inequality, and read the resulting cover as a law.”
 
@@ -239,9 +245,10 @@ $$`\sum_e \sigma_{x,e}\, |e| \;\le\; \max_{\beta \in \mathcal{B}} \sum_{\text{ed
 
 _Duality._ For a load $`\sigma` let $`\mathsf{W}^\sigma = \prod_e \langle 2 \rangle_e^{\sigma_e}`,
 a tensor on the set of parties $`U_h`. For a spectral point $`\varphi` on $`U_h`,
-$`\varphi(\mathsf{W}^\sigma) = 2^{\sum_e \sigma_e d_\varphi(e)}` by Lemma A.2, and $`d_\varphi` is
-a price. Hence $`\varphi(\mathsf{W}^{\sigma_x}) \le \max_{\beta} \varphi(\mathsf{W}^\beta)`, the
-hypothesis of the duality theorem (Theorem A.6,
+$`\varphi(\mathsf{W}^\sigma) = 2^{\sum_e \sigma_e d_\varphi(e)}` by
+{bpref "lem_exponents"}[Lemma A.2], and $`d_\varphi` is a price. Hence
+$`\varphi(\mathsf{W}^{\sigma_x}) \le \max_{\beta} \varphi(\mathsf{W}^\beta)`, the hypothesis of the
+duality theorem ({bpref "thm_duality"}[Theorem A.6],
 {ref "chapter-spectral"}[Tensors, spectral points and prices]). For every $`\varepsilon > 0` and
 every large $`q` it covers $`\mathsf{W}^{q\sigma_x}` by at most $`2^{\varepsilon q}` tensors
 $`\mathsf{W}^{\beta'}` in which $`\beta'` is a sum of $`q` elements of $`\mathcal{B}`; one $`q`
@@ -259,7 +266,8 @@ factor $`4` in $`C_1 = 4C_0'` is spent. Clause (a): for $`\|n\| \le a_1 t` and $
 vector $`x = n/(a_1 t)` has $`\|x\| \le 1` and $`n \le t\, q\sigma_x`.
 
 _In Lean._ The steps are `Paper.thm_laws_loads` (the inequality between loads),
-`Paper.thm_laws_cover` (duality, giving the cover “as an identity between functions of bits”),
+`Paper.thm_laws_cover` (duality, giving the cover as an identity between functions of bits,
+`BitId`),
 `Paper.thm_laws_over_field` (the laws over `K` for one $`h`), and `Paper.thm_laws_ring` (the
 subring). Section Q.3 (page 70): “The proof of Theorem G.2, for example, uses all loads of bounded
 norm where the text uses the rounded ones”. The theorem depends on Theorem F.6 only through
@@ -506,7 +514,17 @@ tables `partyTab`. `thm_tree_move` is the same for one move, and it rests on the
 kinds of laws to which it is applied.
 :::
 
-:::lemma_ "thm_tree_good" (lean := "Paper.thm_tree_good, Paper.goodBound") (parent := "part-contracting")
+::::definition "good_bound" (lean := "Paper.goodBound") (parent := "part-contracting")
+*The integer of the test for good outcomes* (page 48), quoted from the proof of Theorem H.2:
+“testing whether an outcome is good, amounts to comparing integers of that size, because $`C_0'`
+is an integer”.
+
+`Paper.goodBound C₁ a₁` is the natural number $`\lfloor 2C_1a_1^2 \rfloor`. It is the parameter
+$`G_1` of {bpref "thin_trees"}[`ThinTrees`] in {bpref "thm_tree"}[Theorem H.2] and of `PieceCut`
+in Proposition J.2.
+::::
+
+:::lemma_ "thm_tree_good" (lean := "Paper.thm_tree_good") (uses := "thin_trees") (parent := "part-contracting")
 *Good outcomes* (page 45), quoted: “We call an outcome of a law move with the number $`t` _good_
 if $`\|o\|_* \le \sqrt{C_1}\, a_1 t` and $`o_e \ge t` for all channels $`e`.”
 
@@ -599,6 +617,18 @@ for every given node $`a`. The constant $`C` depends on $`h` and on the laws, as
 where “all constants below depend only on these choices” (page 43).
 :::
 
+::::definition "def_slp" (lean := "Unc.SlpN, Nc.Cut.IsSlpStep") (parent := "part-contracting")
+*Straight-line programs* (Theorem H.2(d), page 46), quoted: “A step is an input, a constant, or an
+arbitrary function of two earlier results, given by its table (a _binary operation_).”
+
+*Reading (gloss).* `IsSlpStep inp fn k` says that the function `fn k` from the inputs to `Fin D`
+is an input coordinate, a constant, or $`\varphi(\mathtt{fn}\ i, \mathtt{fn}\ j)` for some
+$`i, j < k` and an arbitrary $`\varphi :` `Fin D → Fin D → Fin D`. `SlpN inp p H` says that there
+is a sequence `fn` whose first `p` members are such steps and such that every function in the
+set `H`, with values in $`\mathbb{N}`, is at every input the value of one of them. It asserts
+that a program exists; no program is given as an object.
+::::
+
 :::definition "thin_trees" (lean := "Paper.ThinTrees") (parent := "part-contracting")
 *The structure that carries the clauses of Theorem H.2.* The paper has no counterpart of this
 definition; it is the Lean form of the words “networks with the following properties” of the
@@ -640,7 +670,8 @@ and (e), the dead packets are a set of names that are not all stated to be prese
 bound on what a node ever holds may count absent ones. The end packets of relays count as dead,
 and in networks without these packets they would count among the absent ones.”
 
-*Clause (c).* `value`, for every network `tab` on the given nodes with the numbers `n`:
+*Clause (c).* `value`, for all numbers `n` with at most `N` packets at every given node and
+every network `tab` on the given nodes with these numbers:
 $$`\mathtt{netValue\ tab} \;=\; \sum_{o \text{ good}} \; \sum_{w} \; \prod_{p} \mathrm{val}_p(w).`
 Here $`o` runs over the outcomes for which all moves are good, $`w` assigns a content, present or
 absent, to every packet name and is absent outside the
@@ -653,9 +684,12 @@ the node tensors `role` of the moves at $`p`. This is the first sentence of (c),
 used-up packets inside $`\mathrm{val}_p`. Section Q.3 (page 69): “The value of a tree is written
 as a sum, over the contents of named packets, present or absent, of products of the values of its
 nodes, and no theorem restates this as the value of a network as defined in Section H.” To this
-blueprint's reading of `role` and `startTab`, a term of the inner sum in which a current packet is
-absent at a node that holds it vanishes, because both definitions test presence; this was not
-checked beyond reading the two definitions. `kinds`: the law of a move `x` is in the list `laws`
+blueprint's reading, a term of the inner sum in which a packet that exists for `(n, o)` is absent
+in the copy of a node that holds it vanishes: `startTab` is $`0` unless every given packet at the
+node is present, and `role` requires, through `Nc.G.ChOk` and `Nc.unitsOf`, that the node's copies
+of the packets `new ν k` on its channels are exactly the $`o_\nu + 1` packets of the string, all
+present, and is $`0` unless the packets given at its slots are present. This is read from these
+four definitions; no theorem of the development states it. `kinds`: the law of a move `x` is in the list `laws`
 if `isLaw x`, and is the law `relay` otherwise. `law_stage`: the nodes of a law move have positive
 stage; with `stage_given` this is “At stage $`0` these are tests only”. `layers_le`: for every
 node $`p`, the numbers `num` of the law moves in which $`p` has a role add up to at most the
@@ -671,7 +705,7 @@ $`(MN)^C`; `inp` gives each $`n_{a,c}` and each $`o_\nu` as an element of `Fin D
 `SlpN inp steps H` holds; and `H` contains, for all nodes `p`, `q`, packet names `u`, slots `z` and moves `y`:
 the indicator of `par n o p = q`; the indicator of `u ∈ plan.cur n o E`; the indicator of
 `u ∈ plan.cons n o z`; the number `plan.num n o y`; the number `up n o p`; and the indicator of
-`plan.good n o y`. `SlpN inp steps H` ({bpref "tree_computed"}[shown below]) says that there is a
+`plan.good n o y`. `SlpN inp steps H` ({bpref "def_slp"}[defined above]) says that there is a
 sequence of functions from the inputs to `Fin D`, each of whose first `steps` members is an input,
 a constant, or $`\varphi(f_i, f_j)` for two earlier members and an arbitrary
 $`\varphi :` `Fin D → Fin D → Fin D`, such that every function in `H` is, at every input, the
@@ -692,7 +726,7 @@ and it counts for every move at $`p`, with the number $`t`, also $`t` times one 
 its slots at $`p`, which covers the zeros in slots.”
 :::
 
-:::proof "thm_tree"
+:::proof "thm_tree" (uses := "thin_trees, tree_towers")
 *The paper's proof* (pages 46–48), summarised; the formalization note quoted above applies to its
 last part.
 
@@ -821,7 +855,9 @@ Given the numbers `N mv` of the moves before time $`\tau`, `alvN` is the number 
 of a channel: for a relay with the number $`t`, $`t` if the outcome is $`t` and $`0` otherwise;
 for a law move, the outcome $`o_\nu` if the outcome is good for $`t` and $`\min(o_\nu, t)`
 otherwise. (So of the $`o_\nu + 1` packets of a channel the last is never alive: it is the end
-packet.) `ld N τ` is the number of alive packets with the target `τ`, the _load_. From the loads,
+packet.) The given packets are all alive if every given node has at most `N` packets to and from
+other nodes (`Nc.Tow.Valid`), and none of them is alive otherwise. `ld N τ` is the number of alive
+packets with the target `τ`, the _load_. From the loads,
 `numF` gives the number of a move at time $`\tau`: for a relay, the load of its input target if
 the relay is active, and $`0` otherwise, where `inn j i e` is active if $`i` is the first type
 with the least sum of squares of loads at stage $`j` (`IsMin`), and `mid j e 0` if the type of
@@ -902,7 +938,7 @@ leave copies, the count differs in its details from the printed one, in which a 
 copy of the old packet”.
 :::
 
-:::lemma_ "tree_computed" (lean := "Paper.tree_computed, Paper.tree_slp, Unc.SlpN, Nc.Cut.IsSlpStep") (parent := "part-contracting")
+:::lemma_ "tree_computed" (lean := "Paper.tree_computed, Paper.tree_slp") (parent := "part-contracting")
 *An unnumbered step of the proof of Theorem H.2(d): the program* (gloss). `tree_computed` is the
 field `computed` for the tower plan, with the explicit sizes `D` $`= (20 V^9)^4` and
 `steps` $`\le 3\,(20 V^9)^{16}`, for a number $`V` that bounds the parameters of the tower, of the
@@ -967,8 +1003,10 @@ $`h`.
 
 *Proposition H.1.* The printed proof is a sketch of one paragraph for each part. For (a) to (c)
 the Lean statement expresses the printed one through representatives and freeness; for (d) Lean
-proves the exponent $`7`, and the exponent $`3` rests on the printed sketch alone. The paper
-neither counts this proof among those meant to be complete nor flags it.
+proves the exponent $`7`, which is also the exponent of the printed statement, and the exponent
+$`3` rests on the printed sketch alone, as the formalization note after the proof says (page 44).
+The paper does not count this proof among those meant to be complete, and it is not one of the
+four that page 17 flags.
 
 *Theorem H.2(a) to (c).* The printed proof gives the construction and the recursion for the
 loads, with constants absorbed in $`O(\cdot)` and in $`\Lambda`; the paper neither counts it among
@@ -988,8 +1026,8 @@ functions that define the tower plan, and the fields `between_le`, `up_node`, `u
 
 {ref "chapter-programs"}[Programs, automata and cutting] keeps the ring $`A` and the laws as the
 standing hypothesis {bpref "exists_laws"}[`VLaws`] and applies {bpref "thm_tree"}[Theorem H.2]
-to the networks that Lemma I.2 attaches to a tape automaton. Proposition J.2 uses the tree to cut
-a computation into pieces, and its last claim, the paper says (page 52), “rests on Theorem H.2(d)
+to the networks that {bpref "lem_runnet"}[Lemma I.2] attaches to a tape automaton.
+{bpref "prop_pieces"}[Proposition J.2] uses the tree to cut a computation into pieces, and its last claim, the paper says (page 52), “rests on Theorem H.2(d)
 and (e), whose printed proofs only describe the program in question”. The Lean file of that
 proposition, {repoFile "vp-vnp/Paper/Pieces.lean"}[`Paper/Pieces.lean`], refers to the fields of
 `ThinTrees` by name, among them `value`, the tree of clause (a), `edge`, `node_le`, `up_node`,

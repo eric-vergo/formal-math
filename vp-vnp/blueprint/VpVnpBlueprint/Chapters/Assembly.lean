@@ -6,7 +6,7 @@ Authors: Eric Vergo, Claude (Anthropic)
 import VersoManual
 import VersoBlueprint
 import VpVnpBlueprint.Generated.Part
-import VpVnpBlueprint.Chapters.Claim
+import VpVnpBlueprint.Chapters.FlatCase
 import VpVnpBlueprint.Chapters.Accelerators
 import Paper.Approximate
 
@@ -27,25 +27,29 @@ number := false
 
 This chapter follows Appendices L (pages 59–60), M (pages 60–62) and N (pages 62–64) of the paper
 ({repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). It combines the lower bound of the flat case
-({ref "chapter-flat"}[The flat case]) and that of the contracting case
-({ref "chapter-accelerators"}[Accelerators and the diagonal argument]) through the dichotomy
-({ref "chapter-dichotomy"}[The two cases]) into the theorems of
+({bpref "thm_flat_rate"}[Theorem E.11] in {ref "chapter-flat"}[The flat case]) and that of the
+contracting case ({bpref "thm_contracting"}[Theorem K.7] in
+{ref "chapter-accelerators"}[Accelerators and the diagonal argument]) through the dichotomy
+({bpref "thm_alt"}[Theorem D.2] in {ref "chapter-dichotomy"}[The two cases]) into the theorems of
 {ref "chapter-claim"}[What is claimed]: first over $`\mathbb{R}` (Appendix L), then over every field
 with a constant that does not depend on the field (Appendix M), then for approximating circuits
 (Appendix N). Nothing new about circuits happens here. What the chapter has to settle is
-quantifiers: which constants depend on what, how a bound proved over one field in each
-characteristic becomes a bound over all fields, and how the theorems with prefix `Paper.` become
-the five judged theorems.
+quantifiers: which constants depend on what, how a bound over one field in each characteristic
+becomes a bound over all fields, and how the theorems with prefix `Paper.` become the five judged
+theorems.
 
 The deduction of Theorem L.1 is among the printed proofs that the paper calls “meant to be
-complete, if terse” (page 17). For Appendices M and N the paper makes no such claim; their printed
-proofs are short and the Lean statements beside the nodes are what is proved. Paragraphs marked
+complete, if terse” (page 17). For Appendices M and N the paper makes no such claim, and
+Proposition N.4, on which Theorem N.5 rests in the contracting case, is one of the four statements
+whose proofs the paper says can be verified only in the Lean development (page 17). The Lean
+statements beside the nodes are what is proved. Paragraphs marked
 *Reading (gloss)* are this blueprint's readings of the Lean code, checked by no tool.
 
-Two statements of these appendices are in other chapters: Proposition M.2 (sums over bits as
-Hamiltonian cycle polynomials) in {ref "chapter-completeness"}[Completeness gadgets], and Lemma N.3
-(sums with few terms, approximate version) in {ref "chapter-flat"}[The flat case]. Proposition N.4
-is in {ref "chapter-accelerators"}[the previous chapter].
+Three statements of these appendices are in other chapters:
+{bpref "prop_hc_grid"}[Proposition M.2] (sums over bits as Hamiltonian cycle polynomials) in
+{ref "chapter-completeness"}[Completeness gadgets], {bpref "lem_few_approx"}[Lemma N.3] (sums with
+few terms, approximate version) in {ref "chapter-flat"}[The flat case], and
+{bpref "prop_approx_acc"}[Proposition N.4] in {ref "chapter-accelerators"}[the previous chapter].
 
 # L. Proofs of the main theorems over the real numbers
 
@@ -53,19 +57,19 @@ The paper (page 59): “Sections A to K work over the real numbers, and this sec
 following three statements over $`\mathbb{R}`.” And (page 59): “The flat case was treated in Section
 E and the contracting case in Sections F to K, and by Theorem D.2 at least one of them occurs.”
 
-:::theorem "thm_main" (lean := "Paper.thm_main, Paper.thm_main_form, Paper.thm_main_calculation") (parent := "part-assembly")
+:::theorem "thm_main" (lean := "Paper.thm_main") (parent := "part-assembly")
 *Theorem L.1 of the paper* (main theorem; page 59), quoted: “There are $`c > 0` and $`m_0` such that
 for all $`m \geq m_0` every circuit over $`\mathbb{R}` that computes $`\mathrm{PERM}_m` has more than
 $$`m^{c(\log m)^{1/3}} = 2^{c(\log m)^{4/3}}`
 gates.”
 
 `Paper.thm_main` states the bound in the first form for the polynomial
-$`\sum_\sigma \prod_i x_{\sigma(i), i}` over `ℝ`; `Paper.thm_main_form` is the displayed equality,
-for $`m \geq 2` and every real $`c`. The judged theorem
-{bpref "Solution.permanent_over_real"}[] is `Paper.thm_main` itself.
+$`\sum_\sigma \prod_i x_{\sigma(i), i}` over `ℝ`; the displayed equality is
+`Paper.thm_main_form` ({bpref "thm_main_calculation"}[the node after the proof]). The judged
+theorem {bpref "Solution.permanent_over_real"}[] is `Paper.thm_main` itself.
 :::
 
-:::proof "thm_main"
+:::proof "thm_main" (uses := "thm_main_calculation")
 *The paper's proof* (page 60), quoted: “By Theorem D.2 we are in the flat case or in the
 contracting case. In the flat case Theorem E.11 gives the bound $`2^{c''(\log m)^{4/3}}` for all
 large $`m`, with an explicit constant $`c'' > 0`. In the contracting case Theorem K.7 gives the
@@ -73,13 +77,27 @@ bound $`2^{c'(\log m)^2/\log\log m}` for some $`c' > 0` and all large $`m`, and
 $`(\log m)^2/\log\log m \geq (\log m)^{4/3}` for large $`m`. Hence the smaller of $`c'` and $`c''`
 serves as the constant $`c` of the theorem.”
 
-*Reading (gloss).* The Lean proof splits on `thm_alt ℝ`. In the flat case it takes
-$`c = 1/1600^2` from `thm_flat_rate`; in the contracting case it takes the constant of
-{bpref "thm_contracting"}[] and `thm_main_calculation 1`. So the constant of `thm_main` is
-$`1/1600^2` or the unspecified constant of the contracting case, according to which case holds for
-$`\mathbb{R}`; this is the paper's “the smaller of $`c'` and $`c''`” in each branch.
-`thm_main_calculation` is the inequality in a stronger form: for every real $`C`,
-$`C(\log m)^{4/3} \leq (\log m)^2/\log\log m` for all large $`m`.
+*Reading (gloss).* The Lean proof splits on {bpref "thm_alt"}[`thm_alt ℝ`]. In the flat case it
+takes $`c = 1/1600^2` from {bpref "thm_flat_rate"}[`thm_flat_rate`]; in the contracting case it
+takes the constant $`c'` of {bpref "thm_contracting"}[`thm_contracting`] and
+`thm_main_calculation 1`. So the constant of `thm_main` is $`1/1600^2` or the constant of the
+contracting case, of which nothing is known, according to which case holds for $`\mathbb{R}`.
+Where the paper takes the smaller of $`c'` and $`c''`, the Lean proof takes the constant of the
+branch it is in; the proof does not decide which branch that is.
+:::
+
+:::lemma_ "thm_main_calculation" (lean := "Paper.thm_main_form, Paper.thm_main_calculation") (parent := "part-assembly")
+*Two calculations of the proof of Theorem L.1* (pages 59–60): the equality
+$`m^{c(\log m)^{1/3}} = 2^{c(\log m)^{4/3}}` of the statement, and “$`(\log m)^2/\log\log m \geq
+(\log m)^{4/3}` for large $`m`” of the proof.
+
+`Paper.thm_main_form` is the equality, for $`m \geq 2` and every real $`c`.
+`Paper.thm_main_calculation` is the inequality in a stronger form: for every real $`C` there is
+$`m_0` with $`C(\log m)^{4/3} \leq (\log m)^2/\log\log m` for all $`m \geq m_0`. The stronger form
+is what lets Theorems M.3 and N.5 replace the bound of the contracting case, whatever its
+constant, by the bound of the flat case with the constant $`1/1600^2` (the step
+`Paper.thm_allfields_exceeds` under {bpref "thm_allfields"}[Theorem M.3]). These two theorems are
+used by Theorems L.1, L.2, M.3 and N.5; none of those uses another of them through this node.
 :::
 
 :::theorem "thm_simple" (lean := "Paper.thm_simple") (parent := "part-assembly")
@@ -97,14 +115,23 @@ $`m^{c(\log m)^{1/3}}` exceeds $`m^C` for large $`m`.” Then a direct proof tha
 only the part that precedes Section E.4”: “In the flat case the claim is Theorem E.6. In the
 contracting case it follows from Theorem K.7, whose bound exceeds $`m^C` for large $`m`.”
 
-The Lean proof is the direct one: `thm_flat_simple` in the flat case, and `thm_contracting` with
-`thm_main_calculation` in the contracting case. It does not use `thm_main`.
+The Lean proof is the direct one: {bpref "thm_flat_simple"}[`thm_flat_simple`] (Theorem E.6) in
+the flat case, and {bpref "thm_contracting"}[`thm_contracting`] with `thm_main_calculation` in the
+contracting case. It does not use `thm_main`.
 :::
 
-:::corollary "cor_classes" (lean := "Paper.cor_classes, Paper.vp_subset_vnp") (parent := "part-assembly")
+::::lemma_ "vp_subset_vnp" (lean := "Paper.vp_subset_vnp") (parent := "part-assembly")
+*A sentence of the proof of Corollary L.3* (page 60), quoted: “The inclusion
+$`\mathrm{VP} \subseteq \mathrm{VNP}` is the case $`r(n) = 0` of the definition.”
+
+`Paper.vp_subset_vnp` is the inclusion over every commutative semiring, in every universe. It is
+used by Corollary L.3 and, independently, by {bpref "cor_allclasses"}[Corollary M.4].
+::::
+
+:::corollary "cor_classes" (lean := "Paper.cor_classes") (parent := "part-assembly")
 *Corollary L.3 of the paper* (page 59), quoted: “Over $`\mathbb{R}`, VP is a proper subset of VNP.”
 
-`Paper.vp_subset_vnp` is the inclusion over every commutative semiring, in every universe.
+The inclusion is {bpref "vp_subset_vnp"}[`Paper.vp_subset_vnp`].
 :::
 
 :::proof "cor_classes"
@@ -115,8 +142,9 @@ The summand is a polynomial in the $`x_{ij}` and the $`e_j` of degree at most $`
 circuit of size polynomial in $`m`, so the family $`(\mathrm{PERM}_m)` is in VNP. By Theorem L.2 it
 is not in VP.”
 
-In Lean the membership is `Paper.perm_mem_VNP` (with the bound $`n^{700} + 700` in the definition
-of VP), and the lower bound used is `thm_simple (C + 1)`.
+In Lean the membership is {bpref "perm_mem_VNP"}[`Paper.perm_mem_VNP`] (with $`n` summation
+variables, the family of summands being in VP with the bound $`n^{700} + 700`), and the lower
+bound used is `thm_simple (C + 1)`.
 :::
 
 The paper's remarks after these proofs (page 60): “The constant $`m_0` in our theorems is not
@@ -167,7 +195,22 @@ along `ψ`. The polynomial computed is unchanged because it has integer coeffici
 only one ring homomorphism from `ℤ` to a ring. The number of gates is the same at every step.
 :::
 
-:::theorem "thm_allfields" (lean := "Paper.thm_allfields, Paper.thm_allfields_exceeds, Paper.beyond_of_rate, Paper.flat_rate_hc, Paper.contracting_hc") (parent := "part-assembly")
+::::lemma_ "thm_allfields_exceeds" (lean := "Paper.thm_allfields_exceeds, Paper.beyond_of_rate") (parent := "part-assembly")
+*A sentence of the proof of Theorem M.3* (page 61), quoted: “the bound of Theorem K.7 in the
+contracting case, although its constant depends on $`p`, exceeds that of the flat case for all
+large $`m`, as in the proof of Theorem L.1”.
+
+`Paper.thm_allfields_exceeds` is stated for an arbitrary predicate $`P(m, s)`: if there are
+$`c' > 0` and $`m_1` with $`2^{c'(\log m)^2/\log\log m} < s` whenever $`m \geq m_1` and
+$`P(m, s)`, then there is $`m_0` with $`2^{(\log m)^{4/3}/1600^2} < s` whenever $`m \geq m_0` and
+$`P(m, s)`. Its proof is {bpref "thm_main_calculation"}[`thm_main_calculation`] with
+$`C = 1/(c' \cdot 1600^2)`. `Paper.beyond_of_rate` rewrites $`2^{(\log m)^{4/3}/1600^2} < s` as
+$`m^{(1/1600^2)(\log m)^{1/3}} < s` for $`m \geq 2`. Both are used by Theorem M.3 and, separately,
+by {bpref "thm_approx"}[Theorem N.5], which Section Q.3 (page 70) says “uses the step
+`thm_allfields_exceeds`” and not Theorem M.3.
+::::
+
+:::theorem "thm_allfields" (lean := "Paper.thm_allfields, Paper.flat_rate_hc, Paper.contracting_hc") (parent := "part-assembly")
 *Theorem M.3 of the paper* (lower bound over all fields; page 61; the same text as Theorem 1.1,
 page 2), quoted: “There is an absolute constant $`c > 0` such that for every $`p`, zero or prime,
 there is $`m_0` with the following property. Over every field of characteristic $`p` and for every
@@ -196,19 +239,26 @@ the parameters.”
 2. For $`p` zero or prime, `exists_closed` gives one algebraically closed field `K` of
    characteristic $`p` in the lowest universe. Everything from Appendix A to Appendix K is applied
    to this one field.
-3. For the Hamiltonian cycle polynomial over `K`: `thm_alt K` gives `Flat K` or `Contracting K`. In
-   the flat case `flat_rate_hc` gives $`2^{(\log m)^{4/3}/1600^2} < s` for $`m \geq M_1`, from the
-   flat bound for families complete for grid sums with factor 40. In the contracting case
+3. For the Hamiltonian cycle polynomial over `K`: {bpref "thm_alt"}[`thm_alt K`] gives `Flat K` or
+   `Contracting K`. In the flat case `flat_rate_hc` gives $`2^{(\log m)^{4/3}/1600^2} < s` for
+   $`m \geq M_1`, from the flat bound for families complete for grid sums
+   ({bpref "flat_rate_complete"}[`flat_rate_complete`]) with factor 40
+   ({bpref "gridComplete"}[`gridComplete_hc`]). In the contracting case
    `contracting_hc` gives $`2^{c'(\log m)^2/\log\log m} < s` with some $`c' > 0`, and
-   `thm_allfields_exceeds` converts this into the *same* bound $`2^{(\log m)^{4/3}/1600^2} < s` for
+   {bpref "thm_allfields_exceeds"}[`thm_allfields_exceeds`] converts this into the *same* bound $`2^{(\log m)^{4/3}/1600^2} < s` for
    all large $`m`: by `thm_main_calculation` with $`C = 1/(c' \cdot 1600^2)`,
    $`(\log m)^{4/3}/1600^2 \leq c'(\log m)^2/\log\log m` eventually. So in both cases the bound over
    `K` has the constant $`1/1600^2`, and only the threshold $`M_1` depends on the case and on $`c'`.
-4. For the permanent, if $`p \neq 2`: the same with `thm_flat_rate` and `thm_contracting`, which
-   need $`2 \neq 0` in `K`; threshold $`M_2`.
+4. For the permanent, if $`p \neq 2`: the same with {bpref "thm_flat_rate"}[`thm_flat_rate`]
+   (Theorem E.11 itself) and {bpref "thm_contracting"}[`thm_contracting`] (Theorem K.7 itself),
+   which need $`2 \neq 0` in `K`; threshold $`M_2`. Section Q.3 (page 70) says that Theorem M.3
+   uses “the general forms for families that are complete for grid sums”. In `thm_allfields` that
+   holds for the Hamiltonian cycle polynomial; for the permanent the general forms enter only
+   inside the proofs of the two theorems named, in the contracting case through
+   `contracting_complete`.
 5. $`m_0 = M_1 + M_2 + 2`. For a field `F` of characteristic $`p` in any universe, a circuit for
    $`\mathrm{HC}_m` or $`\mathrm{PERM}_m` over `F` gives one with the same number of gates over `K`
-   by `lem_transfer`, applied to the polynomial with integer coefficients (`genHC ℤ m`,
+   by {bpref "lem_transfer"}[`lem_transfer`], applied to the polynomial with integer coefficients (`genHC ℤ m`,
    `Paper.permInt m`). `beyond_of_rate` rewrites $`2^{(\log m)^{4/3}/1600^2}` as
    $`m^{(1/1600^2)(\log m)^{1/3}}` for $`m \geq 2`.
 
@@ -228,7 +278,16 @@ reduction that makes the constant uniform over the fields of one characteristic 
 makes the theorem hold in every universe.
 :::
 
-:::corollary "cor_allclasses" (lean := "Paper.cor_allclasses, Paper.exists_beyond_poly") (parent := "part-assembly")
+::::lemma_ "exists_beyond_poly" (lean := "Paper.exists_beyond_poly") (parent := "part-assembly")
+*A calculation used for Corollary M.4 and for the second sentence of Theorem N.5* (pages 62 and
+64; the paper does not print it).
+
+`Paper.exists_beyond_poly`: for every $`c > 0`, $`m_0` and $`C` there is $`m \geq m_0` at which
+$`m^{c(\log m)^{1/3}} < m^C + C` fails. Corollary M.4 and Theorem N.5 each apply it to their own
+lower bound; neither uses the other.
+::::
+
+:::corollary "cor_allclasses" (lean := "Paper.cor_allclasses") (parent := "part-assembly")
 *Corollary M.4 of the paper* (page 62; the same text as Corollary 1.2, page 2), quoted: “Over every
 field, VP is a proper subset of VNP.”
 
@@ -241,10 +300,11 @@ universe.
 Val79), “as one sees by summing over one-hot codes of the places that the vertices take on the
 cycle, with vertex 1 at place 1. By Theorem M.3 it is not in VP.”
 
-*Reading (gloss).* The inclusion is `vp_subset_vnp`. For properness: `Paper.hc_mem_VNP` puts
-$`(\mathrm{HC}_n)` in VNP, with $`r(n) = n^2` summation variables and the bound $`n^{700} + 700`. If
+*Reading (gloss).* The inclusion is `vp_subset_vnp`. For properness:
+{bpref "hc_mem_VNP"}[`Paper.hc_mem_VNP`] puts $`(\mathrm{HC}_n)` in VNP, with $`r(n) = n^2`
+summation variables and the bound $`n^{700} + 700`. If
 it were in VP with exponent $`C`, then for the characteristic $`p` of `F` and the $`m_0` of
-`thm_allfields`, `exists_beyond_poly` gives some $`m \geq m_0` at which
+`thm_allfields`, {bpref "exists_beyond_poly"}[`exists_beyond_poly`] gives some $`m \geq m_0` at which
 $`m^{c(\log m)^{1/3}} < m^C + C` fails, against the lower bound applied to the circuit with
 $`m^C + C` gates. The witness of the separation is thus the Hamiltonian cycle polynomial over
 every field, also where the permanent would do.
@@ -276,10 +336,15 @@ $`\varepsilon^i` with $`i < 0` and has the coefficient of `f` at `d` as its term
 $`\varepsilon^0`. `Paper.VPBar` repeats the definition of VP with `Approximates` for `Computes`.
 
 *The respelled line.* The coefficient of `p` at `d` is written `p.coeff d` in this build, where the
-paper's file and upstream write `coeff d p`; `Paper.def_approx` is one of the three statements of
-the development, besides `Statement.Approximates`, with this change. See
-{ref "statement-spelling"}[The one line this build spells differently] and
-{repoFile "vp-vnp/PORTING.md"}[`PORTING.md`].
+paper's file and upstream write `coeff d p`. Besides the definition
+{bpref "Statement.Approximates"}[`Statement.Approximates`], three theorems of the `Paper` library
+have this coefficient in their statements, and all three are in this chapter: `Paper.def_approx`,
+`Paper.lem_transfer_approx` ({bpref "lem_transfer_approx"}[Lemma N.2]) and
+`Paper.approx_rate_closed` (under {bpref "thm_approx"}[Theorem N.5]). What supports reading the
+two spellings as the same coefficient, and which part of that support is checked by Lean in this
+build and which is not, is set out in
+{ref "statement-spelling"}[The one line this build spells differently];
+{repoFile "vp-vnp/PORTING.md"}[`PORTING.md`] sets the four statements side by side.
 :::
 
 The paper adds (page 62): “Over an algebraically closed field, $`f` is approximated with $`L` gates
@@ -298,8 +363,9 @@ As for Lemma M.1, the Lean statement has any algebraically closed field `KK` of 
 $`p` in the lowest universe for $`\mathbb{K}`, and a field `F` in any universe (Section Q.3, page
 68, quoted under Lemma M.1). Its conclusion is a polynomial `P` over `LaurentPolynomial KK` with a
 circuit of at most `s` gates whose coefficients have no negative powers of $`\varepsilon` and have
-the coefficients of $`f` at $`\varepsilon^0`. This is one of the statements whose coefficient is
-spelled `P.coeff d` in this build ({ref "statement-spelling"}[the section on that line]).
+the coefficients of $`f` at $`\varepsilon^0`. This is one of the three theorems whose coefficient
+is spelled `P.coeff d` in this build, where upstream has `coeff d P`
+({ref "statement-spelling"}[the section on that line]).
 :::
 
 :::proof "lem_transfer_approx"
@@ -309,8 +375,9 @@ $`\varepsilon^{-\Delta}`. Since the output has degree at most $`2^L` in the cons
 changes it only in the positive powers of $`\varepsilon`. We then apply the argument of Lemma M.1
 to the coefficients of the constants, which are now Laurent polynomials.”
 
-In Lean the cut is `Nc.Approximates.exists_laurentPolynomial`, and the rest repeats the steps of
-`lem_transfer` on the finitely many coefficients of the constants. Section Q.3 (page 70): “Lemma
+In Lean the cut is `Nc.Approximates.exists_laurentPolynomial`, stated for every field, and the
+rest repeats the steps of {bpref "lem_transfer"}[`lem_transfer`] on the finitely many coefficients
+of the constants. Section Q.3 (page 70): “Lemma
 N.2 repeats the argument of Lemma M.1 on coefficients.”
 :::
 
@@ -334,14 +401,21 @@ degree, but the program of Lemma K.2 gives its part of degree at most $`d`, whic
 $`\varepsilon` times that part of $`g`. Proposition N.4 excludes them, with the calculation of
 Theorems K.7 and M.3. For the last claim, $`(\mathrm{HC}_m)` is in VNP.”
 
-*Reading (gloss).* The Lean proof has the skeleton of `thm_allfields`, with these replacements.
-`approx_rate_closed` is the bound over one field `K` in the lowest universe, for a family complete
-for grid sums and a circuit over `LaurentPolynomial K` whose output has the coefficient property:
-it turns the circuit back into `Approximates (G m) s` over `K`
-(`Nc.Approximates.of_laurentPolynomial`) and splits on `thm_alt K`, with
-`flat_rate_approx_complete` in the flat case and, in the contracting case,
-`contracting_approx_rate` followed by the same `thm_allfields_exceeds`. `lem_transfer_approx` takes
-the place of `lem_transfer`. The second sentence is proved as Corollary M.4, with `hc_mem_VNP` and
+*Reading (gloss).* The Lean proof has the skeleton of {bpref "thm_allfields"}[`thm_allfields`],
+with these replacements. `approx_rate_closed` is the bound over one field `K` in the lowest
+universe, for a family complete for grid sums and a circuit over `LaurentPolynomial K` whose
+output has the coefficient property (this is the third theorem with the respelled coefficient,
+see {bpref "def_approx"}[Definition N.1]): it turns the circuit back into `Approximates (G m) s`
+over `K` (`Nc.Approximates.of_laurentPolynomial`) and splits on {bpref "thm_alt"}[`thm_alt K`],
+with {bpref "flat_rate_approx_complete"}[`flat_rate_approx_complete`] in the flat case and, in the
+contracting case, `contracting_approx_rate` followed by the same `thm_allfields_exceeds`.
+`contracting_approx_rate` is `contracting_approx_complete`
+({bpref "lem_circuit_approx"}[the approximate form of Lemma K.3], which rests on
+{bpref "prop_approx_acc"}[Proposition N.4]) with `quasi_of_exponents`. Here the permanent, for
+$`p \neq 2`, is treated as a family complete for grid sums (`gridComplete_perm`), like the
+Hamiltonian cycle polynomial, so that Theorems E.11 and K.7 themselves are not used.
+{bpref "lem_transfer_approx"}[`lem_transfer_approx`] takes the place of `lem_transfer`. The second
+sentence is proved as Corollary M.4, with {bpref "hc_mem_VNP"}[`hc_mem_VNP`] and
 `exists_beyond_poly`.
 
 Section Q.3 (page 70) on the route: “Theorem N.5 does not cite Lemma K.3, Theorem K.7 and Theorem
@@ -367,12 +441,14 @@ checks it.
 # From the theorems of the paper to the five judged theorems
 
 The file {repoFile "vp-vnp/Comparator/VpVnp/Solution.lean"}[`Solution.lean`] proves the five
-statements of {ref "chapter-statement"}[The statement to trust] from three theorems of this
-chapter. Each proof is a few lines.
+statements of {ref "chapter-statement"}[The statement to trust] from four theorems of this
+chapter: {bpref "thm_allfields"}[`Paper.thm_allfields`], {bpref "cor_allclasses"}[`Paper.cor_allclasses`],
+{bpref "thm_approx"}[`Paper.thm_approx`] and {bpref "thm_main"}[`Paper.thm_main`]. Each proof is a
+few lines.
 
 - {bpref "Solution.mainTheorem"}[] is `Paper.thm_allfields.{u}`, with one case added.
-  `Statement.MainTheorem` quantifies over every natural number $`p`, and `Paper.thm_allfields` over
-  $`p` zero or prime. For other $`p` the proof takes $`m_0 = 0`: no field has such a
+  {bpref "Statement.MainTheorem"}[`Statement.MainTheorem`] quantifies over every natural number
+  $`p`, and `Paper.thm_allfields` over $`p` zero or prime. For other $`p` the proof takes $`m_0 = 0`: no field has such a
   characteristic (`CharP.char_is_prime_or_zero`).
 - {bpref "Solution.mainTheoremApprox"}[] is the first part of `Paper.thm_approx.{u}`, in the same
   way.
@@ -395,15 +471,17 @@ them when it checks the proofs.
 - The universes. `Statement.lean` declares a universe `u` and states its propositions for fields
   `F : Type u`; `Challenge.lean` states and `Solution.lean` proves them as `MainTheorem.{u}` and so
   on, for every `u`. The three theorems `Paper.thm_allfields`, `Paper.cor_allclasses` and
-  `Paper.thm_approx` are themselves stated for `F : Type u` and are instantiated at the same `u`.
+  `Paper.thm_approx` are themselves stated for `F : Type u` and are instantiated at the same `u`
+  (the fifth theorem, over $`\mathbb{R}`, has no universe parameter).
   All the mathematics from Appendix A to Appendix K, and `Paper.thm_main`, is in the lowest
   universe; the passage from `Type` to `Type u` is made inside `thm_allfields` and `thm_approx` by
   `lem_transfer` and `lem_transfer_approx`, as described under Theorem M.3. For the second
   sentences (the classes) no transfer of classes is needed: membership of $`(\mathrm{HC}_n)` in VNP
   and the inclusion of VP in VNP are proved directly in every universe, and the lower bound is the
   first sentence.
-- The form of the bound. `Statement.Beyond c m s` is $`m^{c(\log_2 m)^{1/3}} < s`, the form in
-  which `Paper.thm_allfields` states it.
+- The form of the bound. {bpref "Statement.Beyond"}[`Statement.Beyond c m s`] is
+  $`m^{c(\log m)^{1/3}} < s`, with $`\log` to the base two (`Real.logb 2`) and a real power, the
+  form in which `Paper.thm_allfields`, `Paper.thm_approx` and `Paper.thm_main` state it.
 
 What this chapter does not settle is the one link that no machine checks: that the propositions of
 `Statement.lean` say what the paper's sentences say. That comparison is the subject of

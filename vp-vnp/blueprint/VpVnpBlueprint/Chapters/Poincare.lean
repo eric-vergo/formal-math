@@ -27,8 +27,8 @@ number := false
 %%%
 
 This chapter follows Appendix F of the paper (pages 37–41;
-{repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]) and opens the contracting case. It establishes one
-statement that the rest of the proof uses, Theorem F.6: in every price on the group $`U_h` of upper
+{repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]) and opens the contracting case. It leads to the one
+statement that the rest of the proof uses, {bpref "thm_poincare"}[Theorem F.6]: in every price on the group $`U_h` of upper
 unitriangular $`h \times h` matrices over $`\mathbb{F}_2`, the mean squared distance of two random
 elements is at most $`C_0` times the sum, over the $`h-1` generators, of the mean squared distance
 of two neighbours in the Cayley graph, with a constant $`C_0` that does not depend on $`h`. The
@@ -36,11 +36,11 @@ paper, page 37: “Only Theorem F.6 is used later.” In {ref "chapter-laws"}[th
 independence of $`h` allows $`h` to be chosen large against $`C_0`, which is what makes rerouting
 along edges of the Cayley graph gain a constant factor at every stage of a tower.
 
-The hypothesis of the contracting case (Definition D.1, {ref "chapter-dichotomy"}[The two cases])
-enters only through the notion of a contracting length function of Section F.1. From there on the
-argument is metric geometry in complete CAT(0) spaces, for which
-{ref "chapter-curvature"}[Two crossing wires and nonpositive curvature] provides Proposition C.3
-and Lemma C.4. The paper counts this appendix among those whose printed proofs “are meant to be
+The hypothesis of the contracting case ({bpref "def_cases"}[Definition D.1],
+{ref "chapter-dichotomy"}[The two cases]) enters only through the notion of a contracting length
+function of Section F.1. From there on the argument is metric geometry in complete CAT(0) spaces,
+for which {ref "chapter-curvature"}[Two crossing wires and nonpositive curvature] provides
+{bpref "prop_space"}[Proposition C.3] and {bpref "lem_toolkit"}[Lemma C.4]. The paper counts this appendix among those whose printed proofs “are meant to be
 complete, if terse” (page 17). The Lean statements differ from the printed ones in three ways,
 which Section Q.3 (page 68) lists and which are stated at each item below: Lemmas F.1 and F.2 are
 proved under weaker hypotheses; Lemma F.3 is stated for explicit numbers $`\vartheta_n` that are
@@ -178,7 +178,7 @@ statement, which asserts only that such numbers exist, follows from it. Later st
 mention $`C(n)` are, in Lean, statements about this particular sequence.
 :::
 
-:::proof "lem_first"
+:::proof "lem_first" (uses := "lem_growth, lem_words")
 *The paper's proof* (pages 38–39), summarised. Induction along the powers of two, which suffices
 because $`U_n` is a quotient of every larger $`U_{n'}` “in such a way that generators go to
 generators or to $`1`”. For $`n = 2^{i+1}`, divide the matrices into four blocks of size $`n/2`. A
@@ -203,7 +203,7 @@ power, and passes to $`n` through the quotient map; this is the closed form `kap
 
 The setting of this section (page 39), quoted: “Let $`U_h` act by isometries on a CAT(0) space
 $`Z`, and suppose that for every $`z \in Z` the length function $`g \mapsto |z, gz|` on $`U_h`
-contracts.” In Lean the space is a metric space of the class `Cat.CN` of
+contracts.” In Lean the space is a metric space of the class {bpref "CN"}[`Cat.CN`] of
 {ref "chapter-curvature"}[the chapter on curvature]: a complete metric space in which every two
 points have a midpoint that satisfies the inequality of Bruhat and Tits.
 
@@ -259,7 +259,7 @@ and with $`C(3u)` the number `windowConst μ s (3 * u)` (Section Q.3, page 68, q
 F.3).
 :::
 
-:::proof "lem_tele"
+:::proof "lem_tele" (uses := "lem_first, eq_window")
 *The paper's proof* (pages 39–40), summarised. Take $`p = 0` and pass from the window $`[u, 3u)`
 to $`[0, 3u)` through the windows $`[k, 3u)`: let $`b_k = P_{[k,3u)} a` for $`u \le k < 2u`, so
 that $`|a b_k| \le |a b_u| \le R`. For $`u < k < 2u` every generator of $`[0, 3u)` fixes $`b_k`
@@ -285,7 +285,7 @@ $`|aa'|^2 \le |za|^2 + |za'|^2 + 2c\,|za|\,|za'|`.”
 The Lean statement has the printed form, with $`C(3u)` formed with `kappa` as in Lemma F.4.
 :::
 
-:::proof "lem_angle"
+:::proof "lem_angle" (uses := "lem_tele, lem_toolkit")
 *The paper's proof* (page 40), summarised. Let $`v = P_{[p,p+3u)} a`, $`r = |za|`, $`r' = |za'|`,
 $`\alpha = |av|`, $`\beta = |va'|`, all positive without loss. First step, the angle at the common
 fixed point $`v`: the inequality (F.2), $`\alpha^2 + \beta^2 - 2c\alpha\beta \le |aa'|^2`. For
@@ -324,7 +324,7 @@ proof takes $`C_0 = 32\,C(2u)/(1 - 2c)` with $`c = 1/4`, as printed, with $`C(n)
 `kappa`.
 :::
 
-:::proof "thm_poincare"
+:::proof "thm_poincare" (uses := "lem_first, thm_poincare_action")
 *The paper's proof* (pages 40–41), summarised. Since $`C(n) = o(n^2)`, there is $`u \ge 2` with
 $`4C(3u) \le (u-1)^2/32^2`; fix it and put $`\zeta = 1/32`, $`c = 1/4`. By Proposition C.3 the
 price is pulled back from the metric of a price space $`Y` along a map $`f : U_h \to Y`. Let $`Z`
@@ -360,7 +360,7 @@ In Lean the steps are the theorems `Paper.thm_poincare_size` (the choice of $`u`
 statement for an arbitrary action that follows.
 :::
 
-:::theorem "thm_poincare_action" (lean := "Paper.thm_poincare_action") (parent := "part-contracting")
+:::theorem "thm_poincare_action" (lean := "Paper.thm_poincare_action") (uses := "lem_angle, lem_first, lem_toolkit") (parent := "part-contracting")
 *An unnumbered step of the proof of Theorem F.6* (page 41): the inequality for an arbitrary action.
 *Reading (gloss).* For every action of $`U_h`, $`h = lu`, $`l \ge 2`, by isometries on a complete
 CAT(0) space $`Z` all of whose length functions $`g \mapsto |z, gz|` contract, for every
@@ -377,8 +377,9 @@ Only Theorem F.6, as the predicate `Paper.PoincareBound K u C₀`: the pair $`(u
 once, and the inequality is then available on $`U_h` for every multiple $`h \ge 2u` of $`u`.
 {ref "chapter-laws"}[Rerouting laws and tree networks] rewrites it as an inequality between a sum
 over all pairs of elements of $`U_h` and a sum over the edges of the Cayley graph, with an integer
-constant $`C_0' \ge 2C_0 + 1`, chooses $`h` in terms of $`C_0'`, and turns the inequality, by the
-duality theorem (Theorem A.6, {ref "chapter-spectral"}[Tensors, spectral points and prices]), into
-identities between tensors. Section F.4 of the paper (page 41) relates the theorem to spectral
+constant $`C_0' \ge 2C_0 + 1` ({bpref "thm_laws_poincare"}[the form over pairs and edges]),
+chooses $`h` in terms of $`C_0'`, and turns the inequality, by the duality theorem
+({bpref "thm_duality"}[Theorem A.6], {ref "chapter-spectral"}[Tensors, spectral points and prices]),
+into identities between tensors ({bpref "thm_laws"}[Theorem G.2]). Section F.4 of the paper (page 41) relates the theorem to spectral
 gaps of walks on unitriangular matrices, to proofs of property (T) and to Poincaré constants for
 nonlinear targets.
