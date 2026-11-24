@@ -113,7 +113,7 @@ summary: 733 same, 4 changed only in the spelling of the coefficient, 0 changed,
 
 and its exit status is 2 (0 would mean no change at all, 1 any other change). The four are
 `Statement.Approximates`, `Paper.def_approx`, `Paper.approx_rate_closed` and
-`Paper.lem_transfer_approx`. For `Statement.lean` alone, `git diff upstream/vp-vnp -- Statement.lean`
+`Paper.lem_transfer_approx`. For `Statement.lean` alone, `git diff 918c8e2 9fd368ad -- Statement.lean`
 shows the one line.
 
 The comparison covers the statement file, the judged theorems and the library `Paper`, whose

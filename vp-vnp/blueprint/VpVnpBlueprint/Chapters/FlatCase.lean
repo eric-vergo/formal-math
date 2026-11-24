@@ -96,18 +96,12 @@ not on that route: Theorem L.2, Corollary L.3, the qualitative bound in the flat
 (Proposition E.5 and Theorem E.6) and the definitions.” And (page 70): “Proposition E.10 uses the
 step `prop_flat_lower_sum` of the proof of Proposition E.5, not the proposition.” The route is
 therefore Lemma E.4, the step {bpref "prop_flat_lower_sum"}[], Lemmas E.7 and E.8, Propositions
-E.9 and E.10, and then three forms of the last step: Theorem E.11 for $`\mathrm{PERM}`; its
-general form {bpref "flat_rate_complete"}[] for families that are complete for grid sums, used
-for $`\mathrm{HC}`; and {bpref "flat_rate_approx_complete"}[] for approximating circuits, in
-which Lemma N.3 takes the place of Lemma E.7. Each node below says where it stands. For this
-build the route was also read off from the constants on which the five theorems depend
-({ref "chapter-claim"}[What is claimed] says how): `Solution.mainTheorem`,
-`Solution.separation` and `Solution.permanent_over_real` depend on the Lean theorems of Lemmas
-E.4, E.7 and E.8, of Propositions E.9 and E.10 and of Theorem E.11, and not on those of
-Proposition E.5 and Theorem E.6; `Solution.mainTheoremApprox` and `Solution.separationClosure`
-depend on those of Lemmas E.4, E.8 and N.3 and of Proposition E.9, and not on those of Lemma
-E.7, Proposition E.10 and Theorem E.11, whose places are taken by the forms for approximating
-circuits.
+E.9 and E.10, and then {bpref "flat_rate_complete"}[] for the exact bound of both
+families, including the permanent. {bpref "thm_flat_rate"}[Theorem E.11] specializes the
+general bound to the permanent and supplies the qualitative Theorem E.6. The approximate
+exports use {bpref "flat_rate_approx_complete"}[], with Lemma N.3 in place of Lemma E.7.
+{ref "chapter-table3"}[The paper's statements and their Lean names] records each export's
+dependence on the named theorems.
 
 # E.2. The network polynomial (continued): balanced products
 

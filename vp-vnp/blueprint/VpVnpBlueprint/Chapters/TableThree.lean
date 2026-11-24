@@ -83,12 +83,13 @@ row:
 - _definition_: the row is a definition, whose Lean theorem restates a Lean definition (the
   paper counts these as not on the route).
 
-The result agrees with the sentence of Section Q.3 just quoted: the rows marked _no_ are those of
-Proposition E.5, Theorem E.6, Theorem L.2 and Corollary L.3. It adds three things. The three
-theorems on exact circuits do not depend on Lemmas N.2 and N.3 and Proposition N.4, and the two
-on approximation do not depend on Corollary E.2, Lemmas E.3, E.7 and K.3, Proposition E.10 and
-Theorems E.11 and K.7, whose places are taken by the general forms and by forms for
-approximating circuits. A dependency recorded here is
+The four exceptions named by the paper remain outside the five export closures. Four more
+numbered statements have that status in the cleaned proof: Corollary E.2, Lemma E.3 and
+Theorems E.11 and K.7. Each specializes a result for families complete for grid sums to
+the permanent. The all-fields theorem uses the family versions directly for both polynomials,
+and the real permanent bound specializes the all-fields theorem. Lemmas N.2 and N.3 and
+Proposition N.4 enter only the approximate exports; Lemmas E.7 and K.3 and Proposition E.10
+enter only the exact exports. A dependency recorded here is
 one of Lean constants: `Solution.mainTheoremApprox` and `Solution.separationClosure` are the two
 conjuncts of one Lean theorem, `Paper.thm_approx`, and so depend on the same constants. And
 several of the theorems that Table 3 names second for a statement are used by none of the five;
@@ -116,7 +117,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 2
   * {InlineLean.name}`Paper.thm_allfields`, {InlineLean.name}`Solution.mainTheorem`
   * matches
-  * yes: M S
+  * yes: M S R
   * {ref "chapter-claim"}[What is claimed]. The same statement as Theorem M.3. The Lean proof takes $`c = 1/1600^2`.
 *
   * {bpref "Solution.separation"}[Corollary 1.2]
@@ -351,14 +352,14 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 32
   * {InlineLean.name}`Paper.cor_clauses`
   * matches
-  * yes: M S R
+  * no
   * {ref "chapter-completeness"}[Completeness gadgets]. In Lean it is proved as the instance for the permanent of the general form `clauses_of_complete`.
 *
   * {bpref "lem_fkl_perm"}[Lemma E.3]
   * 33
   * {InlineLean.name}`Paper.lem_fkl_perm`, {InlineLean.name}`Paper.lem_fkl_perm_printed`
   * differs as the paper says
-  * yes: M S R
+  * no
   * {ref "chapter-completeness"}[Completeness gadgets]. In Lean a variable of block $`a` of $`f_{k,\ell}` is indexed by $`k` strings; the theorem with suffix `_printed` is for the printed polynomial (page 68). The `_printed` form is not used by the five theorems.
 *
   * {bpref "lem_balanced"}[Lemma E.4]
@@ -414,7 +415,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 37
   * {InlineLean.name}`Paper.thm_flat_rate`
   * matches
-  * yes: M S R
+  * no
   * {ref "chapter-flat"}[The flat case]. The hypothesis $`2 \neq 0` is written out. Theorem M.3 uses the general form `flat_rate_complete` for both families. Theorem N.5 uses `flat_rate_approx_complete`.
 :::
 
@@ -654,7 +655,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 59
   * {InlineLean.name}`Paper.thm_contracting`
   * matches
-  * yes: M S R
+  * no
   * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. The hypothesis $`2 \neq 0` is written out. Theorem M.3 uses the general form `contracting_complete` for both families.
 :::
 
@@ -706,21 +707,21 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 60
   * {InlineLean.name}`Paper.lem_transfer`
   * differs as the paper says
-  * yes: M S
+  * yes: M S R
   * {ref "chapter-assembly"}[All fields and approximate computation]. More general: any algebraically closed field of characteristic $`p` in the place of $`\mathbb{K}` (page 68).
 *
   * {bpref "prop_hc_grid"}[Proposition M.2]
   * 61
   * {InlineLean.name}`Paper.prop_hc_grid`, {InlineLean.name}`Paper.cor_clauses_hc`
   * differs as the paper says
-  * yes: M S A C
+  * yes
   * {ref "chapter-completeness"}[Completeness gadgets]. “Lean has $`\mathrm{HC}_0 = 1`, which matters only for empty $`I`” (page 69). `cor_clauses_hc` is not used by the five theorems.
 *
   * {bpref "thm_allfields"}[Theorem M.3]
   * 61
   * {InlineLean.name}`Paper.thm_allfields`
   * matches
-  * yes: M S
+  * yes: M S R
   * {ref "chapter-assembly"}[All fields and approximate computation]. The Lean proof takes $`c = 1/1600^2`. Both families use the general forms of the flat and contracting bounds.
 *
   * {bpref "cor_allclasses"}[Corollary M.4]
@@ -821,7 +822,7 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Paper.thm_allfields_exceeds`
   * A bound $`2^{c(\log m)^2/\log\log m}` for all large $`m`, for any $`c > 0`, implies the bound $`2^{(\log m)^{4/3}/1600^2}` for all large $`m`: why the absolute constant is that of the flat case.
-  * M S A C
+  * all five
   * {bpref "thm_allfields_exceeds"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Paper.thm_main_calculation`
@@ -831,7 +832,7 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Paper.exists_closed`
   * For $`p` zero or prime, an algebraically closed field of characteristic $`p` in the lowest universe.
-  * M S A C
+  * all five
   * {bpref "lem_transfer"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Paper.gridComplete_perm`
@@ -841,7 +842,7 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Paper.gridComplete_hc`
   * $`(\mathrm{HC}_m)` is complete for grid sums over every field (factor 40).
-  * M S A C
+  * all five
   * {bpref "gridComplete"}[its node] in {ref "chapter-completeness"}[Completeness gadgets]
 *
   * {InlineLean.name}`Paper.clauses_of_complete`
@@ -851,7 +852,7 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Paper.fkl_complete`
   * Lemma E.3 for every family that is complete for grid sums, as a substitution into $`G_M`.
-  * M S A C
+  * all five
   * {bpref "fkl_complete"}[its node] in {ref "chapter-completeness"}[Completeness gadgets]
 *
   * {InlineLean.name}`Paper.prop_flat_lower_sum`
@@ -861,7 +862,7 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Paper.flat_rate_complete`
   * Theorem E.11 for every family that is complete for grid sums, with a threshold that depends on the factor only.
-  * M S
+  * M S R
   * {bpref "flat_rate_complete"}[its node] in {ref "chapter-flat"}[The flat case]
 *
   * {InlineLean.name}`Paper.flat_rate_approximating`

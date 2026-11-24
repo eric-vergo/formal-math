@@ -190,12 +190,11 @@ They are comments. This blueprint quotes Lean statements, not docstrings, as wha
 
 Section Q.3 (page 66): “The theorems of `Solution` are proved through them, with these
 exceptions, which are not on that route: Theorem L.2, Corollary L.3, the qualitative bound in the
-flat case (Proposition E.5 and Theorem E.6) and the definitions.” These are proved in Lean, but
-the five theorems do not depend on them. For this build that was confirmed from the constants on
-which the five theorems depend: of the Lean theorems that Table 3 names first for a numbered
-statement other than a definition, exactly those of the four statements just listed are not
-among them. Several of the theorems that Table 3 names second are not among them either
-({ref "chapter-table3"}[The paper's statements and their Lean names] lists them). The Lean route
+flat case (Proposition E.5 and Theorem E.6) and the definitions.” The four named results have Lean proofs outside all five export closures.
+The cleanup also takes the general versions of Corollary E.2, Lemma E.3, Theorem E.11 and
+Theorem K.7 directly for each family. Their permanent specializations remain available to
+read beside the paper. {ref "chapter-table3"}[The paper's statements and their Lean names]
+gives the route for every row. The Lean route
 also differs from the printed references at the places listed under “Routes of proof” (page 70);
 for example Theorem N.5 “does not cite Lemma K.3, Theorem K.7 and Theorem M.3”.
 
