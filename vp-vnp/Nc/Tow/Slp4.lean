@@ -26,12 +26,7 @@ theorem rkU_sum (u : Un R FL Pl U0 U1) : rkU R FL Pl lhat n o u =
     ∑ v ∈ univ.filter (fun v : Un R FL Pl U0 U1 => tgU R FL Pl v = tgU R FL Pl u ∧ ix R FL Pl v < ix R FL Pl u),
       ind (fun _ : Unit => AlU R FL Pl lhat n o v) () := by
   classical
-  have h1 : ∀ v, ind (fun _ : Unit => AlU R FL Pl lhat n o v) () = if AlU R FL Pl lhat n o v then 1 else 0 := by
-    intro v
-    by_cases hv : AlU R FL Pl lhat n o v
-    · rw [ite_eq_left hv, ind_true (P := fun _ : Unit => AlU R FL Pl lhat n o v) hv]
-    · rw [ite_eq_right hv, ind_false (P := fun _ : Unit => AlU R FL Pl lhat n o v) hv]
-  rw [Finset.sum_congr rfl fun v _ => h1 v, ← Finset.card_filter, Finset.filter_filter]
+  simp only [ind, ← Finset.card_filter, Finset.filter_filter]
   unfold rkU rk
   congr 1
   ext v
@@ -164,11 +159,7 @@ theorem cy_rk (hal : ∀ u, ind (fun x => AlU R FL Pl lhat (nI x) (oI x) u) ∈ 
     intro x
     rw [rkU_sum]
     refine Finset.sum_congr rfl fun v _ => ?_
-    by_cases hv : AlU R FL Pl lhat (nI x) (oI x) v
-    · rw [ind_true (P := fun x => AlU R FL Pl lhat (nI x) (oI x) v) hv,
-        ind_true (P := fun _ : Unit => AlU R FL Pl lhat (nI x) (oI x) v) hv]
-    · rw [ind_false (P := fun x => AlU R FL Pl lhat (nI x) (oI x) v) hv,
-        ind_false (P := fun _ : Unit => AlU R FL Pl lhat (nI x) (oI x) v) hv]
+    exact ind_eq Iff.rfl
   refine CY.congr ?_ fun x => (e x).symm
   refine CY.sum hA _ ((card_filter_le _ _).trans hB2.un) (fun v _ => CY.base (hal v) hY) fun x => hA.lt_of_le ?_
   refine (Finset.sum_le_card_nsmul _ _ 1 fun v _ => ind_le _ _).trans ?_
@@ -267,16 +258,14 @@ theorem units_stage (hS : SY inp Y p c H) (ha : After (nX nI) (oX oI) lhat H) :
       have e : ∀ x, (consM R FL Pl lhat (nI x) (oI x) z).card =
           ∑ u ∈ univ, ind (fun x => u ∈ consM R FL Pl lhat (nI x) (oI x) z) x := by
         intro x
-        have h1 : ∀ u, ind (fun x => u ∈ consM R FL Pl lhat (nI x) (oI x) z) x =
-            if u ∈ consM R FL Pl lhat (nI x) (oI x) z then 1 else 0 := by
-          intro u
-          by_cases hu : u ∈ consM R FL Pl lhat (nI x) (oI x) z
-          · rw [ite_eq_left hu, ind_true (P := fun x => u ∈ consM R FL Pl lhat (nI x) (oI x) z) hu]
-          · rw [ite_eq_right hu, ind_false (P := fun x => u ∈ consM R FL Pl lhat (nI x) (oI x) z) hu]
-        rw [Finset.sum_congr rfl fun u _ => h1 u, ← Finset.card_filter]
+        let S := consM R FL Pl lhat (nI x) (oI x) z
+        have hind (u) : ind (fun y => u ∈ consM R FL Pl lhat (nI y) (oI y) z) x =
+            if u ∈ S then 1 else 0 := by
+          simp [ind, S]
+        rw [Finset.sum_congr rfl fun u _ => hind u, ← Finset.card_filter]
         congr 1
         ext u
-        simp
+        simp [S]
       refine CY.congr ?_ fun x => (e x).symm
       refine CY.sum hA univ hB2.un (fun u _ => CY.base (c3 z u) hY) fun x => hA.lt_of_le ?_
       refine (Finset.sum_le_card_nsmul _ _ 1 fun v _ => ind_le _ _).trans ?_
