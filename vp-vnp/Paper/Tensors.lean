@@ -207,25 +207,19 @@ theorem lem_exponents_tree {A E : Type} [Fintype A] [DecidableEq A] [Nonempty A]
     (π : A → I) (a b : E → A) (hconn : ∀ f : A → Fin q, (∀ e, f (a e) = f (b e)) → ∀ p p', f p = f p') :
     Restr (Ten.push π (Ten.unit K A q)) (Ten.prod fun e => Ten.wire K q (π (a e)) (π (b e))) := by
   classical
-  have key := Restr.of_edges π (ξ := fun o : Option A => o.elim (π (Classical.arbitrary A)) π) (Ten.unit K A q)
-    (fun _ : E => Fin q) (fun e => some (a e)) (fun e => some (b e))
-    (fun o x l => o.elim 1 fun p => ∏ e, if a e = p ∨ b e = p then (if l e = x p then (1 : K) else 0) else 1)
+  have key := Restr.of_edges π π (Ten.unit K A q)
+    (fun _ : E => Fin q) a b
+    (fun p x l => ∏ e, if a e = p ∨ b e = p then (if l e = x p then (1 : K) else 0) else 1)
     (by
-      rintro (_ | p) x x' l l' hx hl
-      · rfl
-      · refine Finset.prod_congr rfl fun e _ => ?_
-        by_cases he : a e = p ∨ b e = p
-        · have h2 : l e = l' e := hl e (he.imp (congrArg some) (congrArg some))
-          have h3 : x p = x' p := hx p rfl
-          rw [if_pos he, if_pos he, h2, h3]
-        · rw [if_neg he, if_neg he])
+      intro p x x' l l' hx hl
+      refine Finset.prod_congr rfl fun e _ => ?_
+      by_cases he : a e = p ∨ b e = p
+      · rw [if_pos he, if_pos he, hl e he, hx p rfl]
+      · rw [if_neg he, if_neg he])
     (by
       intro x
       refine Eq.trans ?_ (Fintype.sum_eq_single (fun e => (x (a e) : Fin q)) ?_).symm
-      · rw [Fintype.prod_option]
-        show _ = 1 * _
-        rw [one_mul]
-        by_cases h : ∀ i j, x i = x j
+      · by_cases h : ∀ i j, x i = x j
         · rw [Ten.unit_val_of h]
           refine (Finset.prod_eq_one fun p _ => Finset.prod_eq_one fun e _ => ?_).symm
           exact (ite_eq_right_iff.2 fun _ => if_pos (h (a e) p))
@@ -238,9 +232,9 @@ theorem lem_exponents_tree {A E : Type} [Fintype A] [DecidableEq A] [Nonempty A]
           exact (if_pos (Or.inr rfl)).trans (if_neg he)
       · intro l hl
         obtain ⟨e, he⟩ := Function.ne_iff.1 hl
-        refine Finset.prod_eq_zero (Finset.mem_univ (some (a e))) (Finset.prod_eq_zero (Finset.mem_univ e) ?_)
+        refine Finset.prod_eq_zero (Finset.mem_univ (a e)) (Finset.prod_eq_zero (Finset.mem_univ e) ?_)
         exact (if_pos (Or.inl rfl)).trans (if_neg he))
-  simpa only [Fintype.card_fin, Option.elim_some] using key
+  simpa only [Fintype.card_fin] using key
 
 /-- The consequence of lem_exponents_tree in exponents: g_φ(P) ≤ ∑ d_φ(e) over the edges. -/
 theorem lem_exponents_tree_le [Nonempty I] (φ : Spec K I) {A E : Type} [Fintype A] [DecidableEq A] [Nonempty A]
