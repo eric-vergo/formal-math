@@ -610,6 +610,11 @@ $`\gamma = 1/\log_2 b`. Here `AA` is the number of given nodes. Everything that 
 about networks is in {bpref "thin_trees"}[the fields of that structure], which the next node
 reads one by one.
 
+The proof follows the same objects through four modules. `Paper.Tree.Network` defines network
+value and the fields of `ThinTrees`. `Paper.Tree.Construction` builds the parent map and its
+straight-line program. `Paper.Tree.Bounds` bounds the packets at each node and the cost of
+computing the tree. `Paper.Tree` chooses the tower parameters and assembles these results.
+
 What the Lean statement does not have of the printed hypotheses: the condition “no packet from a
 node to itself” is dropped (such packets are allowed and stay), and “at most $`N` packets at each
 node” is a hypothesis of the individual fields, in the form $`\sum_c (n_{a,c} + n_{c,a}) \le N`
