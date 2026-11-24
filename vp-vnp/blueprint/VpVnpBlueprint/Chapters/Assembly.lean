@@ -69,7 +69,7 @@ $`\sum_\sigma \prod_i x_{\sigma(i), i}` over `ℝ`; the displayed equality is
 theorem {bpref "Solution.permanent_over_real"}[] is `Paper.thm_main` itself.
 :::
 
-:::proof "thm_main"
+:::proof "thm_main" (uses := "thm_main_calculation")
 *The paper's proof* (page 60), quoted: “By Theorem D.2 we are in the flat case or in the
 contracting case. In the flat case Theorem E.11 gives the bound $`2^{c''(\log m)^{4/3}}` for all
 large $`m`, with an explicit constant $`c'' > 0`. In the contracting case Theorem K.7 gives the
@@ -120,10 +120,18 @@ the flat case, and {bpref "thm_contracting"}[`thm_contracting`] with `thm_main_c
 contracting case. It does not use `thm_main`.
 :::
 
-:::corollary "cor_classes" (lean := "Paper.cor_classes, Paper.vp_subset_vnp") (parent := "part-assembly")
+::::lemma_ "vp_subset_vnp" (lean := "Paper.vp_subset_vnp") (parent := "part-assembly")
+*A sentence of the proof of Corollary L.3* (page 60), quoted: “The inclusion
+$`\mathrm{VP} \subseteq \mathrm{VNP}` is the case $`r(n) = 0` of the definition.”
+
+`Paper.vp_subset_vnp` is the inclusion over every commutative semiring, in every universe. It is
+used by Corollary L.3 and, independently, by {bpref "cor_allclasses"}[Corollary M.4].
+::::
+
+:::corollary "cor_classes" (lean := "Paper.cor_classes") (parent := "part-assembly")
 *Corollary L.3 of the paper* (page 59), quoted: “Over $`\mathbb{R}`, VP is a proper subset of VNP.”
 
-`Paper.vp_subset_vnp` is the inclusion over every commutative semiring, in every universe.
+The inclusion is {bpref "vp_subset_vnp"}[`Paper.vp_subset_vnp`].
 :::
 
 :::proof "cor_classes"
@@ -187,7 +195,22 @@ along `ψ`. The polynomial computed is unchanged because it has integer coeffici
 only one ring homomorphism from `ℤ` to a ring. The number of gates is the same at every step.
 :::
 
-:::theorem "thm_allfields" (lean := "Paper.thm_allfields, Paper.thm_allfields_exceeds, Paper.beyond_of_rate, Paper.flat_rate_hc, Paper.contracting_hc") (parent := "part-assembly")
+::::lemma_ "thm_allfields_exceeds" (lean := "Paper.thm_allfields_exceeds, Paper.beyond_of_rate") (parent := "part-assembly")
+*A sentence of the proof of Theorem M.3* (page 61), quoted: “the bound of Theorem K.7 in the
+contracting case, although its constant depends on $`p`, exceeds that of the flat case for all
+large $`m`, as in the proof of Theorem L.1”.
+
+`Paper.thm_allfields_exceeds` is stated for an arbitrary predicate $`P(m, s)`: if there are
+$`c' > 0` and $`m_1` with $`2^{c'(\log m)^2/\log\log m} < s` whenever $`m \geq m_1` and
+$`P(m, s)`, then there is $`m_0` with $`2^{(\log m)^{4/3}/1600^2} < s` whenever $`m \geq m_0` and
+$`P(m, s)`. Its proof is {bpref "thm_main_calculation"}[`thm_main_calculation`] with
+$`C = 1/(c' \cdot 1600^2)`. `Paper.beyond_of_rate` rewrites $`2^{(\log m)^{4/3}/1600^2} < s` as
+$`m^{(1/1600^2)(\log m)^{1/3}} < s` for $`m \geq 2`. Both are used by Theorem M.3 and, separately,
+by {bpref "thm_approx"}[Theorem N.5], which Section Q.3 (page 70) says “uses the step
+`thm_allfields_exceeds`” and not Theorem M.3.
+::::
+
+:::theorem "thm_allfields" (lean := "Paper.thm_allfields, Paper.flat_rate_hc, Paper.contracting_hc") (parent := "part-assembly")
 *Theorem M.3 of the paper* (lower bound over all fields; page 61; the same text as Theorem 1.1,
 page 2), quoted: “There is an absolute constant $`c > 0` such that for every $`p`, zero or prime,
 there is $`m_0` with the following property. Over every field of characteristic $`p` and for every
@@ -222,7 +245,7 @@ the parameters.”
    ({bpref "flat_rate_complete"}[`flat_rate_complete`]) with factor 40
    ({bpref "gridComplete"}[`gridComplete_hc`]). In the contracting case
    `contracting_hc` gives $`2^{c'(\log m)^2/\log\log m} < s` with some $`c' > 0`, and
-   `thm_allfields_exceeds` converts this into the *same* bound $`2^{(\log m)^{4/3}/1600^2} < s` for
+   {bpref "thm_allfields_exceeds"}[`thm_allfields_exceeds`] converts this into the *same* bound $`2^{(\log m)^{4/3}/1600^2} < s` for
    all large $`m`: by `thm_main_calculation` with $`C = 1/(c' \cdot 1600^2)`,
    $`(\log m)^{4/3}/1600^2 \leq c'(\log m)^2/\log\log m` eventually. So in both cases the bound over
    `K` has the constant $`1/1600^2`, and only the threshold $`M_1` depends on the case and on $`c'`.
@@ -255,7 +278,16 @@ reduction that makes the constant uniform over the fields of one characteristic 
 makes the theorem hold in every universe.
 :::
 
-:::corollary "cor_allclasses" (lean := "Paper.cor_allclasses, Paper.exists_beyond_poly") (parent := "part-assembly")
+::::lemma_ "exists_beyond_poly" (lean := "Paper.exists_beyond_poly") (parent := "part-assembly")
+*A calculation used for Corollary M.4 and for the second sentence of Theorem N.5* (pages 62 and
+64; the paper does not print it).
+
+`Paper.exists_beyond_poly`: for every $`c > 0`, $`m_0` and $`C` there is $`m \geq m_0` at which
+$`m^{c(\log m)^{1/3}} < m^C + C` fails. Corollary M.4 and Theorem N.5 each apply it to their own
+lower bound; neither uses the other.
+::::
+
+:::corollary "cor_allclasses" (lean := "Paper.cor_allclasses") (parent := "part-assembly")
 *Corollary M.4 of the paper* (page 62; the same text as Corollary 1.2, page 2), quoted: “Over every
 field, VP is a proper subset of VNP.”
 
@@ -272,7 +304,7 @@ cycle, with vertex 1 at place 1. By Theorem M.3 it is not in VP.”
 {bpref "hc_mem_VNP"}[`Paper.hc_mem_VNP`] puts $`(\mathrm{HC}_n)` in VNP, with $`r(n) = n^2`
 summation variables and the bound $`n^{700} + 700`. If
 it were in VP with exponent $`C`, then for the characteristic $`p` of `F` and the $`m_0` of
-`thm_allfields`, `exists_beyond_poly` gives some $`m \geq m_0` at which
+`thm_allfields`, {bpref "exists_beyond_poly"}[`exists_beyond_poly`] gives some $`m \geq m_0` at which
 $`m^{c(\log m)^{1/3}} < m^C + C` fails, against the lower bound applied to the circuit with
 $`m^C + C` gates. The witness of the separation is thus the Hamiltonian cycle polynomial over
 every field, also where the permanent would do.

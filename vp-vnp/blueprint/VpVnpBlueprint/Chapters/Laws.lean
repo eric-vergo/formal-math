@@ -48,15 +48,19 @@ main result, rests on Lean at these points.” For Theorem H.2(d) and (e) this c
 describes, from the Lean code, what the construction is and how the Lean proof is organised (the
 section {ref "laws-lean-construction"}[The Lean construction behind Theorem H.2]). About Proposition
 H.1 and parts (a) to (c) of Theorem H.2 the sentence quoted from page 17 says nothing: they are
-neither among the proofs meant to be complete nor among those flagged. For them this chapter gives
-what the printed proof gives and what the Lean statement gives, and makes no claim about the
-completeness of the printed argument.
+neither among the proofs meant to be complete nor among the four flagged there. Proposition H.1
+has a formalization note of its own (page 44), on the exponent of part (d) only. For these
+statements this chapter gives what the printed proof gives and what the Lean statement gives, and
+makes no claim about the completeness of the printed argument.
 
 The Lean statements of this chapter differ from the printed ones in several ways, and all the
-differences recorded here are listed by the paper in Section Q.3 (pages 68–70). Definition G.1 is a
-Lean structure, `Nc.G.Law`; the clauses of Theorem H.2 are the fields of a Lean structure,
-`Paper.ThinTrees`; Proposition H.1(d) is stated with the exponent $`7` that Lean proves, where the
-printed argument gives $`3`; and Theorem H.2 takes the laws as a hypothesis. The Lean development
+differences of statement recorded here are listed by the paper in Section Q.3 (pages 68–70).
+Definition G.1 is a Lean structure, `Nc.G.Law`; the clauses of Theorem H.2 are the fields of a
+Lean structure, `Paper.ThinTrees`; and Theorem H.2 takes the laws as a hypothesis. Proposition
+H.1(d) is not a difference of statement: the printed statement already carries the exponent
+$`7` of the Lean theorem (“the proof gives the exponent $`3`; we state $`7` as in the formal
+development”, page 44), and the difference is between the printed proof, which gives $`3`, and
+the Lean proof, which gives $`7`. The Lean development
 says _unit_ for a packet, _table_ for a node tensor, _near pair_ for an edge of the Cayley graph of
 $`U_h`, _chamber_ for an element of a set $`V_j` of the tower and _vertex_ of type $`i` for a coset
 of type $`i` (Section Q.3, pages 66 and 68, for the first three; the last two are the words of the
@@ -227,7 +231,7 @@ $`x_j g` (`Nc.Tower.FU_iff`). This blueprint read that definition and that lemma
 find a theorem that states the conclusion either.
 :::
 
-:::proof "thm_laws"
+:::proof "thm_laws" (uses := "thm_duality, lem_exponents_parts")
 *The paper's proof* (page 43), summarised. “We apply the duality theorem to an inequality between
 spectral points that follows from the Poincaré inequality, and read the resulting cover as a law.”
 
@@ -510,7 +514,17 @@ tables `partyTab`. `thm_tree_move` is the same for one move, and it rests on the
 kinds of laws to which it is applied.
 :::
 
-:::lemma_ "thm_tree_good" (lean := "Paper.thm_tree_good, Paper.goodBound") (parent := "part-contracting")
+::::definition "good_bound" (lean := "Paper.goodBound") (parent := "part-contracting")
+*The integer of the test for good outcomes* (page 48), quoted from the proof of Theorem H.2:
+“testing whether an outcome is good, amounts to comparing integers of that size, because $`C_0'`
+is an integer”.
+
+`Paper.goodBound C₁ a₁` is the natural number $`\lfloor 2C_1a_1^2 \rfloor`. It is the parameter
+$`G_1` of {bpref "thin_trees"}[`ThinTrees`] in {bpref "thm_tree"}[Theorem H.2] and of `PieceCut`
+in Proposition J.2.
+::::
+
+:::lemma_ "thm_tree_good" (lean := "Paper.thm_tree_good") (uses := "thin_trees") (parent := "part-contracting")
 *Good outcomes* (page 45), quoted: “We call an outcome of a law move with the number $`t` _good_
 if $`\|o\|_* \le \sqrt{C_1}\, a_1 t` and $`o_e \ge t` for all channels $`e`.”
 
@@ -603,6 +617,18 @@ for every given node $`a`. The constant $`C` depends on $`h` and on the laws, as
 where “all constants below depend only on these choices” (page 43).
 :::
 
+::::definition "def_slp" (lean := "Unc.SlpN, Nc.Cut.IsSlpStep") (parent := "part-contracting")
+*Straight-line programs* (Theorem H.2(d), page 46), quoted: “A step is an input, a constant, or an
+arbitrary function of two earlier results, given by its table (a _binary operation_).”
+
+*Reading (gloss).* `IsSlpStep inp fn k` says that the function `fn k` from the inputs to `Fin D`
+is an input coordinate, a constant, or $`\varphi(\mathtt{fn}\ i, \mathtt{fn}\ j)` for some
+$`i, j < k` and an arbitrary $`\varphi :` `Fin D → Fin D → Fin D`. `SlpN inp p H` says that there
+is a sequence `fn` whose first `p` members are such steps and such that every function in the
+set `H`, with values in $`\mathbb{N}`, is at every input the value of one of them. It asserts
+that a program exists; no program is given as an object.
+::::
+
 :::definition "thin_trees" (lean := "Paper.ThinTrees") (parent := "part-contracting")
 *The structure that carries the clauses of Theorem H.2.* The paper has no counterpart of this
 definition; it is the Lean form of the words “networks with the following properties” of the
@@ -679,7 +705,7 @@ $`(MN)^C`; `inp` gives each $`n_{a,c}` and each $`o_\nu` as an element of `Fin D
 `SlpN inp steps H` holds; and `H` contains, for all nodes `p`, `q`, packet names `u`, slots `z` and moves `y`:
 the indicator of `par n o p = q`; the indicator of `u ∈ plan.cur n o E`; the indicator of
 `u ∈ plan.cons n o z`; the number `plan.num n o y`; the number `up n o p`; and the indicator of
-`plan.good n o y`. `SlpN inp steps H` ({bpref "tree_computed"}[shown below]) says that there is a
+`plan.good n o y`. `SlpN inp steps H` ({bpref "def_slp"}[defined above]) says that there is a
 sequence of functions from the inputs to `Fin D`, each of whose first `steps` members is an input,
 a constant, or $`\varphi(f_i, f_j)` for two earlier members and an arbitrary
 $`\varphi :` `Fin D → Fin D → Fin D`, such that every function in `H` is, at every input, the
@@ -700,7 +726,7 @@ and it counts for every move at $`p`, with the number $`t`, also $`t` times one 
 its slots at $`p`, which covers the zeros in slots.”
 :::
 
-:::proof "thm_tree"
+:::proof "thm_tree" (uses := "thin_trees, tree_towers")
 *The paper's proof* (pages 46–48), summarised; the formalization note quoted above applies to its
 last part.
 
@@ -912,7 +938,7 @@ leave copies, the count differs in its details from the printed one, in which a 
 copy of the old packet”.
 :::
 
-:::lemma_ "tree_computed" (lean := "Paper.tree_computed, Paper.tree_slp, Unc.SlpN, Nc.Cut.IsSlpStep") (parent := "part-contracting")
+:::lemma_ "tree_computed" (lean := "Paper.tree_computed, Paper.tree_slp") (parent := "part-contracting")
 *An unnumbered step of the proof of Theorem H.2(d): the program* (gloss). `tree_computed` is the
 field `computed` for the tower plan, with the explicit sizes `D` $`= (20 V^9)^4` and
 `steps` $`\le 3\,(20 V^9)^{16}`, for a number $`V` that bounds the parameters of the tower, of the
@@ -977,8 +1003,10 @@ $`h`.
 
 *Proposition H.1.* The printed proof is a sketch of one paragraph for each part. For (a) to (c)
 the Lean statement expresses the printed one through representatives and freeness; for (d) Lean
-proves the exponent $`7`, and the exponent $`3` rests on the printed sketch alone. The paper
-neither counts this proof among those meant to be complete nor flags it.
+proves the exponent $`7`, which is also the exponent of the printed statement, and the exponent
+$`3` rests on the printed sketch alone, as the formalization note after the proof says (page 44).
+The paper does not count this proof among those meant to be complete, and it is not one of the
+four that page 17 flags.
 
 *Theorem H.2(a) to (c).* The printed proof gives the construction and the recursion for the
 loads, with constants absorbed in $`O(\cdot)` and in $`\Lambda`; the paper neither counts it among

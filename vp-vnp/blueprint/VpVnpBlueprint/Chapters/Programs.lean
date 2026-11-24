@@ -54,6 +54,8 @@ paper's, and no tool has checked them against the Lean code.* Each says which de
 opened and which were not. Of the other statements of this chapter the paper claims neither that
 the printed proof is complete nor that it is not: its list of proofs that “are meant to be
 complete, if terse” (page 17) is Sections A to G, Appendix O and the deduction of Theorem L.1.
+Proposition J.2 has a formalization note of its own (page 52, quoted at the proposition): its last
+claim rests on Theorem H.2(d) and (e).
 For those statements the Lean statement beside each node is what is proved, and the printed proof
 is summarised as the paper's.
 
@@ -127,7 +129,7 @@ none);
 the list is unique (`NS1.Ev.unique`).
 :::
 
-:::definition "def_plain" (lean := "NS1.Plain, NS1.pv, NS1.pval, NS1.lg") (parent := "part-contracting")
+:::definition "def_plain" (lean := "NS1.Plain, NS1.pv, NS1.pval") (parent := "part-contracting")
 *Definition of Section I.1 of the paper* (plain instances and their sums; page 49; unnumbered),
 quoted: “An instance $`z` is $`\tau`-plain if all its runs halt and every accepting run has an
 empty tally and costs at most $`\tau`. The sum $`\mathrm{sum}(z) \in A` of an instance is the sum of
@@ -137,6 +139,13 @@ argument, and the tree nil, of size 1, also counts as one, with program and argu
 *Reading (gloss).* In Lean every tree `z` is an instance: its program is `Fm.ofTree z.hd` and its
 argument is `z.tl`, where `hd` and `tl` of nil are nil. `Plain θ τ z` and `pv θ z` are the two
 notions of the definition; `pv θ z` is defined for every `z` and is $`0` when not all runs halt.
+:::
+
+:::definition "def_lg" (lean := "NS1.lg") (parent := "part-contracting")
+*Notation of the paper* (page 17), quoted: “for an integer $`n \geq 1` we let
+$`\lg n = \lfloor \log n \rfloor + 1` be the number of its binary digits.”
+
+`NS1.lg n` is `Nat.log 2 n + 1`, for every natural number $`n`; so `lg 0 = 1`.
 :::
 
 The paper adds (page 49): “Any machine model with a self-interpreter of constant overhead should
@@ -192,7 +201,7 @@ symbols of the word of an instance are different is a separate theorem (`univers
 That theorem needs $`A` to be nonzero.
 :::
 
-:::proof "prop_universal"
+:::proof "prop_universal" (uses := "prop_universal_series")
 *The paper's proof* (pages 49–50), summarised. “A pointer machine evaluates the program, and a tape
 automaton simulates it by guessing what every load returns and checking the guesses at the end.”
 The pointer machine has a finite control and a fixed number of registers holding addresses; in one
@@ -562,7 +571,7 @@ bounds of Theorems J.3 and J.4 are rounded down in Lean.” The hypothesis on th
 sum of products of named generators.
 :::
 
-:::proof "thm_onecut"
+:::proof "thm_onecut" (uses := "thm_onecut_evaluator, thm_onecut_program")
 *The paper's proof* (pages 53–54), summarised. Let $`K, a` be as in Proposition J.2 for the
 universal automaton and $`T = \lceil \tau\Lambda/K \rceil`. For a $`\tau`-plain $`z` with
 $`|z| \leq s \leq \tau`, $`KT` exceeds the bound of Proposition I.1, so $`\mathrm{sum}(z)` is the

@@ -271,7 +271,7 @@ Both need only that `θ` has finite support, through Proposition I.1, and no cut
 the Lean proof $`B_0 = 9(H + 2) + 1` and $`C = H + 35`.
 :::
 
-:::proof "lem_circuit"
+:::proof "lem_circuit" (uses := "lem_circuit_universal, lem_circuit_program")
 *The paper's proof* (page 57), summarised. Let $`n = v^{H-32} + 1`. “Let $`\Phi` be the sum, over
 all words $`w` of fewer than $`n` symbols, of the value of the universal automaton on $`w` in
 $`t = v^{H+1}` steps times the product of the variables that are 1 at the indicator assignment of
@@ -413,7 +413,7 @@ Proposition N.4, and $`H = 16h` with $`h \geq 17`, and `scales_setting` and
 case.”
 :::
 
-:::proof "prop_next"
+:::proof "prop_next" (uses := "prop_next_round")
 *The paper's proof* (page 58), summarised. “We speed up the universal program `run` in rounds, each
 of which lowers the exponent of $`v` in the running time by 8.” Let $`J = (H\alpha + 1)\lg v` and
 let $`X` bound $`J`, the lengths of the names and all exponent bounds; every fixed power of $`X` is
@@ -462,9 +462,10 @@ identity in its proof is the chain: value of `stepF` $`= \sum_e \lambda^e \sum_{
 \mathrm{weight} \prod_y (\text{value of } D \text{ on } y)` (`NS1.stepF_ev`) $`= \sum_e \lambda^e
 \sum_{\text{runs of } G} \mathrm{weight} \prod_y \mathrm{sum}(y)` (property (ii) of `D`, the pieces
 being plain by `CutProg.val`) $`= \sum_e \lambda^e\,\mathrm{sum}(z_e)` (`CutProg.val`) $`=` value
-of `p` (Lemma K.4) $`= \mathrm{sum}(z)`. With $`\tau' \approx X\tau` the time is about
-$`\tau X (u^{-24} + u^{-14})`, which is where a round gains the factor $`u^8` of the paper with
-room to spare.
+of `p` (Lemma K.4) $`= \mathrm{sum}(z)`. With $`\tau' \approx X\tau` the second and third terms
+of the time are about $`\tau X (u^{-24} + u^{-14})`, which is where a round gains the factor
+$`u^8` of the paper with room to spare; this estimate is this blueprint's remark and not a Lean
+statement, the exact numbers being those of `Paper.prop_next_round`.
 
 `Paper.prop_next_round` is the round with the numbers of the proposition: from `IsPre` at scale
 $`u^\alpha` in $`u^{e+8}` steps to `IsAccT` in $`u^e` steps, for
@@ -475,7 +476,7 @@ were read in full.
 
 # K.4. Nonexistence of accelerators
 
-:::theorem "thm_noacc" (lean := "Paper.thm_noacc, Paper.scales_setting") (parent := "part-contracting")
+:::theorem "thm_noacc" (lean := "Paper.thm_noacc") (parent := "part-contracting")
 *Theorem K.6 of the paper* (nonexistence of small accelerators; page 58), quoted: “There are $`C`
 and $`v_1` such that for all integers $`a \geq 0` and $`v \geq v_1` with $`(\lg v)^{Ca} \leq v` no
 nonzero commutative $`A`-algebra has an accelerator of size $`v^a` at scale $`v`.”
@@ -483,14 +484,12 @@ nonzero commutative $`A`-algebra has an accelerator of size $`v^a` at scale $`v`
 The Lean statement is for any commutative ring `A` that is finitely generated as a ring
 (`Algebra.FiniteType ℤ A`), a table `θ`, $`h \geq 17` and the hypothesis `CutHyp θ (16 * h) C₀ v₀`;
 “nonzero” is `Nontrivial R`, and the algebras `R` are in the lowest universe. See the quotation
-from Section Q.3 under {bpref "prop_next"}[Proposition K.5]. `Paper.scales_setting`, shown with
-this node, is the instance that the quotation names: in the contracting case, the ring $`A`, the
-table `θ` and $`H = 16h` of `Paper.exists_setting` ({bpref "thm_cut"}[Theorem J.4]) together with
-the conclusions of Proposition K.5 and of this theorem for them. The proof of
-{bpref "thm_contracting"}[Theorem K.7] takes the theorem in this form.
+from Section Q.3 under {bpref "prop_next"}[Proposition K.5]. The proof of
+{bpref "thm_contracting"}[Theorem K.7] takes the theorem in the form of
+{bpref "scales_setting"}[its instance in the contracting case].
 :::
 
-:::proof "thm_noacc"
+:::proof "thm_noacc" (uses := "thm_noacc_finite_field, thm_noacc_periodic, thm_noacc_all_scales, thm_noacc_diagonal")
 *The paper's proof* (pages 58–59), summarised. Suppose there is such an accelerator. “As $`A` is
 finitely generated (Theorem G.2), so is the ring that its constants generate over $`A`. Modulo a
 maximal ideal this ring is a field that is finitely generated as a ring, hence a finite field
@@ -589,9 +588,24 @@ has at most $`v` nodes and that $`m_E` is among the quantities bounded by $`X`; 
 $`E` does not occur otherwise.
 :::
 
+# K.4a. The setting of the contracting case
+
+:::lemma_ "scales_setting" (lean := "Paper.scales_setting") (parent := "part-contracting")
+*The first sentence of Appendix K* (page 55), quoted: “We are still in the contracting case, and we
+keep the ring $`A` of Theorem G.2 and the constant $`H` of Theorem J.4, and put $`h_0 = H/16`.”
+
+`Paper.scales_setting` is the instance that Section Q.3 names (page 69, quoted under
+{bpref "prop_next"}[Proposition K.5]): for a field `K` in the lowest universe with `Contracting K`
+there are the subring $`A` of `K`, finitely generated as a ring, the table `θ` with `Generates θ`
+and $`H = 16h`, $`h \geq 17`, of `Paper.exists_setting` ({bpref "thm_cut"}[Theorem J.4]), with
+`CutHyp θ (16 * h) C₀ v₀`, and for them the conclusions of {bpref "prop_next"}[Proposition K.5]
+(for every `k`) and of {bpref "thm_noacc"}[Theorem K.6]. This is the one place where the
+hypothesis-free forms of K.5 and K.6 meet the contracting case.
+:::
+
 # K.5. The lower bound in the contracting case
 
-:::theorem "thm_contracting" (lean := "Paper.thm_contracting, Paper.contracting_complete, Paper.quasi_of_exponents, Paper.exists_scale") (parent := "part-contracting")
+:::theorem "thm_contracting" (lean := "Paper.thm_contracting, Paper.contracting_complete") (parent := "part-contracting")
 *Theorem K.7 of the paper* (lower bound in the contracting case; page 59), quoted: “In the
 contracting case there are $`c > 0` and $`m_0` such that for $`m \geq m_0` every circuit over
 $`\Bbbk` for $`\mathrm{PERM}_m` has more than $`2^{c(\log m)^2/\log\log m}` gates.”
@@ -600,12 +614,12 @@ The Lean statement is this for a field `K` in the lowest universe with `Contract
 $`2 \neq 0`, the hypothesis that the printed statement leaves to the context (Lemma K.3).
 `Paper.contracting_complete` is the form for any family that is complete for grid sums, in terms
 of exponents: there are $`C`, $`M_1` such that for $`M \geq M_1` and every $`a` with
-$`(\lg M)^{Ca} \leq M` no circuit with $`M^a` gates computes $`G_M`. `Paper.quasi_of_exponents`
-converts a statement of that form into the bound $`2^{c(\log m)^2/\log\log m}` with
-$`c = 1/(4(C + 1))`.
+$`(\lg M)^{Ca} \leq M` no circuit with $`M^a` gates computes $`G_M`.
+{bpref "quasi_of_exponents"}[`Paper.quasi_of_exponents`] converts a statement of that form into
+the bound $`2^{c(\log m)^2/\log\log m}` with $`c = 1/(4(C + 1))`.
 :::
 
-:::proof "thm_contracting"
+:::proof "thm_contracting" (uses := "quasi_of_exponents")
 *The paper's proof* (page 59), quoted: “Suppose, for a small $`c > 0` and some large $`m`, that a
 circuit over $`\Bbbk` for $`\mathrm{PERM}_m` has at most $`2^{c(\log m)^2/\log\log m}` gates. Let
 $`v = \lfloor m^{1/B_0} \rfloor`, so that $`m \geq v^{B_0}`, and let $`a` be the least integer such
@@ -621,6 +635,19 @@ $`(\lg v)^{E(2B_0a+1)} \leq v`. `Paper.contracting_complete` applies {bpref "lem
 with $`2B_0a` for $`a` and {bpref "thm_noacc"}[Theorem K.6], in the form `Paper.scales_setting`,
 with $`C_1(2B_0a + 1)` for $`a`, where $`C_1` is the constant of Lemma K.3. The ring $`A` is a
 subring of `K`, so `K` is an $`A`-algebra and is nonzero.
+:::
+
+:::lemma_ "quasi_of_exponents" (lean := "Paper.quasi_of_exponents, Paper.exists_scale") (parent := "part-contracting")
+*Two calculations of the proof of Theorem K.7* (page 59): the choice “$`v = \lfloor m^{1/B_0}
+\rfloor`” of the scale, and the passage from exponents $`a` to the bound
+$`2^{c(\log m)^2/\log\log m}`.
+
+Neither theorem mentions circuits or accelerators. `Paper.quasi_of_exponents` is stated for an
+arbitrary predicate $`P(M, s)` that is monotone in $`s`: if $`P(M, M^a)` fails whenever
+$`M \geq M_1` and $`(\lg M)^{Ca} \leq M`, then $`P(m, s)` implies
+$`2^{c(\log m)^2/\log\log m} < s` for all large $`m`, with $`c = 1/(4(C+1))`.
+`Paper.exists_scale` is described in the proof above. Both are used again, with `Approximates` for
+`Computes`, by {bpref "lem_circuit_approx"}[the approximate forms].
 :::
 
 # N.3. Approximate accelerators in the contracting case
@@ -656,7 +683,7 @@ that for $`v \geq v_1` and $`(\lg v)^{Ca} \leq v` no nonzero commutative $`A`-al
 contracting case (Section Q.3, page 69, quoted under Proposition K.5).
 :::
 
-:::proof "prop_approx_acc"
+:::proof "prop_approx_acc" (uses := "prop_approx_acc_scales, prop_approx_acc_exact")
 *The paper's proof* (pages 63–64), summarised. “We carry the given program to larger scales by the
 rounds of Proposition K.5, keeping the error a multiple of $`\varepsilon`, and at a large scale we
 extract the coefficient of $`\varepsilon^0`.” Let $`\Delta` bound the absolute values of the

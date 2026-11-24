@@ -178,7 +178,7 @@ statement, which asserts only that such numbers exist, follows from it. Later st
 mention $`C(n)` are, in Lean, statements about this particular sequence.
 :::
 
-:::proof "lem_first"
+:::proof "lem_first" (uses := "lem_growth, lem_words")
 *The paper's proof* (pages 38–39), summarised. Induction along the powers of two, which suffices
 because $`U_n` is a quotient of every larger $`U_{n'}` “in such a way that generators go to
 generators or to $`1`”. For $`n = 2^{i+1}`, divide the matrices into four blocks of size $`n/2`. A
@@ -259,7 +259,7 @@ and with $`C(3u)` the number `windowConst μ s (3 * u)` (Section Q.3, page 68, q
 F.3).
 :::
 
-:::proof "lem_tele"
+:::proof "lem_tele" (uses := "lem_first, eq_window")
 *The paper's proof* (pages 39–40), summarised. Take $`p = 0` and pass from the window $`[u, 3u)`
 to $`[0, 3u)` through the windows $`[k, 3u)`: let $`b_k = P_{[k,3u)} a` for $`u \le k < 2u`, so
 that $`|a b_k| \le |a b_u| \le R`. For $`u < k < 2u` every generator of $`[0, 3u)` fixes $`b_k`
@@ -285,7 +285,7 @@ $`|aa'|^2 \le |za|^2 + |za'|^2 + 2c\,|za|\,|za'|`.”
 The Lean statement has the printed form, with $`C(3u)` formed with `kappa` as in Lemma F.4.
 :::
 
-:::proof "lem_angle"
+:::proof "lem_angle" (uses := "lem_tele, lem_toolkit")
 *The paper's proof* (page 40), summarised. Let $`v = P_{[p,p+3u)} a`, $`r = |za|`, $`r' = |za'|`,
 $`\alpha = |av|`, $`\beta = |va'|`, all positive without loss. First step, the angle at the common
 fixed point $`v`: the inequality (F.2), $`\alpha^2 + \beta^2 - 2c\alpha\beta \le |aa'|^2`. For
@@ -324,7 +324,7 @@ proof takes $`C_0 = 32\,C(2u)/(1 - 2c)` with $`c = 1/4`, as printed, with $`C(n)
 `kappa`.
 :::
 
-:::proof "thm_poincare"
+:::proof "thm_poincare" (uses := "lem_first, thm_poincare_action")
 *The paper's proof* (pages 40–41), summarised. Since $`C(n) = o(n^2)`, there is $`u \ge 2` with
 $`4C(3u) \le (u-1)^2/32^2`; fix it and put $`\zeta = 1/32`, $`c = 1/4`. By Proposition C.3 the
 price is pulled back from the metric of a price space $`Y` along a map $`f : U_h \to Y`. Let $`Z`
@@ -360,7 +360,7 @@ In Lean the steps are the theorems `Paper.thm_poincare_size` (the choice of $`u`
 statement for an arbitrary action that follows.
 :::
 
-:::theorem "thm_poincare_action" (lean := "Paper.thm_poincare_action") (parent := "part-contracting")
+:::theorem "thm_poincare_action" (lean := "Paper.thm_poincare_action") (uses := "lem_angle, lem_first, lem_toolkit") (parent := "part-contracting")
 *An unnumbered step of the proof of Theorem F.6* (page 41): the inequality for an arbitrary action.
 *Reading (gloss).* For every action of $`U_h`, $`h = lu`, $`l \ge 2`, by isometries on a complete
 CAT(0) space $`Z` all of whose length functions $`g \mapsto |z, gz|` contract, for every
