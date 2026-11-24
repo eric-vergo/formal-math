@@ -79,6 +79,15 @@ theorem inpA (σ : St supp) (r : Ra) (h : r ≠ .pr0) (h' : r ≠ .pr1) (p q s :
   rw [inp_nx, rdA r h h']
   rfl
 
+/-- A cons cell advances the opcode counter while another digit is available. -/
+private theorem opcode_step {σ : St supp} {j : ℕ} {hj : j < 11} (hσ : OKs σ)
+    (hm : σ.mode = .D ⟨j, hj⟩) (hj' : j < 10) {p q s : ℕ}
+    (hrec : ((.C, ![σ.regs (laM σ.mode), p, q, s]) : Rec Kd) ∈ σ.heap)
+    {S : A} {B : ℤ} (h : Mach.SumTo (UM θ supp) (nx θ σ (.inl (.dc ⟨j, hj'⟩)) p q s) S B) :
+    Mach.SumTo (UM θ supp) σ S (B + 1) :=
+  sumTo_ruleA hσ hrec (.dc ⟨j, hj'⟩) (by rw [hm]; exact dite_eq_left hj')
+    (by rw [hm]; simp) (by simp) (by rw [hm]; rfl) rfl h
+
 /-- Reading the number of an opcode. -/
 theorem dchain {S : A} {B : ℤ} (o : Tree) : ∀ (j : ℕ) (hj : j < 11) (σ : St supp) (po : ℕ), OKs σ → σ.mode = .D ⟨j, hj⟩ →
     σ.regs 1 = po → Rep σ.heap po o → ∀ (hl : j + o.len < 11),
@@ -111,8 +120,7 @@ theorem dchain {S : A} {B : ℤ} (o : Tree) : ∀ (j : ℕ) (hj : j < 11) (σ : 
         simp only [Tree.len]
         omega) a3 (a4.trans rfl) (a5.trans rfl) (a6.trans rfl) (fun _ hc => a7 (heap_nx σ _ _ _ _ hc))
         (a8.trans (inpA σ _ (by simp) (by simp) _ _ _)))
-    have h3 := sumTo_ruleA hσ hrec' (.dc ⟨j, hj'⟩) (by rw [hm]; exact dite_eq_left hj') (by rw [hm]; simp) (by simp)
-      (by rw [hm]; rfl) rfl h2
+    have h3 := opcode_step hσ hm hj' hrec' h2
     refine h3.mono ?_
     simp only [Tree.len]
     push_cast
@@ -138,8 +146,7 @@ theorem dstuck {B : ℤ} (o : Tree) : ∀ (j : ℕ) (hj : j < 11) (σ : St supp)
     by_cases hj' : j < 10
     · have h2 := ih (B := B - 1) (j + 1) (by omega) (nx θ σ (.inl (.dc ⟨j, hj'⟩)) p q s) q (hσ.nx _ _ _ _) rfl rfl
         (hq.mono (heap_nx σ _ _ _ _)) (by omega)
-      have h3 := sumTo_ruleA hσ hrec' (.dc ⟨j, hj'⟩) (by rw [hm]; exact dite_eq_left hj') (by rw [hm]; simp) (by simp)
-        (by rw [hm]; rfl) rfl h2
+      have h3 := opcode_step hσ hm hj' hrec' h2
       exact h3.mono (by omega)
     · refine sumTo_stuck hσ hrec' ?_ (by rw [hm]; simp) (by simp) (by rw [hm]; simp) B
       rw [hm]
