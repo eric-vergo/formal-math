@@ -21,9 +21,6 @@ open _root_.NS1.Tree
 
 variable {A : Type} [CommRing A] {θ : List Bool → A}
 
-theorem Plain.mono {τ τ' : ℕ} {z : Tree} (h : Plain θ τ z) (hτ : τ ≤ τ') : Plain θ τ' z :=
-  ⟨h.1, fun r hr => ⟨(h.2 r hr).1, (h.2 r hr).2.trans hτ⟩⟩
-
 theorem CutD.mono {τ s τ' s' P t τ'' s'' P' t' : ℕ} {G : Tree} (h : CutD θ τ s τ' s' P t G) (h1 : τ' ≤ τ'')
     (h2 : s' ≤ s'') (h3 : P ≤ P') (h4 : t ≤ t') : CutD θ τ s τ'' s'' P' t' G := by
   intro z hz
@@ -40,6 +37,87 @@ def OneCutAt (θ : List Bool → A) (v a₀ α Λ : ℕ) : Prop := ∀ τ s k, v
   2 ≤ k → k ≤ v ^ 64 → ∃ G : Tree, G.size ≤ v ^ a₀ ∧ CutD θ τ s (τ * Λ / k)
     ((s / k + τ / v ^ 256) * Λ) (k * Λ) ((s + τ * k / v ^ 256) * Λ) G
 
+/-- The final cut uses the smallest branching factor strictly above `τ * Λ / v ^ H`. -/
+private theorem OneCutAt.finalCut (hc : OneCutAt θ v a₀ α Λ) (hv : 1000 ≤ v)
+    (hΛ2 : 2 ≤ Λ) (hH : a₀ ≤ H) :
+    ∀ τ s c, v ^ H ≤ τ → τ ≤ v ^ α → τ * Λ < v ^ H * v ^ 64 → s * v ^ 48 ≤ c * τ → 1 ≤ c → c ≤ v →
+      ∃ (G : Tree) (P t s' : ℕ), CutD θ τ s (v ^ H) s' P t G ∧ P * v ^ H ≤ τ * (4 * Λ ^ 2) ∧
+      t * v ^ 48 ≤ c * τ * (100 * Λ ^ 3) ∧ s' * v ^ 48 ≤ c * v ^ H * (8 * Λ) ∧ G.size ≤ v ^ a₀ := by
+  have hv1 : 1 ≤ v := by omega
+  have hΛ1 : 1 ≤ Λ := by omega
+  have ppos : ∀ a, 0 < v ^ a := fun a => Nat.pow_pos (by omega)
+  have pmono : ∀ {a b}, a ≤ b → v ^ a ≤ v ^ b := fun h => Nat.pow_le_pow_right hv1 h
+  intro τ s c hτ hτα hτΛ hs hc1 hcv
+  obtain ⟨k, hk⟩ : ∃ k, k = τ * Λ / v ^ H + 1 := ⟨_, rfl⟩
+  have hk1 : τ * Λ < k * v ^ H := by
+    rw [hk]
+    have := Nat.div_add_mod (τ * Λ) (v ^ H)
+    have h2 := Nat.mod_lt (τ * Λ) (ppos H)
+    rw [add_mul, one_mul, Nat.mul_comm (τ * Λ / v ^ H)]
+    omega
+  have hk2 : k ≤ v ^ 64 := by
+    rw [hk]
+    exact Nat.succ_le_of_lt ((Nat.div_lt_iff_lt_mul (ppos H)).2 (by rw [Nat.mul_comm (v ^ 64)]; exact hτΛ))
+  have hk3 : k * v ^ H ≤ τ * Λ + v ^ H := by
+    rw [hk, add_mul, one_mul]
+    exact Nat.add_le_add_right (Nat.div_mul_le_self _ _) _
+  have hk0 : 2 ≤ k := by
+    rw [hk]
+    have : Λ ≤ τ * Λ / v ^ H := by
+      rw [Nat.le_div_iff_mul_le (ppos H), Nat.mul_comm]
+      exact Nat.mul_le_mul_right _ hτ
+    omega
+  have hsτ : s ≤ τ := by
+    have h1 : s * v ^ 48 ≤ τ * v ^ 48 := hs.trans (by
+      rw [Nat.mul_comm]
+      exact Nat.mul_le_mul_left _ (hcv.trans (Nat.le_self_pow (by norm_num) v)))
+    exact Nat.le_of_mul_le_mul_right h1 (ppos 48)
+  obtain ⟨G, hG, hcut⟩ := hc τ s k ((pmono hH).trans hτ) hτα hsτ hk0 hk2
+  refine ⟨G, _, _, _, hcut.mono ?_ le_rfl le_rfl le_rfl, ?_, ?_, ?_, hG⟩
+  · rw [Nat.div_le_iff_le_mul_add_pred (by omega)]
+    rw [Nat.mul_comm k (v ^ H), Nat.mul_comm] at hk1
+    have : v ^ H * k = k * v ^ H := Nat.mul_comm _ _
+    nlinarith
+  · calc k * Λ * v ^ H = k * v ^ H * Λ := by ring
+      _ ≤ (τ * Λ + v ^ H) * Λ := Nat.mul_le_mul_right _ hk3
+      _ ≤ (τ * Λ + τ * Λ) * Λ := Nat.mul_le_mul_right _ (Nat.add_le_add_left (hτ.trans (Nat.le_mul_of_pos_right _ hΛ1)) _)
+      _ ≤ τ * (4 * Λ ^ 2) := by nlinarith [Nat.zero_le (τ * Λ ^ 2)]
+  · have h1 : τ * k / v ^ 256 * v ^ 48 ≤ τ := by
+      have h2 : τ * k / v ^ 256 * v ^ 256 ≤ τ * v ^ 64 :=
+        (Nat.div_mul_le_self _ _).trans (Nat.mul_le_mul_left _ hk2)
+      have h3 : τ * k / v ^ 256 * v ^ 48 * v ^ 208 ≤ τ * v ^ 208 := by
+        calc τ * k / v ^ 256 * v ^ 48 * v ^ 208 = τ * k / v ^ 256 * v ^ 256 := by rw [Nat.mul_assoc, ← pow_add]
+          _ ≤ τ * v ^ 64 := h2
+          _ ≤ τ * v ^ 208 := Nat.mul_le_mul_left _ (pmono (by norm_num))
+      exact Nat.le_of_mul_le_mul_right h3 (ppos 208)
+    calc (s + τ * k / v ^ 256) * Λ * v ^ 48 = (s * v ^ 48 + τ * k / v ^ 256 * v ^ 48) * Λ := by ring
+      _ ≤ (c * τ + c * τ) * Λ := Nat.mul_le_mul_right _ (Nat.add_le_add hs (h1.trans (Nat.le_mul_of_pos_left _ hc1)))
+      _ = c * τ * (2 * Λ) := by ring
+      _ ≤ c * τ * (100 * Λ ^ 3) := Nat.mul_le_mul_left _ (by
+          have : Λ ≤ Λ ^ 3 := Nat.le_self_pow (by norm_num) Λ
+          omega)
+  · have h1 : s / k * v ^ 48 ≤ c * v ^ H := by
+      have h2 : s / k * v ^ 48 * k ≤ c * v ^ H * k := by
+        calc s / k * v ^ 48 * k = s / k * k * v ^ 48 := by ring
+          _ ≤ s * v ^ 48 := Nat.mul_le_mul_right _ (Nat.div_mul_le_self _ _)
+          _ ≤ c * τ := hs
+          _ ≤ c * (τ * Λ) := Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_right _ hΛ1)
+          _ ≤ c * (k * v ^ H) := Nat.mul_le_mul_left _ hk1.le
+          _ = c * v ^ H * k := by ring
+      exact Nat.le_of_mul_le_mul_right h2 (by omega)
+    have h2 : τ / v ^ 256 * v ^ 48 ≤ c * v ^ H := by
+      have h3 : τ / v ^ 256 * v ^ 48 * v ^ 208 ≤ c * v ^ H * v ^ 208 := by
+        calc τ / v ^ 256 * v ^ 48 * v ^ 208 = τ / v ^ 256 * v ^ 256 := by rw [Nat.mul_assoc, ← pow_add]
+          _ ≤ τ := Nat.div_mul_le_self _ _
+          _ ≤ τ * Λ := Nat.le_mul_of_pos_right _ hΛ1
+          _ ≤ v ^ H * v ^ 64 := hτΛ.le
+          _ ≤ c * v ^ H * v ^ 208 := Nat.mul_le_mul (Nat.le_mul_of_pos_left _ hc1) (pmono (by norm_num))
+      exact Nat.le_of_mul_le_mul_right h3 (ppos 208)
+    calc (s / k + τ / v ^ 256) * Λ * v ^ 48 = (s / k * v ^ 48 + τ / v ^ 256 * v ^ 48) * Λ := by ring
+      _ ≤ (c * v ^ H + c * v ^ H) * Λ := Nat.mul_le_mul_right _ (Nat.add_le_add h1 h2)
+      _ = c * v ^ H * (2 * Λ) := by ring
+      _ ≤ c * v ^ H * (8 * Λ) := Nat.mul_le_mul_left _ (by omega)
+
 set_option maxHeartbeats 1000000 in
 /-- **Paper: Theorem thm:cut, the induction on (τ_i, s_i, P_i).** Cut by v^63 as long as the steps are many, and at last
 once to v^H; sizes, pieces and time. -/
@@ -52,85 +130,11 @@ theorem _root_.Paper.thm_cut_iterate (hc : OneCutAt θ v a₀ α Λ) (hv : 1000 
   have hΛ1 : 1 ≤ Λ := by omega
   have ppos : ∀ a, 0 < v ^ a := fun a => Nat.pow_pos (by omega)
   have pmono : ∀ {a b}, a ≤ b → v ^ a ≤ v ^ b := fun h => Nat.pow_le_pow_right hv1 h
-  -- the first cut to the target
-  have base : ∀ τ s c, v ^ H ≤ τ → τ ≤ v ^ α → τ * Λ < v ^ H * v ^ 64 → s * v ^ 48 ≤ c * τ → 1 ≤ c → c ≤ v →
-      ∃ (G : Tree) (P t s' : ℕ), CutD θ τ s (v ^ H) s' P t G ∧ P * v ^ H ≤ τ * (4 * Λ ^ 2) ∧
-      t * v ^ 48 ≤ c * τ * (100 * Λ ^ 3) ∧ s' * v ^ 48 ≤ c * v ^ H * (8 * Λ) ∧ G.size ≤ v ^ a₀ := by
-    intro τ s c hτ hτα hτΛ hs hc1 hcv
-    obtain ⟨k, hk⟩ : ∃ k, k = τ * Λ / v ^ H + 1 := ⟨_, rfl⟩
-    have hk1 : τ * Λ < k * v ^ H := by
-      rw [hk]
-      have := Nat.div_add_mod (τ * Λ) (v ^ H)
-      have h2 := Nat.mod_lt (τ * Λ) (ppos H)
-      rw [add_mul, one_mul, Nat.mul_comm (τ * Λ / v ^ H)]
-      omega
-    have hk2 : k ≤ v ^ 64 := by
-      rw [hk]
-      exact Nat.succ_le_of_lt ((Nat.div_lt_iff_lt_mul (ppos H)).2 (by rw [Nat.mul_comm (v ^ 64)]; exact hτΛ))
-    have hk3 : k * v ^ H ≤ τ * Λ + v ^ H := by
-      rw [hk, add_mul, one_mul]
-      exact Nat.add_le_add_right (Nat.div_mul_le_self _ _) _
-    have hk0 : 2 ≤ k := by
-      rw [hk]
-      have : Λ ≤ τ * Λ / v ^ H := by
-        rw [Nat.le_div_iff_mul_le (ppos H), Nat.mul_comm]
-        exact Nat.mul_le_mul_right _ hτ
-      omega
-    have hsτ : s ≤ τ := by
-      have h1 : s * v ^ 48 ≤ τ * v ^ 48 := hs.trans (by
-        rw [Nat.mul_comm]
-        exact Nat.mul_le_mul_left _ (hcv.trans (Nat.le_self_pow (by norm_num) v)))
-      exact Nat.le_of_mul_le_mul_right h1 (ppos 48)
-    obtain ⟨G, hG, hcut⟩ := hc τ s k ((pmono hH).trans hτ) hτα hsτ hk0 hk2
-    refine ⟨G, _, _, _, hcut.mono ?_ le_rfl le_rfl le_rfl, ?_, ?_, ?_, hG⟩
-    · rw [Nat.div_le_iff_le_mul_add_pred (by omega)]
-      rw [Nat.mul_comm k (v ^ H), Nat.mul_comm] at hk1
-      have : v ^ H * k = k * v ^ H := Nat.mul_comm _ _
-      nlinarith
-    · calc k * Λ * v ^ H = k * v ^ H * Λ := by ring
-        _ ≤ (τ * Λ + v ^ H) * Λ := Nat.mul_le_mul_right _ hk3
-        _ ≤ (τ * Λ + τ * Λ) * Λ := Nat.mul_le_mul_right _ (Nat.add_le_add_left (hτ.trans (Nat.le_mul_of_pos_right _ hΛ1)) _)
-        _ ≤ τ * (4 * Λ ^ 2) := by nlinarith [Nat.zero_le (τ * Λ ^ 2)]
-    · have h1 : τ * k / v ^ 256 * v ^ 48 ≤ τ := by
-        have h2 : τ * k / v ^ 256 * v ^ 256 ≤ τ * v ^ 64 :=
-          (Nat.div_mul_le_self _ _).trans (Nat.mul_le_mul_left _ hk2)
-        have h3 : τ * k / v ^ 256 * v ^ 48 * v ^ 208 ≤ τ * v ^ 208 := by
-          calc τ * k / v ^ 256 * v ^ 48 * v ^ 208 = τ * k / v ^ 256 * v ^ 256 := by rw [Nat.mul_assoc, ← pow_add]
-            _ ≤ τ * v ^ 64 := h2
-            _ ≤ τ * v ^ 208 := Nat.mul_le_mul_left _ (pmono (by norm_num))
-        exact Nat.le_of_mul_le_mul_right h3 (ppos 208)
-      calc (s + τ * k / v ^ 256) * Λ * v ^ 48 = (s * v ^ 48 + τ * k / v ^ 256 * v ^ 48) * Λ := by ring
-        _ ≤ (c * τ + c * τ) * Λ := Nat.mul_le_mul_right _ (Nat.add_le_add hs (h1.trans (Nat.le_mul_of_pos_left _ hc1)))
-        _ = c * τ * (2 * Λ) := by ring
-        _ ≤ c * τ * (100 * Λ ^ 3) := Nat.mul_le_mul_left _ (by
-            have : Λ ≤ Λ ^ 3 := Nat.le_self_pow (by norm_num) Λ
-            omega)
-    · have h1 : s / k * v ^ 48 ≤ c * v ^ H := by
-        have h2 : s / k * v ^ 48 * k ≤ c * v ^ H * k := by
-          calc s / k * v ^ 48 * k = s / k * k * v ^ 48 := by ring
-            _ ≤ s * v ^ 48 := Nat.mul_le_mul_right _ (Nat.div_mul_le_self _ _)
-            _ ≤ c * τ := hs
-            _ ≤ c * (τ * Λ) := Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_right _ hΛ1)
-            _ ≤ c * (k * v ^ H) := Nat.mul_le_mul_left _ hk1.le
-            _ = c * v ^ H * k := by ring
-        exact Nat.le_of_mul_le_mul_right h2 (by omega)
-      have h2 : τ / v ^ 256 * v ^ 48 ≤ c * v ^ H := by
-        have h3 : τ / v ^ 256 * v ^ 48 * v ^ 208 ≤ c * v ^ H * v ^ 208 := by
-          calc τ / v ^ 256 * v ^ 48 * v ^ 208 = τ / v ^ 256 * v ^ 256 := by rw [Nat.mul_assoc, ← pow_add]
-            _ ≤ τ := Nat.div_mul_le_self _ _
-            _ ≤ τ * Λ := Nat.le_mul_of_pos_right _ hΛ1
-            _ ≤ v ^ H * v ^ 64 := hτΛ.le
-            _ ≤ c * v ^ H * v ^ 208 := Nat.mul_le_mul (Nat.le_mul_of_pos_left _ hc1) (pmono (by norm_num))
-        exact Nat.le_of_mul_le_mul_right h3 (ppos 208)
-      calc (s / k + τ / v ^ 256) * Λ * v ^ 48 = (s / k * v ^ 48 + τ / v ^ 256 * v ^ 48) * Λ := by ring
-        _ ≤ (c * v ^ H + c * v ^ H) * Λ := Nat.mul_le_mul_right _ (Nat.add_le_add h1 h2)
-        _ = c * v ^ H * (2 * Λ) := by ring
-        _ ≤ c * v ^ H * (8 * Λ) := Nat.mul_le_mul_left _ (by omega)
   intro r
   induction r with
   | zero =>
     intro τ s c hτ hτα hτΛ hs hc1 hcv
-    obtain ⟨G, P, t, s', h1, h2, h3, h4, h5⟩ := base τ s c hτ hτα (by simpa using hτΛ) hs hc1 (by omega)
+    obtain ⟨G, P, t, s', h1, h2, h3, h4, h5⟩ := hc.finalCut hv hΛ2 hH τ s c hτ hτα (by simpa using hτΛ) hs hc1 (by omega)
     refine ⟨G, P, t, s', h1, by simpa using h2, by simpa using h3, by simpa using h4, ?_⟩
     simp only [pow_zero, one_mul]
     omega
@@ -145,7 +149,7 @@ theorem _root_.Paper.thm_cut_iterate (hc : OneCutAt θ v a₀ α Λ) (hv : 1000 
     have hX2 : 1 ≤ (100 * Λ ^ 3) ^ (r + 1) := Nat.one_le_pow _ _ (by positivity)
     have hX3 : 1 ≤ (8 * Λ) ^ (r + 1) := Nat.one_le_pow _ _ (by positivity)
     by_cases hbase : τ * Λ < v ^ H * v ^ 64
-    · obtain ⟨G, P, t, s', h1, h2, h3, h4, h5⟩ := base τ s c hτ hτα hbase hs hc1 (by omega)
+    · obtain ⟨G, P, t, s', h1, h2, h3, h4, h5⟩ := hc.finalCut hv hΛ2 hH τ s c hτ hτα hbase hs hc1 (by omega)
       refine ⟨G, P, t, s', h1, ?_, ?_, ?_, ?_⟩
       · refine h2.trans (Nat.mul_le_mul_left _ ?_)
         rw [pow_succ (4 * Λ ^ 2) (r + 1)]

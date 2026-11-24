@@ -51,13 +51,8 @@ theorem prop_next_round {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤ α) 
   have hH : 16 * h ≤ e + 9 := by omega
   -- the trie of powers
   obtain ⟨nB, hnB⟩ : ∃ n, n = (K.expand B).nds := ⟨_, rfl⟩
-  have hnB1 : nB ≤ K.nds * (2 * X) := hnB ▸ (KT.nds_expand B K).trans (Nat.mul_le_mul_left _ (by omega))
-  have hnBX : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * u ^ (h * α + 1) := by
-    intro c hc
-    calc nB * (c * X) ≤ K.nds * (2 * X) * (c * X) := Nat.mul_le_mul_right _ hnB1
-      _ = K.nds * (2 * (c * X ^ 2)) := by ring
-      _ ≤ u ^ (h * α) * (2 * u) := Nat.mul_le_mul hK (by omega)
-      _ = 2 * u ^ (h * α + 1) := by rw [pow_succ]; ring
+  have hnBX : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * u ^ (h * α + 1) :=
+    fun _ hc => hnB ▸ K.expand_cost_le hK (by omega) (hc.trans hXu)
   have pu : ∀ a, u ^ (a + 1) = u * u ^ a := fun a => by rw [pow_succ]; ring
   have pbig : ∀ a, 2000 * u ^ a ≤ u ^ (a + 1) := fun a => by rw [pu]; exact Nat.mul_le_mul_right _ hu4
   have ppos : ∀ a, 1 ≤ u ^ a := fun a => Nat.one_le_pow _ _ (by omega)

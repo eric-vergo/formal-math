@@ -24,9 +24,6 @@ def CutAt (θ : List Bool → A) (H v α : ℕ) : Prop :=
 theorem CutHyp.at {H C₀ v₀ v α : ℕ} (h : CutHyp θ H C₀ v₀) (hv : v₀ ≤ v) (hl : lg v ^ (C₀ * α) ≤ v) : CutAt θ H v α :=
   fun τ s => h v hv α τ s hl
 
-theorem Plain.of_le {T T' : ℕ} {z : Tree} (h : Plain θ T z) (hT : T ≤ T') : Plain θ T' z :=
-  ⟨h.1, fun r hr => ⟨(h.2 r hr).1, (h.2 r hr).2.trans hT⟩⟩
-
 /-- A constant: it bounds the sizes of the fixed programs. -/
 def cst : ℕ := WF.code.size + UF.code.size + 2000
 
@@ -44,6 +41,21 @@ theorem size_stepF (D G p : Tree) (g : Fm) :
 
 theorem pow_le_pow {u a b : ℕ} (hu : 1 ≤ u) (h : a ≤ b) : u ^ a ≤ u ^ b := Nat.pow_le_pow_right hu h
 
+/-- Height and node count of an exponent budget for a trie of powers. -/
+theorem KT.expand_budget_bounds (K : KT R) {B J : ℕ} {q : Bt × R} (hq : q ∈ (K.expand B).budg J) :
+    q.1.ht ≤ K.ht + B + J + 1 ∧ q.1.nds ≤ (K.expand B).nds * (J + 1) := by
+  have := KT.ht_budg hq
+  have := KT.ht_expand B K
+  exact ⟨by omega, KT.nds_budg hq⟩
+
+/-- The encoded budget and the original input fit together in the input to the cutting program. -/
+theorem size_zq_of_budget (K : KT R) {B J : ℕ} {p z : Tree} {q : Bt × R} (hq : q ∈ (K.expand B).budg J) :
+    (zq p z q.1).size ≤ WF.code.size + p.size + z.size + 4 * ((K.expand B).nds * (J + 1)) + 3 := by
+  have := Bt.size_enc q.1
+  have := KT.nds_budg hq
+  simp only [zq, Tree.size]
+  omega
+
 /-- **One round.** `τ'` bounds the time of the plain instances; `s` their size. -/
 theorem round {H u v : ℕ} {K : KT R} {B' : ℕ} {D : Tree} (hD : IsAccT θ H u (u ^ (H - 16)) K B' D)
     {p : Tree} {B τ : ℕ} (hp : IsPre θ H v τ K B p) {J : ℕ} (hJ : τ < 2 ^ J) {τ' s t tG Ln : ℕ} {G : Tree}
@@ -59,17 +71,9 @@ theorem round {H u v : ℕ} {K : KT R} {B' : ℕ} {D : Tree} (hD : IsAccT θ H u
     refine gt_ev z K [] fun q hq i hi => ⟨?_, ?_⟩
     · rfl
     · exact hq.inB (lt_of_lt_of_le hi (le_max_left _ _))
-  have hqs : ∀ q ∈ (K.expand B).budg J, q.1.ht ≤ K.ht + B + J + 1 ∧ q.1.nds ≤ (K.expand B).nds * (J + 1) := by
-    intro q hq
-    have h1 := KT.ht_budg hq
-    have h2 := KT.ht_expand B K
-    exact ⟨by omega, KT.nds_budg hq⟩
   have hsz : ∀ z : Tree, z.size ≤ v ^ (H - 32) → ∀ q ∈ (K.expand B).budg J, (zq p z q.1).size ≤ s := by
     intro z hz q hq
-    have h1 := Bt.size_enc q.1
-    have h2 := (hqs q hq).2
-    simp only [zq, Tree.size]
-    omega
+    exact (size_zq_of_budget K hq).trans (by omega)
   have key : ∀ z : Tree, z.size ≤ v ^ (H - 32) → ∀ q ∈ (K.expand B).budg J,
       Hl θ (Fm.ofTree G) (zq p z q.1) ∧ ∀ r ∈ evl θ (Fm.ofTree G) (zq p z q.1), r.bill = [] ∧
       r.cost ≤ tG ∧ r.out.toList.length ≤ Ln ∧ ∀ y ∈ r.out.toList, Hl θ (Fm.ofTree D) y ∧
@@ -102,7 +106,7 @@ theorem round {H u v : ℕ} {K : KT R} {B' : ℕ} {D : Tree} (hD : IsAccT θ H u
     refine congrArg List.sum (List.map_congr_left fun q hq => congrArg (q.2 * ·) ?_)
     obtain ⟨pl, -, -⟩ := hze q hq
     have hht := KT.ht_expand B K
-    have pl' : Plain θ τ' (zq p z q.1) := Plain.of_le pl ((Nat.add_le_add_right (Nat.add_le_add_right
+    have pl' : Plain θ τ' (zq p z q.1) := Plain.mono pl ((Nat.add_le_add_right (Nat.add_le_add_right
       (Nat.mul_le_mul_right _ (show 1000 + 100 * ((K.expand B).ht + J + 1) ≤ MM (K.ht + B + J + 1) by
         unfold MM; omega)) _) _).trans hτ')
     obtain ⟨v1, v2⟩ := hG.val _ (hsz z hz q hq) pl'

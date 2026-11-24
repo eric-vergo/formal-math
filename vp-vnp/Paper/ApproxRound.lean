@@ -46,17 +46,9 @@ theorem prop_approx_acc_round {H u v : ℕ} {K' : KT E[T;T⁻¹]} {B' : ℕ} {D 
     subst hK2
     exact ⟨KT.lk_map (f : E[T;T⁻¹] →+* E[T;T⁻¹]) K' q,
       (KT.inB_map f _ K' q).2 (hq.mono (Nat.add_le_add_right (le_max_right _ _) _))⟩
-  have hqs : ∀ q ∈ (K.expand B).budg J, q.1.ht ≤ K.ht + B + J + 1 ∧ q.1.nds ≤ (K.expand B).nds * (J + 1) := by
-    intro q hq
-    have h1 := KT.ht_budg hq
-    have h2 := KT.ht_expand B K
-    exact ⟨by omega, KT.nds_budg hq⟩
   have hsz : ∀ z : Tree, z.size ≤ v ^ (H - 32) → ∀ q ∈ (K.expand B).budg J, (zq p z q.1).size ≤ s := by
     intro z hz q hq
-    have h1 := Bt.size_enc q.1
-    have h2 := (hqs q hq).2
-    simp only [zq, Tree.size]
-    omega
+    exact (size_zq_of_budget K hq).trans (by omega)
   have inner : ∀ z : Tree, z.size ≤ v ^ (H - 32) → ∀ q ∈ (K.expand B).budg J,
       Hl θ (Fm.ofTree G) (zq p z q.1) ∧ ∀ r ∈ evl θ (Fm.ofTree G) (zq p z q.1), r.bill = [] ∧ r.cost ≤ tG ∧
         KV θ K2.lk {m | K2.InB (max B B' + J) m} (rebF (gt id J B' K' [true]) (LP D).code) (.cons (LP D).code r.out)
@@ -105,8 +97,8 @@ theorem prop_approx_acc_round {H u v : ℕ} {K' : KT E[T;T⁻¹]} {B' : ℕ} {D 
     have diff : ∀ q ∈ L, OrdGE 1 (S1 q - S2 q) := by
       intro q hq
       rw [hL] at hq
-      obtain ⟨q1, q2⟩ := hqs q hq
-      have pl : Plain θ τ' (zq p z q.1) := Plain.of_le (hze q hq).1 ((Nat.add_le_add_right (Nat.add_le_add_right
+      obtain ⟨q1, q2⟩ := K.expand_budget_bounds hq
+      have pl : Plain θ τ' (zq p z q.1) := Plain.mono (hze q hq).1 ((Nat.add_le_add_right (Nat.add_le_add_right
         (Nat.mul_le_mul_right _ (show 1000 + 100 * ((K.expand B).ht + J + 1) ≤ MM (K.ht + B + J + 1) by
           have := KT.ht_expand B K
           unfold MM; omega)) _) _).trans hτ')
@@ -190,18 +182,11 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
   have pbig : ∀ a, 2000 * u ^ a ≤ u ^ (a + 1) := fun a => by rw [pu]; exact Nat.mul_le_mul_right _ hu4
   have ppos : ∀ a, 1 ≤ u ^ a := fun a => Nat.one_le_pow _ _ (by omega)
   -- the tries of powers
-  have hnBX : ∀ (K₀ : KT E[T;T⁻¹]) (B₀ : ℕ), K₀.nds ≤ u ^ (h * α) → B₀ + 1 ≤ X → ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 →
-      (K₀.expand B₀).nds * (c * X) ≤ 2 * u ^ (h * α + 1) := by
-    intro K₀ B₀ h0 h1 c hc
-    calc (K₀.expand B₀).nds * (c * X) ≤ K₀.nds * (2 * X) * (c * X) :=
-          Nat.mul_le_mul_right _ ((KT.nds_expand B₀ K₀).trans (Nat.mul_le_mul_left _ (by omega)))
-      _ = K₀.nds * (2 * (c * X ^ 2)) := by ring
-      _ ≤ u ^ (h * α) * (2 * u) := Nat.mul_le_mul h0 (by omega)
-      _ = 2 * u ^ (h * α + 1) := by rw [pow_succ]; ring
   obtain ⟨nB, hnB⟩ : ∃ n, n = (K.expand B).nds := ⟨_, rfl⟩
   obtain ⟨nB', hnB'⟩ : ∃ n, n = (K'.expand B').nds := ⟨_, rfl⟩
   have hb : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * u ^ (h * α + 1) ∧ nB' * (c * X) ≤ 2 * u ^ (h * α + 1) :=
-    fun c hc => ⟨hnB ▸ hnBX K B hK (by omega) c hc, hnB' ▸ hnBX K' B' hK' (by omega) c hc⟩
+    fun _ hc => ⟨hnB ▸ K.expand_cost_le hK (by omega) (hc.trans hXu),
+      hnB' ▸ K'.expand_cost_le hK' (by omega) (hc.trans hXu)⟩
   -- the cut
   obtain ⟨G, hG⟩ := hC (u ^ (e + 9)) (u ^ (α * (16 * h - 32) + 1)) (pow_le_pow hu1 hH)
     (pow_le_pow hu1 he2) (by
@@ -325,7 +310,7 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
     have s3 : ∀ (K₀ : KT E[T;T⁻¹]) (B₀ : ℕ) (pre : List Bool), K₀.nds ≤ u ^ (h * α) → pre.length ≤ 1 →
         K₀.ht + B₀ + J + 1 ≤ X → (gt id J B₀ K₀ pre).code.size ≤ 2 * u ^ (h * α + 1) := by
       intro K₀ B₀ pre h0 h1 h2
-      have s4 := hnBX K₀ B₀ h0 (by omega) (18 * X) (by
+      have s4 := K₀.expand_cost_le (B := B₀) (X := X) (c := 18 * X) h0 (by omega) (by
         rw [show 18 * X * X ^ 2 = 18 * X ^ 3 by ring]
         omega)
       refine (size_gt id J B₀ K₀ pre (B₀ + J) (fun i hi => (show id i ≤ B₀ + J from hi.le))).trans ?_
@@ -494,6 +479,17 @@ theorem prop_approx_acc_exact {H v t t' : ℕ} {K : KT E[T;T⁻¹]} {B : ℕ} {D
     omega
   obtain ⟨K', hK'⟩ : ∃ K', K' = coefK J m K₂ := ⟨_, rfl⟩
   obtain ⟨g, hg⟩ : ∃ g, g = xF J m W K₂ [] := ⟨_, rfl⟩
+  have key : ∀ z : Tree, z.size ≤ v ^ (H - 32) → KV θ K'.lk {p | K'.InB 1 p} (extF D g) z
+      ((xL J m W K₂).map fun q => q.2.1 * ((if KT.val q.2.2 = 0 then 1 else 0) *
+        algebraMap A E ((evl θ (Fm.ofTree D) z).map fun r => if ok q.1 r.bill = true then r.th else 0).sum)).sum t' := by
+    intro z hz
+    obtain ⟨hD1, hD2⟩ := hD.run z hz
+    obtain ⟨lx, ex, rx⟩ := xF_ev (θ := θ) (κ := K'.lk) (S := {p | K'.InB 1 p}) (J := J) (m := m) (W := W) z K₂ []
+      fun p hp => by subst hK'; exact ⟨rfl, hp⟩
+    rw [← hg] at ex
+    refine (extF_kv ex rx hD1.ev (fun r hr => (hD2 r hr).1) (H := K.ht + B + J + 1) (n := K₂.nds * (J + 1))
+      fun q hq => ⟨(bt_xL q hq).1.trans (by omega), (bt_xL q hq).2, length_xL q hq⟩).mono ?_
+    omega
   refine ⟨K', (extF D g).code, ⟨?_, ?_⟩, hK' ▸ nds_coefK J m K₂,
     hK' ▸ (ht_coefK J m K₂).trans (by omega), ?_⟩
   rotate_left 2
@@ -504,18 +500,6 @@ theorem prop_approx_acc_exact {H v t t' : ℕ} {K : KT E[T;T⁻¹]} {B : ℕ} {D
       Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ (by omega))
     have h3 := size_extF D g
     omega
-  all_goals
-    have key : ∀ z : Tree, z.size ≤ v ^ (H - 32) → KV θ K'.lk {p | K'.InB 1 p} (extF D g) z
-        ((xL J m W K₂).map fun q => q.2.1 * ((if KT.val q.2.2 = 0 then 1 else 0) *
-          algebraMap A E ((evl θ (Fm.ofTree D) z).map fun r => if ok q.1 r.bill = true then r.th else 0).sum)).sum t' := by
-      intro z hz
-      obtain ⟨hD1, hD2⟩ := hD.run z hz
-      obtain ⟨lx, ex, rx⟩ := xF_ev (θ := θ) (κ := K'.lk) (S := {p | K'.InB 1 p}) (J := J) (m := m) (W := W) z K₂ []
-        fun p hp => by subst hK'; exact ⟨rfl, hp⟩
-      rw [← hg] at ex
-      refine (extF_kv ex rx hD1.ev (fun r hr => (hD2 r hr).1) (H := K.ht + B + J + 1) (n := K₂.nds * (J + 1))
-        fun q hq => ⟨(bt_xL q hq).1.trans (by omega), (bt_xL q hq).2, length_xL q hq⟩).mono ?_
-      omega
   · intro z hz
     rw [Fm.ofTree_code]
     exact ⟨(key z hz).hl, fun r hr => (key z hz).evl.1 r hr⟩

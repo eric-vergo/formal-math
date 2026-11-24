@@ -27,6 +27,9 @@ constants. -/
 def Plain (θ : List Bool → A) (T : ℕ) (z : Tree) : Prop :=
   Hl θ (Fm.ofTree z.hd) z.tl ∧ ∀ r ∈ evl θ (Fm.ofTree z.hd) z.tl, r.bill = [] ∧ r.cost ≤ T
 
+theorem Plain.mono {θ : List Bool → A} {τ τ' : ℕ} {z : Tree} (h : Plain θ τ z) (hτ : τ ≤ τ') : Plain θ τ' z :=
+  ⟨h.1, fun r hr => ⟨(h.2 r hr).1, (h.2 r hr).2.trans hτ⟩⟩
+
 /-- The universal plain sum: the sum of the weights of all accepting runs of the program `z.hd` at `z.tl`. -/
 noncomputable def pv (θ : List Bool → A) (z : Tree) : A := pval (evl θ (Fm.ofTree z.hd) z.tl)
 

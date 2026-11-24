@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), Codex (OpenAI)
 -/
 import VersoManual
 import VersoBlueprint
@@ -714,9 +714,12 @@ compose”. All the powers of $`\Lambda` that arise are below $`v` if $`C_{\math
 `NS1.compC` (`NS1/Compose.lean`): run `G`, then fold over the list of pieces, running `G'` on each
 and appending the results; that the sum formulas compose is `NS1.wsum_foldW_pvs` and the theorems
 after it. The induction on the numbers of steps, sizes and pieces is `NS1/OneCut.lean`, which takes
-one cut by any factor $`k \leq v^{64}` as a hypothesis (`NS1.OneCutAt`). `Paper.thm_cut` takes $`H = 16h` with
-$`h = a_0 + 217`. The statements of `compC` and of `thm_cut` were read; the induction of
-`NS1/OneCut.lean` was not.
+one cut by any factor $`k \leq v^{64}` as a hypothesis (`NS1.OneCutAt`). When
+$`\tau\Lambda < v^H v^{64}`, the final cut takes
+$`k = \lfloor \tau\Lambda / v^H \rfloor + 1`. This choice gives both
+$`k \leq v^{64}` and $`\tau\Lambda < k v^H`. Otherwise the induction first cuts
+by $`v^{63}` and composes that program with the remaining cuts. `Paper.thm_cut`
+takes $`H = 16h` with $`h = a_0 + 217`.
 :::
 
 The paper's remark after the proof (page 55): “For a fixed $`\alpha` the condition

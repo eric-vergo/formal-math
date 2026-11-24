@@ -16,28 +16,17 @@ set_option linter.unusedSectionVars false
 
 namespace Nc.Acc
 
+export Nc (line)
+
 open Finset
 
 variable {F : Type*} [CommRing F] {σ : Type*} {s : ℕ}
-
-/-- `p` along the line through 0 and `u`. -/
-noncomputable def line (u : σ → F) : MvPolynomial σ F →ₐ[F] Polynomial F :=
-  MvPolynomial.aeval fun l => Polynomial.C (u l) * Polynomial.X
 
 theorem line_coeff_zero (u : σ → F) (p : MvPolynomial σ F) :
     (line u p).coeff 0 = MvPolynomial.constantCoeff p := by
   rw [Polynomial.coeff_zero_eq_eval_zero]
   have : ((Polynomial.evalRingHom (0 : F)).comp (line u).toRingHom) =
       (MvPolynomial.constantCoeff : MvPolynomial σ F →+* F) := by
-    apply MvPolynomial.ringHom_ext
-    · intro r; simp [line]
-    · intro i; simp [line]
-  exact DFunLike.congr_fun this p
-
-theorem eval_one_line (u : σ → F) (p : MvPolynomial σ F) :
-    (line u p).eval 1 = MvPolynomial.eval u p := by
-  have : ((Polynomial.evalRingHom (1 : F)).comp (line u).toRingHom) =
-      (MvPolynomial.eval u : MvPolynomial σ F →+* F) := by
     apply MvPolynomial.ringHom_ext
     · intro r; simp [line]
     · intro i; simp [line]

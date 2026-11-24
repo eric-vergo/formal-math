@@ -242,7 +242,7 @@ theorem accF_kv {M m N d s : ℕ} {p : MvPolynomial (Fin N × Option Bool) R} (h
       K.nds ≤ 2 ^ (3 * M + 1) + 2 ^ (M + m + 3) + 3 ∧ K.ht ≤ 3 * M + m + 4 ∧
       ∀ (A : Type) [CommRing A] [Algebra A R] (θ : List Bool → A) (z : Tree), z.size < N →
         KV θ K.lk {q | K.InB 1 q} (accF M m d out) z
-          (∑ i ∈ Finset.range (d + 1), (line (codeB R N (tbits z)) p).coeff i)
+          (∑ i ∈ Finset.range (d + 1), (Nc.line (codeB R N (tbits z)) p).coeff i)
           (d * (800 * (M + m) + 4000) + (z.size + 2) * (40 * m + 60) + 10 * m + 100) := by
   obtain ⟨k, lam, P, o, ho, rfl, hE⟩ := exists_series hp hs
   obtain ⟨out, hout, hval⟩ := exists_word ho

@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), Codex (OpenAI)
 -/
 import VersoManual
 import VersoBlueprint
@@ -470,8 +470,12 @@ statement, the exact numbers being those of `Paper.prop_next_round`.
 `Paper.prop_next_round` is the round with the numbers of the proposition: from `IsPre` at scale
 $`u^\alpha` in $`u^{e+8}` steps to `IsAccT` in $`u^e` steps, for
 $`\alpha(H - 32) + 40 \leq e` and $`e + 9 \leq 2H\alpha`, the program growing by at most
-$`u^{h\alpha+2} + u^{H+1}` (the Lean `e` is the paper's $`f`). The proofs of `round` and `stepF_ev`
-were read in full.
+$`u^{h\alpha+2} + u^{H+1}` (the Lean `e` is the paper's $`f`). The exact and approximate rounds use the same estimate for the cost of enumerating
+a trie of powers. If the trie has at most $`u^k` nodes, the exponent length satisfies
+$`B+1 \leq X`, and $`cX^2 \leq u`, then charging $`cX` for each expanded node costs at most
+$`2u^{k+1}` in total (`NS1.KT.expand_cost_le`). The proof multiplies the node bound for
+`K.expand B` by the cost per node. The bound on the encoded cutting input
+(`NS1.size_zq_of_budget`) also applies to both rounds.
 :::
 
 # K.4. Nonexistence of accelerators
@@ -729,7 +733,9 @@ $`\lambda^e` (`Span n`). `prop_approx_acc_round_num` gives it the numbers of Pro
 `prop_approx_acc_next` iterates the rounds from a scale $`u` to $`u^\alpha`: from `IsAccA` at scale
 $`u` with bounds on the number of nodes, on the span of the constants (`Span`) and on the number of
 terms of their powers (`Thin Δ`: the $`n`th power has at most $`2n\Delta + 1` terms) it gives
-`IsAccA` at scale $`u^\alpha` for a new trie whose constants are rescaled copies of the given ones.
+`IsAccA` at scale $`u^\alpha` for a new trie whose right subtree contains rescaled copies of the given constants.
+The old trie forms the left subtree. The numerical proof applies `NS1.KT.expand_cost_le`
+to each subtree's trie of powers before bounding the cost of the combined program.
 :::
 
 :::lemma_ "prop_approx_acc_scales" (lean := "Paper.prop_approx_acc_first, Paper.prop_approx_acc_step, Paper.prop_approx_acc_all_scales, NS1.InvA") (parent := "part-contracting")

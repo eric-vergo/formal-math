@@ -188,7 +188,7 @@ theorem thm_noacc_diagonal {h : ℕ} (hh : 17 ≤ h) [Nontrivial R] {v : ℕ} {K
   have hpl : ∀ q ∈ (K.expand B').budg J, Plain θ (v ^ (16 * h)) (zq p p q.1) := by
     intro q hq
     obtain ⟨pl, -, -⟩ := hze q hq
-    refine Plain.of_le pl ?_
+    refine Plain.mono pl ?_
     have hht := KT.ht_expand B' K
     have m1 : 1000 + 100 * ((K.expand B').ht + J + 1) + 2 ≤ v := by omega
     have m2 : 40 * (nB * (J + 1)) ≤ 20 * v ^ 2 := by omega

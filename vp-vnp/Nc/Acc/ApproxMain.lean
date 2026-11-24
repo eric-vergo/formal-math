@@ -47,7 +47,7 @@ theorem ordGE_one : OrdGE 0 (1 : E[T;T⁻¹]) := by
 /-- **The parts of a small error stay small** at points whose coordinates have no poles. -/
 theorem ordGE_line_coeff {σ : Type} {u : σ → E[T;T⁻¹]} (hu : ∀ i, OrdGE 0 (u i))
     {r : MvPolynomial σ E[T;T⁻¹]} (hr : ∀ d, OrdGE 1 (r.coeff d)) (i : ℕ) :
-    OrdGE 1 ((Nc.Acc.line u r).coeff i) := by
+    OrdGE 1 ((Nc.line u r).coeff i) := by
   classical
   have hpow : ∀ (l : σ) (k : ℕ), PolyOrdGE 0 ((Polynomial.C (u l) * Polynomial.X) ^ k) := by
     intro l k
@@ -66,7 +66,7 @@ theorem ordGE_line_coeff {σ : Type} {u : σ → E[T;T⁻¹]} (hu : ∀ i, OrdGE
   refine OrdGE.list_sum fun x hx => ?_
   rw [List.mem_map] at hx
   obtain ⟨d, -, rfl⟩ := hx
-  rw [Nc.Acc.line, MvPolynomial.aeval_monomial, Polynomial.algebraMap_eq]
+  rw [Nc.line, MvPolynomial.aeval_monomial, Polynomial.algebraMap_eq]
   exact ((polyOrdGE_C (hr d)).mul (hprod d)) i
 
 theorem ordGE_codeB (N : ℕ) (w : List Bool) (q : Fin N × Option Bool) : OrdGE 0 (codeB E[T;T⁻¹] N w q) := by
@@ -81,7 +81,7 @@ theorem ordGE_sum_coeff_sub {N d n : ℕ} {f : MvPolynomial (Fin N × Option Boo
     (hp : ∀ e (i : ℤ), i ≤ 0 → (p.coeff e).coeff i = if i = 0 then f.coeff e else 0)
     (hd : f.totalDegree ≤ d) (hn : d < n) (w : List Bool) (a : A)
     (hval : MvPolynomial.eval (codeB E N w) f = algebraMap A E a) :
-    OrdGE 1 (∑ i ∈ Finset.range n, (Nc.Acc.line (codeB E[T;T⁻¹] N w) p).coeff i - algebraMap A E[T;T⁻¹] a) := by
+    OrdGE 1 (∑ i ∈ Finset.range n, (Nc.line (codeB E[T;T⁻¹] N w) p).coeff i - algebraMap A E[T;T⁻¹] a) := by
   classical
   obtain ⟨φ, hφ⟩ : ∃ φ, φ = algebraMap E E[T;T⁻¹] := ⟨_, rfl⟩
   have hdiff : ∀ e, OrdGE 1 ((p - MvPolynomial.map φ f).coeff e) := by
@@ -93,7 +93,7 @@ theorem ordGE_sum_coeff_sub {N d n : ℕ} {f : MvPolynomial (Fin N × Option Boo
     funext q
     simp only [Function.comp_apply, codeB]
     split_ifs <;> simp
-  have hf : ∑ i ∈ Finset.range n, (Nc.Acc.line (codeB E[T;T⁻¹] N w) (MvPolynomial.map φ f)).coeff i =
+  have hf : ∑ i ∈ Finset.range n, (Nc.line (codeB E[T;T⁻¹] N w) (MvPolynomial.map φ f)).coeff i =
       algebraMap A E[T;T⁻¹] a := by
     rw [Nc.Acc.sum_coeff_eq_eval _ _ ((Finset.sup_mono (MvPolynomial.support_map_subset φ f)).trans hd) hn, hu]
     have h1 : MvPolynomial.eval (φ ∘ codeB E N w) (MvPolynomial.map φ f) = φ (MvPolynomial.eval (codeB E N w) f) :=

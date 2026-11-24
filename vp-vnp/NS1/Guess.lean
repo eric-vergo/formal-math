@@ -157,6 +157,16 @@ theorem nds_expand (B : ℕ) (K : KT R) : (K.expand B).nds ≤ K.nds * (2 * B + 
     simp only [expand, nds]
     nlinarith
 
+/-- A trie of at most `u ^ k` nodes can enumerate its powers within the next power of `u`.
+Here `X` bounds the length of the exponent, and `c * X` is the cost per expanded node. -/
+theorem expand_cost_le (K : KT R) {u k B X c : ℕ} (hK : K.nds ≤ u ^ k) (hB : B + 1 ≤ X)
+    (hc : c * X ^ 2 ≤ u) : (K.expand B).nds * (c * X) ≤ 2 * u ^ (k + 1) := by
+  calc (K.expand B).nds * (c * X) ≤ (K.nds * (2 * X)) * (c * X) :=
+        Nat.mul_le_mul_right _ ((nds_expand B K).trans (Nat.mul_le_mul_left _ (by omega)))
+    _ = K.nds * (2 * (c * X ^ 2)) := by ring
+    _ ≤ u ^ k * (2 * u) := Nat.mul_le_mul hK (Nat.mul_le_mul_left _ hc)
+    _ = 2 * u ^ (k + 1) := by rw [pow_succ]; ring
+
 theorem ht_comb (c : R) (n : ℕ) : (comb c n).ht ≤ n := by
   induction n generalizing c with
   | zero => exact le_rfl
