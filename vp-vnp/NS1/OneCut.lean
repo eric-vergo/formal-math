@@ -37,6 +37,15 @@ def OneCutAt (θ : List Bool → A) (v a₀ α Λ : ℕ) : Prop := ∀ τ s k, v
   2 ≤ k → k ≤ v ^ 64 → ∃ G : Tree, G.size ≤ v ^ a₀ ∧ CutD θ τ s (τ * Λ / k)
     ((s / k + τ / v ^ 256) * Λ) (k * Λ) ((s + τ * k / v ^ 256) * Λ) G
 
+/-- Scaling a quotient back by the input-size factor consumes at most the original time
+when the branching factor fits in the remaining power of the scale. -/
+private theorem cut_div_mul_le {v τ k : ℕ} (hv : 0 < v) (hk : k ≤ v ^ 208) :
+    τ * k / v ^ 256 * v ^ 48 ≤ τ := by
+  refine Nat.le_of_mul_le_mul_right ?_ (show 0 < v ^ 208 from Nat.pow_pos hv)
+  calc τ * k / v ^ 256 * v ^ 48 * v ^ 208 = τ * k / v ^ 256 * v ^ 256 := by rw [Nat.mul_assoc, ← pow_add]
+    _ ≤ τ * k := Nat.div_mul_le_self _ _
+    _ ≤ τ * v ^ 208 := Nat.mul_le_mul_left _ hk
+
 /-- The final cut uses the smallest branching factor strictly above `τ * Λ / v ^ H`. -/
 private theorem OneCutAt.finalCut (hc : OneCutAt θ v a₀ α Λ) (hv : 1000 ≤ v)
     (hΛ2 : 2 ≤ Λ) (hH : a₀ ≤ H) :
@@ -83,13 +92,7 @@ private theorem OneCutAt.finalCut (hc : OneCutAt θ v a₀ α Λ) (hv : 1000 ≤
       _ ≤ (τ * Λ + τ * Λ) * Λ := Nat.mul_le_mul_right _ (Nat.add_le_add_left (hτ.trans (Nat.le_mul_of_pos_right _ hΛ1)) _)
       _ ≤ τ * (4 * Λ ^ 2) := by nlinarith [Nat.zero_le (τ * Λ ^ 2)]
   · have h1 : τ * k / v ^ 256 * v ^ 48 ≤ τ := by
-      have h2 : τ * k / v ^ 256 * v ^ 256 ≤ τ * v ^ 64 :=
-        (Nat.div_mul_le_self _ _).trans (Nat.mul_le_mul_left _ hk2)
-      have h3 : τ * k / v ^ 256 * v ^ 48 * v ^ 208 ≤ τ * v ^ 208 := by
-        calc τ * k / v ^ 256 * v ^ 48 * v ^ 208 = τ * k / v ^ 256 * v ^ 256 := by rw [Nat.mul_assoc, ← pow_add]
-          _ ≤ τ * v ^ 64 := h2
-          _ ≤ τ * v ^ 208 := Nat.mul_le_mul_left _ (pmono (by norm_num))
-      exact Nat.le_of_mul_le_mul_right h3 (ppos 208)
+      exact cut_div_mul_le (by omega) (hk2.trans (pmono (by norm_num)))
     calc (s + τ * k / v ^ 256) * Λ * v ^ 48 = (s * v ^ 48 + τ * k / v ^ 256 * v ^ 48) * Λ := by ring
       _ ≤ (c * τ + c * τ) * Λ := Nat.mul_le_mul_right _ (Nat.add_le_add hs (h1.trans (Nat.le_mul_of_pos_left _ hc1)))
       _ = c * τ * (2 * Λ) := by ring
@@ -232,12 +235,7 @@ theorem _root_.Paper.thm_cut_iterate (hc : OneCutAt θ v a₀ α Λ) (hv : 1000 
     · -- time
       have b1 : t₁ * v ^ 48 ≤ c * τ * (2 * Λ) := by
         have h1 : τ * v ^ 63 / v ^ 256 * v ^ 48 ≤ τ := by
-          have h2 : τ * v ^ 63 / v ^ 256 * v ^ 48 * v ^ 208 ≤ τ * v ^ 208 := by
-            calc τ * v ^ 63 / v ^ 256 * v ^ 48 * v ^ 208 = τ * v ^ 63 / v ^ 256 * v ^ 256 := by
-                  rw [Nat.mul_assoc, ← pow_add]
-              _ ≤ τ * v ^ 63 := Nat.div_mul_le_self _ _
-              _ ≤ τ * v ^ 208 := Nat.mul_le_mul_left _ (pmono (by norm_num))
-          exact Nat.le_of_mul_le_mul_right h2 (ppos 208)
+          exact cut_div_mul_le (by omega) (pmono (by norm_num))
         calc t₁ * v ^ 48 = (s * v ^ 48 + τ * v ^ 63 / v ^ 256 * v ^ 48) * Λ := by rw [ht₁]; ring
           _ ≤ (c * τ + c * τ) * Λ := Nat.mul_le_mul_right _ (Nat.add_le_add hs (h1.trans (Nat.le_mul_of_pos_left _ hc1)))
           _ = c * τ * (2 * Λ) := by ring

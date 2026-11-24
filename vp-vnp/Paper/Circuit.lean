@@ -203,22 +203,8 @@ theorem lem_circuit_program (H : ℕ) (hH : 32 ≤ H) : ∃ c : ℕ, ∀ v a, 10
     rw [hdd] at a3
     exact ⟨a1, fun r hr => ⟨(a2 r hr).1.trans (hcost z hz), (a2 r hr).2⟩, a3⟩
   · -- the number of constants
-    have h1 : 2 ^ M ≤ 2 * v ^ (a + 1) := by
-      have h2 := two_pow_lg_le (n := v ^ (a + 1)) (by positivity)
-      have h3 : M = M - 1 + 1 := by
-        have : 1 ≤ lg (v ^ (a + 1)) := by unfold lg; omega
-        omega
-      rw [← hM] at h2
-      rw [h3, pow_succ]
-      omega
-    have h2 : 2 ^ m ≤ 2 * v ^ H := by
-      have h2 := two_pow_lg_le (n := v ^ H) (by positivity)
-      have h3 : m = m - 1 + 1 := by
-        have : 1 ≤ lg (v ^ H) := by unfold lg; omega
-        omega
-      rw [← hm] at h2
-      rw [h3, pow_succ]
-      omega
+    have h1 : 2 ^ M ≤ 2 * v ^ (a + 1) := hM ▸ two_pow_lg_le_double (by positivity)
+    have h2 : 2 ^ m ≤ 2 * v ^ H := hm ▸ two_pow_lg_le_double (by positivity)
     have h3 : 2 ^ (3 * M + 1) ≤ 16 * v ^ (3 * a + H + 3) := by
       calc 2 ^ (3 * M + 1) = 2 * (2 ^ M) ^ 3 := by rw [pow_succ, mul_comm 3 M, pow_mul]; ring
         _ ≤ 2 * (2 * v ^ (a + 1)) ^ 3 := Nat.mul_le_mul_left _ (Nat.pow_le_pow_left h1 3)

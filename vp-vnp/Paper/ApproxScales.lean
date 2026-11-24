@@ -236,12 +236,8 @@ theorem prop_approx_acc_hasAcc {h cB U Δ cΔ b₀ : ℕ} (hh : 17 ≤ h) {u : �
     intro k
     rw [Nat.mul_comm k l, pow_mul, pow_mul]
     refine Nat.pow_le_pow_left ?_ k
-    have h1 := two_pow_lg_le (n := u) (by omega)
-    rw [← hl] at h1
-    have h3 : 2 ^ l = 2 * 2 ^ (l - 1) := by rw [← pow_succ', show l - 1 + 1 = l by omega]
-    have h4 : 2 * u ≤ u * u := Nat.mul_le_mul_right _ (by omega)
-    rw [pow_two]
-    omega
+    rw [hl, pow_two]
+    exact (two_pow_lg_le_double (by omega)).trans (Nat.mul_le_mul_right _ (by omega))
   have hJm : 2 ^ (J + m + 1) ≤ u ^ (4400 * h) := by
     calc 2 ^ (J + m + 1) ≤ 2 ^ (2200 * h * l) := Nat.pow_le_pow_right (by norm_num) (by
           have e : 2200 * h * l = 2200 * (h * l) := by ring

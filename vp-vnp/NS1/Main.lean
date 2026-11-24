@@ -152,6 +152,10 @@ theorem two_pow_lg_le {n : ℕ} (hn : n ≠ 0) : 2 ^ (lg n - 1) ≤ n := by
   rw [Nat.add_sub_cancel]
   exact Nat.pow_log_le_self 2 hn
 
+theorem two_pow_lg_le_double {n : ℕ} (hn : n ≠ 0) : 2 ^ lg n ≤ 2 * n := by
+  rw [lg, pow_succ']
+  exact Nat.mul_le_mul_left _ (Nat.pow_log_le_self 2 hn)
+
 /-- Powers of the logarithm are small. -/
 theorem poly_lg (c k : ℕ) : ∃ n₀, ∀ n, n₀ ≤ n → c * lg n ^ k ≤ n := by
   have h1 := tendsto_pow_const_div_const_pow_of_one_lt k (show (1 : ℝ) < 2 by norm_num)
