@@ -41,6 +41,7 @@ def measure(args, scenario, trial, name, command):
         run = subprocess.Popen(command, cwd=args.work, stdout=file, stderr=subprocess.STDOUT)
         _, status, usage = os.wait4(run.pid, 0)
         run.returncode = os.waitstatus_to_exitcode(status)
+    elapsed = time.perf_counter() - started
     built = re.findall(r"\[\d+/\d+\] Built ([^\s(]+)", log.read_text(errors="replace"))
     libraries = {"Statement", "Paper", "NS1", "Nc", "Ov", "Comparator", "VpVnpBlueprint"}
     modules = sorted({name for name in built if name.split(".")[0] in libraries})
@@ -55,7 +56,7 @@ def measure(args, scenario, trial, name, command):
         "built_modules": modules,
         "lake_built_jobs": len(built),
         "exit_code": run.returncode,
-        "wall_seconds": round(time.perf_counter() - started, 6),
+        "wall_seconds": round(elapsed, 6),
         "log": log.relative_to(args.output.parent).as_posix(),
     })
     if run.returncode:
@@ -109,8 +110,12 @@ def verify(args):
 
     stage("proof-build", "build")
     axioms = stage("axioms", "env", "lean", "scripts/PrintAxioms.lean").read_text()
-    expected = "depends on axioms: [propext, Classical.choice, Quot.sound]"
-    assert sum(expected in line for line in axioms.splitlines()) == 5, axioms
+    expected = {"mainTheorem", "mainTheoremApprox", "separation", "separationClosure", "permanent_over_real"}
+    declarations = re.findall(r"^'Solution\.(\w+)' depends on axioms: \[([^\]]+)\]$", axioms, re.M)
+    if len(declarations) != 5 or {name for name, _ in declarations} != expected or any(
+        set(names.split(", ")) != {"propext", "Classical.choice", "Quot.sound"} for _, names in declarations
+    ):
+        raise SystemExit("Unexpected solution axioms; see the axioms log")
     stage("statement-spelling", "env", "lean", "scripts/StatementSpelling.lean")
     stage("build-vbp", "build", "vbp")
     stage("comparator-layout", "exe", "vbp", "comparator-check")
@@ -118,12 +123,14 @@ def verify(args):
     stage("blueprint-build-and-replay", "exe", "vbp", "build")
     check = stage("blueprint-check", "exe", "vbp", "check").read_text()
     report = json.loads(check.splitlines()[-1])
-    assert report["ok"], report
+    if report.get("ok") is not True:
+        raise SystemExit(f"Blueprint consistency check failed: {report}")
     site = args.work / "_out/site/html-multi"
     stats = (site / "Project-Stats/index.html").read_text()
     proved = len(re.findall(r'class="[^"]*bp_stats_verdict_proved', stats))
     accepted = len(re.findall(r'class="[^"]*bp_stats_replay_accepted', stats))
-    assert proved >= 5 and accepted > 0, (proved, accepted)
+    if proved != 5 or not accepted:
+        raise SystemExit(f"Unexpected theorem verdicts: proved={proved}, accepted={accepted}")
     artifacts = {
         name: {"sha256": digest(site / name), "bytes": (site / name).stat().st_size}
         for name in [
@@ -134,7 +141,8 @@ def verify(args):
         ]
     }
     site_bytes = sum(file.stat().st_size for file in site.rglob("*") if file.is_file())
-    assert site_bytes < 1_000_000_000, site_bytes
+    if site_bytes >= 1_000_000_000:
+        raise SystemExit(f"Site exceeds the Pages size limit ({site_bytes} bytes)")
     append_json(args.output, {
         "scenario": "verification",
         "trial": 1,
@@ -143,6 +151,8 @@ def verify(args):
         "accepted_replay_badges": accepted,
         "blueprint_check": report,
         "site_bytes": site_bytes,
+        "site_files": sum(f.is_file() for f in site.rglob("*")),
+        "olean_files": sum(1 for _ in (args.work / ".lake/build/lib/lean").rglob("*.olean")),
         "artifacts": artifacts,
     })
 
