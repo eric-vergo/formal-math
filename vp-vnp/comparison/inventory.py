@@ -294,6 +294,7 @@ def analyze(args):
     files = []
     local_graph = {}
     blueprint = {"authored": [], "generated": []}
+    compiled_artifacts = defaultdict(Counter)
     modules = set(kernel["localDeclarations"])
     export_membership = {name for closure in kernel["exports"].values() for name, _ in closure}
     locally_used = set()
@@ -321,6 +322,11 @@ def analyze(args):
             local_graph[mod] = IMPORT.findall(masked)
             source_modules[mod] = path
             if mod in modules or mod == "Comparator.VpVnp.Challenge":
+                for kind in (".ilean", ".olean", ".olean.private", ".olean.server", ".ir"):
+                    artifact = args.compiled / source.with_suffix(kind)
+                    if artifact.is_file():
+                        compiled_artifacts[kind]["files"] += 1
+                        compiled_artifacts[kind]["bytes"] += artifact.stat().st_size
                 ilean_file = args.compiled / source.with_suffix(".ilean")
                 ilean = json.loads(ilean_file.read_text())
                 if ilean["module"] != mod:
@@ -429,6 +435,7 @@ def analyze(args):
         "import_counts": {r: graph_stats(local_graph, r) for r in import_roots if r in local_graph},
         "blueprint": blueprint, "blueprint_counts": blueprint_counts,
         "kernel_counts": export_counts, "export_project_names": export_project_names, "export_union": export_union,
+        "compiled_proof_artifacts": dict(compiled_artifacts),
         "blueprint_declared_roots": kernel["blueprintDeclaredRoots"],
         "blueprint_project_closure": kernel["blueprintProjectClosure"],
         "proof_candidates_outside_export_and_blueprint_closures": inactive,
@@ -458,6 +465,7 @@ def main():
         args.output.write_bytes(raw)
     if args.summary:
         wanted = ["revision", "groups", "import_counts", "blueprint_counts", "kernel_counts", "export_union",
+                  "compiled_proof_artifacts",
                   "proof_candidates_with_no_source_usages", "exact_normalized_proof_body_duplicates"]
         summary = {k: result[k] for k in wanted}
         summary["tracked_files"] = len(result["tracked_files"])

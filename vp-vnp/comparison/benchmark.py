@@ -178,6 +178,24 @@ def replay_exports(args):
                                   "export_sha256": digest(export), "checkers": checked})
 
 
+def rendered_stats(stats):
+    def text(markup):
+        return " ".join(html.unescape(re.sub(r"<[^>]+>", "", markup)).split())
+
+    progress = re.findall(r'data-bp-progress="([^"]+)"[^>]*>(.*?)</p>', stats, re.S)
+    details = re.findall(r'<details class="bp_stats_more bp_stats_replay_(\w+)"[^>]*>\s*<summary>(.*?)</summary>',
+                         stats, re.S)
+    size = re.findall(r'data-bp-stat="([^"]+)"[^>]*>\s*<span class="bp_stats_tile_value">(.*?)</span>',
+                      stats, re.S)
+    return {
+        "proved_verdicts": len(re.findall(r'class="[^"]*bp_stats_verdict_proved', stats)),
+        "accepted_replay_badges": len(re.findall(r'class="[^"]*bp_stats_replay_accepted', stats)),
+        "rendered_progress": {kind: text(body) for kind, body in progress},
+        "rendered_size": {kind: text(body) for kind, body in size},
+        "replay_coverage_details": {kind: text(body) for kind, body in details},
+    }
+
+
 def verify(args):
     lake = ["lake", "--no-cache", "--no-ansi"]
 
@@ -211,11 +229,9 @@ def verify(args):
     if report.get("ok") is not True:
         raise SystemExit(f"Blueprint consistency check failed: {report}")
     site = args.work / "_out/site/html-multi"
-    stats = (site / "Project-Stats/index.html").read_text()
-    proved = len(re.findall(r'class="[^"]*bp_stats_verdict_proved', stats))
-    accepted = len(re.findall(r'class="[^"]*bp_stats_replay_accepted', stats))
-    if proved != 5 or not accepted:
-        raise SystemExit(f"Unexpected theorem verdicts: proved={proved}, accepted={accepted}")
+    stats = rendered_stats((site / "Project-Stats/index.html").read_text())
+    if stats["proved_verdicts"] != 5 or not stats["accepted_replay_badges"]:
+        raise SystemExit(f"Unexpected rendered theorem verdicts: {stats}")
     artifacts = {
         name: {"sha256": digest(site / name), "bytes": (site / name).stat().st_size}
         for name in [
@@ -232,17 +248,9 @@ def verify(args):
         "scenario": "verification",
         "trial": 1,
         "stage": "site-artifacts",
-        "proved_verdicts": proved,
-        "accepted_replay_badges": accepted,
+        **stats,
         "fresh_replay_checkers": dict(replay_checkers),
         "replay_messages": re.findall(r"^Kernel replay: (.+)$", replay_log, re.M),
-        "rendered_progress": {kind: html.unescape(re.sub(r"<[^>]+>", "", body))
-                              for kind, body in re.findall(r'data-bp-progress="([^"]+)"[^>]*>(.*?)</p>', stats, re.S)},
-        "replay_coverage_details": {
-            kind: html.unescape(re.sub(r"<[^>]+>", "", caption))
-            for kind, caption in re.findall(
-                r'<details class="bp_stats_more bp_stats_replay_(\w+)"[^>]*>\s*<summary>(.*?)</summary>', stats, re.S)
-        },
         "blueprint_check": report,
         "site_bytes": site_bytes,
         "site_files": sum(f.is_file() for f in site.rglob("*")),

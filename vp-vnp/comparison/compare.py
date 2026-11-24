@@ -271,6 +271,9 @@ def main():
     ])
     paired("Union of the five exports", *({k.replace("_", " ").capitalize(): v
            for k, v in inv["export_union"].items()} for inv in inventories))
+    paired("Compiled project proof files", *({f"`{kind}` {key}": value
+           for kind, metrics in inv["compiled_proof_artifacts"].items() for key, value in metrics.items()}
+           for inv in inventories))
     for role in ("authored", "generated"):
         paired(f"{role.capitalize()} blueprint directives", *(blueprint_metrics(inv, role) for inv in inventories))
     paired("Exposition and source proofs outside the exports", *map(exposition, inventories))

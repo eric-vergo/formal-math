@@ -54,8 +54,10 @@ including compiler-generated constants. Use those lists for per-export route fla
 - **Proof commands.** Use Lean's `.ilean` declaration ranges and selection ranges, in zero-based
   UTF-16 coordinates. Report one entry per distinct source command whose selection follows
   `theorem` or `lemma`. If the compiler records only the selection range of a single-line
-  proof, take its command span from that line. Include the Comparator challenge stubs in proof counts, with their own
-  module and file entries. Count non-comment lines in the body after the first top-level
+  proof, take its command span from that line. The complete inventory and declaration command
+  totals include the five Comparator challenge theorems, with their own module and file entries.
+  The proof-body size distribution and longest-body table omit the five challenge proofs that
+  use `sorry`. Count non-comment lines in the body after the first top-level
   `:=` or `where`, or from the first equation arm. An inline body counts as one line. A `by`
   introducing a tactic block is part of the body. Declaration command totals use a separate
   source scan, which counts a mutual declaration once per written command. The exact-body
@@ -84,6 +86,8 @@ including compiler-generated constants. Use those lists for per-export route fla
   in the closure. Project membership comes from the explicitly imported project module list.
   The compact inventory includes the cardinality of the deduplicated union of all five roots,
   with separate project and whole-environment counts.
+- **Compiled proof files.** Count the artifacts associated with the tracked proof, statement
+  and Comparator Lean sources. The totals exclude dependency artifacts and blueprint builds.
 - **Pruning candidates.** Report named source proofs outside both the export and authored
   blueprint kernel closures. The smaller list additionally requires zero explicit source
   usages from the project's `.ilean` files. These lists do not establish that removing a

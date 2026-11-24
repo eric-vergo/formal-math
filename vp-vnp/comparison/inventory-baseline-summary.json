@@ -28,6 +28,16 @@
       "names": 2003
     }
   },
+  "compiled_proof_artifacts": {
+    ".ilean": {
+      "bytes": 8421734,
+      "files": 323
+    },
+    ".olean": {
+      "bytes": 279018704,
+      "files": 323
+    }
+  },
   "exact_normalized_proof_body_duplicates": [
     [
       "NS1.ApproxOrd:NS1.KT.All.imp",
