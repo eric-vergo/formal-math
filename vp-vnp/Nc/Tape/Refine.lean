@@ -43,10 +43,7 @@ theorem cat_eq_cons {A : Fin K → List Γ} {a : Γ} {W : List Γ} (h : cat A = 
         refine Fin.cases (fun _ => hA) (fun j hj => h1 j (by simpa using hj)) j hj
       · rw [cat_succ, Function.update_of_ne (Fin.succ_ne_zero i).symm, hA, List.nil_append, ← h3]
         congr 1
-        funext j
-        by_cases e : j = i
-        · subst e; simp
-        · rw [Function.update_of_ne e, Function.update_of_ne (fun h => e (Fin.succ_injective _ h))]
+        exact Function.update_comp_eq_of_injective A (Fin.succ_injective _) i l
     · rw [hA, List.cons_append, List.cons.injEq] at h
       refine ⟨0, l, fun j hj => absurd hj (Fin.not_lt_zero j), by rw [hA, h.1], ?_⟩
       rw [cat_succ, Function.update_self, ← h.2]
@@ -66,10 +63,7 @@ theorem cat_of_cons {A : Fin K → List Γ} {a : Γ} {i : Fin K} {l : List Γ} (
       rw [Function.update_of_ne (Ne.symm e), h1 0 (Fin.succ_pos i'), List.nil_append, List.nil_append]
       rw [ih (A := fun j => A j.succ) (i := i') (fun j hj => h1 _ (by simpa using hj)) h2]
       congr 2
-      funext j
-      by_cases e' : j = i'
-      · subst e'; simp
-      · rw [Function.update_of_ne e', Function.update_of_ne (fun h => e' (Fin.succ_injective _ h))]
+      exact (Function.update_comp_eq_of_injective A (Fin.succ_injective _) i' l).symm
 
 /-- Staircase support. -/
 def Stair (X : Fin K → Fin K → List Γ) : Prop :=

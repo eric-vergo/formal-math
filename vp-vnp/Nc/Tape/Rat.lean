@@ -111,6 +111,10 @@ theorem RatLe.normal {n : ℕ} {f : Series F Ω} (hf : RatLe n f) :
     | some (some q), some none => (r.mu a *ᵥ r.gam) q
     | some (some q), some (some q') => r.mu a q q'
   refine ⟨Option (Option Q), inferInstance, inferInstance, mu, none, some none, by simp; omega, ?_⟩
+  have final_row (o : List Ω) (ho : o ≠ []) : (o.map mu).prod (some none) (some none) = 0 := by
+    obtain ⟨a, o, rfl⟩ := List.exists_cons_of_ne_nil ho
+    rw [List.map_cons, List.prod_cons, Matrix.mul_apply]
+    simp [mu]
   have key : ∀ o : List Ω, ∀ q, o ≠ [] → (o.map mu).prod (some (some q)) (some none) = r.tail o q := by
     intro o
     induction o with
@@ -121,12 +125,8 @@ theorem RatLe.normal {n : ℕ} {f : Series F Ω} (hf : RatLe n f) :
       by_cases ho : o = []
       · subst ho
         simp [mu, Rep.tail, Matrix.one_apply]
-      · have h0 : (o.map mu).prod (some none) (some none) = 0 := by
-          obtain ⟨b, o', rfl⟩ := List.exists_cons_of_ne_nil ho
-          rw [List.map_cons, List.prod_cons, Matrix.mul_apply]
-          simp [mu]
-        simp only [mu, Matrix.of_apply, zero_mul, zero_add] at *
-        rw [h0, mul_zero, zero_add, Rep.tail, Matrix.mulVec, dotProduct]
+      · simp only [mu, Matrix.of_apply, zero_mul, zero_add] at *
+        rw [final_row o ho, mul_zero, zero_add, Rep.tail, Matrix.mulVec, dotProduct]
         exact Finset.sum_congr rfl fun q' _ => by rw [ih q' ho]
   intro o ho
   obtain ⟨a, o, rfl⟩ := List.exists_cons_of_ne_nil ho
@@ -134,13 +134,9 @@ theorem RatLe.normal {n : ℕ} {f : Series F Ω} (hf : RatLe n f) :
   by_cases ho : o = []
   · subst ho
     simp [mu, Rep.series, Rep.tail, Matrix.one_apply]
-  · have h0 : (o.map mu).prod (some none) (some none) = 0 := by
-      obtain ⟨b, o', rfl⟩ := List.exists_cons_of_ne_nil ho
-      rw [List.map_cons, List.prod_cons, Matrix.mul_apply]
-      simp [mu]
-    rw [Finset.sum_congr rfl fun q' _ => by rw [key o q' ho]]
+  · rw [Finset.sum_congr rfl fun q' _ => by rw [key o q' ho]]
     simp only [mu, Matrix.of_apply, zero_mul, zero_add] at *
-    rw [h0, mul_zero, zero_add, Rep.series, Rep.tail, Matrix.dotProduct_mulVec]
+    rw [final_row o ho, mul_zero, zero_add, Rep.series, Rep.tail, Matrix.dotProduct_mulVec]
     rfl
 
 end Nc

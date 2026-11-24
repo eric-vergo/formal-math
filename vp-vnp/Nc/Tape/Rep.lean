@@ -94,6 +94,17 @@ def mul (r₁ : Rep F Ω Q₁) (r₂ : Rep F Ω Q₂) : Rep F Ω (Q₁ ⊕ Q₂)
   mu a := Matrix.fromBlocks (r₁.mu a) (Matrix.vecMulVec (r₁.mu a *ᵥ r₁.gam) r₂.lam) 0 (r₂.mu a)
   gam := Sum.elim 0 r₂.gam
 
+/-- Separate the one-letter prefix from the longer prefixes in a product of series. -/
+private theorem prefix_sum_cons (r : Rep F Ω Q) (g : Series F Ω) (a : Ω) (o : List Ω) :
+    ∑ k ∈ range (a :: o).length, g ((a :: o).drop (k + 1)) • r.tail ((a :: o).take (k + 1)) =
+      r.mu a *ᵥ (∑ k ∈ range o.length, g (o.drop (k + 1)) • r.tail (o.take (k + 1))) +
+        g o • (r.mu a *ᵥ r.gam) := by
+  rw [List.length_cons, Finset.sum_range_succ']
+  congr 1
+  rw [Matrix.mulVec_sum]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  simp [tail, Matrix.mulVec_smul]
+
 theorem mul_tail (r₁ : Rep F Ω Q₁) (r₂ : Rep F Ω Q₂) (o : List Ω) :
     (r₁.mul r₂).tail o = Sum.elim
       (∑ k ∈ range o.length, (r₂.series (o.drop (k + 1))) • r₁.tail (o.take (k + 1))) (r₂.tail o) := by
@@ -104,13 +115,10 @@ theorem mul_tail (r₁ : Rep F Ω Q₁) (r₂ : Rep F Ω Q₂) (o : List Ω) :
     simp only [mul, Matrix.fromBlocks_mulVec, Matrix.zero_mulVec, zero_add, Sum.elim_comp_inl,
       Sum.elim_comp_inr]
     congr 1
-    rw [List.length_cons, Finset.sum_range_succ']
+    rw [prefix_sum_cons]
     congr 1
-    · rw [Matrix.mulVec_sum]
-      refine Finset.sum_congr rfl fun k _ => ?_
-      simp [tail, Matrix.mulVec_smul]
-    · ext i
-      simp [tail, series, Matrix.vecMulVec_mulVec, mul_comm]
+    ext i
+    simp [series, Matrix.vecMulVec_mulVec, mul_comm]
 
 theorem mul_series (r₁ : Rep F Ω Q₁) (r₂ : Rep F Ω Q₂) (o : List Ω) :
     (r₁.mul r₂).series o = Series.mul r₁.series r₂.series o := by
@@ -137,15 +145,6 @@ theorem star_tail (r : Rep F Ω Q) (o : List Ω) :
   | nil => ext q; rcases q with q | q <;> simp [tail, star, Series.kstar_nil]
   | cons a o ih =>
     rw [tail, ih]
-    have h2 : ∑ k ∈ range (a :: o).length, (Series.kstar r.series ((a :: o).drop (k + 1))) •
-        r.tail ((a :: o).take (k + 1)) = r.mu a *ᵥ (∑ k ∈ range o.length,
-          (Series.kstar r.series (o.drop (k + 1))) • r.tail (o.take (k + 1))) +
-          (Series.kstar r.series o) • (r.mu a *ᵥ r.gam) := by
-      rw [List.length_cons, Finset.sum_range_succ']
-      congr 1
-      rw [Matrix.mulVec_sum]
-      refine Finset.sum_congr rfl fun k _ => ?_
-      simp [tail, Matrix.mulVec_smul]
     simp only [star, Matrix.fromBlocks_mulVec, Sum.elim_comp_inl, Sum.elim_comp_inr]
     congr 1
     · ext _
@@ -162,7 +161,7 @@ theorem star_tail (r : Rep F Ω Q) (o : List Ω) :
         refine Finset.sum_congr rfl fun k _ => ?_
         simp [series, tail, Matrix.mulVec_smul, mul_comm]
       · simp [series, tail, Matrix.mulVec, dotProduct]
-    · rw [h2, add_comm]
+    · rw [prefix_sum_cons, add_comm]
       congr 1
       ext q
       simp [Matrix.mulVec, dotProduct, mul_comm]
