@@ -20,6 +20,17 @@ EXPORTS = {
     "C": "separationClosure", "R": "permanent_over_real",
 }
 REPO = "https://github.com/eric-vergo/formal-math"
+EXAMPLES = [
+    ("Real permanent bound", ["Paper.thm_main"], ["Paper.thm_main"]),
+    ("Real polynomial and class corollaries", ["Paper.thm_simple", "Paper.cor_classes"],
+     ["Paper.thm_simple", "Paper.cor_classes"]),
+    ("Flat polynomial lower bound", ["Paper.thm_flat_simple"], ["Paper.thm_flat_simple"]),
+    ("Thin-tree existence", ["Paper.exists_thinTrees"], ["Paper.exists_thinTrees"]),
+    ("Formula decoder inversion", [f"Nc.Uni.inv_{constructor}" for constructor in
+                                  ("quote", "id", "hd", "tl", "cons", "ite", "run", "guess", "fail", "theta", "mul")],
+     ["NS1.Fm.codeShape_of_decode"]),
+    ("Permanent VNP witness", ["Paper.perm_mem_VNP"], ["Paper.perm_mem_VNP", "Nc.Hc.mem_VNP_of_quartic_witness"]),
+]
 
 
 def load(path):
@@ -109,6 +120,16 @@ def proof_sizes(inventory):
     }, ordered[:10]
 
 
+def proof_example(inventory, paths, names):
+    records = {item["name"]: item for item in inventory["proofs"].values()}
+    links, lines = [], 0
+    for name in names:
+        item = records[name]
+        links.append(source_link(inventory, paths[item["module"]], item["source_line"], name))
+        lines += item["body_code_lines"]
+    return ", ".join(links), f"{lines:,}"
+
+
 def graph_metrics(imports, root):
     @cache
     def height(module):
@@ -156,6 +177,7 @@ def exposition(inventory):
 
 def benchmark_rows(directory, revisions):
     main_stage = {"clean": "proof", "warm": "proof", "foundation": "edited", "branch": "edited", "chapter": "edited"}
+    conditions = None
     for scenario, stage in main_stage.items():
         for side, revision in zip(("before", "after"), revisions, strict=True):
             stages = []
@@ -167,6 +189,10 @@ def benchmark_rows(directory, revisions):
                 identity = (metadata["revision"], metadata["scenario"], metadata["trial"])
                 if identity != expected or any(r.get("exit_code", 0) for r in records):
                     raise ValueError(f"invalid benchmark result: {path}")
+                settings = tuple(metadata[k] for k in ("host", "logical_cpus", "lake_version", "manifest_sha256", "threads"))
+                if conditions is not None and conditions != settings:
+                    raise ValueError(f"benchmarked under different conditions: {path}")
+                conditions = settings
                 stages.append(next(r for r in records if r.get("stage") == stage))
             wall = [r["wall_seconds"] for r in stages]
             cpu = [r["cpu_user_seconds"] + r["cpu_system_seconds"] for r in stages]
@@ -223,6 +249,13 @@ def main():
             source_link(inventories[k], paths[k][p["module"]], p["source_line"], p["name"]), p["body_code_lines"]))]
         for n, (p0, p1) in enumerate(zip(longest_old, longest_new, strict=True), start=1)
     ])
+    if before["revision"] != after["revision"]:
+        print("### Selected proof rewrites\n")
+        print("Line counts cover the displayed bodies. Shared dependencies are measured in the kernel closure tables.\n")
+        table(["Argument", "Before", "Body lines", "After", "Body lines"], [
+            [title, *proof_example(before, paths[0], old_names), *proof_example(after, paths[1], new_names)]
+            for title, old_names, new_names in EXAMPLES
+        ])
     print("### Local import DAG\n")
     table(["Root", "Revision", "Reachable modules", "Edges", "Longest path", "Max reverse fanout", "Most imported"], [
         [f"`{root}`", side, *graph_metrics(inv["imports"], root)]
