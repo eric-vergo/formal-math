@@ -224,6 +224,26 @@ theorem sum_edge_end (j : Fin J) (e : T.Ed j) (β : Bool) : ∑ ν ∈ (univ : F
       subst h3
       exact (alv_mid_le hr hb j e s hx β).1
 
+omit hr hb hh in
+open Classical in
+/-- The two endpoint contributions of an edge cannot both reach the same chamber. -/
+private theorem sum_child_edges_le {ι α κ : Type*} [Fintype ι] [DecidableEq α] [DecidableEq κ] (a b : ι → α) (c : α)
+    (hne : ∀ e, a e ≠ b e) (C : ι → Bool → Finset κ) (f : κ → ℕ) (bound : ι → ℕ)
+    (hC : ∀ e β, ∑ ν ∈ C e β, f ν ≤ bound e) :
+    ∑ ν ∈ ((univ.filter fun e => a e = c).biUnion fun e => C e false) ∪
+      ((univ.filter fun e => b e = c).biUnion fun e => C e true), f ν ≤
+      ∑ e, if a e = c ∨ b e = c then bound e else 0 := by
+  refine (sum_union_le _ _ _).trans ?_
+  refine (add_le_add (sum_biUnion_le' _ _ _) (sum_biUnion_le' _ _ _)).trans ?_
+  rw [Finset.sum_filter, Finset.sum_filter, ← Finset.sum_add_distrib]
+  refine Finset.sum_le_sum fun e _ => ?_
+  by_cases ha : a e = c
+  · have hb : b e ≠ c := fun h => hne e (ha.trans h.symm)
+    simpa [ha, hb] using hC e false
+  · by_cases hb : b e = c
+    · simpa [ha, hb] using hC e true
+    · simp [ha, hb]
+
 open Classical in
 /-- The alive units between a chamber of a level before the last and its parent. -/
 theorem sum_child_lt (j : Fin J) (c : T.X j) : (∑ ν : NM R FL (ch := ch), if IsCh R ch FL ν ⟨j.castSucc, c⟩ then
@@ -267,20 +287,7 @@ theorem sum_child_lt (j : Fin J) (c : T.X j) : (∑ ν : NM R FL (ch := ch), if 
     · exact mem_union_right _ (mem_biUnion.2 ⟨e, mem_filter.2 ⟨mem_univ _, by simpa using hce⟩, hmem e he⟩)
   refine (Finset.sum_le_sum fun ν _ => hall ν).trans ?_
   rw [← Finset.sum_filter, filter_mem_eq_inter, univ_inter]
-  refine (sum_union_le _ _ _).trans ?_
-  refine (add_le_add (sum_biUnion_le' _ _ _) (sum_biUnion_le' _ _ _)).trans ?_
-  rw [Finset.sum_filter, Finset.sum_filter, ← Finset.sum_add_distrib]
-  refine Finset.sum_le_sum fun e _ => ?_
-  have hne := T.e_ne e
-  by_cases h0 : T.e0 e = c
-  · have h1 : ¬ T.e1 e = c := fun hcon => hne (h0.trans hcon.symm)
-    rw [ite_eq_left h0, ite_eq_right h1, ite_eq_left (Or.inl h0)]
-    exact sum_edge_end hr hb hh j e false
-  · by_cases h1 : T.e1 e = c
-    · rw [ite_eq_right h0, ite_eq_left h1, ite_eq_left (Or.inr h1), Nat.zero_add]
-      exact sum_edge_end hr hb hh j e true
-    · rw [ite_eq_right h0, ite_eq_right h1]
-      exact Nat.zero_le _
+  exact sum_child_edges_le T.e0 T.e1 c T.e_ne C _ _ (sum_edge_end hr hb hh j)
 
 open Classical in
 /-- The alive units between a chamber of the last level and the root. -/
@@ -318,20 +325,7 @@ theorem sum_child_last (c : T.X J) : (∑ ν : NM R FL (ch := ch), if IsCh R ch 
       · exact mem_union_right _ (mem_biUnion.2 ⟨e, mem_filter.2 ⟨mem_univ _, by simpa using hce⟩, hmem⟩)
   refine (Finset.sum_le_sum fun ν _ => hall ν).trans ?_
   rw [← Finset.sum_filter, filter_mem_eq_inter, univ_inter]
-  refine (sum_union_le _ _ _).trans ?_
-  refine (add_le_add (sum_biUnion_le' _ _ _) (sum_biUnion_le' _ _ _)).trans ?_
-  rw [Finset.sum_filter, Finset.sum_filter, ← Finset.sum_add_distrib]
-  refine Finset.sum_le_sum fun e _ => ?_
-  have hne := T.e_ne e
-  by_cases h0 : T.e0 e = c
-  · have h1 : ¬ T.e1 e = c := fun hcon => hne (h0.trans hcon.symm)
-    rw [ite_eq_left h0, ite_eq_right h1, ite_eq_left (Or.inl h0)]
-    exact hC e false
-  · by_cases h1 : T.e1 e = c
-    · rw [ite_eq_right h0, ite_eq_left h1, ite_eq_left (Or.inr h1), Nat.zero_add]
-      exact hC e true
-    · rw [ite_eq_right h0, ite_eq_right h1]
-      exact Nat.zero_le _
+  exact sum_child_edges_le T.e0 T.e1 c T.e_ne C _ _ hC
 
 open Classical in
 /-- **The alive units between a chamber and its parent.** -/

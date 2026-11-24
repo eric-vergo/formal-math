@@ -44,6 +44,15 @@ theorem Bt_le (a c : Fin AA) (γ : T.X 0) : Bt T ch lhat n a c γ ≤ n a c / Fi
       rw [← Nat.div_add_mod k (Fintype.card (T.X 0)), ← Nat.div_add_mod k' (Fintype.card (T.X 0)), heq, h5]
   · exact Nat.zero_le _
 
+private theorem tgB_start {a c a' c' : Fin AA} {k : ℕ} {γ : T.X 0} {s : Fin (2 * m)}
+    (h : tgB T R ch a' c' k = .nxt (.start a c γ s)) :
+    a' = a ∧ c' = c ∧ gam T ch a' k = γ ∧ s.1 = 0 := by
+  rcases tgB_cases (R := R) (ch := ch) a' c' k with e | ⟨_, e⟩ | ⟨_, _, e, _, _⟩ <;> rw [e] at h
+  · simp at h
+  · simp only [Tg.nxt.injEq, RM.start.injEq] at h
+    exact ⟨h.1, h.2.1, h.2.2.1, (congrArg Fin.val h.2.2.2).symm⟩
+  · simp at h
+
 theorem bt_start (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) :
     bt R ch lhat n (.nxt (.start a c γ s) : Tg T m AA) ≤ if s.1 = 0 then Bt T ch lhat n a c γ else 0 := by
   classical
@@ -60,26 +69,11 @@ theorem bt_start (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) :
         · rw [ite_eq_left hs]
           refine card_le_card fun k hk => ?_
           obtain ⟨h2, h3⟩ := mem_filter.1 hk
-          refine mem_filter.2 ⟨h2, ?_⟩
-          rcases tgB_cases (R := R) (ch := ch) a' c' k with h1 | ⟨hm, h1⟩ | ⟨e', -, h1, -⟩ <;> rw [h1] at h3
-          · simp at h3
-          · simp only [Tg.nxt.injEq, RM.start.injEq] at h3
-            exact h3.2.2.1
-          · simp at h3
+          exact mem_filter.2 ⟨h2, (tgB_start h3).2.2.1⟩
         · rw [ite_eq_right hs, Nat.le_zero, card_eq_zero]
-          refine filter_false_of_mem fun k _ h3 => ?_
-          rcases tgB_cases (R := R) (ch := ch) a' c' k with h1 | ⟨hm, h1⟩ | ⟨e', -, h1, -⟩ <;> rw [h1] at h3
-          · simp at h3
-          · simp only [Tg.nxt.injEq, RM.start.injEq] at h3
-            exact hs (congrArg Fin.val h3.2.2.2).symm
-          · simp at h3
+          exact filter_false_of_mem fun k _ h3 => hs (tgB_start h3).2.2.2
       · rw [ite_eq_right hac, Nat.le_zero, card_eq_zero]
-        refine filter_false_of_mem fun k _ h3 => ?_
-        rcases tgB_cases (R := R) (ch := ch) a' c' k with h1 | ⟨hm, h1⟩ | ⟨e', -, h1, -⟩ <;> rw [h1] at h3
-        · simp at h3
-        · simp only [Tg.nxt.injEq, RM.start.injEq] at h3
-          exact hac ⟨h3.1, h3.2.1⟩
-        · simp at h3
+        exact filter_false_of_mem fun k _ h3 => hac ⟨(tgB_start h3).1, (tgB_start h3).2.1⟩
     refine (Finset.sum_le_sum fun a' _ => Finset.sum_le_sum fun c' _ => h1 a' c').trans ?_
     rw [Finset.sum_eq_single a, Finset.sum_eq_single c]
     · rw [ite_eq_left ⟨rfl, rfl⟩, ite_eq_left hv]

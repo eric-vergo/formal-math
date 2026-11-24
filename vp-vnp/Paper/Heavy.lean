@@ -95,6 +95,14 @@ theorem below_down {q p : Fin P} (hq : q ≠ T.root) (h : T.Below (T.par q) p) :
   rw [e, Function.iterate_succ_apply]
   rwa [show T.nxt q = T.par q from ite_eq_right hq]
 
+private theorem below_par_of_lt {q p : Fin P} (h : T.Below q p) (hlt : T.stage q < T.stage p) :
+    T.Below (T.par q) p := by
+  have hq : q ≠ T.root := fun e => (not_lt_of_ge (T.stage_le p)) ((T.stage_root q).2 e ▸ hlt)
+  have hpath := h.2
+  rw [show T.stage p - T.stage q = (T.stage p - (T.stage q + 1)) + 1 by omega,
+    Function.iterate_succ_apply, show T.nxt q = T.par q from ite_eq_right hq] at hpath
+  exact ⟨by rw [T.stage_par q hq]; omega, by rwa [T.stage_par q hq]⟩
+
 open Classical in
 theorem below_mono (f : Fin P → ℕ) {p : Fin P} (hp : p ≠ T.root) : T.below f p ≤ T.below f (T.par p) :=
   Finset.sum_le_sum fun q _ => by
@@ -255,13 +263,7 @@ theorem below_subtree {x : Fin P} (hx : ¬ T.Heavy giv u M Y k x) :
       have h1 := (T.stage_root p).2 e
       have h2 := T.stage_le x
       omega
-    have hpar : T.Below (T.par p) x := by
-      obtain ⟨-, h2⟩ := hp
-      refine ⟨by rw [T.stage_par p hr]; omega, ?_⟩
-      rw [show T.stage x - T.stage p = d + 1 by omega, Function.iterate_succ_apply,
-        show T.nxt p = T.par p from ite_eq_right hr] at h2
-      rw [T.stage_par p hr, show T.stage x - (T.stage p + 1) = d by omega]
-      exact h2
+    have hpar : T.Below (T.par p) x := below_par_of_lt hp (by omega)
     have hnh : ∀ e q, T.Below q x → T.stage x = T.stage q + e → ¬ T.Heavy giv u M Y k q := by
       intro e
       induction e with
@@ -277,13 +279,8 @@ theorem below_subtree {x : Fin P} (hx : ¬ T.Heavy giv u M Y k x) :
           have h1 := (T.stage_root q).2 e'
           have h2 := T.stage_le x
           omega
-        refine ih' (T.par q) ?_ (by rw [T.stage_par q hq']; omega) (prop_pieces_heavy_up hq' hh)
-        obtain ⟨-, h2⟩ := hq
-        refine ⟨by rw [T.stage_par q hq']; omega, ?_⟩
-        rw [show T.stage x - T.stage q = e + 1 by omega, Function.iterate_succ_apply,
-          show T.nxt q = T.par q from ite_eq_right hq'] at h2
-        rw [T.stage_par q hq', show T.stage x - (T.stage q + 1) = e by omega]
-        exact h2
+        exact ih' (T.par q) (below_par_of_lt hq (by omega)) (by rw [T.stage_par q hq']; omega)
+          (prop_pieces_heavy_up hq' hh)
     have hp' : ¬ T.Head giv u M Y k p := fun e =>
       hnh d (T.par p) hpar (by rw [T.stage_par p hr]; omega) (e.resolve_left hr)
     rw [hd_par hp']

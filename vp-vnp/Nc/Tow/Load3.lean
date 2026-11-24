@@ -28,6 +28,10 @@ theorem exists_isMin (hh : 0 < h) (L : Tg T m AA → ℕ) (j : Fin (J + 1)) : �
   refine ⟨⟨Nat.find hex, hk⟩, h1, fun i' hi' hcon => ?_⟩
   exact Nat.find_min hex hi' ⟨i'.2, hcon⟩
 
+private theorem IsMin.eq {L : Tg T m AA → ℕ} {j : Fin (J + 1)} {i i' : Fin h}
+    (hi : IsMin L j i) (hi' : IsMin L j i') : i = i' :=
+  le_antisymm (le_of_not_gt fun hlt => hi.2 _ hlt hi'.1) (le_of_not_gt fun hlt => hi'.2 _ hlt hi.1)
+
 /-- The chosen type has a small part of the loads. -/
 theorem isMin_le {L : Tg T m AA → ℕ} {j : Fin (J + 1)} {i : Fin h} (hi : IsMin L j i) :
     (h : ℝ) * ∑ e ∈ univ.filter (fun e : T.Ed j => T.ty e = i), (L (.edge j e) : ℝ) ^ 2 ≤
@@ -171,13 +175,7 @@ theorem mid_load_le (j : Fin J) {i : Fin h} (hi : IsMin (load R ch FL lhat n o) 
       have h4 := ((T.nr j'.2 i').symm (ω, FL.cn d ν)).2
       rw [h3, he'] at h4
       refine hne (alv_inr_zero hr hb (Or.inl fun hcon => ?_) ν)
-      have : IsMin (load R ch FL lhat n o) j'.castSucc i' := hcon
-      have h5 : i = i' := by
-        rcases lt_trichotomy i i' with hlt | heq | hlt
-        · exact absurd hi.1 (this.2 i hlt)
-        · exact heq
-        · exact absurd this.1 (hi.2 i' hlt)
-      exact h4 h5
+      exact h4 (hi.eq hcon)
   · refine Finset.sum_image_le_of_nonneg ?_ |>.trans ?_
     · intro _ _; exact Nat.zero_le _
     · exact Finset.sum_le_sum fun e _ => (alv_mid_le hr hb j e 2 (hx2 e) false).1
@@ -224,11 +222,7 @@ theorem other_load_le (j : Fin J) {i : Fin h} (hi : IsMin (load R ch FL lhat n o
       obtain ⟨e, h1, h2, h3⟩ := tgR_edge_succ (x := x) (ν := ν') hν
       subst h1
       refine hne ((alv_mid_le hr hb j e 2 hx ν').2 fun hcon => ?_)
-      have h4 : T.ty e = i := by
-        rcases lt_trichotomy i (T.ty e) with hlt | heq | hlt
-        · exact absurd hi.1 (hcon.2 i hlt)
-        · exact heq.symm
-        · exact absurd hcon.1 (hi.2 _ hlt)
+      have h4 : T.ty e = i := hcon.eq hi
       have h5 := ((T.nr j.2 i).symm (ω, ν)).2
       rw [← h3, T.π_ty j.2, h4] at h5
       exact h5 rfl
@@ -240,11 +234,7 @@ theorem other_load_le (j : Fin J) {i : Fin h} (hi : IsMin (load R ch FL lhat n o
       have hmin : IsMin (load R ch FL lhat n o) j'.castSucc i' := by
         by_contra hcon
         exact hne (alv_inr_zero hr hb (Or.inl hcon) ν')
-      have hii : i' = i := by
-        rcases lt_trichotomy i i' with hlt | heq | hlt
-        · exact absurd hi.1 (hmin.2 i hlt)
-        · exact heq.symm
-        · exact absurd hmin.1 (hi.2 _ hlt)
+      have hii : i' = i := hmin.eq hi
       subst hii
       have h4 : (T.nr j'.2 i').symm (ω', FL.cn d' ν') = (T.nr j'.2 i').symm (ω, ν) := Subtype.ext h3
       have h5 := (T.nr j'.2 i').symm.injective h4

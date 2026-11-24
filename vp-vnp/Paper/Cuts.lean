@@ -76,9 +76,7 @@ theorem thm_onecut_evaluator {θ : List Bool → A} (hθ : Generates θ) {Γ S Q
       Nc.Dl.GrpTimeOK (S := S) A cb (fun z => (Nc.Grp.qn Q z : ℕ)) := by
   classical
   obtain ⟨GROUP, κ, hG⟩ := Nc.Grp.exists_group (θ := θ) mu cb kinds (fun z q q' => hθ.2 _) (fun z _ i y h => hθ.2 _)
-  refine ⟨GROUP, κ, ?_, Nc.Dl.grpTimeOK cb _⟩
-  intro A' K E U0 U1 cap Gr _ _ M P q x ρ n o grp g key dkey tg bT bub b h1 h2 h3 h4 h5 h6
-  exact hG P q x ρ n o grp g key dkey tg bT bub b h1 h2 h3 h4 h5 h6
+  exact ⟨GROUP, κ, hG, Nc.Dl.grpTimeOK cb _⟩
 
 theorem lg_mul_sq_le {τ v : ℕ} : lg (τ * v ^ 2) ≤ lg τ + 2 * lg v + 1 := by
   have h1 : τ * v ^ 2 < 2 ^ (lg τ + 2 * lg v) := by

@@ -137,6 +137,23 @@ theorem mem_segs {K T : ℕ} {X : Option S → Fin (K + K) → Fin (K + K) → L
 
 variable {mu T}
 
+private theorem segW_eq_prod {q : Fin (K + 1) → Q} {x : Fin K → List Γ}
+    {X : Option S → Fin (K + K) → Fin (K + K) → List Γ}
+    (hblock : ∀ κ b, X none (Fin.castAdd K κ) b = [])
+    (hinput : ∀ κ, (∀ s b, X (some s) (Fin.natAdd K κ) b = []) ∧
+      (∀ s b, X s b (Fin.natAdd K κ) = []) ∧ cat (X none (Fin.natAdd K κ)) = x κ) :
+    segW mu T q x X = ∏ κ : Fin K, blockW mu T (q κ.castSucc) (q κ.succ)
+      (vec (fun s b => X s (Fin.castAdd K κ) b) fun s b => X s b (Fin.castAdd K κ)) := by
+  classical
+  rw [segW, Fin.prod_univ_add]
+  have hprod : (∏ κ : Fin K, partyW mu T q x (Fin.natAdd K κ) (fun s b => X s (Fin.natAdd K κ) b)
+      fun s b => X s b (Fin.natAdd K κ)) = 1 := by
+    refine Finset.prod_eq_one fun κ _ => ?_
+    rw [partyW_input, ite_eq_left (hinput κ)]
+  rw [hprod, mul_one]
+  refine Finset.prod_congr rfl fun κ _ => ?_
+  rw [partyW_block, ite_eq_left (hblock κ)]
+
 /-- What the non-vanishing of the product of the weights means. -/
 theorem segW_ne_zero {q : Fin (K + 1) → Q} {x : Fin K → List Γ}
     {X : Option S → Fin (K + K) → Fin (K + K) → List Γ} (h : segW mu T q x X ≠ 0) :
@@ -163,15 +180,7 @@ theorem segW_ne_zero {q : Fin (K + 1) → Q} {x : Fin K → List Γ}
     by_contra hc
     rw [ite_eq_right hc] at this
     exact this rfl
-  refine ⟨h1, fun s κ => (h2 κ).1 s, fun s κ => (h2 κ).2.1 s, fun κ => (h2 κ).2.2, ?_⟩
-  rw [segW, Fin.prod_univ_add]
-  have e1 : (∏ κ : Fin K, partyW mu T q x (Fin.natAdd K κ) (fun s b => X s (Fin.natAdd K κ) b)
-      fun s b => X s b (Fin.natAdd K κ)) = 1 := by
-    refine Finset.prod_eq_one fun κ _ => ?_
-    rw [partyW_input, ite_eq_left (h2 κ)]
-  rw [e1, mul_one]
-  refine Finset.prod_congr rfl fun κ _ => ?_
-  rw [partyW_block, ite_eq_left (h1 κ)]
+  exact ⟨h1, fun s κ => (h2 κ).1 s, fun s κ => (h2 κ).2.1 s, fun κ => (h2 κ).2.2, segW_eq_prod h1 h2⟩
 
 open Classical in
 /-- **Segments.** -/
@@ -289,14 +298,8 @@ theorem sum_segs (q : Fin (K + 1) → Q) {x : Fin K → List Γ} (hx : ∀ κ, (
         | true => exact (col (some s) _).trans (hR3 s κ)
       | inp j => exact (col none _).trans (hR1 κ)
     have hWX : segW mu T q x X = ∏ k, blockW mu T (q k.castSucc) (q k.succ) (v k) := by
-      rw [segW, Fin.prod_univ_add]
-      have e1 : (∏ κ : Fin K, partyW mu T q x (Fin.natAdd K κ) (fun s b => X s (Fin.natAdd K κ) b)
-          fun s b => X s b (Fin.natAdd K κ)) = 1 := by
-        refine Finset.prod_eq_one fun κ _ => ?_
-        rw [partyW_input, ite_eq_left ⟨fun s => c2 s κ, fun s => c3 s κ, c4 κ⟩]
-      rw [e1, mul_one]
-      refine Finset.prod_congr rfl fun κ _ => ?_
-      rw [partyW_block, ite_eq_left (c1 κ), hvec]
+      rw [segW_eq_prod c1 (fun κ => ⟨fun s => c2 s κ, fun s => c3 s κ, c4 κ⟩)]
+      simp only [hvec]
     refine ⟨X, ?_, ?_, ?_⟩
     · rw [mem_segs]
       intro s a b

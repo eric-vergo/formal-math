@@ -337,6 +337,19 @@ variable (hh : 0 < h) (hr : 0 < r) (hb : 0 < b)
   (hgR : ∀ (x : {x : RM T m AA // okR T R ch x}) (ν : Bool), o ⟨.inl x, ν⟩ = num R ch FL lhat n o (.inl x))
 include hh hr hb hgR
 
+omit hh hr hb hgR in
+open Classical in
+/-- The last-level contribution at a chamber vanishes at every other level. -/
+private theorem sum_last_le (j : ℕ) (hj : j ≤ J) (x : T.X j) :
+    (∑ y : T.X J, if nd T J le_rfl y = nd T j hj x then fb (ldL R ch FL lhat n o) J y else 0) ≤
+      fb (ldL R ch FL lhat n o) j x := by
+  by_cases hJ : J = j
+  · subst hJ
+    simp only [nd_inj]
+    rw [Finset.sum_ite_eq', ite_eq_left (mem_univ _)]
+  · rw [Finset.sum_eq_zero fun _ _ => ite_eq_right (nd_ne hJ)]
+    exact Nat.zero_le _
+
 open Classical in
 theorem NR_zero (x : T.X 0) : NR R ch FL lhat n o (nd T 0 (Nat.zero_le _) x) ≤
     (if ∃ c, ch c = x then 2 * m * lhat else 0) + 7 * fb (ldL R ch FL lhat n o) 0 x := by
@@ -346,16 +359,7 @@ theorem NR_zero (x : T.X 0) : NR R ch FL lhat n o (nd T 0 (Nat.zero_le _) x) ≤
   have h3 := sum_level_zero (fun j y => 3 * chs hh (ldL R ch FL lhat n o) j y +
     2 * fb (ldL R ch FL lhat n o) (j + 1) y) x
   rw [h2, h3, ite_eq_right nd_ne_none.symm]
-  have h4 : (∑ y : T.X J, if nd T J le_rfl y = nd T 0 (Nat.zero_le _) x then fb (ldL R ch FL lhat n o) J y else 0) ≤
-      fb (ldL R ch FL lhat n o) 0 x := by
-    by_cases hJ : J = 0
-    · subst hJ
-      simp only [nd_inj]
-      rw [Finset.sum_ite_eq', ite_eq_left (mem_univ _)]
-    · rw [Finset.sum_eq_zero]
-      · exact Nat.zero_le _
-      · intro y _
-        rw [ite_eq_right (nd_ne hJ)]
+  have h4 := sum_last_le (R := R) (ch := ch) (FL := FL) (n := n) (o := o) (lhat := lhat) 0 (Nat.zero_le _) x
   have h5 : (if hlt : 0 < J then 5 * fb (ldL R ch FL lhat n o) 0 x else 0) ≤ 5 * fb (ldL R ch FL lhat n o) 0 x := by
     split_ifs
     · exact le_rfl
@@ -373,16 +377,7 @@ theorem NR_succ {k : ℕ} (hk : k + 1 ≤ J) (x : T.X (k + 1)) : NR R ch FL lhat
   have h3 := sum_level_succ (fun j y => 3 * chs hh (ldL R ch FL lhat n o) j y +
     2 * fb (ldL R ch FL lhat n o) (j + 1) y) k hk x
   rw [h1, h2, h3, ite_eq_right nd_ne_none.symm]
-  have h4 : (∑ y : T.X J, if nd T J le_rfl y = nd T (k + 1) hk x then fb (ldL R ch FL lhat n o) J y else 0) ≤
-      fb (ldL R ch FL lhat n o) (k + 1) x := by
-    by_cases hJ : J = k + 1
-    · subst hJ
-      simp only [nd_inj]
-      rw [Finset.sum_ite_eq', ite_eq_left (mem_univ _)]
-    · rw [Finset.sum_eq_zero]
-      · exact Nat.zero_le _
-      · intro y _
-        rw [ite_eq_right (nd_ne hJ)]
+  have h4 := sum_last_le (R := R) (ch := ch) (FL := FL) (n := n) (o := o) (lhat := lhat) (k + 1) hk x
   have h5 : (if hlt : k + 1 < J then 5 * fb (ldL R ch FL lhat n o) (⟨k + 1, hlt⟩ : Fin J) x else 0) ≤
       5 * fb (ldL R ch FL lhat n o) (k + 1) x := by
     split_ifs

@@ -184,18 +184,8 @@ theorem card_R_le (hD : 0 < D) (hb : 0 < b) : Fintype.card (sys R FL Pl).R ≤
 
 /-- Units. -/
 theorem card_Un : Fintype.card (Un R FL Pl U0 U1) = AA * AA * U0 + Fintype.card (sys R FL Pl).N * U1 := by
-  let e : Un R FL Pl U0 U1 ≃ (Fin AA × Fin AA × Fin U0) ⊕ ((sys R FL Pl).N × Fin U1) :=
-    { toFun := fun u => match u with
-        | .init a c k => .inl (a, c, k)
-        | .new ν k => .inr (ν, k)
-      invFun := fun s => match s with
-        | .inl q => .init q.1 q.2.1 q.2.2
-        | .inr q => .new q.1 q.2
-      left_inv := fun u => by cases u <;> rfl
-      right_inv := fun s => by rcases s with ⟨a, c, k⟩ | ⟨ν, k⟩ <;> rfl }
-  rw [Fintype.card_congr e, Fintype.card_sum, Fintype.card_prod, Fintype.card_prod, Fintype.card_prod]
-  simp only [Fintype.card_fin]
-  ring
+  simpa only [Finset.sum_const, card_univ, smul_eq_mul, Nat.mul_one, Fintype.card_fin, Nat.mul_assoc] using
+    (sum_uid (fun _ : Un R FL Pl U0 U1 => (1 : ℕ)))
 
 end Moves
 

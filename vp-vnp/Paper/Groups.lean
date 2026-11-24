@@ -291,6 +291,11 @@ theorem segment_fixed (A : IsoAct G Z) {x v q : Z} {t : ℝ} (h0 : 0 ≤ t) (h1 
     conv_lhs => rw [← hv g]
     rw [A.iso', e2]
 
+private theorem dist_act_of_fixed (A : IsoAct G Z) {q : Z} (hq : A.Fix q) (g : G) (z : Z) :
+    dist q (A.act g z) = dist z q := by
+  conv_lhs => rw [← hq g]
+  rw [A.iso', dist_comm]
+
 variable [Fintype G]
 
 /-- "These form a closed convex set, which contains the barycenter of every orbit." In the project P z is that
@@ -312,13 +317,8 @@ theorem projection_var (A : IsoAct G Z) {q : Z} (hq : A.Fix q) (z : Z) :
   obtain ⟨P₀, hP₀, -, hvar⟩ := (lem_toolkit (Y := Z)).2.2.2.1 {y | A.Fix y} hcl ⟨_, hP z⟩ hconv z
   have h1 := hvar _ (hP z)
   have h2 := A.P_spec z P₀
-  have e1 : ∀ g, dist (A.P z) (A.act g z) = dist z (A.P z) := fun g => by
-    conv_lhs => rw [← A.P_fix z g]
-    rw [A.iso', dist_comm]
-  have e2 : ∀ g, dist P₀ (A.act g z) = dist z P₀ := fun g => by
-    conv_lhs => rw [← hP₀ g]
-    rw [A.iso', dist_comm]
-  simp only [e1, e2, one_mul, sum_const, card_univ, nsmul_eq_mul, mul_one, ← mul_add] at h2
+  simp only [dist_act_of_fixed A (A.P_fix z), dist_act_of_fixed A hP₀, one_mul, sum_const, card_univ,
+    nsmul_eq_mul, mul_one, ← mul_add] at h2
   have h3 := le_of_mul_le_mul_left h2 (by exact_mod_cast Fintype.card_pos)
   have h4 : dist P₀ (A.P z) ^ 2 ≤ 0 := by linarith [sq_nonneg (dist P₀ (A.P z))]
   rw [← dist_eq_zero.1 (pow_eq_zero_iff two_ne_zero |>.1 (le_antisymm h4 (sq_nonneg _)))]
@@ -1059,10 +1059,7 @@ theorem thm_poincare_action (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : s ^ 2 < μ) (
   have hw := thm_poincare_windows A hμ hs hsm hA hu hh z
   have hd : ∀ g, dist z (A.act g z) ^ 2 ≤ 4 * dist z y ^ 2 := fun g => by
     have h1 := dist_triangle z y (A.act g z)
-    have h2 : dist y (A.act g z) = dist z y := by
-      conv_lhs => rw [← hy g]
-      rw [A.iso', dist_comm]
-    rw [h2] at h1
+    rw [dist_act_of_fixed A hy] at h1
     calc dist z (A.act g z) ^ 2 ≤ (2 * dist z y) ^ 2 := pow_le_pow_left₀ dist_nonneg (by linarith) 2
       _ = _ := by ring
   have hsum : ∑ j ∈ range (h - 1), A.e j z ^ 2 = ∑ j, dist z (A.act (x h j) z) ^ 2 := by

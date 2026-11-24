@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 import Nc.Tow.Ok
 import Nc.Tow.Load3
 import Nc.Tow.Tree
+import Nc.G.PlayThm
 
 /-!
 # The tower plan: the units in the end
@@ -184,30 +185,12 @@ theorem exists_cons (hr : 0 < r) (hb : 0 < b) (hh : 0 < h) {u : Un R FL Pl U0 U1
 /-- The units that are seen. -/
 theorem mem_seen_new {ν : (sys R FL Pl).N} {k : Fin U1} :
     (Uid.new ν k : Un R FL Pl U0 U1) ∈ Plan.seenAt (M := sys R FL Pl) n o (Fintype.card (Mv T R ch FL)) ↔ k ≤ o ν := by
-  unfold Plan.seenAt
-  rw [mem_union, mem_biUnion]
-  constructor
-  · rintro (h1 | ⟨x, -, h2⟩)
-    · simp [seen0] at h1
-    · simp only [newUnits, mem_filter, mem_univ, true_and, decide_eq_true_eq] at h2
-      exact h2.2
-  · intro h1
-    right
-    refine ⟨ν.1, mem_filter.2 ⟨mem_univ _, ν.1.2⟩, ?_⟩
-    simp only [newUnits, mem_filter, mem_univ, true_and, decide_eq_true_eq]
-    exact h1
+  simpa [unum, ucnt, Nat.lt_succ_iff] using
+    (Plan.mem_seenAt_end (M := sys R FL Pl) (n := n) (o := o) (id := .new ν k))
 
 theorem mem_seen_init {a c : Fin AA} {k : Fin U0} :
-    (Uid.init a c k : Un R FL Pl U0 U1) ∈ Plan.seenAt (M := sys R FL Pl) n o (Fintype.card (Mv T R ch FL)) ↔ k.1 < (n a c).1 := by
-  unfold Plan.seenAt
-  rw [mem_union, mem_biUnion]
-  constructor
-  · rintro (h1 | ⟨x, -, h2⟩)
-    · simpa [seen0] using h1
-    · simp [newUnits] at h2
-  · intro h1
-    left
-    simpa [seen0] using h1
+    (Uid.init a c k : Un R FL Pl U0 U1) ∈ Plan.seenAt (M := sys R FL Pl) n o (Fintype.card (Mv T R ch FL)) ↔ k.1 < (n a c).1 :=
+  Plan.mem_seenAt_end
 
 /-- **The current units in the end**: alive units between a node and its parent, and dead units. -/
 theorem cur_end (hr : 0 < r) (hb : 0 < b) (hh : 0 < h) {u : Un R FL Pl U0 U1}

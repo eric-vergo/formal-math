@@ -212,22 +212,9 @@ theorem deal_cut (hK : 0 < K) [Nonempty Q] [Nonempty (Fin U1)] (hnl : KT.val nl 
     obtain ⟨st, hf, hs'⟩ := sum_allSteps (ub := ub) C tab (ptT cb (parts ℓ (wordG b0 b1 z))) qn i e hU0 hU1 hK
     rw [hs' A fun σ => _]
     refine Finset.sum_congr rfl fun q _ => if_congr Iff.rfl ?_ rfl
-    refine Finset.sum_congr rfl fun ρ _ => ?_
-    by_cases hρ : ValidRows ρ
-    swap
-    · rw [ite_eq_right hρ, ite_eq_right hρ]
-    rw [ite_eq_left hρ, ite_eq_left hρ]
-    refine Finset.sum_congr rfl fun n _ => ?_
-    by_cases hn : tab.valid n
-    swap
-    · rw [ite_eq_right hn, ite_eq_right hn]
-    rw [ite_eq_left hn]
-    rw [ite_eq_left hn]
-    refine Finset.sum_congr rfl fun o _ => ?_
-    by_cases ho : ∀ x, P.good n o x
-    swap
-    · rw [ite_eq_right ho, ite_eq_right ho]
-    rw [ite_eq_left ho, ite_eq_left ho]
+    refine Finset.sum_congr rfl fun ρ _ => if_ctx_congr Iff.rfl (fun hρ => ?_) (fun _ => rfl)
+    refine Finset.sum_congr rfl fun n _ => if_ctx_congr Iff.rfl (fun hn => ?_) (fun _ => rfl)
+    refine Finset.sum_congr rfl fun o _ => if_ctx_congr Iff.rfl (fun ho => ?_) (fun _ => rfl)
     have hb : (∑ b ∈ Common (none : UW ub) (cutUnits (G.hold0 M.np) (G.hold1 M.np) (grp n o) (P.cur n o E)),
         ∏ g, G.grpVal mu T cb P q (parts ℓ (wordG b0 b1 z)) ρ n o (grp n o) g b) =
         ∑ b : G.Uid (K + K) U0 M.N U1 → UW ub,
