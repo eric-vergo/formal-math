@@ -23,40 +23,27 @@ abbrev wl (a b : ℕ) : Matrix (Fin (a + b)) (Fin a) F2 := wi (hl (a := a) (b :=
 /-- The inclusion of the second window. -/
 abbrev wr (a b : ℕ) : Matrix (Fin (a + b)) (Fin b) F2 := wi (hr (a := a) (b := b))
 
+private theorem upperRight_eq_zero (M : Matrix (Fin a) (Fin b) F2) {i j : Fin (a + b)}
+    (hji : j ≤ i) : (wl a b * M * (wr a b)ᵀ) i j = 0 := by
+  rw [Matrix.mul_apply]
+  refine sum_eq_zero fun k _ => ?_
+  rw [Matrix.mul_apply, sum_mul]
+  refine sum_eq_zero fun l _ => ?_
+  simp only [wi, Matrix.of_apply, Matrix.transpose_apply]
+  by_cases hi : i = we (hl (a := a) (b := b)) l
+  · have hj : j ≠ we (hr (a := a) (b := b)) k := by
+      rintro rfl
+      rw [hi] at hji
+      simp only [we, Fin.le_def] at hji
+      omega
+    simp [hj]
+  · simp [hi]
+
 /-- The elements `1 + M` with `M` in the upper right block. -/
 def up (M : Matrix (Fin a) (Fin b) F2) : U (a + b) :=
   mk (1 + wl a b * M * (wr a b)ᵀ)
-    (by
-      intro i j hij
-      rw [Matrix.add_apply, Matrix.one_apply_ne hij.ne', zero_add, Matrix.mul_apply]
-      refine sum_eq_zero fun k _ => ?_
-      rw [Matrix.mul_apply, sum_mul]
-      refine sum_eq_zero fun l _ => ?_
-      simp only [wi, Matrix.of_apply, Matrix.transpose_apply]
-      by_cases h1 : i = we (hl (a := a) (b := b)) l
-      · by_cases h2 : j = we (hr (a := a) (b := b)) k
-        · exfalso
-          rw [h1, h2] at hij
-          simp only [we, Fin.lt_def] at hij
-          omega
-        · simp [h2]
-      · simp [h1])
-    (by
-      intro i
-      rw [Matrix.add_apply, Matrix.one_apply_eq, Matrix.mul_apply]
-      rw [sum_eq_zero, add_zero]
-      intro k _
-      rw [Matrix.mul_apply, sum_mul]
-      refine sum_eq_zero fun l _ => ?_
-      simp only [wi, Matrix.of_apply, Matrix.transpose_apply]
-      by_cases h1 : i = we (hl (a := a) (b := b)) l
-      · by_cases h2 : i = we (hr (a := a) (b := b)) k
-        · exfalso
-          rw [h1] at h2
-          simp only [we, Fin.ext_iff] at h2
-          omega
-        · simp [h2]
-      · simp [h1])
+    (fun i j hij => by rw [Matrix.add_apply, Matrix.one_apply_ne hij.ne', upperRight_eq_zero M hij.le, add_zero])
+    (fun i => by rw [Matrix.add_apply, Matrix.one_apply_eq, upperRight_eq_zero M le_rfl, add_zero])
 
 theorem mat_up (M : Matrix (Fin a) (Fin b) F2) : mat (up M) = 1 + wl a b * M * (wr a b)ᵀ := rfl
 

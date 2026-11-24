@@ -40,19 +40,6 @@ theorem win_win {p n p' n' : ℕ} (hp : p + n ≤ h) (hp' : p' + n' ≤ n) (hpp 
   simp only [Matrix.mul_assoc]
   abel
 
-theorem wi_disj {p n p' n' : ℕ} (hp : p + n ≤ h) (hp' : p' + n' ≤ h) (hd : p + n ≤ p') :
-    (wi hp)ᵀ * wi hp' = 0 := by
-  ext i j
-  simp only [Matrix.mul_apply, wi, Matrix.of_apply, Matrix.transpose_apply, Matrix.zero_apply]
-  refine sum_eq_zero fun k _ => ?_
-  by_cases h1 : k = we hp i
-  · have h2 : k ≠ we hp' j := by
-      rw [h1]
-      simp only [we, ne_eq, Fin.ext_iff]
-      omega
-    simp [h2]
-  · simp [h1]
-
 /-- Disjoint windows commute. -/
 theorem win_comm {p n p' n' : ℕ} (hp : p + n ≤ h) (hp' : p' + n' ≤ h) (hd : p + n ≤ p')
     (A : U n) (B : U n') : win hp A * win hp' B = win hp' B * win hp A := by

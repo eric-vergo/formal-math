@@ -182,70 +182,51 @@ variable {a b : ℕ}
 theorem hl : 0 + a ≤ a + b := by omega
 theorem hr : a + b ≤ a + b := le_rfl
 
-theorem wi_lr : (wi (hl (a := a) (b := b)))ᵀ * wi (hr (a := a) (b := b)) = 0 := by
+theorem wi_disj {h p n p' n' : ℕ} (hp : p + n ≤ h) (hp' : p' + n' ≤ h) (hd : p + n ≤ p') :
+    (wi hp)ᵀ * wi hp' = 0 := by
   ext i j
   simp only [Matrix.mul_apply, wi, Matrix.of_apply, Matrix.transpose_apply, Matrix.zero_apply]
   refine sum_eq_zero fun k _ => ?_
-  by_cases h1 : k = we (hl (a := a) (b := b)) i
-  · have h2 : k ≠ we (hr (a := a) (b := b)) j := by
+  by_cases h1 : k = we hp i
+  · have h2 : k ≠ we hp' j := by
       rw [h1]
       simp only [we, ne_eq, Fin.ext_iff]
       omega
     simp [h2]
   · simp [h1]
 
+theorem wi_lr : (wi (hl (a := a) (b := b)))ᵀ * wi (hr (a := a) (b := b)) = 0 :=
+  wi_disj _ _ (by omega)
+
 theorem wi_rl : (wi (hr (a := a) (b := b)))ᵀ * wi (hl (a := a) (b := b)) = 0 := by
   rw [← Matrix.transpose_transpose (wi (hl (a := a) (b := b))), ← Matrix.transpose_mul, wi_lr,
     Matrix.transpose_zero]
 
+private theorem wi_proj_row {p n h : ℕ} (hp : p + n ≤ h) (k : Fin n) (j : Fin h) :
+    (wi hp * (wi hp)ᵀ) (we hp k) j = (1 : Matrix _ _ F2) (we hp k) j := by
+  rw [Matrix.mul_apply, sum_eq_single k, Matrix.one_apply]
+  · simp [wi, eq_comm]
+  · intro l _ hl
+    simp [wi, we_inj, hl.symm]
+  · simp
+
 theorem wi_add : wi (hl (a := a) (b := b)) * (wi (hl (a := a) (b := b)))ᵀ +
     wi (hr (a := a) (b := b)) * (wi (hr (a := a) (b := b)))ᵀ = 1 := by
   ext i j
-  have h1 := wi_mul_apply (hl (a := a) (b := b)) 1 i j
-  have h2 := wi_mul_apply (hr (a := a) (b := b)) 1 i j
-  rw [Matrix.mul_one] at h1 h2
-  rw [Matrix.add_apply, h1, h2]
-  clear h1 h2
+  rw [Matrix.add_apply]
   by_cases hi : i.1 < a
-  · obtain ⟨k, rfl⟩ : ∃ k, i = we (hl (a := a) (b := b)) k := ⟨⟨i.1, hi⟩, by simp [we]⟩
-    have h3 : ∀ c, we (hl (a := a) (b := b)) k ≠ we (hr (a := a) (b := b)) c := by
-      intro c
-      simp only [we, ne_eq, Fin.ext_iff]
-      omega
-    simp only [h3, false_and, if_false, sum_const_zero, add_zero, we_inj, Matrix.one_apply]
-    rw [sum_congr rfl fun b _ => sum_eq_single k (by
-      intro c _ hc
-      simp [hc.symm]) (by simp)]
-    simp only [true_and]
-    by_cases hj : ∃ l, j = we (hl (a := a) (b := b)) l
-    · obtain ⟨l, rfl⟩ := hj
-      rw [sum_eq_single l]
-      · simp [we_inj]
-      · intro c _ hc
-        simp [we_inj, hc.symm]
-      · simp
-    · push_neg at hj
-      simp [hj, (hj k).symm]
-  · obtain ⟨k, rfl⟩ : ∃ k, i = we (hr (a := a) (b := b)) k :=
-      ⟨⟨i.1 - a, by omega⟩, by simp only [we, Fin.ext_iff]; omega⟩
-    have h3 : ∀ c, we (hr (a := a) (b := b)) k ≠ we (hl (a := a) (b := b)) c := by
-      intro c
-      simp only [we, ne_eq, Fin.ext_iff]
-      omega
-    simp only [h3, false_and, if_false, sum_const_zero, zero_add, we_inj, Matrix.one_apply]
-    rw [sum_congr rfl fun b _ => sum_eq_single k (by
-      intro c _ hc
-      simp [hc.symm]) (by simp)]
-    simp only [true_and]
-    by_cases hj : ∃ l, j = we (hr (a := a) (b := b)) l
-    · obtain ⟨l, rfl⟩ := hj
-      rw [sum_eq_single l]
-      · simp [we_inj]
-      · intro c _ hc
-        simp [we_inj, hc.symm]
-      · simp
-    · push_neg at hj
-      simp [hj, (hj k).symm]
+  · let k : Fin a := ⟨i.1, hi⟩
+    have hk : i = we (hl (b := b)) k := by simp [we, k]
+    have hne (l : Fin b) : i ≠ we (hr (a := a)) l := by
+      simp only [we, ne_eq, Fin.ext_iff]; omega
+    rw [hk, wi_proj_row, ← hk, Matrix.mul_apply]
+    simp [wi, hne]
+  · let k : Fin b := ⟨i.1 - a, by omega⟩
+    have hk : i = we (hr (a := a)) k := by simp only [we, k, Fin.ext_iff]; omega
+    have hne (l : Fin a) : i ≠ we (hl (b := b)) l := by
+      simp only [we, ne_eq, Fin.ext_iff]; omega
+    rw [hk, wi_proj_row, ← hk, Matrix.mul_apply]
+    simp [wi, hne]
 
 end Blocks
 
