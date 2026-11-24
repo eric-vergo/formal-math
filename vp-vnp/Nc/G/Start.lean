@@ -102,6 +102,14 @@ theorem prod_tabInit (q : Fin (K + 1) → Q) (x : Fin K → List Γ) (ρ : Optio
   simp only [Finset.mem_univ, true_imp_iff]
 
 open Classical in
+private theorem posVal_sum_univ {A U W : Type*} [Fintype A] [DecidableEq A] [Fintype U] [DecidableEq U]
+    [Fintype W] [DecidableEq W] (h0 h1 : U → A) (e : W) (seen cur : Finset U) (f : (A → U → W) → F) :
+    posVal h0 h1 e seen cur f = ∑ y, if y ∈ Contents h0 h1 e seen ∧ Agree h0 h1 cur y then f y else 0 := by
+  rw [posVal, ← Finset.univ_inter (Contents h0 h1 e seen), ← Finset.sum_ite_mem]
+  rw [Finset.univ_inter]
+  exact Finset.sum_congr rfl fun _ _ => (ite_and ..).symm
+
+open Classical in
 /-- **Units.** -/
 theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
     (hU : (T + (Fintype.card S + 1)) * c / ub + 1 ≤ U0) (np : N → Bool → Fin (K + K + A'))
@@ -112,23 +120,7 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
           ∏ p : Fin (K + K), tabInit mu T cb q x (fun s => ρ s p) (fun a b => (n a b).1) p (y (Fin.castAdd A' p))
       else 0) =
     ∑ X ∈ segs Γ S K T, if ∀ s, Stair (X s) then segW mu T q x X else 0 := by
-  have hpos : ∀ (n : Fin (K + K) → Fin (K + K) → Fin (U0 + 1)) (f : (Fin (K + K + A') → Uid (K + K) U0 N U1 → UW ub) → F),
-      posVal (hold0 np) (hold1 np) (none : UW ub) (seen0 n) (seen0 n) f = ∑ y, if
-        y ∈ Contents (hold0 np) (hold1 np) none (seen0 n) ∧ Agree (hold0 np) (hold1 np) (seen0 n) y then
-          f y else 0 := by
-    intro n f
-    rw [posVal, ← Finset.univ_inter (Contents (hold0 np) (hold1 np) none (seen0 n)), ← Finset.sum_ite_mem]
-    refine Finset.sum_congr rfl fun y _ => ?_
-    by_cases h1 : y ∈ Contents (hold0 np) (hold1 np) none (seen0 n) <;>
-      by_cases h2 : Agree (hold0 np) (hold1 np) (seen0 n) y <;> simp [h1, h2]
-  have hprod : ∀ (ρ : Option S → Fin (K + K) → RowData (K + K)) (n : Fin (K + K) → Fin (K + K) → ℕ)
-      (y : Fin (K + K + A') → Uid (K + K) U0 N U1 → UW ub),
-      (∏ p : Fin (K + K), tabInit mu T cb q x (fun s => ρ s p) n p (y (Fin.castAdd A' p))) =
-      ∑ R ∈ sides Γ S K T, ∑ C ∈ sides Γ S K T,
-        if ∀ p, InitOk ub cb (fun s => ρ s p) n p (y (Fin.castAdd A' p)) (R p) (C p) then
-          ∏ p, partyW mu T q x p (R p) (C p) else 0 := fun ρ n y =>
-    prod_tabInit q x ρ n fun p => y (Fin.castAdd A' p)
-  simp only [hpos, hprod, Finset.ite_sum_zero, ← ite_and]
+  simp only [posVal_sum_univ, prod_tabInit, Finset.ite_sum_zero, ← ite_and]
   -- one sum over all data
   let Cnd : (Option S → Fin (K + K) → RowData (K + K)) × (Fin (K + K) → Fin (K + K) → Fin (U0 + 1)) ×
       (Fin (K + K + A') → Uid (K + K) U0 N U1 → UW ub) × (Fin (K + K) → Option S → Fin (K + K) → List Γ) ×
@@ -213,10 +205,9 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
         exact hag (.init a b ⟨k, hkU⟩) (init_mem_seen0.2 hk)
       · rw [unitsOf_eq_none.2 (r.1.trans_le (not_lt.1 hk)), unitsOf_eq_none.2 (r'.1.trans_le (not_lt.1 hk))]
     let X : Option S → Fin (K + K) → Fin (K + K) → List Γ := fun s a b => R a s b
-    have hCX : ∀ p s b, C p s b = X s b p := fun p s b => (congrFun (hRC b p) s).symm
     have hC' : C = fun p s b => X s b p := by
       funext p s b
-      exact hCX p s b
+      exact (congrFun (hRC b p) s).symm
     have hrow : ∀ s p, RowOk (ρ s p) (X s p) := fun s p => (hI p).1 s
     have hstX : ∀ s, Stair (X s) := fun s => stair_of_rows (v s) (hrow s)
     have hW : segW mu T q x X = ∏ p, partyW mu T q x p (R p) (C p) := by
