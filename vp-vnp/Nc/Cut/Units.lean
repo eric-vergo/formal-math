@@ -99,29 +99,20 @@ theorem length_bitsOf (cb : Γ → Fin c → Bool) (X : List Γ) : (bitsOf cb X)
 
 theorem bitsOf_inj {cb : Γ → Fin c → Bool} (hcb : Function.Injective cb) (hc : 0 < c) {X X' : List Γ}
     (h : bitsOf cb X = bitsOf cb X') : X = X' := by
+  have hlen : X.length = X'.length := by
+    have he := congrArg List.length h
+    rw [length_bitsOf, length_bitsOf] at he
+    exact Nat.eq_of_mul_eq_mul_right hc he
   induction X generalizing X' with
-  | nil =>
-    cases X' with
-    | nil => rfl
-    | cons a X' =>
-      have := congrArg List.length h
-      rw [length_bitsOf, length_bitsOf] at this
-      simp only [List.length_nil, List.length_cons, zero_mul] at this
-      have : 0 < (X'.length + 1) * c := Nat.mul_pos (by omega) hc
-      omega
+  | nil => simpa using hlen.symm
   | cons a X ih =>
     cases X' with
-    | nil =>
-      have := congrArg List.length h
-      rw [length_bitsOf, length_bitsOf] at this
-      simp only [List.length_nil, List.length_cons, zero_mul] at this
-      have : 0 < (X.length + 1) * c := Nat.mul_pos (by omega) hc
-      omega
+    | nil => simp at hlen
     | cons a' X' =>
       simp only [bitsOf, List.flatMap_cons] at h
       obtain ⟨h1, h2⟩ := List.append_inj h (by simp)
       have e1 : a = a' := hcb (List.ofFn_injective h1)
-      rw [e1, ih h2]
+      rw [e1, ih h2 (by simpa using hlen)]
 
 end Segments
 
