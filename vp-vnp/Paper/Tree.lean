@@ -164,36 +164,16 @@ variable {F : Type} [CommRing F] {h b D J m Uu AA N M ℓ : ℕ} {T : Tower h b 
 def cTree (c : ℕ) : ℕ := (c + 4) * 200000 + cKap c * (2 * c + 1) + 7 + (4 + (2 * c * c + 1 + c) * c) * 8 +
   (1 + 8 * (c * (2 * c + 1) ^ 7))
 
-open Classical in
-/-- The thin trees of one tower. -/
-theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G.Law F)} {c q : ℕ} {ρ : ℝ}
-    (hC : TCst FL laws c ρ 1 q) {C : ℕ} (hC0 : cTree c ≤ C) (hm1 : 1 ≤ m)
-    (hm : m ≤ c * (J + 1) ^ 7) (hUu : Uu ≤ 2 * Fintype.card (T.X 0) * m) (hM : 2 ≤ M)
-    (hX1 : M ≤ Fintype.card (T.X 0)) (hX2 : Fintype.card (T.X 0) ≤ c * M) (hAA : AA ≤ M) (hN : 1 ≤ N) (hℓ : 1 ≤ ℓ) :
-    Nonempty (ThinTrees F laws AA N ℓ M b FL.G₁ C (1 / (q : ℝ))) := by
-  classical
-  obtain ⟨hCc, hC8, hC9⟩ : (c + 4) * 200000 + cKap c * (2 * c + 1) + 7 ≤ C ∧ (4 + (2 * c * c + 1 + c) * c) * 8 ≤ C ∧
-      1 + 8 * (c * (2 * c + 1) ^ 7) + 7 ≤ C := by unfold cTree at hC0; omega
-  have hH := hC.toTHypR
-  have hc := hC.c_pos
+/-- The tower load estimates give both the per-node saving and the total packet bound. -/
+private theorem tree_load_bounds (FL : FlagLaws F T) {laws : List (G.Law F)} {c q C : ℕ} {ρ : ℝ}
+    (hC : TCst FL laws c ρ 1 q) (hm1 : 1 ≤ m) (hUu : Uu ≤ 2 * Fintype.card (T.X 0) * m)
+    (hM : 2 ≤ M) (hX1 : M ≤ Fintype.card (T.X 0)) (hAX : AA ≤ Fintype.card (T.X 0))
+    (hCc : (c + 4) * 200000 + cKap c * (2 * c + 1) + 7 ≤ C)
+    (hkap : 2 * c * kapB c m (Fintype.card (T.X 0)) N ≤ cKap c * (lg M ^ 7 * M * (N + M ^ 2))) :
+    (((c + 1) * BhN FL Uu AA N ρ : ℕ) : ℝ) ≤
+        (lg M ^ C : ℕ) * (M : ℝ) ^ (1 - 1 / (q : ℝ)) * (N + (M : ℝ) ^ 2) ∧
+      YhN FL Uu AA N ρ ≤ lg M ^ C * M * (N + M ^ 2) := by
   have hl := lg_two hM
-  have hJX := two_pow_le (T := T) hC.D_two hC.bot_pos
-  have hdep : J + 1 ≤ (2 * c + 1) * lg M := depth_le hJX (hX2.trans (Nat.mul_le_mul_left _ (by omega)))
-  have hJ1 : J + 1 ≤ Fintype.card (T.X 0) := Nat.succ_le_of_lt ((Nat.lt_two_pow_self (n := J)).trans_le hJX)
-  obtain ⟨a1, a2, a3, a4, a5, a6, a7⟩ := tree_nums (N := N) hc hM hN hX2 hJ1 hm
-  have hAX : AA ≤ Fintype.card (T.X 0) := hAA.trans hX1
-  obtain ⟨ch⟩ := Function.Embedding.nonempty_of_card_le (α := Fin AA) (β := T.X 0) (by rwa [Fintype.card_fin])
-  obtain ⟨Pl⟩ := exists_place T ch
-  have hkap := kapB_tree (N := N) hX2 hm hdep
-  obtain ⟨U1, hU1⟩ : ∃ U1, U1 = capB c m (Fintype.card (T.X 0)) N N * (c + c) + 1 := ⟨_, rfl⟩
-  rw [← hU1] at a7
-  obtain ⟨W, hW⟩ : ∃ W, W = ((c + 3) * M) ^ 9 := ⟨_, rfl⟩
-  obtain ⟨V, hV⟩ : ∃ V, V = ((c + 3) * (M * N)) ^ 30 := ⟨_, rfl⟩
-  rw [← hW] at a1 a2 a3 a4 a5
-  rw [← hV] at a5 a6 a7
-  have hcV : c ≤ V := a1.trans a5
-  have hMN : 2 ≤ M * N := le_trans hM (Nat.le_mul_of_pos_right _ hN)
-  -- loads
   have hq : 0 < q := by have := hC.pq; omega
   have hBh : (BhN FL Uu AA N ρ : ℝ) ≤ ((cKap c * lg M ^ 7 : ℕ) : ℝ) * (M : ℝ) ^ (1 - 1 / (q : ℝ)) *
       (N + (M : ℝ) ^ 2) := by
@@ -229,6 +209,38 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
       _ ≤ cKap c * (lg M ^ 7 * M * (N + M ^ 2)) * c := Nat.mul_le_mul_right _ hkap
       _ = cKap c * c * lg M ^ 7 * M * (N + M ^ 2) := by ring
       _ ≤ _ := by gcongr
+  exact ⟨hnode, htot⟩
+
+open Classical in
+/-- The thin trees of one tower. -/
+theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G.Law F)} {c q : ℕ} {ρ : ℝ}
+    (hC : TCst FL laws c ρ 1 q) {C : ℕ} (hC0 : cTree c ≤ C) (hm1 : 1 ≤ m)
+    (hm : m ≤ c * (J + 1) ^ 7) (hUu : Uu ≤ 2 * Fintype.card (T.X 0) * m) (hM : 2 ≤ M)
+    (hX1 : M ≤ Fintype.card (T.X 0)) (hX2 : Fintype.card (T.X 0) ≤ c * M) (hAA : AA ≤ M) (hN : 1 ≤ N) (hℓ : 1 ≤ ℓ) :
+    Nonempty (ThinTrees F laws AA N ℓ M b FL.G₁ C (1 / (q : ℝ))) := by
+  classical
+  obtain ⟨hCc, hC8, hC9⟩ : (c + 4) * 200000 + cKap c * (2 * c + 1) + 7 ≤ C ∧ (4 + (2 * c * c + 1 + c) * c) * 8 ≤ C ∧
+      1 + 8 * (c * (2 * c + 1) ^ 7) + 7 ≤ C := by unfold cTree at hC0; omega
+  have hH := hC.toTHypR
+  have hc := hC.c_pos
+  have hl := lg_two hM
+  have hJX := two_pow_le (T := T) hC.D_two hC.bot_pos
+  have hdep : J + 1 ≤ (2 * c + 1) * lg M := depth_le hJX (hX2.trans (Nat.mul_le_mul_left _ (by omega)))
+  have hJ1 : J + 1 ≤ Fintype.card (T.X 0) := Nat.succ_le_of_lt ((Nat.lt_two_pow_self (n := J)).trans_le hJX)
+  obtain ⟨a1, a2, a3, a4, a5, a6, a7⟩ := tree_nums (N := N) hc hM hN hX2 hJ1 hm
+  have hAX : AA ≤ Fintype.card (T.X 0) := hAA.trans hX1
+  obtain ⟨ch⟩ := Function.Embedding.nonempty_of_card_le (α := Fin AA) (β := T.X 0) (by rwa [Fintype.card_fin])
+  obtain ⟨Pl⟩ := exists_place T ch
+  have hkap := kapB_tree (N := N) hX2 hm hdep
+  obtain ⟨U1, hU1⟩ : ∃ U1, U1 = capB c m (Fintype.card (T.X 0)) N N * (c + c) + 1 := ⟨_, rfl⟩
+  rw [← hU1] at a7
+  obtain ⟨W, hW⟩ : ∃ W, W = ((c + 3) * M) ^ 9 := ⟨_, rfl⟩
+  obtain ⟨V, hV⟩ : ∃ V, V = ((c + 3) * (M * N)) ^ 30 := ⟨_, rfl⟩
+  rw [← hW] at a1 a2 a3 a4 a5
+  rw [← hV] at a5 a6 a7
+  have hcV : c ≤ V := a1.trans a5
+  have hMN : 2 ≤ M * N := le_trans hM (Nat.le_mul_of_pos_right _ hN)
+  obtain ⟨hnode, htot⟩ := tree_load_bounds FL hC hm1 hUu hM hX1 hAX hCc hkap
   have hne : ∀ p, p ≠ Pl.pt none → Pl.pt.symm p ≠ none := fun p hp e => hp (by
     rw [← Equiv.apply_symm_apply Pl.pt p, e])
   have hV3 : 3 ≤ V := hV ▸ (le_trans (Nat.le_add_left 3 c)
