@@ -26,41 +26,7 @@ variable {F : Type*} [CommRing F] {Q A : Type*} [Fintype Q] [DecidableEq Q]
 theorem prod_ofFn_apply (mu : A → Matrix Q Q F) (t : ℕ) (o : Fin t → A) (i e : Q) :
     ((List.ofFn o).map mu).prod i e = ∑ q : Fin (t + 1) → Q,
       if q 0 = i ∧ q (Fin.last t) = e then ∏ τ : Fin t, mu (o τ) (q τ.castSucc) (q τ.succ) else 0 := by
-  induction t generalizing i with
-  | zero =>
-    rw [← (Equiv.funUnique (Fin 1) Q).symm.sum_comp]
-    simp only [List.ofFn_zero, List.map_nil, List.prod_nil, Matrix.one_apply, Finset.univ_eq_empty,
-      Finset.prod_empty, Equiv.funUnique_symm_apply, uniqueElim_const]
-    rw [Finset.sum_eq_single i]
-    · simp
-    · intro b _ hb
-      simp [hb]
-    · simp
-  | succ t ih =>
-    have hR : (∑ q : Fin (t + 1 + 1) → Q, if q 0 = i ∧ q (Fin.last (t + 1)) = e then
-        ∏ τ : Fin (t + 1), mu (o τ) (q τ.castSucc) (q τ.succ) else 0) =
-        ∑ q : Fin (t + 1) → Q, if q (Fin.last t) = e then
-          mu (o 0) i (q 0) * ∏ τ : Fin t, mu (o τ.succ) (q τ.castSucc) (q τ.succ) else 0 := by
-      rw [← (Fin.consEquiv (fun _ => Q)).sum_comp, Fintype.sum_prod_type, Finset.sum_eq_single i]
-      · refine Finset.sum_congr rfl fun q _ => ?_
-        simp only [Fin.consEquiv_apply, Fin.cons_zero, true_and, Fin.prod_univ_succ, Fin.castSucc_zero,
-          Fin.cons_succ, ← Fin.succ_last, ← Fin.succ_castSucc]
-      · intro b _ hb
-        refine Finset.sum_eq_zero fun q _ => ite_eq_right ?_
-        rintro ⟨h, -⟩
-        exact hb (by simpa using h)
-      · intro h
-        exact absurd (mem_univ _) h
-    rw [List.ofFn_succ, List.map_cons, List.prod_cons, Matrix.mul_apply, hR]
-    simp only [ih, Finset.mul_sum]
-    rw [Finset.sum_comm]
-    refine Finset.sum_congr rfl fun q _ => ?_
-    rw [Finset.sum_eq_single (q 0)]
-    · simp only [true_and, mul_ite, mul_zero]
-    · intro b _ hb
-      rw [ite_eq_right (fun h => hb h.1.symm), mul_zero]
-    · intro h
-      exact absurd (mem_univ _) h
+  simpa only [List.map_ofFn, Function.comp_def] using prod_path (fun τ => mu (o τ)) i e
 
 end Path
 
