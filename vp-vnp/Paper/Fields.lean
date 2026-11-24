@@ -16,13 +16,6 @@ open Finset MvPolynomial Nc
 
 universe u
 
-/-- An exact circuit gives a coefficientwise approximation of the same size by
-viewing its constants as constant Laurent series. -/
-theorem approximates_of_computes {F : Type u} [Field F] {V : Type} {f : MvPolynomial V F}
-    {s : ℕ} (h : Computes f s) : Approximates f s := by
-  refine ⟨_, h.map (HahnSeries.C : F →+* LaurentSeries F), fun d i _ => ?_⟩
-  by_cases hi : i = 0 <;> simp [coeff_map, HahnSeries.C_apply, hi]
-
 /-- **Paper: Theorem thm:allfields.** "There is an absolute constant c > 0 such that for every p, zero or prime,
 there is m₀: over every field of characteristic p and for every m ≥ m₀ every circuit for HC_m, and for PERM_m if p ≠ 2,
 has more than m^(c(log m)^(1/3)) gates." -/

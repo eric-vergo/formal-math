@@ -7,11 +7,16 @@ import Nc.Rate.Transfer
 
 /-!
 # The paper, appendices A and B: constants in KK
+
+Circuits over a field of characteristic p, exact or approximating, are moved to circuits of the same
+size with constants in KK; and an exact circuit is an approximating one of the same size.
 -/
 
 namespace Paper
 
 open MvPolynomial Nc
+
+universe u
 
 variable {F : Type*} {KK : Type} [Field F] [Field KK] [IsAlgClosed KK] {X : Type*}
 
@@ -70,5 +75,12 @@ theorem lem_transfer_approx (p : ℕ) [CharP F p] [CharP KK p] (q : MvPolynomial
     split_ifs <;> simp
   rw [coeff_map, AddMonoidAlgebra.coeff_mapRingHom, e1, coeff_map]
   split_ifs <;> simp
+
+/-- An exact circuit gives a coefficientwise approximation of the same size by
+viewing its constants as constant Laurent series. -/
+theorem approximates_of_computes {F : Type u} [Field F] {V : Type} {f : MvPolynomial V F}
+    {s : ℕ} (h : Computes f s) : Approximates f s := by
+  refine ⟨_, h.map (HahnSeries.C : F →+* LaurentSeries F), fun d i _ => ?_⟩
+  by_cases hi : i = 0 <;> simp [coeff_map, HahnSeries.C_apply, hi]
 
 end Paper
