@@ -141,18 +141,7 @@ theorem foldF_does {step s l : Fm} {x σ : Tree} {cs cl : ℕ} {f : Tree → Tre
       Does θ step (.cons x σ) (f x σ) (d x) ∧ ∀ q ∈ f x σ, Inv ys q.2) (hσ : Inv xs σ) :
     Does θ (foldF step s l) x (foldW f xs σ) (cs + cl + (xs.map fun x => d x + 30).sum + 20) := by
   have h1 := Gives.cons (Gives.quote (θ := θ) (foldB step).code x) (Gives.cons hs hl)
-  have h2 := Does.app (p := (foldB step).code) (R := fun _ => foldW f xs σ) h1 (by
-    intro q hq
-    rw [List.mem_singleton] at hq
-    subst hq
-    rw [Fm.ofTree_code]
-    exact foldB_does h hσ)
-  refine (h2.congr ?_ fun φ => ?_).mono (by omega)
-  · intro p hp
-    obtain ⟨q, hq, r, hr, h3, h4⟩ := mem_bindW hp
-    exact ⟨r, hr, h3.symm⟩
-  · rw [wsum_bindW]
-    simp [wsum]
+  exact (Does.of_gives h1 (foldB_does h hσ)).mono (by omega)
 
 theorem foldW_det (g : Tree → Tree → Tree) (xs : List Tree) (σ : Tree) :
     foldW (A := A) (fun x σ => [(1, g x σ)]) xs σ = [(1, xs.foldl (fun σ x => g x σ) σ)] := by
@@ -342,18 +331,7 @@ theorem pickB_does (xs : List Tree) :
 theorem pickF_does {l : Fm} {x : Tree} {cl : ℕ} {xs : List Tree} (hl : Gives θ l x (listT xs) cl) :
     Does θ (pickF l) x (xs.map fun x => (1, x)) (cl + 20 * xs.length + 20) := by
   have h1 := Gives.cons (Gives.quote (θ := θ) pickB.code x) hl
-  have h2 := Does.app (p := pickB.code) (R := fun _ => xs.map fun x => ((1 : A), x)) h1 (by
-    intro q hq
-    rw [List.mem_singleton] at hq
-    subst hq
-    rw [Fm.ofTree_code]
-    exact pickB_does xs)
-  refine (h2.congr ?_ fun φ => ?_).mono (by omega)
-  · intro p hp
-    obtain ⟨q, hq, r, hr, h3, h4⟩ := mem_bindW hp
-    exact ⟨r, hr, h3.symm⟩
-  · rw [wsum_bindW]
-    simp [wsum]
+  exact (Does.of_gives h1 (pickB_does xs)).mono (by omega)
 
 end Choice
 

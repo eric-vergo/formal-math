@@ -51,23 +51,11 @@ theorem thm_noacc_periodic (R : Type) [CommRing R] [Finite R] :
     ∃ (M : ℕ) (red : ℕ → ℕ), (∀ i, red i < M) ∧ ∀ (c : R) i, c ^ 2 ^ red i = c ^ 2 ^ i := by
   classical
   let f : ℕ → R → R := fun i c => c ^ 2 ^ i
-  have hfin : (Set.range f).Finite := Set.toFinite _
-  let red : ℕ → ℕ := fun i => Nat.find (⟨i, rfl⟩ : ∃ j, f j = f i)
-  have hred : ∀ i, f (red i) = f i := fun i => Nat.find_spec (⟨i, rfl⟩ : ∃ j, f j = f i)
-  have hinj : ∀ i j, f i = f j → red i = red j := by
-    intro i j hij
-    simp only [red, hij]
-  have hbdd : (Set.range red).Finite := by
-    have : Set.range red ⊆ (fun g : R → R => if h : ∃ i, f i = g then red h.choose else 0) '' Set.range f := by
-      rintro _ ⟨i, rfl⟩
-      refine ⟨f i, ⟨i, rfl⟩, ?_⟩
-      have h : ∃ j, f j = f i := ⟨i, rfl⟩
-      show (if h : ∃ j, f j = f i then red h.choose else 0) = red i
-      rw [dif_pos h]
-      exact hinj _ _ h.choose_spec
-    exact (hfin.image _).subset this
-  obtain ⟨M, hM⟩ := hbdd.bddAbove
-  refine ⟨M + 1, red, fun i => Nat.lt_succ_of_le (hM ⟨i, rfl⟩), fun c i => congrFun (hred i) c⟩
+  let repr (g : Set.range f) : ℕ := g.property.choose
+  obtain ⟨M, hM⟩ := (Set.finite_range repr).bddAbove
+  refine ⟨M + 1, fun i => repr ⟨f i, i, rfl⟩, fun i => Nat.lt_succ_of_le (hM ⟨⟨f i, i, rfl⟩, rfl⟩), ?_⟩
+  intro c i
+  exact congrFun (show f (repr ⟨f i, i, rfl⟩) = f i from (show ∃ j, f j = f i from ⟨i, rfl⟩).choose_spec) c
 
 set_option maxHeartbeats 1000000 in
 /-- **Paper: proof of Theorem thm:noacc, the diagonal.** "Let v be large against E and the number of constants": the
@@ -94,13 +82,9 @@ theorem thm_noacc_diagonal {h : ℕ} (hh : 17 ≤ h) [Nontrivial R] {v : ℕ} {K
   have pbig : ∀ a, 2000 * v ^ a ≤ v ^ (a + 1) := fun a => by rw [pu]; exact Nat.mul_le_mul_right _ hv4
   have ppos : ∀ a, 1 ≤ v ^ a := fun a => Nat.one_le_pow _ _ (by omega)
   set nB := (K.expand B').nds with hnB
-  have hnB1 : nB ≤ K.nds * (2 * X) := (KT.nds_expand B' K).trans (Nat.mul_le_mul_left _ (by omega))
   have hnBX : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * v ^ 2 := by
     intro c hc
-    calc nB * (c * X) ≤ K.nds * (2 * X) * (c * X) := Nat.mul_le_mul_right _ hnB1
-      _ = K.nds * (2 * (c * X ^ 2)) := by ring
-      _ ≤ v * (2 * v) := Nat.mul_le_mul hK (by omega)
-      _ = 2 * v ^ 2 := by ring
+    exact K.expand_cost_le (k := 1) (by simpa using hK) (by omega) (hc.trans hXv)
   have hJX : J + 1 ≤ X := by omega
   -- the program
   set g : Fm := gt red J B' K [] with hg
