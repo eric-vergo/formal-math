@@ -20,3 +20,8 @@ Version 2.0. It depends on, but does not include, Verso Blueprint, Verso and Sub
 forks at https://github.com/eric-vergo, released under the Apache License, Version 2.0) and their
 dependencies, fetched by the build tool at the revisions pinned in lake-manifest.json and released under their
 own licenses. The proof does not depend on any of them.
+
+Lean proof adaptations in Nc/Dl/Cut.lean, Nc/Flag/Act.lean, Nc/Tow/Slp2.lean, Nc/Tow/Slp3.lean,
+Nc/Tow/Slp4.lean, and Paper/Pieces.lean use work by Helen Kwok, available under Apache License, Version 2.0
+from https://github.com/helenkwok/formal-math at 939ca3e07458f4ab2359781ad7b76730f23b9250 and
+932c9f971310eaf3195f2b2256dc338cb3a17060. Adaptations by Eric Vergo and GPT-6.2 (OpenAI).
