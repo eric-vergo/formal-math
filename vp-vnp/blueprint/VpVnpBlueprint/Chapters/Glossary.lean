@@ -30,8 +30,9 @@ and the notation of the paper that the chapters of this blueprint use, with the 
 that formalizes it, in the order of the paper. Where the column _meaning_ is in quotation marks it
 quotes Appendix P or the page named; otherwise it is a short description, adapted from the page
 named, and the definition is in the chapter linked at the head of each table. Every Lean name
-resolves in the build of this site and can be hovered for its statement. Where no declaration
-corresponds to a term, the last column says how the Lean development expresses it.
+resolves in the build of this site and can be hovered for its statement; a term whose
+definition is a node of this site links to that node. Where no declaration corresponds to a
+term, the last column says how the Lean development expresses it.
 
 # The Lean development's other words
 
@@ -146,7 +147,7 @@ From “Notation and conventions” (pages 17–18).
   * an element of a type `I` with `[Fintype I]`
 *
   * tensor on $`I`
-  * an array over $`\Bbbk` with one index for each party (page 18)
+  * an array over $`\Bbbk` with one index for each party (page 18; {bpref "Ten"}[the definitions of Section A.1])
   * {InlineLean.name}`Ov.Ten`
 *
   * restriction
@@ -178,23 +179,23 @@ From “Notation and conventions” (pages 17–18).
   * a product, by `Ov.Ten.prod`, of wires
 *
   * spectral point $`\phi`
-  * Appendix P: “a nonnegative function on tensors with $`\phi(1) = 1` that is multiplicative, does not increase under restriction and is subadditive” (Definition A.1)
+  * Appendix P: “a nonnegative function on tensors with $`\phi(1) = 1` that is multiplicative, does not increase under restriction and is subadditive” ({bpref "def_spectral"}[Definition A.1])
   * {InlineLean.name}`Ov.Spec`
 *
   * $`g_\phi(P)`, $`d_\phi(u,v)`
-  * Appendix P: “the exponents in $`\phi(\langle q \rangle_P) = q^{g_\phi(P)}`; $`d_\phi(u,v) = g_\phi(\{u,v\})`” (Lemma A.2)
+  * Appendix P: “the exponents in $`\phi(\langle q \rangle_P) = q^{g_\phi(P)}`; $`d_\phi(u,v) = g_\phi(\{u,v\})`” ({bpref "lem_exponents"}[Lemma A.2])
   * {InlineLean.name}`Nc.Price.hexp`, {InlineLean.name}`Ov.Spec.e`
 *
   * price; $`|xy|`
-  * Appendix P: “a limit of multiples $`c\, d_\phi`; the distance of $`x` and $`y` in it” (Definition A.4)
+  * Appendix P: “a limit of multiples $`c\, d_\phi`; the distance of $`x` and $`y` in it” ({bpref "def_price"}[Definition A.4])
   * {InlineLean.name}`Nc.Price.IsPrice`
 *
   * hub
-  * Appendix P: “one of two additional parties through which a tensor of small rank is routed” (Lemma A.3)
+  * Appendix P: “one of two additional parties through which a tensor of small rank is routed” ({bpref "lem_hubs"}[Lemma A.3])
   * the parties `o₁`, `o₂` of {InlineLean.name}`Paper.lem_hubs`
 *
   * upper functional
-  * the functionals of Proposition A.5 (page 20); Lean says _gauge_
+  * a nonnegative function $`p` on tensors with $`p(1) = 1` that is submultiplicative and subadditive on covers (page 20; {bpref "def_gauge"}[the definition], {bpref "prop_gauge"}[Proposition A.5]); Lean says _gauge_
   * {InlineLean.name}`Ov.PreSpec`
 :::
 
@@ -209,24 +210,24 @@ From “Notation and conventions” (pages 17–18).
   * Lean
 *
   * symbol; its energy
-  * the index of the tensors in the crossing identity (page 22); Lean says _state_
+  * a pair $`(I, J)` of finite subsets of $`\mathbb{N}` with $`|I| = |J|`; its energy is $`\sum_{i \in I}(2i+1) + \sum_{j \in J}(2j+1)` (page 22; {bpref "lem_count"}[Lemma B.1]); the symbols of given size and energy index the tensors of the crossing identity; Lean says _state_
   * {InlineLean.name}`Nc.Cross.states`
 *
   * $`P(E)`
-  * the number of symbols of energy at most $`E` (Lemma B.1)
+  * the number of symbols of energy at most $`E` ({bpref "lem_count"}[Lemma B.1])
   * {InlineLean.name}`Paper.stateCount`, {InlineLean.name}`Nc.Cross.pairs`
 *
   * midpoint; the inequality of Bruhat and Tits
-  * page 8; Theorem C.1
+  * a point at half the distance from both; the inequality (C.1) of {bpref "thm_cn"}[Theorem C.1] (pages 25 and 28)
   * {InlineLean.name}`Cat.mid`, {InlineLean.name}`Cat.cn`
 *
   * CAT(0) space; price space
-  * Appendix P: “a complete CAT(0) space whose metric is a price”
+  * a complete metric space in which any two points have a midpoint that satisfies the inequality of Bruhat and Tits (page 28; {bpref "CN"}[the definition]); Appendix P, of a price space: “a complete CAT(0) space whose metric is a price”
   * {InlineLean.name}`Cat.CN` together with {InlineLean.name}`Nc.Price.IsPrice` of the metric
 *
   * $`\nu(g)`; the seminorm $`N`
-  * the root mean square length over boxes from which $`N` is defined (Section C.2); Lean says _window_ for a box
-  * {InlineLean.name}`Paper.meanLength`
+  * the root mean square length over boxes, and the seminorm $`N(g) = \inf_S \nu(Sg)/S` defined from it (Section C.2; {bpref "lem_means"}[Lemma C.2]); Lean says _window_ for a box
+  * {InlineLean.name}`Paper.meanLength`, {InlineLean.name}`Paper.meanNorm`
 :::
 
 # Appendix D: the two cases
@@ -244,15 +245,15 @@ From “Notation and conventions” (pages 17–18).
   * {InlineLean.name}`Nc.Flag.Mt`
 *
   * $`D(r)`
-  * $`D(r)^2` is the mean of $`|a, a+W|^2` over all $`a` and all $`W` of rank $`r` (page 5)
+  * $`D(r)^2` is the mean of $`|a, a+W|^2` over all $`a` and all $`W` of rank $`r` (pages 5 and 29; {bpref "distAtRank"}[the definitions of Section D.1])
   * {InlineLean.name}`Paper.distAtRank`, {InlineLean.name}`Paper.meanSq`
 *
   * flat hypothesis, flat case
-  * Definition D.1
+  * all finite subsets of all Euclidean spaces, with their metrics, are prices ({bpref "def_cases"}[Definition D.1])
   * {InlineLean.name}`Paper.Flat`, {InlineLean.name}`Nc.Flag.CaseOne`
 *
   * contracting hypothesis, contracting case; $`\mu`, $`s`
-  * Definition D.1
+  * $`D(\mu) \le s\, D(1)` for all prices on $`\mathrm{Mat}_\mu(\mathbb{F}_2)`, for some integer $`\mu \ge 2` and real $`s` with $`1 \le s`, $`s^2 < \mu` ({bpref "def_cases"}[Definition D.1])
   * {InlineLean.name}`Paper.Contracting`
 :::
 
@@ -267,23 +268,23 @@ From “Notation and conventions” (pages 17–18).
   * Lean
 *
   * clause sum
-  * Appendix P: “a sum over bit vectors of a product of weights of satisfied clauses”
+  * Appendix P: “a sum over bit vectors of a product of weights of satisfied clauses” ({bpref "clauseSum"}[the definition], page 32)
   * {InlineLean.name}`Paper.clauseSum`
 *
   * affine in one variable
-  * the form of the matrix entries in Corollary E.2
+  * a constant, or $`a x_i + b` for one variable $`x_i`: the form of the matrix entries in {bpref "cor_clauses"}[Corollary E.2]
   * {InlineLean.name}`Nc.IsAffine`
 *
   * complete network; $`f_{k,\ell}`
-  * Appendix P: “the tensor network on the complete graph on $`k` nodes with $`\ell` bits on every edge; its polynomial”
+  * Appendix P: “the tensor network on the complete graph on $`k` nodes with $`\ell` bits on every edge; its polynomial” ({bpref "fkl"}[the definition], page 32)
   * {InlineLean.name}`Nc.CaseI.fkl`; the printed polynomial: {InlineLean.name}`Paper.fklExact`
 *
   * the tensor of $`f_{k,\ell}`; end $`(a,b)`
-  * the coefficient tensor, with the ends of the edges as parties (page 8)
+  * the coefficient tensor, with the ends of the edges as parties (pages 8 and 33; {bpref "fklTen"}[the definition])
   * {InlineLean.name}`Paper.fklTen`
 *
   * balanced set
-  * a set $`S` of nodes with $`k/3 \le |S| \le 2k/3` (page 7)
+  * a set $`S` of nodes with $`k/3 \le |S| \le 2k/3` (pages 7 and 33; {bpref "lem_balanced"}[Lemma E.4])
   * the condition `k ≤ 3 * S.card ∧ 3 * S.card ≤ 2 * k` in {InlineLean.name}`Paper.lem_balanced`
 *
   * the part linear in each block
@@ -291,7 +292,7 @@ From “Notation and conventions” (pages 17–18).
   * {InlineLean.name}`Paper.linearPart`, {InlineLean.name}`Paper.linearIn`
 *
   * complete for grid sums
-  * Appendix M (page 61)
+  * the property of $`(\mathrm{PERM}_M)` and $`(\mathrm{HC}_M)` that the proof uses (Appendix M, page 61; {bpref "GridComplete"}[the definition])
   * {InlineLean.name}`Nc.GridComplete`
 :::
 
@@ -306,11 +307,11 @@ From “Notation and conventions” (pages 17–18).
   * Lean
 *
   * $`U_h`; its generators
-  * the upper unitriangular $`h \times h` matrices over $`\mathbb{F}_2` (page 9)
+  * the upper unitriangular $`h \times h` matrices over $`\mathbb{F}_2`, with the generators $`x_i = 1 + E_{i,i+1}` (pages 9 and 37; {bpref "unitriangular_group"}[the definition])
   * {InlineLean.name}`Nc.Tower.U`, {InlineLean.name}`Nc.Tower.x`
 *
   * length function; contracts
-  * page 38
+  * page 38 ({bpref "contracting_length"}[the definition])
   * {InlineLean.name}`Nc.Flag.Len`, {InlineLean.name}`Nc.Flag.Contr`
 *
   * mean over a rank
@@ -318,11 +319,11 @@ From “Notation and conventions” (pages 17–18).
   * {InlineLean.name}`Paper.rankMean`
 *
   * $`\vartheta_n`, $`C(n)`
-  * Lemma F.3 and (F.1); in Lean explicit numbers that “are not those of the printed proof” (page 68)
+  * {bpref "lem_first"}[Lemma F.3] and {bpref "eq_window"}[the display (F.1)]; in Lean explicit numbers that “are not those of the printed proof” (page 68)
   * {InlineLean.name}`Paper.kappa`, {InlineLean.name}`Paper.windowConst`
 *
   * window; projection
-  * Section F; the projection is defined in Lean as the barycenter of the orbit (page 68)
+  * Section F.2 ({bpref "windows"}[the definition]); the projection is defined in Lean as the barycenter of the orbit (page 68)
   * {InlineLean.name}`Nc.Flag.IsoAct`, {InlineLean.name}`Paper.projection_nearest`
 :::
 
@@ -341,35 +342,39 @@ From “Notation and conventions” (pages 17–18).
   * {InlineLean.name}`Nc.Tower.NN`, {InlineLean.name}`Nc.Vp.cNear`, {InlineLean.name}`Nc.Vp.dNear`
 *
   * $`b`
-  * in Lean `2 ^ ee h` with {InlineLean.name}`Nc.Tower.ee`
-  * {InlineLean.name}`Nc.Tower.ee`
+  * $`b = |U_h| = 2^{h(h-1)/2}` (page 41)
+  * `2 ^ ee h` with {InlineLean.name}`Nc.Tower.ee`
 *
   * load
   * Appendix P: “a vector of natural numbers on pairs of elements, or on edges”
   * written out in {InlineLean.name}`Paper.thm_laws`
 *
   * law; slot; channel
-  * Appendix P: “an identity that rewrites bits on arbitrary pairs (slots) as a sum of networks with bits on edges (channels)” (Definition G.1)
+  * Appendix P: “an identity that rewrites bits on arbitrary pairs (slots) as a sum of networks with bits on edges (channels)” ({bpref "def_law"}[Definition G.1])
   * {InlineLean.name}`Nc.G.Law`; the chosen family: {InlineLean.name}`Nc.Tow.VLaws`
 *
   * the ring $`A`
-  * the finitely generated ring generated by the coefficients of the laws (Theorem G.2)
+  * the finitely generated ring generated by the coefficients of the laws ({bpref "thm_laws"}[Theorem G.2])
   * a subring `A` of the field with `Algebra.FiniteType ℤ A`
 *
   * the tower of groups
-  * Section H.1
+  * Section H.1 ({bpref "prop_tower"}[Proposition H.1])
   * {InlineLean.name}`Nc.Tower.G`, {InlineLean.name}`Nc.Tower.gen`, {InlineLean.name}`Nc.Tower.th`, {InlineLean.name}`Nc.Tower.pr`, {InlineLean.name}`Nc.Tower.XX`, {InlineLean.name}`Nc.Tower.VV`, {InlineLean.name}`Nc.Tower.JJ`
 *
   * packet
   * Appendix P: “a string of $`\ell` bits carried between two nodes”; Lean says _unit_
-  * in the fields of {InlineLean.name}`Paper.ThinTrees`
+  * {InlineLean.name}`Paper.NetUnit`
 *
   * network; node tensor; value; outcome
-  * Appendix P: “numbers of packets on pairs of nodes and a tensor at each node; the sum over all contents of the packets of the product of the node tensors; the numbers of packets that a law puts on its channels”; Lean says _table_ for a node tensor
-  * in the fields of {InlineLean.name}`Paper.ThinTrees`
+  * Appendix P: “numbers of packets on pairs of nodes and a tensor at each node; the sum over all contents of the packets of the product of the node tensors; the numbers of packets that a law puts on its channels”; Lean says _table_ for a node tensor ({bpref "network_value"}[the definition], page 45)
+  * {InlineLean.name}`Paper.NodeTable`, {InlineLean.name}`Paper.netValue`; the trees of Theorem H.2 are the structure {InlineLean.name}`Paper.ThinTrees`
+*
+  * relay
+  * a move that replaces a packet between two nodes by two packets through a third (page 45); in Lean “a law with one slot, two channels, one index and $`\lambda = 0`, applied to a batch of packets” (page 68; {bpref "relay"}[the definition])
+  * {InlineLean.name}`Nc.Tow.relay`
 *
   * good outcome
-  * Section H.2; tested in Lean with $`\lfloor 2 C_1 a_1^2 \rfloor` (page 69)
+  * Section H.2; tested in Lean with $`\lfloor 2 C_1 a_1^2 \rfloor` (page 69; {bpref "thm_tree_good"}[the node])
   * {InlineLean.name}`Paper.goodBound`, {InlineLean.name}`Paper.thm_tree_good`
 :::
 
@@ -388,11 +393,11 @@ From “Notation and conventions” (pages 17–18).
   * {InlineLean.name}`NS1.Tree`, {InlineLean.name}`NS1.Tree.size`
 *
   * program
-  * a nondeterministic program on binary trees with weights in $`A` (Section I.1)
+  * a nondeterministic program on binary trees with weights in $`A` (Section I.1; {bpref "def_program"}[the definition])
   * {InlineLean.name}`NS1.Fm`, {InlineLean.name}`NS1.Fm.ofTree`
 *
   * run; weight; tally
-  * Appendix P: “a computation of a nondeterministic program; the element of $`A` that it accumulates; the list of names of constants that it has used”; Lean says _bill_ for a tally
+  * Appendix P: “a computation of a nondeterministic program; the element of $`A` that it accumulates; the list of names of constants that it has used”; Lean says _bill_ for a tally ({bpref "def_runs"}[the definition])
   * {InlineLean.name}`NS1.Run`, {InlineLean.name}`NS1.evl`
 *
   * all runs halt
@@ -408,19 +413,19 @@ From “Notation and conventions” (pages 17–18).
   * {InlineLean.name}`NS1.pv`
 *
   * $`\tau`-plain
-  * Appendix P: “all runs halt, and the accepting ones have empty tallies and take at most $`\tau` steps”
+  * Appendix P: “all runs halt, and the accepting ones have empty tallies and take at most $`\tau` steps” ({bpref "def_plain"}[the definition])
   * {InlineLean.name}`NS1.Plain`
 *
   * tape automaton
-  * Appendix P: “a finite automaton with a matrix over $`A` for each letter, whose letters write on the two sides of tapes”
+  * Appendix P: “a finite automaton with a matrix over $`A` for each letter, whose letters write on the two sides of tapes” ({bpref "def_tape_automaton"}[the definition])
   * {InlineLean.name}`Nc.Letter`, {InlineLean.name}`Nc.runVal`
 *
   * the word of an instance
-  * the input of the universal automaton (Proposition I.1)
+  * the input of the universal automaton ({bpref "prop_universal"}[Proposition I.1])
   * {InlineLean.name}`Nc.Dl.wordG`, {InlineLean.name}`NS1.tbits`
 *
   * the data of a run as a network
-  * Lemma I.2
+  * {bpref "lem_runnet"}[Lemma I.2]
   * {InlineLean.name}`Nc.Cut.RowData`, {InlineLean.name}`Nc.Cut.ValidRows`
 :::
 
@@ -439,23 +444,23 @@ From “Notation and conventions” (pages 17–18).
   * a natural number `v`
 *
   * a program cuts
-  * Definition J.1
+  * {bpref "def_cut"}[Definition J.1]
   * {InlineLean.name}`NS1.CutD`, {InlineLean.name}`NS1.CutProg`
 *
   * piece
-  * the short instances that a run of the cutting program lists (page 9)
+  * the short instances that a run of the cutting program lists (page 9; {bpref "prop_pieces"}[Proposition J.2])
   * {InlineLean.name}`Paper.PieceCut`
 *
   * the conclusion of the cutting theorem
-  * Theorem J.4; a hypothesis of Proposition K.5, Theorem K.6 and Proposition N.4 in Lean
+  * {bpref "thm_cut"}[Theorem J.4]; a hypothesis of Proposition K.5, Theorem K.6 and Proposition N.4 in Lean
   * {InlineLean.name}`NS1.CutHyp`
 *
   * constants, names
-  * Definition K.1; in Lean a trie with the constants at its leaves
+  * {bpref "def_acc"}[Definition K.1]; in Lean a trie with the constants at its leaves
   * {InlineLean.name}`NS1.KT`
 *
   * accelerator
-  * Appendix P: “a program that evaluates sums over $`v^H` steps within $`v^{H-16}` steps” (Definition K.1)
+  * Appendix P: “a program that evaluates sums over $`v^H` steps within $`v^{H-16}` steps” ({bpref "def_acc"}[Definition K.1])
   * {InlineLean.name}`NS1.HasAcc`, {InlineLean.name}`NS1.IsAccT`
 *
   * short instance
@@ -467,11 +472,11 @@ From “Notation and conventions” (pages 17–18).
   * {InlineLean.name}`NS1.codeB`, {InlineLean.name}`Nc.code1`
 *
   * $`\Phi`
-  * the polynomial (2.2) of the overview
-  * not defined; what is used of it: {InlineLean.name}`Paper.lem_circuit_phi`
+  * the polynomial (2.2) of the overview (page 6)
+  * not defined; what is used of it: {InlineLean.name}`Paper.lem_circuit_phi` ({bpref "lem_circuit_phi"}[the node])
 *
   * approximate accelerator
-  * Appendix N
+  * Section N.3 (page 63; {bpref "def_approx_acc"}[the definition])
   * {InlineLean.name}`NS1.HasAccA`, {InlineLean.name}`NS1.IsAccA`
 :::
 

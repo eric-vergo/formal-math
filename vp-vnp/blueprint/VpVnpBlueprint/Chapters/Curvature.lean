@@ -36,9 +36,9 @@ identity_) writes the product of two wires that cross as a sum of few tensors, e
 across two different cuts. Spectral points turn it into an inequality between eight distances of
 an arbitrary price (the _crossing inequality_). From that inequality alone, together with the
 freedom to add random points, it follows that every price satisfies the inequality of Bruhat and
-Tits: prices are metrics of nonpositive curvature. Consequently every price embeds in a complete
-CAT(0) space whose metric is again a price, and the standard toolkit of such spaces applies to
-prices. The chapter follows Appendices B, C and O of the paper (pages 22–29 and 64–65) of
+Tits: prices are pseudometrics of nonpositive curvature. Consequently every price is the
+pull-back of the metric of a complete CAT(0) space whose metric is again a price, and the
+standard toolkit of such spaces applies to prices. The chapter follows Appendices B, C and O of the paper (pages 22–29 and 64–65) of
 {repoFile "vp-vnp/paper.pdf"}[`paper.pdf`].
 
 How to read it. The paper (page 22): “Only (B.2) is used later, and only in the proof of Lemma
@@ -141,7 +141,7 @@ products” is a sum of exactly $`K` products of integer-valued functions, some 
 zero.
 :::
 
-:::proof "prop_identity"
+:::proof "prop_identity" (uses := "prop_identity_steps")
 *The paper's proof* (Section B.3, pages 23–24), summarised. Put $`y = X^2`. Let
 $`\mathsf{B}(r, n)` and $`\mathsf{C}(r, n)` be the coefficients of $`t^n` in
 $`(1+t)^r/(1+yt)^{r+1}` and $`(1+yt)^r/(1+t)^{r+1}` (Meixner polynomials, in $`\mathbb{Z}[y]`).
@@ -206,7 +206,7 @@ display (B.2) alone (Appendix Q.2, page 66: “`eq_Q` is the display (B.2)”). 
 called `l` and $`t_0` is `τ`. The paper records no difference.
 :::
 
-:::proof "prop_crossing"
+:::proof "prop_crossing" (uses := "prop_identity, lem_count, lem_hubs, lem_exponents_parts")
 *The paper's proof* (pages 24–25), summarised. Pull the price back to eight distinct points; both
 bounds are homogeneous and the pairs $`(r, r')` lie in a compact set, so it suffices to treat
 $`d_\phi` for a spectral point $`\phi` on eight parties. For a large integer $`n_0` let
@@ -238,7 +238,7 @@ like $`e^{\kappa\sqrt{E}}`. In (B.2) it has become the two terms $`t_0(p^2 + q^2
 $`(|oo'|^2 + |ww'|^2)/(2t_0)`, and these are what the next section turns into a parallelogram
 law.
 
-# C.1. The curvature bound
+# C.1. The curvature bound and the plan of its proof
 
 :::theorem "thm_cn" (lean := "Paper.thm_cn") (parent := "part-common")
 *Theorem C.1 of the paper* (curvature bound for prices; page 25), quoted: “Let $`x, v, m, z` be
@@ -251,7 +251,7 @@ inequality of Bruhat and Tits \[BT72\], \[BH99, Exercise II.1.9(1)(c)\].” The 
 the printed one, for a price `w` on any type.
 :::
 
-:::proof "thm_cn"
+:::proof "thm_cn" (uses := "thm_cn_fan, thm_cn_estimates")
 *The paper's plan of the proof* (page 25), quoted: “If a price on $`\mathbb{Z}^2` is given by a
 seminorm $`N`, then (B.2) forces the parallelogram law for $`N`, so that three values of $`N`
 determine all others. One would like to differentiate the price at $`m`, but the proof avoids
@@ -300,7 +300,7 @@ both the limit and the infimum and satisfies the parallelogram law. Appendix Q.3
 names of the underlying library (the namespace `Cat` of the folder `Nc/Cat`).
 :::
 
-:::proof "lem_means"
+:::proof "lem_means" (uses := "prop_crossing")
 *The paper's proof* (pages 26–27), summarised. First, (B.2) holds for $`\nu` and for $`N` in
 place of a price: apply (B.2) to $`W_n` at the eight points $`P + \mathbf{g}` with the weights
 $`p = |xv|` and $`q = |yu|` measured in $`W_n`, average over $`P`, and use the Cauchy–Schwarz
@@ -322,7 +322,7 @@ In Lean: `Paper.lem_means_Q` and `Paper.lem_means_Q_norm` are (B.2) for $`\nu` a
 `Paper.lem_means_parallelogram_le` is the inequality before the last step.
 :::
 
-## C.3. The fan and the four estimates
+## C.3. Proof of Theorem C.1
 
 :::lemma_ "thm_cn_fan" (lean := "Paper.thm_cn_fan, Paper.IsFan") (parent := "part-common")
 *An unnumbered step of the proof of Theorem C.1* (the fan; page 27), quoted: “For a given $`n` we
@@ -341,6 +341,11 @@ about positions that the text uses ($`\gamma_0` at $`x` or $`v`, $`\gamma_{n^2}`
 $`|G(i,j)\gamma_i| \leq (1 - \rho)L_i`, and the two copies of $`G(n^2, j)` at distance $`0`). The
 two sheets are indexed by `Bool`, with `x : Bool → Y` giving $`x` and $`v`. `Paper.thm_cn_fan`
 says that such a `d` exists whenever $`|xm|, |vm| \leq D`.
+:::
+
+:::proof "thm_cn_fan" (uses := "prop_random")
+The fan is obtained from {bpref "prop_random"}[Proposition A.8], applied as in the quotation:
+once for the points $`\gamma_i` and once for the points $`G(i, j)`.
 :::
 
 :::lemma_ "thm_cn_estimates" (lean := "Paper.thm_cn_i, Paper.thm_cn_ii, Paper.thm_cn_iii, Paper.thm_cn_iv, Paper.thm_cn_end") (parent := "part-common")
@@ -401,7 +406,7 @@ of `Cat.CN X` and a map `f : V → X` such that the metric of `X` is a price and
 `dist (f a) (f b) = w a b`. The map need not be injective, since a price is a pseudometric.
 :::
 
-:::proof "prop_space"
+:::proof "prop_space" (uses := "prop_random")
 *The paper's proof* (page 28), summarised. Let $`V_0 = V` and let $`V_{l+1}` be $`V_l` with one
 new point for every pair of its points. A price on $`V_l` extends to $`V_{l+1}` by Proposition
 A.8, applied to the random map that sends each new point to either point of its pair with

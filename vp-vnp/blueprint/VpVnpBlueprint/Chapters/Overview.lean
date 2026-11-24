@@ -28,7 +28,8 @@ This chapter is the map of the proof. It follows Section 2 of the paper (pages 4
 {repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]), its Figure 1 (page 5) and its Table 1 (page 17), and
 adds, from the Lean code, how the two cases are assembled into the five theorems. It has no nodes
 of its own: every statement it mentions is presented, beside its Lean declaration, in the chapter
-it links to, and a Lean name shown here can be hovered for its statement. A reader should come
+it links to; a statement cited by its number in the paper links to its node, and a Lean name
+shown here can be hovered for its statement. A reader should come
 away knowing which statement does what, where the permanent and the circuit enter, which parts
 are printed in full and which are complete only in Lean.
 
@@ -51,9 +52,11 @@ unrelated arguments:
 - in the contracting case, an indirect argument: contraction yields identities between tensors,
   the identities let every computation of a weighted nondeterministic program be cut into short
   pieces, a small circuit would then speed up all such computations, and a diagonal argument
-  refutes the speed-up. This gives $`2^{c(\log m)^2/\log\log m}`.
+  refutes the speed-up. This gives $`2^{c'(\log m)^2/\log\log m}`, with a constant $`c' > 0` for
+  which the proof gives no value.
 
-The theorem takes the weaker bound. It is not known which case holds, even over $`\mathbb{R}`.
+The theorem takes the weaker bound, which is the flat one for large $`m`. It is not known which
+case holds, even over $`\mathbb{R}`.
 
 # The two hypotheses
 
@@ -86,16 +89,22 @@ hypotheses in this language, as the paper says (page 5): “The Lean definition 
 hypotheses for prices: the contracting one as $`D(\mu) \le s\, D(1)` for all prices on
 $`\mathrm{Mat}_\mu(\mathbb{F}_2)`, which is the same because the inequality survives scaling and
 limits, and the flat one as the statement that all finite subsets of Euclidean spaces, with their
-metrics, are prices.” That the two forms agree is the paper's remark; no Lean theorem states it.
-The form for prices is Definition D.1 ({InlineLean.name}`Paper.def_cases`).
+metrics, are prices.” The form for prices is {bpref "def_cases"}[Definition D.1]
+({InlineLean.name}`Paper.def_cases`). For the flat hypothesis the two forms are related by the
+Lean characterization of prices ({bpref "def_price"}[Definition A.4],
+{InlineLean.name}`Paper.def_price`). For the contracting hypothesis the agreement of the two
+forms is the paper's remark just quoted; no Lean theorem states it, and the development uses
+the form for prices throughout.
 
 Theorem 2.2 of the paper (page 6), quoted: “Over every field $`\Bbbk` at least one of the two
 hypotheses of Definition 2.1 holds, that is, one of the two cases occurs.” In Lean it is
-{InlineLean.name}`Paper.thm_alt`, whose statement is `Flat K ∨ Contracting K` for a field `K`; it
-is Theorem D.2, presented in {ref "chapter-dichotomy"}[The two cases]. The paper continues: “We
+{InlineLean.name}`Paper.thm_alt`, whose statement is `Flat K ∨ Contracting K` for a field `K`, in
+the forms of Definition D.1; it is {bpref "thm_alt"}[Theorem D.2], presented in
+{ref "chapter-dichotomy"}[The two cases]. The paper continues: “We
 do not know which of the two hypotheses holds, even over $`\mathbb{R}`, nor do we show that the
 two are mutually exclusive.” The Lean proof of the theorem is by cases on whether the contracting
-hypothesis holds, so it is not constructive, and the proofs of the main theorems use both cases.
+hypothesis holds (excluded middle), so it gives no way to decide, and the proofs of the main
+theorems need the lower bound in both cases.
 
 What the hypotheses mean geometrically, adapted from page 5: every price on
 $`\mathrm{Mat}_\mu(\mathbb{F}_2)` has $`D(\mu) \le \sqrt{\mu}\, D(1)`, because for $`W`, $`W'`
@@ -113,7 +122,8 @@ Three steps serve both cases; they are Appendices A to D of the paper.
 *Ranks become distances.* A spectral point evaluates a product of wires exactly: the logarithm
 of its value is the sum, over the wires, of the size $`\log q` of the wire times the distance
 $`d_\phi` between its ends, the _length_ of the network. For other tensors there is only an upper
-bound, through ranks ({InlineLean.name}`Paper.lem_hubs`, Lemma A.3): a tensor $`t` of rank at
+bound, through ranks ({InlineLean.name}`Paper.lem_hubs`, {bpref "lem_hubs"}[Lemma A.3]): a tensor
+$`t` of rank at
 most $`r` across a partition of the parties into $`I_1` and $`I_2` is a restriction of a product
 of wires that join every party $`p` of $`I_i` to a further party $`o_i`, a _hub_, and the two
 hubs to each other with dimension $`r`. Hence the paper's inequality (2.3), for every spectral
@@ -124,21 +134,23 @@ The rank enters through the last term only. This is the bridge from circuits to 
 
 *Prices have nonpositive curvature.* The product of two crossing wires has full rank across both
 partitions of its four ends into two pairs, so (2.3) says nothing about it. An identity between
-integer tensors ({InlineLean.name}`Paper.prop_identity`, Proposition B.2) writes it as a sum of
-few terms, each of small rank across one partition when its rank across the other is large;
-applying (2.3) to the terms gives an inequality between the distances among the four ends and
-four hubs ({InlineLean.name}`Paper.prop_crossing`, Proposition B.3). Averaged over fine chains of
-points it gives the inequality of Bruhat and Tits for prices ({InlineLean.name}`Paper.thm_cn`,
-Theorem C.1), and every price is induced by a map into a complete CAT(0) space whose metric is
-again a price ({InlineLean.name}`Paper.prop_space`, Proposition C.3):
+integer tensors ({InlineLean.name}`Paper.prop_identity`, {bpref "prop_identity"}[Proposition B.2])
+writes it as a sum of few terms, each of small rank across one partition when its rank across the
+other is large; applying (2.3) to the largest term, once for each partition, gives an inequality
+between the distances among the four ends and the four hubs
+({InlineLean.name}`Paper.prop_crossing`, {bpref "prop_crossing"}[Proposition B.3]). Averaged over
+fine chains of points it gives the inequality of Bruhat and Tits for prices
+({InlineLean.name}`Paper.thm_cn`, {bpref "thm_cn"}[Theorem C.1]), and every price is induced by a
+map into a complete CAT(0) space whose metric is again a price
+({InlineLean.name}`Paper.prop_space`, {bpref "prop_space"}[Proposition C.3]):
 {ref "chapter-curvature"}[Two crossing wires and nonpositive curvature].
 
 *The dichotomy.* If the contracting hypothesis fails, a compactness argument gives prices on
 $`\mathrm{Mat}_\mu(\mathbb{F}_2)` with $`D(\mu) = \sqrt{\mu}\, D(1)`, that is, with equality in
 the quadrilateral inequality, and the flat rectangle property of CAT(0) spaces
-({InlineLean.name}`Paper.lem_toolkit_f`) then “puts a solid cube of $`\mathbb{R}^\mu`, and so
-every finite subset of $`\mathbb{R}^\mu` up to scale, into a price” (page 8):
-{ref "chapter-dichotomy"}[The two cases].
+({InlineLean.name}`Paper.lem_toolkit_f`, part (f) of {bpref "lem_toolkit"}[Lemma C.4]) then
+“puts a solid cube of $`\mathbb{R}^\mu`, and so every finite subset of $`\mathbb{R}^\mu` up to
+scale, into a price” (page 8): {ref "chapter-dichotomy"}[The two cases].
 
 Neither a circuit nor the polynomial to be computed occurs in the common part.
 
@@ -197,24 +209,29 @@ For the determinant the arrows *P* are missing, and a Boolean circuit does not p
 *The permanent* enters through an explicit form of Valiant's completeness theorem. Both
 $`f_{k,\ell}` and $`\Phi` are _clause sums_, “sums over all bit vectors of products of local
 weights” (page 6), and every clause sum is the permanent of a matrix whose entries are constants
-or variables or, more generally, affine in one variable, of size three times its number of
-literals ({InlineLean.name}`Paper.prop_grid`, {InlineLean.name}`Paper.cor_clauses`; this needs
-$`2 \ne 0`), and the Hamiltonian cycle polynomial of such a matrix with the factor 40 in the
-place of 3, over every commutative ring and without division
-({InlineLean.name}`Paper.prop_hc_grid`, {InlineLean.name}`Paper.cor_clauses_hc`). So a circuit for the permanent or for the Hamiltonian
-cycle polynomial gives, by substitution, a circuit of about the same size for $`f_{k,\ell}` and
-for $`\Phi`: {ref "chapter-completeness"}[Completeness gadgets]. The Lean development states the
-later steps for any family that is _complete for grid sums_
-({InlineLean.name}`Paper.gridComplete_perm`, {InlineLean.name}`Paper.gridComplete_hc`), so that
-the two polynomials are treated at once.
+or variables is the permanent of a matrix whose entries are affine in one variable each, of any
+size at least three times its number of literals, over a field in which $`2 \ne 0`
+({bpref "prop_grid"}[Proposition E.1], {bpref "cor_clauses"}[Corollary E.2];
+{InlineLean.name}`Paper.prop_grid`, {InlineLean.name}`Paper.cor_clauses`), and the Hamiltonian
+cycle polynomial of such a matrix with the factor 40 in the place of 3, over every field
+({bpref "prop_hc_grid"}[Proposition M.2]; {InlineLean.name}`Paper.prop_hc_grid`,
+{InlineLean.name}`Paper.cor_clauses_hc`; the underlying construction is over every commutative
+ring and uses no division). So a circuit for the permanent or for the Hamiltonian cycle
+polynomial gives, by substitution, a circuit with five times as many gates for $`f_{k,\ell}`,
+and one with $`O(v^a)` gates for $`\Phi`: {ref "chapter-completeness"}[Completeness gadgets].
+The Lean development states the later steps for any family that is _complete for grid sums_
+({bpref "GridComplete"}[the definition]; {InlineLean.name}`Paper.gridComplete_perm`,
+{InlineLean.name}`Paper.gridComplete_hc`), so that the two polynomials are treated at once.
 
 *The circuit* is opened at two places, one in each case. In the flat case a decomposition lemma
 “splits the polynomial at every gate, and so writes the tensor of the coefficients of the output
-as a sum of terms of rank at most the number $`L` of gates” (page 6; Lemma E.4). In the
+as a sum of terms of rank at most the number $`L` of gates” (page 6;
+{bpref "lem_balanced"}[Lemma E.4]). In the
 contracting case an evaluation lemma evaluates the part of degree at most $`d` of the output at
 the points with coordinates 0 and 1 that encode words, in about $`d (\log L)^{O(1)}` steps, by a
 nondeterministic program whose runs are the parse trees with at most $`d` leaves and which “does
-not compute with the constants of the circuit but only records their names” (page 6; Lemma K.2).
+not compute with the constants of the circuit but only records their names” (page 6;
+{bpref "lem_lowdeg"}[Lemma K.2]).
 Both use identities between the formal polynomials at the gates.
 
 # The flat case
@@ -232,13 +249,17 @@ Euclidean configuration of all ends and all hubs in $`\mathbb{R}^k`: for $`a < b
 $`(a,b)` at $`\tfrac12 e_a` and the end $`(b,a)` at $`-\tfrac12 e_a`, and the hubs of $`S` at
 distance of order $`k^{-1/2}` from the origin in the direction of the sum of the ends on the
 side of $`S` and opposite to it. Routing through the hubs then saves a fixed fraction of $`k` in
-length, while the two hubs are close; so $`\log L` must be large. The cost $`k` of naming a
-balanced set in (2.4) is negligible for fixed $`k`, and for growing $`k` it is replaced by about
-$`k^{3/2}` (Lemma E.7, Proposition E.9), which gives $`\log L \ge \ell k^{3/2}/16` for
-$`\ell \ge 100\sqrt{k}` (Proposition E.10). With $`k = r^2`, $`\ell = 100r` and $`\log m` of
-order $`k\ell = 100 r^3`, $`\log L` is of order $`r^4 = (\log m)^{4/3}` up to constants: the
-bound of Theorem E.11, {InlineLean.name}`Paper.thm_flat_rate`, which is
-$`2^{(\log m)^{4/3}/1600^2}` for all large $`m`.
+length, while the two hubs are close; so $`\log L` must be large. In (2.4), multiplied by the
+scale $`c` that the flat hypothesis supplies, the $`k` bits that name a balanced set appear as a
+term $`ck`, which “is negligible for fixed $`k` and large $`\ell`, because $`\phi` and $`c` were
+chosen for $`k` alone” (page 8; {bpref "prop_flat_lower"}[Proposition E.5]); for growing $`k` it
+is replaced by about $`k^{3/2}` ({bpref "lem_few"}[Lemma E.7],
+{bpref "prop_cube"}[Proposition E.9]), which gives $`\log L \ge \ell k^{3/2}/16` for
+$`\ell \ge 100\sqrt{k}` ({bpref "prop_flat_rate"}[Proposition E.10]). With $`k = r^2`,
+$`\ell = 100r` and $`\log m` of order $`k\ell = 100 r^3`, $`\log L` is of order
+$`r^4 = (\log m)^{4/3}` up to constants: the bound of {bpref "thm_flat_rate"}[Theorem E.11],
+{InlineLean.name}`Paper.thm_flat_rate`, which is $`2^{(\log m)^{4/3}/1600^2}` for all large
+$`m`.
 
 Why the complete network: Figure 3 of the paper (page 9) contrasts it with a path, “the network
 of an iterated matrix product”, which “has balanced sets that a single wire crosses”.
@@ -258,29 +279,34 @@ such computations, and a diagonal argument refutes this.”
 $`U_h` of upper unitriangular $`h \times h` matrices over $`\mathbb{F}_2`: “the mean square
 distance of two random elements is at most a constant, the same for all multiples $`h` of a fixed
 integer, times the sum over the $`h - 1` elementary generators of the mean square distances by
-which they move a point” ({InlineLean.name}`Paper.thm_poincare`, Theorem F.6):
+which they move a point” ({InlineLean.name}`Paper.thm_poincare`,
+{bpref "thm_poincare"}[Theorem F.6]):
 {ref "chapter-poincare"}[A Poincaré inequality on unitriangular groups].
 
 *Step 2: from inequalities to identities.* A form of Strassen's duality
-({InlineLean.name}`Paper.thm_duality`, Theorem A.6) “turns an inequality between lengths of
-products of wires that holds in every price into an identity that makes a high tensor power of
-one product from few restrictions of the others”. From the Poincaré inequality it makes the
-_rerouting laws_ ({InlineLean.name}`Paper.thm_laws`, Theorem G.2), “whose coefficients generate a
-finitely generated ring $`A` and which hold over every commutative $`A`-algebra”. The laws are
-not written down; they exist by duality.
+({InlineLean.name}`Paper.thm_duality`, {bpref "thm_duality"}[Theorem A.6]) “turns an inequality
+between lengths of products of wires that holds in every price into an identity that makes a
+high tensor power of one product from few restrictions of the others”. From the Poincaré
+inequality it makes the _rerouting laws_ ({InlineLean.name}`Paper.thm_laws`,
+{bpref "thm_laws"}[Theorem G.2]), “whose coefficients generate a finitely generated ring $`A` and
+which hold over every commutative $`A`-algebra”. The theorem asserts that such laws exist; of
+the identities obtained from duality the paper says (page 20) that “none of them is written down
+explicitly”.
 
 *Step 3: trees.* The laws write the value of every network of tensors joined by wires as a sum
 of values of tree networks, which can be cut into subtrees joined by wires of small total size
-({InlineLean.name}`Paper.thm_tree`, Theorem H.2):
+({InlineLean.name}`Paper.thm_tree`, {bpref "thm_tree"}[Theorem H.2]):
 {ref "chapter-laws"}[Rerouting laws and tree networks].
 
 *Step 4: computations can be cut.* An _instance_ $`z` is a nondeterministic program with an
 argument, whose runs have weights in $`A`; $`\mathrm{sum}(z)` is the sum of the weights of its
 accepting runs; $`z` is $`\tau`-_plain_ if all its runs halt and the accepting ones take at most
 $`\tau` steps and name no constants. A fixed universal machine, a _tape automaton_, evaluates
-$`\mathrm{sum}(z)` for plain $`z` ({InlineLean.name}`Paper.prop_universal`, Proposition I.1), its
-runs form networks ({InlineLean.name}`Paper.lem_runnet`, Lemma I.2), and Step 3 applies to them.
-The result is the cutting theorem ({InlineLean.name}`Paper.thm_cut`, Theorem J.4): for a large
+$`\mathrm{sum}(z)` for plain $`z` ({InlineLean.name}`Paper.prop_universal`,
+{bpref "prop_universal"}[Proposition I.1]), its runs form networks
+({InlineLean.name}`Paper.lem_runnet`, {bpref "lem_runnet"}[Lemma I.2]), and Step 3 applies to
+them. The result is the cutting theorem ({InlineLean.name}`Paper.thm_cut`,
+{bpref "thm_cut"}[Theorem J.4]): for a large
 integer $`v`, the _scale_, a suitable constant $`H` and $`\tau \ge v^H` below a fixed power of
 $`v`, “for every $`\tau`-plain instance $`z` of size at most $`\tau/v^{48}`, the sum
 $`\mathrm{sum}(z)` is the sum, over the runs of a program whose accepting runs take at most
@@ -293,22 +319,26 @@ $`v^H`-plain and short, that is, of size at most $`v^{H-32}`.”
 $`\mathrm{PERM}_m`, with $`m` a large power of $`v` and $`(\log v)^{O(a)} \le v`. The reduction
 gives a circuit with $`O(v^a)` gates for $`\Phi`, and the evaluation lemma turns it into an
 _accelerator_ at the scale $`v` ({InlineLean.name}`Paper.def_acc`,
-{InlineLean.name}`Paper.lem_circuit`): “a program of size $`v^{O(a+1)}`, with as many named
+{InlineLean.name}`Paper.lem_circuit`; {bpref "def_acc"}[Definition K.1],
+{bpref "lem_circuit"}[Lemma K.3]): “a program of size $`v^{O(a+1)}`, with as many named
 constants, whose value on every short $`v^H`-plain $`z` is $`\mathrm{sum}(z)` and whose accepting
 runs take at most $`v^{H-16}` steps.” The constants it names are coefficients that depend on the
 circuit and not on the input: advice. “At the scale $`v` this advice is longer than the running
 times, so we cannot diagonalize there.” The names can be moved in front of the sum over the runs
-({InlineLean.name}`Paper.lem_postpone`, Lemma K.4), and cutting the resulting plain instances and
-running the accelerator on every piece gives an accelerator, with the same constants, at the
-scale $`v^\alpha` ({InlineLean.name}`Paper.prop_next`, Proposition K.5). Correctness of an
+({InlineLean.name}`Paper.lem_postpone`, {bpref "lem_postpone"}[Lemma K.4]), and cutting the
+resulting plain instances and running the accelerator on every piece gives, after at most
+$`3\alpha` rounds, a program that is again correct on all short plain instances and as fast,
+with the same constants, at the scale $`v^\alpha` ({InlineLean.name}`Paper.prop_next`,
+{bpref "prop_next"}[Proposition K.5]). Correctness of an
 accelerator is a family of identities in its constants over $`A`, so it survives reduction to a
 finite field, in which boundedly many names cover all powers of the constants. At a scale that is
 large compared with that field a program $`\mathsf{P}` that on $`x` guesses a bit and either
 accepts with weight 1 or applies the accelerator to “$`x` applied to $`x`” has, applied to
 itself, a value $`V` with $`V = 1 + V`, “which is impossible in a nonzero ring”
-({InlineLean.name}`Paper.thm_noacc`, Theorem K.6). The condition $`(\log v)^{O(a)} \le v` is
-what limits the bound to $`2^{c(\log m)^2/\log\log m}` ({InlineLean.name}`Paper.thm_contracting`,
-Theorem K.7): {ref "chapter-accelerators"}[Accelerators and the diagonal argument].
+({InlineLean.name}`Paper.thm_noacc`, {bpref "thm_noacc"}[Theorem K.6]). The condition
+$`(\log v)^{O(a)} \le v` is what limits the bound to $`2^{c'(\log m)^2/\log\log m}`
+({InlineLean.name}`Paper.thm_contracting`, {bpref "thm_contracting"}[Theorem K.7]):
+{ref "chapter-accelerators"}[Accelerators and the diagonal argument].
 
 *What is printed and what is not.* This case is where the printed proof and the Lean proof part
 ways. The paper (page 17), quoted: “The proofs of Proposition I.1, Theorem H.2(d), (e), Theorem
@@ -316,59 +346,76 @@ J.3 and Proposition N.4 describe machines and programs and account for their siz
 times. That these do exactly what is claimed can be verified only in the Lean development, and
 each of these four statements is followed by a formalization note that says so. Consequently the
 contracting case, and with it every main result, rests on Lean at these points.” The four items
-are: the universal tape automaton and its running time (Proposition I.1); parts (d) and (e) of
-the theorem on tree networks (Theorem H.2); the evaluator and the cutting program of a single cut
-(Theorem J.3); and the iteration of scales for approximating circuits (Proposition N.4). For these the chapters of
-this blueprint describe the machines and programs from the Lean code, and say what was and was
-not understood from it. Since both cases are needed and it is not known which holds, no main
-result is independent of these four items.
+are: the universal tape automaton and its running time ({bpref "prop_universal"}[Proposition
+I.1]); parts (d) and (e) of the theorem on tree networks ({bpref "thm_tree"}[Theorem H.2]), on
+which the last claim of {bpref "prop_pieces"}[Proposition J.2] rests by its own formalization
+note (page 52); the evaluator and the cutting program of a single cut
+({bpref "thm_onecut"}[Theorem J.3]); and the exclusion of approximate accelerators
+({bpref "prop_approx_acc"}[Proposition N.4]). For these the chapters of this blueprint describe
+the machines and programs from the Lean code, and say what was and was not understood from it.
+Since both cases are needed and it is not known which holds, every one of the five theorems
+depends on the first three items. The fourth concerns approximation only: in this build the
+Lean proofs of `Solution.mainTheorem`, `Solution.separation` and
+`Solution.permanent_over_real` do not depend on `Paper.prop_approx_acc`, and those of
+`Solution.mainTheoremApprox` and `Solution.separationClosure` do
+({ref "chapter-claim"}[What is claimed] says how this was read off).
 
 In the Lean development Steps 4 and 5 are also separated formally: Propositions K.5 and N.4 and
-Theorem K.6 take the conclusion of the cutting theorem as a hypothesis, for an arbitrary
-commutative ring, and the contracting case supplies it (Section Q.3, page 69).
+Theorem K.6 take the conclusion of the cutting theorem as a hypothesis, for a commutative ring
+that has to be finitely generated only in Theorem K.6 and Proposition N.4, and the contracting
+case supplies it (Section Q.3, page 69).
 
 # Assembling the two cases
 
 The paper proves the bound over $`\mathbb{R}` for the permanent first (Theorem L.1), then passes
 to all fields and to the Hamiltonian cycle polynomial (Appendix M) and to approximation
 (Appendix N). The following is read from the Lean proof of
-{InlineLean.name}`Paper.thm_allfields`, which the theorem `Solution.mainTheorem` cites.
+{InlineLean.name}`Paper.thm_allfields` ({bpref "thm_allfields"}[Theorem M.3]), which the theorem
+`Solution.mainTheorem` cites; {ref "chapter-assembly"}[All fields and approximate computation]
+goes through it step by step.
 
 1. The constant is fixed first: $`c = 1/1600^2`.
 2. For a characteristic $`p`, zero or prime, take an algebraically closed field $`\mathbb{K}` of
    characteristic $`p` ({InlineLean.name}`Paper.exists_closed`: the algebraic closure of
    $`\mathbb{Q}` or of $`\mathbb{F}_p`).
 3. Apply the dichotomy to $`\mathbb{K}` ({InlineLean.name}`Paper.thm_alt`). In the flat case the
-   bound $`2^{(\log m)^{4/3}/1600^2}` holds for $`\mathrm{HC}_m`
-   ({InlineLean.name}`Paper.flat_rate_hc`) and, if $`p \ne 2`, for $`\mathrm{PERM}_m`
-   ({InlineLean.name}`Paper.thm_flat_rate`). In the contracting case the bound
-   $`2^{c_p(\log m)^2/\log\log m}` holds for both ({InlineLean.name}`Paper.contracting_hc`,
-   {InlineLean.name}`Paper.thm_contracting`), and it exceeds the flat bound for large $`m`
-   ({InlineLean.name}`Paper.thm_allfields_exceeds`). Either way there is $`m_0`, depending on
-   $`\mathbb{K}` and so on $`p`, beyond which the flat bound holds over $`\mathbb{K}`.
+   bound $`2^{(\log m)^{4/3}/1600^2}` holds, for all large $`m`, for $`\mathrm{HC}_m`
+   ({InlineLean.name}`Paper.flat_rate_hc`, the case of the factor 40 of
+   {bpref "flat_rate_complete"}[the general form of Theorem E.11]) and, if $`p \ne 2`, for
+   $`\mathrm{PERM}_m` ({InlineLean.name}`Paper.thm_flat_rate`,
+   {bpref "thm_flat_rate"}[Theorem E.11] itself). In the contracting case the bound
+   $`2^{c'(\log m)^2/\log\log m}` holds for both, with some $`c' > 0`
+   ({InlineLean.name}`Paper.contracting_hc`, {InlineLean.name}`Paper.thm_contracting`), and it
+   exceeds the flat bound for large $`m` ({InlineLean.name}`Paper.thm_allfields_exceeds`). Either
+   way there is $`m_0`, depending on $`\mathbb{K}` and so on $`p`, beyond which the flat bound
+   holds over $`\mathbb{K}`.
 4. A circuit over any field $`F` of characteristic $`p` for a polynomial with integer
    coefficients gives a circuit with the same number of gates over $`\mathbb{K}`
-   ({InlineLean.name}`Paper.lem_transfer`, Lemma M.1). Both polynomials have integer
+   ({InlineLean.name}`Paper.lem_transfer`, {bpref "lem_transfer"}[Lemma M.1]). Both polynomials
+   have integer
    coefficients, so the bound over $`\mathbb{K}` is a bound over $`F`, with the same $`m_0`.
    This is the source of the uniformity over all fields of one characteristic.
 5. The bound is rewritten as $`m^{c(\log m)^{1/3}}` ({InlineLean.name}`Paper.thm_main_form`).
 
-The separation {InlineLean.name}`Paper.cor_allclasses` follows: $`(\mathrm{HC}_n)` is in VNP
-({InlineLean.name}`Paper.hc_mem_VNP`), and if it were in VP with exponent $`a` its circuits of
+The separation {InlineLean.name}`Paper.cor_allclasses` ({bpref "cor_allclasses"}[Corollary M.4])
+follows: $`(\mathrm{HC}_n)` is in VNP ({InlineLean.name}`Paper.hc_mem_VNP`,
+{bpref "hc_mem_VNP"}[its node]), and if it were in VP with exponent $`a` its circuits of
 size $`n^a + a` would contradict the bound at a suitable $`n`
 ({InlineLean.name}`Paper.exists_beyond_poly`).
 
-For approximation, {InlineLean.name}`Paper.thm_approx` has the same skeleton. An approximating
-circuit over any field of characteristic $`p` is first replaced by one of the same size whose
-constants are Laurent polynomials in $`\varepsilon` over $`\mathbb{K}`
-({InlineLean.name}`Paper.lem_transfer_approx`, Lemma N.2); over $`\mathbb{K}` both cases are then
-redone for such circuits ({InlineLean.name}`Paper.approx_rate_closed`): the flat case with a
-version of Lemma E.7 that allows an error in $`\varepsilon`
-({InlineLean.name}`Paper.lem_few_approx`, Lemma N.3), the contracting case with programs that are
-correct only up to multiples of $`\varepsilon` ({InlineLean.name}`Paper.prop_approx_acc`,
-Proposition N.4). The constant is again $`1/1600^2`, and the second separation again uses
-$`(\mathrm{HC}_n)`. {ref "chapter-assembly"}[All fields and approximate computation] presents
-these statements.
+For approximation, {InlineLean.name}`Paper.thm_approx` ({bpref "thm_approx"}[Theorem N.5]) has
+the same skeleton. An approximating circuit over any field of characteristic $`p` is first
+replaced by one of the same size whose constants are Laurent polynomials in $`\varepsilon` over
+$`\mathbb{K}` ({InlineLean.name}`Paper.lem_transfer_approx`,
+{bpref "lem_transfer_approx"}[Lemma N.2]); over $`\mathbb{K}` both cases are then redone for
+such circuits ({InlineLean.name}`Paper.approx_rate_closed`), here for both polynomials through
+the forms for families that are complete for grid sums: the flat case with a version of Lemma
+E.7 that allows an error in $`\varepsilon` ({InlineLean.name}`Paper.lem_few_approx`,
+{bpref "lem_few_approx"}[Lemma N.3]; {bpref "flat_rate_approx_complete"}[the flat bound for
+approximating circuits]), the contracting case with programs that are correct only up to
+multiples of $`\varepsilon` ({InlineLean.name}`Paper.prop_approx_acc`,
+{bpref "prop_approx_acc"}[Proposition N.4]). The constant is again $`1/1600^2`, and the second
+separation again uses $`(\mathrm{HC}_n)`.
 
 Two features of the assembly are worth isolating. The absolute constant is that of the flat
 case, although the contracting case gives a stronger bound, because the constant of the
@@ -450,7 +497,7 @@ the notion of a network.”
   * lower bounds for $`f_{k,\ell}` and for the permanent
   * A, C, D
   * flat
-  * {ref "chapter-completeness"}[Completeness gadgets], {ref "chapter-flat"}[The flat case]
+  * {ref "chapter-completeness"}[Completeness gadgets] (E.1 to E.3), {ref "chapter-flat"}[The flat case] (E.4 to E.11)
 *
   * F
   * a Poincaré inequality on unitriangular groups
@@ -498,13 +545,13 @@ the notion of a network.”
   * all fields; the Hamiltonian cycle polynomial
   * D, E, K
   * both
-  * {ref "chapter-assembly"}[All fields and approximate computation]
+  * {ref "chapter-assembly"}[All fields and approximate computation]; Proposition M.2 in {ref "chapter-completeness"}[Completeness gadgets]
 *
   * N
   * approximate computation
   * E, K, M
   * both
-  * {ref "chapter-assembly"}[All fields and approximate computation]
+  * {ref "chapter-assembly"}[All fields and approximate computation]; Lemma N.3 in {ref "chapter-flat"}[The flat case], Proposition N.4 in {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
 *
   * O
   * proofs of the facts on CAT(0) spaces in Lemma C.4
@@ -518,13 +565,15 @@ nothing after it is needed for that case except Section L. The proof of the dual
 Section A can be skipped at a first reading, since the theorem is used only in Section G.” And on
 completeness: “The printed proofs differ in completeness. Those of Sections A to G and of
 Appendix O, and the deduction of Theorem L.1 in Section L, are meant to be complete, if terse.”
-For Sections H to K, M and N outside the four items named above the paper makes no statement of
-either kind; {ref "chapter-caveats"}[What a reader should keep in mind] returns to this.
+For Sections H to K, M and N outside the four items named above, and for Theorem L.2 and
+Corollary L.3, the paper makes no statement of either kind;
+{ref "chapter-caveats"}[What a reader should keep in mind] returns to this.
 
-The dependency graph of this site is drawn from the Lean code, not from this table. The two
-differ where the Lean proof takes another route than the printed one; Section Q.3 of the paper
-(page 70) lists those places, and {ref "chapter-table3"}[The paper's statements and their Lean
-names] marks the statements that are not on the route of the five theorems.
+The dependency graph of this site is drawn from the Lean code and from the dependencies that
+the chapters declare, not from this table. The two differ where the Lean proof takes another
+route than the printed one; Section Q.3 of the paper (page 70) lists those places, and
+{ref "chapter-table3"}[The paper's statements and their Lean names] marks the statements that
+are not on the route of the five theorems.
 
 The next chapter, {ref "chapter-completeness"}[Completeness gadgets], takes from this one the two
 auxiliary polynomials and the notion of a clause sum.

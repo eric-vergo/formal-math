@@ -31,10 +31,11 @@ number := false
 This chapter proves the lower bound under the flat hypothesis of {bpref "def_cases"}[]: if all
 finite Euclidean configurations are prices over $`\Bbbk`, then every circuit over $`\Bbbk` for the
 network polynomial $`f_{k,\ell}` with $`\ell \geq 100\sqrt{k}` has at least
-$`2^{\ell k^{3/2}/16}` gates (Proposition E.10), and therefore every circuit for
-$`\mathrm{PERM}_m` has more than $`2^{(\log m)^{4/3}/1600^2}` gates for large $`m` (Theorem
-E.11). It is the complete argument for one of the two cases, and the source of the exponent in
-the main theorem. The chapter follows Sections E.2 to E.6 of the paper (pages 33–37) and Section
+$`2^{\ell k^{3/2}/16}` gates (Proposition E.10), and therefore, if $`2 \neq 0` in $`\Bbbk`, every
+circuit for $`\mathrm{PERM}_m` has more than $`2^{(\log m)^{4/3}/1600^2}` gates for large $`m`
+(Theorem E.11); the same bound holds for $`\mathrm{HC}_m` without the condition on $`2`, and for
+approximating circuits. It is the complete argument for one of the two cases, and the source of
+the exponent in the main theorem. The chapter follows Sections E.2 to E.6 of the paper (pages 33–37) and Section
 N.2 (page 62) of {repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]; the reduction from the permanent
 (Proposition E.1, Corollary E.2, Lemma E.3) is in
 {ref "chapter-completeness"}[Completeness gadgets].
@@ -88,7 +89,7 @@ $`k` bits that name a balanced set, and the scaled exponent $`c\, g_\phi(P)` of 
 all ends, which Proposition E.9 bounds by about $`\sqrt{k}`. We do not know whether the bound in
 the flat case can be improved.”
 
-*The route of the Lean proof.* Two of the eight numbered statements of this chapter, Proposition
+*The route of the Lean proof.* Two of the numbered statements of this chapter, Proposition
 E.5 and Theorem E.6, are formalized but are not used by the theorems of `Solution`. Appendix Q.3
 (page 66): “The theorems of `Solution` are proved through them, with these exceptions, which are
 not on that route: Theorem L.2, Corollary L.3, the qualitative bound in the flat case
@@ -97,10 +98,18 @@ step `prop_flat_lower_sum` of the proof of Proposition E.5, not the proposition.
 therefore Lemma E.4, the step {bpref "prop_flat_lower_sum"}[], Lemmas E.7 and E.8, Propositions
 E.9 and E.10, and then three forms of the last step: Theorem E.11 for $`\mathrm{PERM}`; its
 general form {bpref "flat_rate_complete"}[] for families that are complete for grid sums, used
-for $`\mathrm{HC}`; and {bpref "flat_rate_approx_complete"}[] for approximating circuits. Each
-node below says where it stands.
+for $`\mathrm{HC}`; and {bpref "flat_rate_approx_complete"}[] for approximating circuits, in
+which Lemma N.3 takes the place of Lemma E.7. Each node below says where it stands. For this
+build the route was also read off from the constants on which the five theorems depend
+({ref "chapter-claim"}[What is claimed] says how): `Solution.mainTheorem`,
+`Solution.separation` and `Solution.permanent_over_real` depend on the Lean theorems of Lemmas
+E.4, E.7 and E.8, of Propositions E.9 and E.10 and of Theorem E.11, and not on those of
+Proposition E.5 and Theorem E.6; `Solution.mainTheoremApprox` and `Solution.separationClosure`
+depend on those of Lemmas E.4, E.8 and N.3 and of Proposition E.9, and not on those of Lemma
+E.7, Proposition E.10 and Theorem E.11, whose places are taken by the forms for approximating
+circuits.
 
-# E.2. Circuits give balanced products
+# E.2. The network polynomial (continued): balanced products
 
 :::lemma_ "lem_balanced" (lean := "Paper.lem_balanced, Paper.linearPart, Paper.linearIn, Paper.lem_balanced_cf") (parent := "part-flat")
 *Lemma E.4 of the paper* (balanced products; page 33), quoted: “Let a polynomial over a
@@ -329,7 +338,7 @@ on $`V`, $`I` and $`\varepsilon`, and not on $`\phi`, $`c` or the maps. The lemm
 the flat hypothesis.
 :::
 
-:::proof "lem_convex"
+:::proof "lem_convex" (uses := "prop_extend")
 *The paper's proof* (pages 35–36), summarised. Add a new party $`i'` for every $`i \in I` and let
 $`Q` be the set of these. Let $`\pi_a, \pi_b : V \cup Q \to V` be the identity on $`V` and send
 $`i'` to $`a(i)`, respectively to $`b(i)`. Proposition A.7, with the weights
@@ -394,7 +403,7 @@ The flat hypothesis is used once, for the enlarged configuration; this is why th
 needs all finite Euclidean configurations and not only the one of the ends and hubs.
 :::
 
-# E.6. The lower bound for the network polynomial
+# E.6. The lower bound for ℓ ≥ 100√k
 
 :::proposition "prop_flat_rate" (lean := "Paper.prop_flat_rate, Paper.prop_flat_rate_printed") (parent := "part-flat")
 *Proposition E.10 of the paper* (lower bound for the network polynomial; page 36), quoted: “In
@@ -408,7 +417,7 @@ on the characteristic is needed. The bound is `(2 : ℝ) ^ (ℓ * k ^ (3/2) / 16
 with `Computes (fkl K k ℓ) s`.
 :::
 
-:::proof "prop_flat_rate"
+:::proof "prop_flat_rate" (uses := "prop_flat_rate_steps")
 *The paper's proof* (pages 36–37), summarised; “The steps and the notation are those of the proof
 of Proposition E.5.”
 
@@ -474,7 +483,19 @@ The hypothesis of `Paper.rate_of_someSetPays` does not mention a circuit. This i
 same theorem to serve exact and approximating circuits (Section N.2 below).
 :::
 
-:::theorem "thm_flat_rate" (lean := "Paper.thm_flat_rate, Paper.rate_of_projection") (parent := "part-flat")
+:::lemma_ "rate_of_projection" (lean := "Paper.rate_of_projection") (parent := "part-flat")
+*The calculation of the proof of Theorem E.11* (page 37; the proof is quoted under
+{bpref "thm_flat_rate"}[]), as a Lean theorem of its own. `Paper.rate_of_projection κ` is stated
+for an arbitrary relation $`P(m, s)` in place of “a circuit with $`s` gates for the $`m`th
+polynomial” and an arbitrary factor $`\kappa` in place of $`3`: if $`P(m, s)` implies
+$`2^{\ell k^{3/2}/16} \leq 5s` whenever $`k \geq 2`, $`\ell \geq 100\sqrt{k}` and
+$`\kappa k^3 \ell\, 2^{k\ell} \leq m`, then for all large $`m`, $`P(m, s)` implies
+$`2^{(\log m)^{4/3}/1600^2} < s`. The threshold $`m_0` depends on $`\kappa` only. The theorem
+mentions neither a circuit nor a field; Theorem E.11, its general form and the form for
+approximating circuits are its instances.
+:::
+
+:::theorem "thm_flat_rate" (lean := "Paper.thm_flat_rate") (parent := "part-flat")
 *Theorem E.11 of the paper* (lower bound for the permanent in the flat case; page 37), quoted:
 “In the flat case there is $`m_0` such that for $`m \geq m_0` every circuit over $`\Bbbk` for
 $`\mathrm{PERM}_m` has more than $`2^{(\log m)^{4/3}/1600^2}` gates.”
@@ -493,14 +514,9 @@ Proposition E.10, a circuit with $`L` gates for $`\mathrm{PERM}_m` gives
 $$`\log(5L) \geq \frac{\ell k^{3/2}}{16} = \frac{25}{4} r^4.`
 Hence $`\log L > r^4 \geq (\log m/1600)^{4/3} \geq (\log m)^{4/3}/1600^2`.”
 
-The constant $`1/1600^2` of the main theorem is this one. In Lean the calculation is the theorem
-`Paper.rate_of_projection κ`, stated for an arbitrary relation $`P(m, s)` in place of “a circuit
-with $`s` gates for the $`m`th polynomial” and an arbitrary factor $`\kappa` in place of $`3`:
-if $`P(m, s)` implies $`2^{\ell k^{3/2}/16} \leq 5s` whenever $`k \geq 2`,
-$`\ell \geq 100\sqrt{k}` and $`\kappa k^3 \ell\, 2^{k\ell} \leq m`, then for all large $`m`,
-$`P(m, s)` implies $`2^{(\log m)^{4/3}/1600^2} < s`. The threshold $`m_0` depends on $`\kappa`
-only. `Paper.thm_flat_rate` is the instance $`\kappa = 3` with
-{bpref "lem_fkl_perm"}[] and {bpref "prop_flat_rate"}[].
+The constant $`1/1600^2` of the main theorem is this one. In Lean the calculation is
+{bpref "rate_of_projection"}[], and `Paper.thm_flat_rate` is its instance $`\kappa = 3` with
+{bpref "lem_fkl_perm"}[Lemma E.3] and {bpref "prop_flat_rate"}[Proposition E.10].
 :::
 
 :::theorem "flat_rate_complete" (lean := "Paper.flat_rate_complete") (parent := "part-flat")
@@ -522,7 +538,11 @@ of Theorem M.3 (`Paper.thm_allfields` in
 uses, for $`\mathrm{HC}`, the theorem `Paper.flat_rate_hc`, which is the instance
 $`\kappa = 40` of the present theorem with {bpref "gridComplete"}[], and for $`\mathrm{PERM}`
 the theorem `Paper.thm_flat_rate` itself ({bpref "thm_flat_rate"}[]), whose proof goes through
-{bpref "lem_fkl_perm"}[] and not through the general form.
+{bpref "lem_fkl_perm"}[Lemma E.3] and not through the present theorem. (The general form enters
+that proof one step further down: in Lean, {bpref "cor_clauses"}[Corollary E.2] is proved as the
+instance for the permanent of {bpref "clauses_of_complete"}[].) The proof of the present
+theorem is that of Theorem E.11 with {bpref "fkl_complete"}[] in the place of Lemma E.3; both are
+instances of {bpref "rate_of_projection"}[].
 :::
 
 # N.2. Approximating circuits in the flat case

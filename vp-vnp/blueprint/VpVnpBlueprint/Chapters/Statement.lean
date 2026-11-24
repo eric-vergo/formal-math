@@ -128,7 +128,11 @@ $`\ell_0, \ell_1, \ell_2, \ldots` in $`R[x_v : v \in V]` such that
 
 So `Computes f s` says: $`f` has an arithmetic circuit with at most $`s` gates. This is the model
 of Section 1.3 of the paper (pages 3–4), where the size of a circuit is “the length of the list,
-so that variables and constants are counted as gates”.
+so that variables and constants are counted as gates”. The paper defines circuits over a
+commutative ring; the file allows a commutative semiring (Section Q.3, page 68: “In the file
+printed in Section 3 circuits and the classes VP and VNP are defined over commutative
+semirings”), and every proposition of the file takes $`R` to be a field or the field of Laurent
+series over one.
 :::
 
 *What counts.* A gate is an entry of the list. Variables and constants are gates and cost one
@@ -157,9 +161,10 @@ in the size.
 - _Counting inputs._ The usual complexity measure counts the arithmetic operations and takes
   variables and constants as free inputs. The file counts them. The paper's footnote 2 (page 4):
   “Counting only the additions and multiplications would change the size by a factor of at most
-  three.” The argument is elementary: in a circuit with $`t \ge 1` operation gates in which every
-  input gate is used, there are at most $`2t` input gates. It is not formalized (Section Q.3,
-  page 70).
+  three.” The argument is elementary: input gates that no operation reads can be dropped, unless
+  the output is itself an input, and $`t \ge 1` operation gates read at most $`2t` input gates,
+  so the two counts $`t` and $`s` of a smallest circuit satisfy $`t \le s \le 3t`. It is not
+  formalized (Section Q.3, page 70).
 - _Subtraction._ Over a ring, $`\ell_i - \ell_j` is $`\ell_i + (-1) \cdot \ell_j`: three gates,
   one of them the constant $`-1`, shared by all subtractions.
 - _Division._ The file has no division gate, as is standard for VP. (Strassen's elimination of
@@ -301,11 +306,12 @@ arbitrary Laurent series, with no bound on the order of their poles, and the err
 unrestricted.
 
 *Relation to border complexity as usually defined.* The algebraic definition in the literature
-(Bürgisser, _The complexity of factors of multivariate polynomials_, 2004) takes circuits whose
-constants are rational functions in $`\varepsilon` and whose output is defined at
-$`\varepsilon = 0` and equals $`f` there. The file takes Laurent series as constants and requires
-the output to lie in $`f + \varepsilon F[\![\varepsilon]\!][x]`. The two give the same sizes, in
-the gate count of this file:
+(background: Bürgisser, _The complexity of factors of multivariate polynomials_, 2004, as this
+blueprint recalls it; the source was not consulted for this text) takes circuits over the field
+$`F(\varepsilon)` of rational functions that compute a polynomial whose coefficients are defined
+at $`\varepsilon = 0` and which equals $`f` there. The file takes Laurent series as constants
+and requires the output to lie in $`f + \varepsilon F[\![\varepsilon]\!][x]`. For the
+definition in the form just stated, the two give the same sizes, in the gate count of this file:
 
 - A circuit over $`F(\varepsilon)` is a circuit over $`F(\!(\varepsilon)\!)`, since
   $`F(\varepsilon) \subset F(\!(\varepsilon)\!)`, and a rational function defined at $`0` is a
@@ -317,8 +323,9 @@ the gate count of this file:
   $`F[\varepsilon, \varepsilon^{-1}]` with a circuit with at most $`s` gates over that ring and
   the same condition on its coefficients, and
   {InlineLean.name}`Nc.Approximates.of_laurentPolynomial` is the converse. These are stated for
-  the definition {InlineLean.name}`Nc.Approximates` of the proof, which is the same text as
-  `Statement.Approximates`. Since
+  the definition {InlineLean.name}`Nc.Approximates` of the proof, whose body is that of
+  `Statement.Approximates` (with a type of variables in any universe); Lean accepts the one for
+  the other, as the `example` below shows. Since
   $`F[\varepsilon, \varepsilon^{-1}] \subset F(\varepsilon)`, and a Laurent polynomial without
   negative powers is a polynomial in $`\varepsilon`, this is approximation in the usual sense
   with $`s` gates. The truncation is the first step of the paper's proof of Lemma N.2 (page 62):
@@ -328,7 +335,8 @@ the gate count of this file:
   $`\varepsilon`.”
 
 The second direction in one statement, which compiles against this build after
-`import Comparator.VpVnp.Solution` and `open MvPolynomial` and is not part of the repository:
+`import Comparator.VpVnp.Solution` and `open MvPolynomial` (it was compiled again for this
+revision) and is not part of the repository:
 
 ```
 example {F V : Type} [Field F] (f : MvPolynomial V F) (s : ℕ) :
@@ -338,6 +346,20 @@ example {F V : Type} [Field F] (f : MvPolynomial V F) (s : ℕ) :
   ⟨fun h => Nc.Approximates.exists_laurentPolynomial h,
    fun ⟨_, hp, h⟩ => Nc.Approximates.of_laurentPolynomial hp h⟩
 ```
+
+What is and is not established, then. Machine-checked in this build: `Approximates f s` is
+equivalent to the existence of a circuit with at most $`s` gates over
+$`F[\varepsilon, \varepsilon^{-1}]` whose output has coefficients in $`F[\varepsilon]` and
+reduces to $`f` at $`\varepsilon = 0`. Not machine-checked, and elementary: that such a circuit
+is one over $`F(\varepsilon)`, and that a circuit over $`F(\varepsilon)` with output defined at
+$`0` is one over $`F(\!(\varepsilon)\!)` with output in $`F[\![\varepsilon]\!][x]`; both are
+the transport of a circuit along an injective ring homomorphism, which keeps the number of
+gates. Not checked at all: that the definition recalled above is, word for word, that of the
+cited source. The argument covers every variant in which the constants come from a ring between
+$`F[\varepsilon, \varepsilon^{-1}]` and $`F(\!(\varepsilon)\!)` and the output is required to
+have coefficients without negative powers of $`\varepsilon` and to reduce to $`f` at
+$`\varepsilon = 0`; for a variant with another size measure it gives the same sizes only up to
+the factor discussed under `Computes`.
 
 On the closure in a topology, the paper (page 62): “Over an algebraically closed field, $`f` is
 approximated with $`L` gates if and only if it lies in the Zariski closure of the polynomials
@@ -480,7 +502,9 @@ The meaning of the file depends on the Mathlib definitions it uses, and a kernel
 as given. They are: `MvPolynomial`, with `X`, `C`, `coeff`, `totalDegree` and `aeval`;
 `LaurentSeries`, which is `HahnSeries ℤ`, with its `coeff`; `Equiv.Perm` and
 `Equiv.Perm.IsCycleOn`; `Real.logb` and the real power; `Field`, `CommSemiring` and `CharP`;
-`Fintype.card`; `Set` with `⊆` and `⊂`; and the sum type with `Sum.elim`. The readings above take
+`Fintype.card`; `Set` with `⊆` and `⊂`; the sum type with `Sum.elim`; finitely supported
+functions `V →₀ ℕ` as exponents of monomials; and the sums and products over finite types. The
+readings above take
 each in its documented meaning at Mathlib `v4.36.0`. Two of them deserve a second look from a
 reader who audits the file: `IsCycleOn` on `Set.univ`, read above as “a single cycle through all
 points”, and the indexing of `HahnSeries.coeff`, read as the coefficient of $`\varepsilon^i`.

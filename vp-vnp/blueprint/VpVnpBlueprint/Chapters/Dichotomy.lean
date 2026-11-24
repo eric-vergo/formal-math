@@ -131,7 +131,7 @@ richness: over $`\Bbbk` there are spectral points whose pseudometrics approximat
 any prescribed finite Euclidean configuration. The contracting hypothesis is a uniform
 inequality, valid for all spectral points on one fixed finite set of parties.
 
-# D.2. At least one case holds
+The paper states the theorem at this point, at the end of Section D.1.
 
 :::theorem "thm_alt" (lean := "Paper.thm_alt") (parent := "part-common")
 *Theorem D.2 of the paper* (the two cases; page 30), quoted: “At least one of the two hypotheses
@@ -144,7 +144,9 @@ D.1. It does not say which disjunct holds, it does not say that only one holds, 
 provides no way to decide.
 :::
 
-:::proof "thm_alt"
+# D.2. Proof of Theorem D.2
+
+:::proof "thm_alt" (uses := "thm_alt_euclidean")
 *The paper's outline of the proof* (page 30), quoted: “We assume that the contracting hypothesis
 fails and derive the flat one. Steps 1 to 3 produce a price on $`\mathrm{Mat}_\mu(\mathbb{F}_2)`
 with equality in Lemma C.4(b) for all quadrilaterals as in Figure 6, Steps 4 to 7 deduce that its
@@ -188,9 +190,15 @@ $`D(r)^2 = r` for all $`r \leq \mu`.”
 `Paper.thm_alt_bounded` is the bound of all distances by a constant times $`D(1)`;
 `Paper.thm_alt_extremal` produces an extremal price from `¬ Contracting K`, for $`\mu \geq 2`;
 `Paper.thm_alt_ranks` is $`D(r)^2 = r`. This step is the only place where the failure of the
-contracting hypothesis is used, and the place where the argument stops being effective: the
-extremal price is a limit point supplied by the compactness of bounded sets of prices
-({bpref "def_price_facts"}[]).
+contracting hypothesis is used. The extremal price is a limit point supplied by the compactness
+of bounded sets of prices ({bpref "def_price_facts"}[]); no construction of it is given.
+:::
+
+:::proof "thm_alt_extremal" (uses := "def_price_facts")
+The Lean proof follows the quoted argument: for every $`n` the failure of the contracting
+hypothesis with $`s^2 = \mu - 1/(n+1)` gives a price, scaled to $`D(1)^2 = 1` and bounded by the
+constant of `Paper.thm_alt_bounded`, with $`D(\mu)^2 \geq \mu - 1/(n+1)`; a limit point of these
+prices exists by compactness and is extremal by Step 1.
 :::
 
 :::lemma_ "thm_alt_equality" (lean := "Paper.thm_alt_equality, Paper.thm_alt_opposite, Paper.thm_alt_diagonal") (parent := "part-common")
@@ -265,6 +273,12 @@ $`a, a' \in \mathrm{Mat}_\mu(\mathbb{F}_2)`.”
 `Paper.thm_alt_rank_price` packages Steps 2 to 7: if `Contracting K` fails and $`\mu \geq 3`,
 there is a price `w` on `Mt μ` with $`w(a, a')^2 = \mathrm{rk}(a - a')` for all $`a, a'`. This
 price is the one that Section D.3 calls not Euclidean.
+:::
+
+:::proof "thm_alt_rank" (uses := "thm_alt_equality, thm_alt_additive, thm_alt_lambda, thm_alt_orthogonal")
+The Lean proof uses the identities (D.1) and (D.2) of Step 3, the additivity (D.3) of Step 4 and
+the vanishing of $`B_a` on transversal pairs of rank one from Steps 5 and 6, as in the quoted
+argument.
 :::
 
 :::lemma_ "thm_alt_euclidean" (lean := "Paper.thm_alt_euclidean, Paper.thm_alt_cube, Paper.thm_alt_fill, Paper.thm_alt_vertices") (parent := "part-common")

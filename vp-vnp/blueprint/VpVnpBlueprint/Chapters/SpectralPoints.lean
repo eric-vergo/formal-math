@@ -31,8 +31,9 @@ finite set of _parties_, compared by restriction; _spectral points_, the functio
 that are multiplicative and subadditive on sums of restrictions; the pseudometric $`d_\phi` that a
 spectral point induces on the parties; and _prices_, the limits of multiples of these
 pseudometrics. The complexity measure of the proof is not one function but the whole family of
-spectral points, of which only existence statements are available (they come from Zorn's lemma),
-and the lower bounds come from the geometry of the set of all prices. The chapter follows Appendix
+spectral points. Those that the argument uses are not explicit; in the paper's words (page 3),
+“they are only known to exist by Zorn's lemma (`prop_gauge`)”. The lower bounds come from the
+geometry of the set of all prices. The chapter follows Appendix
 A of the paper (pages 18–22) of {repoFile "vp-vnp/paper.pdf"}[`paper.pdf`].
 
 The paper's own guide to the section (page 18): “Lemma A.3 is our link to circuits, Theorem A.6
@@ -169,7 +170,7 @@ finite subsets with the printed properties and with `φ.e u v = g {u, v}` for $`
 is a `SimpleGraph` on `P` with `IsTree`. The paper records no difference.
 :::
 
-:::proof "lem_exponents"
+:::proof "lem_exponents" (uses := "lem_exponents_parts")
 *The paper's proof* (page 19), quoted: “Each claim follows from a restriction between products of
 unit tensors. The function $`q \mapsto \phi(\langle q \rangle_P)` is at least $`1`,
 multiplicative, because $`\langle q \rangle_P \langle q' \rangle_P = \langle qq' \rangle_P`, and
@@ -272,9 +273,9 @@ compactness is in the product topology on functions `Y → Y → ℝ`.
 
 These closure properties are all that later chapters use of the definition, apart from the two
 ways of making new prices: {bpref "prop_random"}[] below, and the inequality for two crossing
-wires of the next chapter. Compactness is the source of the non-effective steps: it is used in
-{bpref "prop_random"}[] and in the proof that one of the two cases holds
-({ref "chapter-dichotomy"}[The two cases]).
+wires of the next chapter. Compactness is used in {bpref "prop_random"}[] and in the proof that
+one of the two cases holds ({ref "chapter-dichotomy"}[The two cases]); with Zorn's lemma
+(Section A.4) it is one of the places where the proof asserts existence without a construction.
 
 # A.4. Upper functionals
 
@@ -440,7 +441,7 @@ given by weights $`\theta_l \geq 0` with sum $`1` and maps `σ l : Q → Y`, in 
 $`w'(o, o') \leq \sum_l \theta_l\, w(\sigma_l o, \sigma_l o')`.
 :::
 
-:::proof "prop_random"
+:::proof "prop_random" (uses := "prop_extend")
 *The paper's proof* (page 22), summarised. By compactness of the prices bounded by a given
 function it suffices to treat finite $`Y` and $`Q`; by a limit and homogeneity, $`w = d_\phi`. Let
 $`\sigma` take the values $`\pi_i` with probabilities $`\theta_i`, and apply Proposition A.7 to

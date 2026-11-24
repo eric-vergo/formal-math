@@ -65,7 +65,8 @@ exponential – i.e. of the form $`2^{O(m)}`.”
 
 *Status.* The paper's proof was found and written by AI models and formalized in Lean 4 by AI
 models. In the build this site reports on, Lean's kernel accepted the five theorems below, and
-two further checkers accepted them again. No human mathematician has checked the proof, and no
+by the README of the folder two further checkers each accepted them again. No human
+mathematician has checked the proof, and no
 tool or human has checked that the Lean statements say what the sentences above say.
 
 Each of these points is made precise below.
@@ -93,6 +94,14 @@ $`\exists c > 0\; \forall p\; \exists m_0\; \forall F\; \forall m \ge m_0\; \for
 a field of characteristic $`p`.
 :::
 
+:::proof "Solution.mainTheorem" (uses := "thm_allfields")
+*The Lean proof* (read from `Solution.lean`). It takes the constant $`c` and, for $`p` zero or
+prime, the threshold $`m_0` from `Paper.thm_allfields` ({bpref "thm_allfields"}[]), whose
+statement is this one for such $`p`. For every other natural number $`p` it takes $`m_0 = 0`: no
+field has characteristic $`p` (Mathlib's `CharP.char_is_prime_or_zero`), so nothing remains to
+prove.
+:::
+
 The Lean statement quantifies over all natural numbers $`p`, where the paper has “zero or
 prime”; for other $`p` no field has characteristic $`p`. It is stated for fields in an arbitrary
 universe. It writes the permanent as $`\sum_\sigma \prod_i x_{\sigma(i),i}`, which is the same
@@ -108,6 +117,13 @@ Theorem 1.1 gives the following”) and proves it as Corollary M.4 (Appendix M, 
 of the Lean theorem is `Statement.Separation`.
 :::
 
+:::proof "Solution.separation" (uses := "cor_allclasses")
+*The Lean proof* (read from `Solution.lean`). Both halves are those of `Paper.cor_allclasses`
+({bpref "cor_allclasses"}[]), which is stated for the families `Nc.Family` of the development;
+`Solution.toNc` and `Solution.ofNc` carry a family of `Statement.lean` to one of the development
+and back, and Lean accepts membership in the one class for membership in the other.
+:::
+
 In the Lean proof the family that is in VNP and not in VP is $`(\mathrm{HC}_m)`, over every
 field.
 
@@ -121,6 +137,11 @@ $`\Bbbk(\!(\varepsilon)\!)` _approximates_ a polynomial $`f` over $`\Bbbk` if it
 polynomial of the form $`f + \varepsilon g`, where $`g` is a polynomial all of whose coefficients
 lie in $`\Bbbk[\![\varepsilon]\!]`.” The paper proves the theorem as the first assertion of
 Theorem N.5 (Appendix N, page 64). The type of the Lean theorem is `Statement.MainTheoremApprox`.
+:::
+
+:::proof "Solution.mainTheoremApprox" (uses := "thm_approx")
+*The Lean proof* (read from `Solution.lean`). As for `Solution.mainTheorem`, from the first
+conjunct of `Paper.thm_approx` ({bpref "thm_approx"}[]).
 :::
 
 The paper calls this approximation “in the sense of border complexity” (page 2).
@@ -140,6 +161,11 @@ The paper proves it as the second assertion of Theorem N.5 (Appendix N, page 64)
 Lean theorem is `Statement.SeparationClosure`.
 :::
 
+:::proof "Solution.separationClosure" (uses := "thm_approx")
+*The Lean proof* (read from `Solution.lean`). The second conjunct of `Paper.thm_approx`
+({bpref "thm_approx"}[]), with the conversion of families as for `Solution.separation`.
+:::
+
 :::theorem "Solution.permanent_over_real" (lean := "Solution.permanent_over_real") (parent := "part-claim")
 *Theorem L.1 of the paper* (main theorem; Appendix L, page 59), quoted: “There are $`c > 0` and
 $`m_0` such that for all $`m \geq m_0` every circuit over $`\mathbb{R}` that computes
@@ -150,10 +176,20 @@ the solution themselves, with `Statement.Computes`, `Statement.perm` and `Statem
 equality of the two forms of the bound is the separate theorem `Paper.thm_main_form`.
 :::
 
+:::proof "Solution.permanent_over_real" (uses := "thm_main")
+*The Lean proof* (read from `Solution.lean`). The theorem is `Paper.thm_main`
+({bpref "thm_main"}[]), whose statement Lean accepts for this one.
+:::
+
 The five are not independent as statements. The approximate bound contains the exact one, the
 second separation contains the nontrivial half of the first, and the bound over $`\mathbb{R}` is
-a case of Theorem 1.1. The development proves each from the theorem of the appendix that the
-paper names for it.
+a case of Theorem 1.1. The development nevertheless proves each from the theorem of the appendix
+that the paper names for it, and the Lean proofs differ in what they depend on: in this build,
+`Solution.mainTheorem`, `Solution.separation` and `Solution.permanent_over_real` do not depend
+on the three statements of Appendix N that carry the approximate case (Lemmas N.2 and N.3 and
+Proposition N.4), and `Solution.mainTheoremApprox` and `Solution.separationClosure` do. (This
+was read off, for this revision, from the constants on which each of the five theorems depends,
+the closure that `#print axioms` traverses; the traversal is not part of the repository.)
 
 # The quantifiers, the constant and the threshold
 
@@ -162,15 +198,16 @@ $`\exists c\; \forall p\; \exists m_0\; \forall F`, as in the printed theorem.
 
 - _The constant $`c`._ The statements assert that it exists. The Lean proofs of
   {InlineLean.name}`Paper.thm_allfields` and {InlineLean.name}`Paper.thm_approx` supply
-  $`c = 1/1600^2`, the constant of the flat case (Theorem E.11). The other case gives a larger
-  bound, $`2^{c_p(\log m)^2/\log\log m}` with a constant that depends on the characteristic, and
-  the proof weakens it to the flat bound for large $`m`
-  ({InlineLean.name}`Paper.thm_allfields_exceeds`); this is how one absolute constant serves all
-  characteristics.
+  $`c = 1/1600^2`, the constant of the flat case (Theorem E.11, {bpref "thm_flat_rate"}[]). The
+  other case gives a larger bound, $`2^{c'(\log m)^2/\log\log m}` (Theorem K.7,
+  {bpref "thm_contracting"}[]), with a constant $`c' > 0` that depends on the field to which the
+  dichotomy is applied, one algebraically closed field for each characteristic; the proof weakens
+  it to the flat bound for large $`m` ({InlineLean.name}`Paper.thm_allfields_exceeds`). This is
+  how one absolute constant serves all characteristics.
 - _The threshold $`m_0`._ It depends on the characteristic $`p`. Within one characteristic it is
   uniform over all fields, because the proof transfers a circuit over any field of
   characteristic $`p` to one fixed algebraically closed field of that characteristic
-  (Lemma M.1). It is not effective. The paper (page 8): “In the contracting case the constants,
+  (Lemma M.1, {bpref "lem_transfer"}[]). It is not effective. The paper (page 8): “In the contracting case the constants,
   among them $`m_0`, depend on the integer $`\mu`, for which the proof gives no value, and this
   is why Theorem 1.1 comes with no value for $`m_0`.” And (page 6): “We do not know which of the
   two hypotheses holds, even over $`\mathbb{R}`, nor do we show that the two are mutually

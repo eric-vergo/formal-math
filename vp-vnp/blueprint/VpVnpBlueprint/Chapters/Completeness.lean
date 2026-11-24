@@ -49,10 +49,11 @@ $`f_{k,\ell}` of the flat case is defined below; $`\Phi` belongs to
 (page 5) says of these two steps that they “are the only steps that use the permanent; they use
 the circuit too, but only by substituting into it.”
 
-_Background (not from the paper's proofs)._ That the permanent is complete for VNP under
-projections over every field in which $`2 \neq 0`, and the Hamiltonian cycle polynomial over
-every field, is Valiant's theorem (L. G. Valiant, _Completeness classes in algebra_, STOC 1979;
-the paper's reference Val79). The paper does not use that theorem. Section E.1 (page 31) says:
+_Background (not from the paper's proofs)._ That the permanent is complete for VNP over every
+field in which $`2 \neq 0`, and the Hamiltonian cycle polynomial over every field, is cited by
+the paper (page 1, footnote 1, and page 4: “this is a theorem of Valiant \[Val79\]”; L. G.
+Valiant, _Completeness classes in algebra_, STOC 1979). The paper does not use that theorem.
+Section E.1 (page 31) says:
 “The next proposition replaces Valiant's completeness theorem \[Val79\], for which \[Bür00\] and
 \[Bür24, Section 2.7 of the arXiv version\] give the classical constructions.” What is used is
 only the explicit projection below, for sums of one special shape, with explicit sizes.
@@ -133,7 +134,7 @@ $`p = a x_i + b` for one variable $`x_i` and constants $`a, b`. The field is any
 `Type` with `(2 : F) ≠ 0`.
 :::
 
-:::proof "cor_clauses"
+:::proof "cor_clauses" (uses := "clauses_of_complete, gridComplete")
 *The paper's proof* (page 32), quoted: “We sum over a bit $`r_j` for every clause $`j`, in which
 $`r_j = 0` contributes $`1` and $`r_j = 1` contributes $`w_j - 1` times the indicators of the
 literals of the clause, and we put the factor $`w_j - 1` on the first literal. Then we apply
@@ -154,7 +155,7 @@ For that reason the main theorem is stated for $`\mathrm{HC}_m` in every charact
 $`\mathrm{PERM}_m` when $`p \neq 2`, and Appendix M repeats Proposition E.1 for the Hamiltonian
 cycle polynomial, without division.
 
-:::theorem "prop_hc_grid" (lean := "Paper.prop_hc_grid, Paper.cor_clauses_hc") (parent := "part-overview")
+:::theorem "prop_hc_grid" (lean := "Paper.prop_hc_grid") (parent := "part-overview")
 *Proposition M.2 of the paper* (sums over bits as Hamiltonian cycle polynomials; page 61),
 quoted: “Let $`R` be a commutative ring, and let the surjections $`v : I \to V` and
 $`w : I \to K` and the $`2 \times 2` matrices $`W_n` over $`R` be as in Proposition E.1. Then the
@@ -168,12 +169,8 @@ $`\mathrm{HC}_0 = 1`, which matters only for empty $`I`.” (For $`M = 0` the on
 the empty set counts as a cycle through all points, so the Lean statement also covers
 $`I = \emptyset`, where the sum of Proposition E.1 is $`1`.)
 
-The second Lean theorem, `Paper.cor_clauses_hc`, is the analogue of Corollary E.2, which the
-paper states in a sentence after the proof (page 61): “With $`\mathrm{HC}_M` in place of
-$`\mathrm{PERM}_M` and $`40q` in place of $`3q`, Corollary E.2 therefore holds in every
-characteristic, and its entries are again affine in one variable each.” It is stated as an
-identity `aeval M (genHC F S) = clauseSum lits wt` for a substitution `M` with affine entries,
-over every field `F` in `Type`.
+Table 3 of the paper names a second Lean theorem for this proposition, `Paper.cor_clauses_hc`,
+the analogue of Corollary E.2; it is the node {bpref "cor_clauses_hc"}[] below.
 :::
 
 :::proof "prop_hc_grid"
@@ -242,8 +239,21 @@ with it Theorem E.11 hold for every such family, with $`\theta` in place of $`3`
 This Lean theorem is the first of the three: for a family $`G` that is complete for grid sums
 with factor $`c`, a clause sum with $`q` literals whose weights are variables or constants is
 `aeval M (G S)` for a substitution `M` with affine entries, for every $`S \geq c\,q`. The other
-two are {bpref "fkl_complete"}[] below and `Paper.flat_rate_complete` in
+two are {bpref "fkl_complete"}[] below and {bpref "flat_rate_complete"}[] in
 {ref "chapter-flat"}[The flat case].
+:::
+
+:::corollary "cor_clauses_hc" (lean := "Paper.cor_clauses_hc") (parent := "part-overview")
+*A sentence of the paper after Proposition M.2* (page 61), quoted: “With $`\mathrm{HC}_M` in
+place of $`\mathrm{PERM}_M` and $`40q` in place of $`3q`, Corollary E.2 therefore holds in every
+characteristic, and its entries are again affine in one variable each.”
+
+Table 3 names this Lean theorem with Proposition M.2. It is stated as an identity
+`aeval M (genHC F S) = clauseSum lits wt` for a substitution `M` with affine entries, over every
+field `F` in `Type`, and its proof is {bpref "clauses_of_complete"}[] applied to
+{bpref "gridComplete"}[the completeness of $`(\mathrm{HC}_M)`]. In this build none of the five
+theorems of `Solution` depends on it: the lower bounds for $`\mathrm{HC}` use the two general
+statements directly.
 :::
 
 # E.2. The network polynomial
@@ -281,6 +291,18 @@ The coefficient tensor of $`f_{k,\ell}`, a product of $`\binom{k}{2}` wires of d
 $`2^\ell`, is what the flat case measures; it is introduced in
 {ref "chapter-flat"}[The flat case]. Here only the reduction is needed.
 
+:::lemma_ "lem_fkl_perm_steps" (lean := "Paper.lem_fkl_perm_clauseSum, Paper.fklLits_count") (parent := "part-overview")
+*Unnumbered steps of the proof of Lemma E.3* (page 33), quoted from that proof: “The polynomial
+$`f_{k,\ell}` is the clause sum over the bits of $`\sigma` in which, for every node $`a` and
+every $`\rho`, there is a clause with the weight $`x_{a,\rho}` whose literals say that
+$`\sigma_a = \rho`. It has $`k(k-1)\ell\, 2^{(k-1)\ell} \leq M/3` literals”.
+
+`Paper.lem_fkl_perm_clauseSum` is the first sentence for the Lean polynomial `fkl`, with one
+clause for each variable that occurs, and `Paper.fklLits_count` bounds the number of literals by
+$`k^3 \ell\, 2^{k\ell}`. Neither mentions the permanent; both Lemma E.3 and its general form
+{bpref "fkl_complete"}[] use them.
+:::
+
 :::lemma_ "lem_fkl_perm" (lean := "Paper.lem_fkl_perm, Paper.lem_fkl_perm_printed") (parent := "part-overview")
 *Lemma E.3 of the paper* (the network polynomial as a permanent; page 33), quoted: “Let
 $`2 \neq 0` in $`\Bbbk`, and let $`k \geq 2` and $`\ell \geq 1`. If $`\mathrm{PERM}_M` has a
@@ -300,24 +322,25 @@ $`k(k-1)\ell\, 2^{(k-1)\ell} \leq M/3` literals, so by Corollary E.2 it is the p
 $`M \times M` matrix whose entries are affine in one variable each. We substitute these entries
 for the variables of the given circuit, and an affine function of one variable takes five gates.”
 
-In Lean the three steps are named: `Paper.lem_fkl_perm_clauseSum` (the polynomial is that clause
-sum), `Paper.fklLits_count` (the number of literals is at most $`k^3 \ell\, 2^{k\ell}`), and
-`Nc.Computes.aeval` (substituting affine polynomials for the variables of a circuit with $`s`
-gates gives a circuit with $`5s` gates).
+In Lean the proof applies {bpref "cor_clauses"}[Corollary E.2] to the clause sum of
+{bpref "lem_fkl_perm_steps"}[the two steps above], and then `Nc.Computes.aeval` (substituting
+affine polynomials for the variables of a circuit with $`s` gates gives a circuit with $`5s`
+gates).
 :::
 
-:::lemma_ "fkl_complete" (lean := "Paper.fkl_complete, Paper.lem_fkl_perm_clauseSum, Paper.fklLits_count") (parent := "part-overview")
+:::lemma_ "fkl_complete" (lean := "Paper.fkl_complete") (parent := "part-overview")
 *An unnumbered step of the proof of Lemma E.3, in the general form announced on page 61* (“Lemma
 E.3 … hold\[s\] for every such family, with $`\theta` in place of $`3`”; adapted). If $`(G_M)` is
 complete for grid sums with factor $`\theta` and $`M \geq \theta k^3 \ell\, 2^{k\ell}`, with
 $`k \geq 2` and $`\ell \geq 1`, then $`f_{k,\ell}` is the value of $`G_M` at a matrix whose
 entries are affine in one variable each.
 
-The main route uses this form for $`\mathrm{HC}` (with $`\theta = 40`, in
-`Paper.flat_rate_complete`; see {ref "chapter-flat"}[The flat case]) and for approximating
-circuits, and Lemma E.3 itself for $`\mathrm{PERM}`. In the paper's words (proof of Theorem M.3, page 62): “There
-the factor $`3` becomes $`40`, and the proofs only used that
-$`3k^3 \ell\, 2^{k\ell} \leq 2^{2k\ell}` for large values of the parameters.”
+The Lean proofs of the main theorems use this form for $`\mathrm{HC}` (with $`\theta = 40`, in
+{bpref "flat_rate_complete"}[]) and, for both polynomials, for approximating circuits
+({bpref "flat_rate_approx_complete"}[]); for exact circuits for $`\mathrm{PERM}` they use Lemma
+E.3 itself. In the paper's words (proof of Theorem M.3, page 62): “There the factor $`3` becomes
+$`40`, and the proofs only used that $`3k^3 \ell\, 2^{k\ell} \leq 2^{2k\ell}` for large values of
+the parameters.”
 :::
 
 # The two polynomials are in VNP
@@ -362,8 +385,8 @@ fields in every universe and is used by `Paper.cor_allclasses` (Corollary M.4) a
 
 - {ref "chapter-flat"}[The flat case] takes {bpref "lem_fkl_perm"}[] and
   {bpref "fkl_complete"}[]: a lower bound for circuits for $`f_{k,\ell}` becomes one for
-  $`\mathrm{PERM}_M` and $`\mathrm{HC}_M` with $`M` about $`2^{k\ell}`, at the cost of the factor
-  $`5` in the number of gates.
+  $`\mathrm{PERM}_M` and $`\mathrm{HC}_M` with $`\log M` about $`k\ell`, at the cost of the
+  factor $`5` in the number of gates.
 - {ref "chapter-accelerators"}[Accelerators and the diagonal argument] takes
   {bpref "cor_clauses"}[] and {bpref "clauses_of_complete"}[] for the polynomial $`\Phi` (Lemma
   K.3).

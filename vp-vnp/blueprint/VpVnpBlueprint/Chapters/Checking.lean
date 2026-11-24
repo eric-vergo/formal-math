@@ -120,11 +120,11 @@ The file {repoFile "vp-vnp/Comparator/VpVnp/Challenge.lean"}[`Challenge.lean`] s
 theorems with `sorry` in place of their proofs and imports nothing but `Statement.lean`;
 {repoFile "vp-vnp/Comparator/VpVnp/Solution.lean"}[`Solution.lean`] proves them; and
 {repoFile "vp-vnp/Comparator/VpVnp/comparator.json"}[`comparator.json`] names the five theorems
-to be judged and the three axioms a proof may use. The tool Comparator checks that the solution's
-theorems have exactly the statements of the challenge, built from the same definitions, and use
-no other axiom. What this adds to a build is protection against a solution that proves something
-else under the same name: a statement that silently differs, or a definition that was changed
-underneath it.
+to be judged and the three axioms a proof may use. The tool Comparator, in the README's words
+quoted below, “compares the statements with Challenge.lean and re-checks the proofs”. What such a
+comparison is for is protection against a solution that proves something else under the same
+name: a statement that silently differs, or a definition that was changed underneath it. What
+exactly the tool compares is defined by the tool, not by this chapter.
 
 The paper's account of the upstream run (Section Q.1, page 66): “Comparator accepted them against
 `Challenge.lean`, rechecking the proofs with Lean's kernel and with the independently written
@@ -194,9 +194,10 @@ After every check of this chapter a reader still relies on:
    for a replay the exporter, the two checkers and the elaborator.
 4. Mathlib's definitions of the notions the statement file uses, in their documented meaning.
 
-The proofs themselves are not on this list: none of the development's roughly 72,000 lines of
-Lean below the statement file has to be read to know that the five statements are proved. That is the point of the formalization, and it is why this
-blueprint asks its reader to spend the effort on the first item.
+The proofs themselves are not on this list: none of the development's roughly 73,000 lines of
+Lean below the statement file has to be read to know that the five statements are proved. That
+is the point of the formalization, and it is why this blueprint asks its reader to spend the
+effort on the first item.
 
 # Building this site
 
