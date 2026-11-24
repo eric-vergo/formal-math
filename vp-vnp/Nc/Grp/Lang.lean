@@ -97,23 +97,23 @@ theorem _root_.NS1.Does.wsum_unique {F : Fm} {x : Tree} {Q Q' : List (A × Tree)
 theorem _root_.NS1.Does.replace {F : Fm} {x : Tree} {Q Q' : List (A × Tree)} {c : ℕ} (h : Does θ F x Q c) (hQ : Q = Q') :
     Does θ F x Q' c := hQ ▸ h
 
-/-- Apply a fixed program to typed values. -/
-theorem _root_.NS1.Does.appT {F : Fm} {x p : Tree} {l : List (A × β)} {enc : β → Tree} {f : β → List (A × Tree)} {c d : ℕ}
-    (hF : Does θ F x (l.map (Prod.map id enc)) c) (hG : ∀ b ∈ l, Does θ (Fm.ofTree p) (enc b.2) (f b.2) d) :
-    Does θ (app p F) x (bindL l f) (c + d + 2) := by
+/-- Apply a program that is a value to typed values. -/
+theorem _root_.NS1.Does.runT {F G : Fm} {x p : Tree} {l : List (A × β)} {enc : β → Tree} {f : β → List (A × Tree)} {c d e : ℕ}
+    (hF : Gives θ F x p c) (hG : Does θ G x (l.map (Prod.map id enc)) d)
+    (h : ∀ b ∈ l, Does θ (Fm.ofTree p) (enc b.2) (f b.2) e) : Does θ (.run F G) x (bindL l f) (c + d + e + 1) := by
   classical
   let R : Tree → List (A × Tree) := fun t => if h : ∃ b ∈ l, enc b.2 = t then f h.choose.2 else []
   have hR : ∀ b ∈ l, ∃ b' ∈ l, R (enc b.2) = f b'.2 ∧ enc b'.2 = enc b.2 := by
     intro b hb
     have h : ∃ b' ∈ l, enc b'.2 = enc b.2 := ⟨b, hb, rfl⟩
     exact ⟨h.choose, h.choose_spec.1, dite_eq_left h, h.choose_spec.2⟩
-  have h1 := Does.app (p := p) (R := R) (d := d) hF (by
+  have h1 := Does.runW (p := p) (R := R) (e := e) hF hG (by
     intro q hq
     obtain ⟨b, hb, rfl⟩ := List.mem_map.1 hq
     obtain ⟨b', hb', e1, e2⟩ := hR b hb
-    show Does θ (Fm.ofTree p) (enc b.2) (R (enc b.2)) d
+    show Does θ (Fm.ofTree p) (enc b.2) (R (enc b.2)) e
     rw [e1, ← e2]
-    exact hG b' hb')
+    exact h b' hb')
   refine h1.congr ?_ fun φ => ?_
   · intro z hz
     obtain ⟨q, hq, r, hr, h3, h4⟩ := mem_bindW hz
@@ -125,9 +125,15 @@ theorem _root_.NS1.Does.appT {F : Fm} {x p : Tree} {l : List (A × β)} {enc : �
     refine sumL_congr fun b hb => ?_
     obtain ⟨b', hb', e1, e2⟩ := hR b hb
     rw [e1]
-    have h5 := hG b' hb'
+    have h5 := h b' hb'
     rw [e2] at h5
-    exact Does.wsum_unique h5 (hG b hb) φ
+    exact Does.wsum_unique h5 (h b hb) φ
+
+/-- Apply a fixed program to typed values. -/
+theorem _root_.NS1.Does.appT {F : Fm} {x p : Tree} {l : List (A × β)} {enc : β → Tree} {f : β → List (A × Tree)} {c d : ℕ}
+    (hF : Does θ F x (l.map (Prod.map id enc)) c) (hG : ∀ b ∈ l, Does θ (Fm.ofTree p) (enc b.2) (f b.2) d) :
+    Does θ (app p F) x (bindL l f) (c + d + 2) := by
+  exact (Does.runT (Gives.quote p x) hF hG).mono (by omega)
 
 /-- `let` with typed values. -/
 theorem _root_.NS1.Does.lettT {F G : Fm} {x : Tree} {l : List (A × β)} {enc : β → Tree} {f : β → List (A × Tree)} {c d : ℕ}
@@ -180,38 +186,6 @@ theorem _root_.NS1.Does.ite_nil {F G H : Fm} {x : Tree} {a : A} {Q : List (A × 
     rw [this]
     simp only [wsum_cons, wsum_nil, add_zero]
     exact (sumL_map_mul a Q φ).symm
-
-/-- Apply a program that is a value to typed values. -/
-theorem _root_.NS1.Does.runT {F G : Fm} {x p : Tree} {l : List (A × β)} {enc : β → Tree} {f : β → List (A × Tree)} {c d e : ℕ}
-    (hF : Gives θ F x p c) (hG : Does θ G x (l.map (Prod.map id enc)) d)
-    (h : ∀ b ∈ l, Does θ (Fm.ofTree p) (enc b.2) (f b.2) e) : Does θ (.run F G) x (bindL l f) (c + d + e + 1) := by
-  classical
-  let R : Tree → List (A × Tree) := fun t => if h : ∃ b ∈ l, enc b.2 = t then f h.choose.2 else []
-  have hR : ∀ b ∈ l, ∃ b' ∈ l, R (enc b.2) = f b'.2 ∧ enc b'.2 = enc b.2 := by
-    intro b hb
-    have h : ∃ b' ∈ l, enc b'.2 = enc b.2 := ⟨b, hb, rfl⟩
-    exact ⟨h.choose, h.choose_spec.1, dite_eq_left h, h.choose_spec.2⟩
-  have h1 := Does.runW (p := p) (R := R) (e := e) hF hG (by
-    intro q hq
-    obtain ⟨b, hb, rfl⟩ := List.mem_map.1 hq
-    obtain ⟨b', hb', e1, e2⟩ := hR b hb
-    show Does θ (Fm.ofTree p) (enc b.2) (R (enc b.2)) e
-    rw [e1, ← e2]
-    exact h b' hb')
-  refine h1.congr ?_ fun φ => ?_
-  · intro z hz
-    obtain ⟨q, hq, r, hr, h3, h4⟩ := mem_bindW hz
-    obtain ⟨b, hb, rfl⟩ := List.mem_map.1 hq
-    obtain ⟨b', hb', e1, e2⟩ := hR b hb
-    have hr' : r ∈ f b'.2 := by rw [← e1]; exact hr
-    exact ⟨_, mem_bindL_of hb' hr', h3.symm⟩
-  · rw [wsum_bindW, wsum_eq_sumL, wsum_eq_sumL, sumL_bindL, sumL_map]
-    refine sumL_congr fun b hb => ?_
-    obtain ⟨b', hb', e1, e2⟩ := hR b hb
-    rw [e1]
-    have h5 := h b' hb'
-    rw [e2] at h5
-    exact Does.wsum_unique h5 (h b hb) φ
 
 /-- `let`, with the argument kept, typed values. -/
 theorem _root_.NS1.Does.letkT {F G : Fm} {x : Tree} {l : List (A × β)} {enc : β → Tree} {f : β → List (A × Tree)}
