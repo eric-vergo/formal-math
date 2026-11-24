@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 import Paper.Rate
 import Paper.HcGrid
 import Paper.Transfer
-import Nc.Hc.Vnp
+import Paper.Ryser
 
 /-!
 # The paper, appendix "All fields and the Hamiltonian cycle polynomial"
@@ -47,19 +47,6 @@ theorem two_ne_zero_of_char (K : Type) [Field K] (p : ℕ) [CharP K p] (hp : p =
   · simp at h3
   · exact h2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).1 h3)
 
-/-- The flat case for HC, in every characteristic. -/
-theorem flat_rate_hc {K : Type} [Field K] (hK : Flat K) :
-    ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Computes (genHC K m) s → (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
-  obtain ⟨m₀, h⟩ := flat_rate_complete 40
-  exact ⟨m₀, h K hK _ (gridComplete_hc K)⟩
-
-/-- The contracting case for HC, in every characteristic. -/
-theorem contracting_hc {K : Type} [Field K] (hK : Contracting K) :
-    ∃ c : ℝ, 0 < c ∧ ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Computes (genHC K m) s →
-      (2 : ℝ) ^ (c * Real.logb 2 m ^ 2 / Real.logb 2 (Real.logb 2 m)) < s := by
-  obtain ⟨C, M₁, h⟩ := contracting_complete hK (gridComplete_hc K)
-  exact quasi_of_exponents (P := fun M s => Computes (genHC K M) s) (fun _ _ _ hst hs => Computes.mono hs hst) h
-
 /-- "The bound of the contracting case, although its constant depends on p, exceeds that of the flat case for large m." -/
 theorem thm_allfields_exceeds {P : ℕ → ℕ → Prop}
     (h : ∃ c : ℝ, 0 < c ∧ ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, P m s →
@@ -72,10 +59,36 @@ theorem thm_allfields_exceeds {P : ℕ → ℕ → Prop}
   refine le_trans (le_of_eq ?_) ((mul_le_mul_of_nonneg_left (hm₂ m (by omega)) hc.le).trans_eq (mul_div_assoc _ _ _).symm)
   field_simp
 
+/-- The field dichotomy gives the same eventual rate for every family complete for
+grid sums. Its threshold may depend on the family and the field. -/
+theorem exact_rate_complete {K : Type} [Field K]
+    {G : ∀ m, MvPolynomial (Fin m × Fin m) K} {κ : ℕ} (hG : GridComplete K G κ) :
+    ∃ M : ℕ, ∀ m ≥ M, ∀ s, Computes (G m) s →
+      (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
+  rcases thm_alt K with hK | hK
+  · obtain ⟨M, h⟩ := flat_rate_complete κ
+    exact ⟨M, h K hK G hG⟩
+  · obtain ⟨C, M, h⟩ := contracting_complete hK hG
+    exact thm_allfields_exceeds (quasi_of_exponents (P := fun m s => Computes (G m) s)
+      (fun _ _ _ hst hs => hs.mono hst) h)
+
 /-- The bound 2^((log m)^(4/3)/1600²) in the form of the main theorems. -/
 theorem beyond_of_rate {m s : ℕ} (hm : 2 ≤ m) (h : (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s) :
     (m : ℝ) ^ (1 / 1600 ^ 2 * Real.logb 2 m ^ (1 / 3 : ℝ)) < s := by
   rwa [thm_main_form hm, one_div_mul_eq_div]
+
+/-- Combine the two family thresholds, imposing the permanent bound only away from
+characteristic two. Both bounds then use an index at least two. -/
+theorem common_family_threshold {p : ℕ} {H P : ℕ → Prop}
+    (hc : ∃ M, ∀ m ≥ M, H m) (hp : p ≠ 2 → ∃ M, ∀ m ≥ M, P m) :
+    ∃ M, ∀ m ≥ M, 2 ≤ m ∧ H m ∧ (p ≠ 2 → P m) := by
+  obtain ⟨A, hA⟩ := hc
+  by_cases he : p = 2
+  · exact ⟨max A 2, fun m hm =>
+      ⟨le_trans (le_max_right _ _) hm, hA m (le_trans (le_max_left _ _) hm),
+        fun h => (h he).elim⟩⟩
+  · obtain ⟨B, hB⟩ := hp he
+    exact ⟨A + B + 2, fun m hm => ⟨by omega, hA m (by omega), fun _ => hB m (by omega)⟩⟩
 
 /-- **Paper: Theorem thm:allfields.** "There is an absolute constant c > 0 such that for every p, zero or prime,
 there is m₀: over every field of characteristic p and for every m ≥ m₀ every circuit for HC_m, and for PERM_m if p ≠ 2,
@@ -86,37 +99,32 @@ theorem thm_allfields : ∃ c : ℝ, 0 < c ∧ ∀ p : ℕ, p = 0 ∨ p.Prime �
       (p ≠ 2 → Computes (genPerm F m) s → (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) < s) := by
   refine ⟨1 / 1600 ^ 2, by norm_num, fun p hp => ?_⟩
   obtain ⟨K, _, _, _⟩ := exists_closed p hp
-  obtain ⟨M₁, h1⟩ : ∃ M₁ : ℕ, ∀ m ≥ M₁, ∀ s, Computes (genHC K m) s →
-      (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
-    rcases thm_alt K with hK | hK
-    · exact flat_rate_hc hK
-    · exact thm_allfields_exceeds (contracting_hc hK)
-  obtain ⟨M₂, h2⟩ : ∃ M₂ : ℕ, p ≠ 2 → ∀ m ≥ M₂, ∀ s, Computes (genPerm K m) s →
-      (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
-    by_cases hne : p = 2
-    · exact ⟨0, fun h => absurd hne h⟩
-    · have h2 := two_ne_zero_of_char K p hp hne
-      obtain ⟨M₂, h⟩ := (thm_alt K).elim (fun hK => thm_flat_rate hK h2)
-        fun hK => thm_allfields_exceeds (thm_contracting hK h2)
-      exact ⟨M₂, fun _ => h⟩
-  refine ⟨M₁ + M₂ + 2, fun F _ _ m hm s => ⟨fun hs => ?_, fun hne hs => ?_⟩⟩
-  · rw [← map_genHC (Int.castRingHom F)] at hs
+  obtain ⟨M, hM⟩ := common_family_threshold (p := p) (exact_rate_complete (gridComplete_hc K))
+    fun hne => exact_rate_complete (gridComplete_perm (two_ne_zero_of_char K p hp hne))
+  refine ⟨M, fun F _ _ m hm s => ?_⟩
+  obtain ⟨hm₂, hHC, hPerm⟩ := hM m hm
+  constructor
+  · intro hs
+    rw [← map_genHC (Int.castRingHom F)] at hs
     have h := lem_transfer (KK := K) p (genHC ℤ m) hs
     rw [map_genHC] at h
-    exact beyond_of_rate (by omega) (h1 m (by omega) s h)
-  · rw [← map_permInt] at hs
+    exact beyond_of_rate hm₂ (hHC s h)
+  · intro hne hs
+    rw [← map_permInt] at hs
     have h := lem_transfer (KK := K) p (permInt m) hs
     rw [map_permInt] at h
-    exact beyond_of_rate (by omega) (h2 hne m (by omega) s h)
+    exact beyond_of_rate hm₂ (hPerm hne s h)
+
+private theorem tendsto_rate_exponent {c : ℝ} (hc : 0 < c) :
+    Filter.Tendsto (fun m : ℕ => c * Real.logb 2 m ^ (1 / 3 : ℝ)) Filter.atTop Filter.atTop :=
+  ((tendsto_rpow_atTop (by norm_num)).comp
+    ((Real.tendsto_logb_atTop (by norm_num)).comp tendsto_natCast_atTop_atTop)).const_mul_atTop hc
 
 /-- A bound m^(c(log m)^(1/3)) is beyond every polynomial. -/
 theorem exists_beyond_poly {c : ℝ} (hc : 0 < c) (m₀ C : ℕ) :
     ∃ m ≥ m₀, ¬ (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) < ((m ^ C + C : ℕ) : ℝ) := by
-  have ht : Filter.Tendsto (fun m : ℕ => c * Real.logb 2 m ^ (1 / 3 : ℝ)) Filter.atTop Filter.atTop :=
-    ((tendsto_rpow_atTop (by norm_num)).comp
-      ((Real.tendsto_logb_atTop (by norm_num)).comp tendsto_natCast_atTop_atTop)).const_mul_atTop hc
   obtain ⟨m, hm1, hm2⟩ := ((Filter.eventually_ge_atTop (m₀ + C + 2)).and
-    (ht.eventually_ge_atTop ((C + 1 : ℕ) : ℝ))).exists
+    ((tendsto_rate_exponent hc).eventually_ge_atTop ((C + 1 : ℕ) : ℝ))).exists
   refine ⟨m, by omega, fun hb => ?_⟩
   have h3 : (m : ℝ) ^ ((C + 1 : ℕ) : ℝ) < ((m ^ C + C : ℕ) : ℝ) :=
     lt_of_le_of_lt (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast (by omega : 1 ≤ m)) hm2) hb
@@ -126,6 +134,15 @@ theorem exists_beyond_poly {c : ℝ} (hc : 0 < c) (m₀ C : ℕ) :
   have h6 : m ^ C * (C + 1) ≤ m ^ C * m := Nat.mul_le_mul_left _ (by omega)
   rw [pow_succ] at h4
   nlinarith
+
+/-- An eventual lower bound on circuit size rules out a polynomial size bound
+for the same family, for either exact or approximating circuits. -/
+theorem no_poly_size_of_rate {P : ℕ → ℕ → Prop} {c : ℝ} (hc : 0 < c)
+    {m₀ : ℕ} (h : ∀ m ≥ m₀, ∀ s, P m s →
+      (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) < s)
+    (C : ℕ) (hC : ∀ m, P m (m ^ C + C)) : False := by
+  obtain ⟨m, hm, hb⟩ := exists_beyond_poly hc m₀ C
+  exact hb (h m hm _ (hC m))
 
 /-- "(HC_m) is in VNP." -/
 theorem hc_mem_VNP (F : Type u) [Field F] :
@@ -145,7 +162,38 @@ theorem cor_allclasses (F : Type u) [Field F] : VP F ⊂ VNP F := by
   obtain ⟨p, _⟩ := CharP.exists F
   obtain ⟨c, hc, hall⟩ := thm_allfields.{u}
   obtain ⟨m₀, hlow⟩ := hall p (CharP.char_is_prime_or_zero F p).symm
-  obtain ⟨m, hm1, hm2⟩ := exists_beyond_poly hc m₀ C
-  exact hm2 ((hlow F m hm1 _).1 (hC m).2.2)
+  exact no_poly_size_of_rate (P := fun m s => Computes (genHC F m) s) hc
+    (fun m hm s => (hlow F m hm s).1) C fun m => (hC m).2.2
+
+/-- **Paper: Theorem thm:main.** "There are c > 0 and m₀ such that for all m ≥ m₀ every circuit over ℝ that computes
+PERM_m has more than m^(c(log m)^(1/3)) gates." -/
+theorem thm_main : ∃ c : ℝ, 0 < c ∧ ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s : ℕ,
+    Computes (∑ σ : Equiv.Perm (Fin m), ∏ i, MvPolynomial.X (σ i, i) : MvPolynomial (Fin m × Fin m) ℝ) s →
+      (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) < s := by
+  obtain ⟨c, hc, hall⟩ := thm_allfields.{0}
+  obtain ⟨M, hM⟩ := hall 0 (Or.inl rfl)
+  exact ⟨c, hc, M, fun m hm s hs => (hM ℝ m hm s).2 (by decide) (genPerm_eq ℝ m ▸ hs)⟩
+
+/-- **Paper: Theorem thm:simple.** "For every C there is m₀ such that for all m ≥ m₀ no circuit over ℝ with at most m^C
+gates computes PERM_m." -/
+theorem thm_simple (C : ℕ) : ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s : ℕ, s ≤ m ^ C →
+    ¬ Computes (∑ σ : Equiv.Perm (Fin m), ∏ i, MvPolynomial.X (σ i, i) : MvPolynomial (Fin m × Fin m) ℝ) s := by
+  obtain ⟨c, hc, A, hA⟩ := thm_main
+  obtain ⟨B, hB⟩ := Filter.eventually_atTop.1 ((tendsto_rate_exponent hc).eventually_ge_atTop (C : ℝ))
+  refine ⟨A + B + 1, fun m hm s hs hcomp => ?_⟩
+  have hpow := Real.rpow_le_rpow_of_exponent_le
+    (show (1 : ℝ) ≤ m by exact_mod_cast (by omega : 1 ≤ m)) (hB m (by omega))
+  rw [Real.rpow_natCast] at hpow
+  exact (not_lt_of_ge (show (s : ℝ) ≤ (m : ℝ) ^ C by exact_mod_cast hs))
+    (hpow.trans_lt (hA m (by omega) s hcomp))
+
+/-- **Paper: Corollary cor:classes.** "Over ℝ, VP is a proper subset of VNP." The witness is the permanent: it is in VNP
+by Ryser's formula and exceeds every polynomial size bound by Theorem thm:main. -/
+theorem cor_classes : VP ℝ ⊂ VNP ℝ := by
+  refine ⟨vp_subset_vnp ℝ, fun h => ?_⟩
+  obtain ⟨C, hC⟩ := h (perm_mem_VNP ℝ)
+  obtain ⟨c, hc, M, hM⟩ := thm_main
+  exact no_poly_size_of_rate (P := fun m s => Computes (genPerm ℝ m) s) hc
+    (fun m hm s hs => hM m hm s (by simpa only [← genPerm_eq] using hs)) C fun m => (hC m).2.2
 
 end Paper

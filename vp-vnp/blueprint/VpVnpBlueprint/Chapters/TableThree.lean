@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), GPT (OpenAI)
 -/
 import VersoManual
 import VersoBlueprint
@@ -413,7 +413,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.thm_flat_rate`
   * matches
   * yes: M S R
-  * {ref "chapter-flat"}[The flat case]. The hypothesis $`2 \neq 0` is written out. Theorem M.3 uses it for $`\mathrm{PERM}_m`, and the general forms `flat_rate_complete` and `flat_rate_approx_complete` for $`\mathrm{HC}_m` and for approximating circuits.
+  * {ref "chapter-flat"}[The flat case]. The hypothesis $`2 \neq 0` is written out. Theorem M.3 uses the general form `flat_rate_complete` for both families. Theorem N.5 uses `flat_rate_approx_complete`.
 :::
 
 # Appendix F
@@ -653,7 +653,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.thm_contracting`
   * matches
   * yes: M S R
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. The hypothesis $`2 \neq 0` is written out. Theorem M.3 uses it for the permanent and the general form `contracting_complete` for $`\mathrm{HC}_m`.
+  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. The hypothesis $`2 \neq 0` is written out. Theorem M.3 uses the general form `contracting_complete` for both families.
 :::
 
 # Appendix L
@@ -672,14 +672,14 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.thm_main`, {InlineLean.name}`Paper.thm_main_form`, {InlineLean.name}`Solution.permanent_over_real`
   * matches
   * yes: R
-  * {ref "chapter-assembly"}[All fields and approximate computation]. `thm_main_form` is the equality of the two forms of the bound. The Lean proof takes $`c = 1/1600^2` in the flat case and the constant of Theorem K.7 in the contracting case.
+  * {ref "chapter-assembly"}[All fields and approximate computation]. `thm_main_form` is the equality of the two forms of the bound. Lean specializes Theorem M.3 to the real permanent in characteristic zero.
 *
   * {bpref "thm_simple"}[Theorem L.2]
   * 59
   * {InlineLean.name}`Paper.thm_simple`
   * matches
   * no
-  * {ref "chapter-assembly"}[All fields and approximate computation]. The Lean proof is the direct one, from Theorems E.6 and K.7.
+  * {ref "chapter-assembly"}[All fields and approximate computation]. Lean uses the first printed proof. The exponent in Theorem L.1 eventually exceeds every fixed polynomial degree.
 *
   * {bpref "cor_classes"}[Corollary L.3]
   * 59
@@ -719,7 +719,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.thm_allfields`
   * matches
   * yes: M S
-  * {ref "chapter-assembly"}[All fields and approximate computation]. The Lean proof takes $`c = 1/1600^2`. For $`\mathrm{PERM}_m` its flat half is Theorem E.11 itself.
+  * {ref "chapter-assembly"}[All fields and approximate computation]. The Lean proof takes $`c = 1/1600^2`. Both families use the general forms of the flat and contracting bounds.
 *
   * {bpref "cor_allclasses"}[Corollary M.4]
   * 62

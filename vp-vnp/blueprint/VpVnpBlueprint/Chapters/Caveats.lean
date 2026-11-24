@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), GPT (OpenAI)
 -/
 import VersoManual
 import VersoBlueprint
@@ -176,13 +176,6 @@ bears on the five theorems.
   inequality survives scaling and limits”. No Lean theorem states this equivalence; the
   development uses the form for prices throughout ({bpref "def_cases"}[Definition D.1]). For the
   flat hypothesis the two forms are related by {InlineLean.name}`Paper.def_price`.
-- _Which form of the flat bound Theorem M.3 uses._ Section Q.3 (page 70) says that “Lemma K.3,
-  Theorem M.3 and Theorem N.5 use the general forms for families that are complete for grid
-  sums”. In the Lean proof of Theorem M.3 this holds for $`\mathrm{HC}_m`; for
-  $`\mathrm{PERM}_m` the flat half is {InlineLean.name}`Paper.thm_flat_rate`, Theorem E.11
-  itself, and the contracting half is {InlineLean.name}`Paper.thm_contracting`, Theorem K.7
-  itself (which is proved from the general form). So Theorem E.11 is on the route of
-  `Solution.mainTheorem` ({bpref "flat_rate_complete"}[the node of the general form]).
 - _Encodings that the paper does not remark on._ The random map of Proposition A.8 is a family
   of measurable maps with finite ranges on a probability space
   ({bpref "prop_random"}[Proposition A.8]); the Lean forms of Lemmas E.7 and E.8 do not ask

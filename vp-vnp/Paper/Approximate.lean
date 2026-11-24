@@ -275,28 +275,26 @@ theorem thm_approx :
       (p ≠ 2 → Approximates (genPerm F m) s → (m : ℝ) ^ (1 / 1600 ^ 2 * Real.logb 2 m ^ (1 / 3 : ℝ)) < s) := by
     intro p hp
     obtain ⟨K, _, _, _⟩ := exists_closed p hp
-    obtain ⟨M₁, h1⟩ := approx_rate_closed (gridComplete_hc K)
-    obtain ⟨M₂, h2⟩ : ∃ M₂ : ℕ, p ≠ 2 → ∀ m ≥ M₂, ∀ s, ∀ P : MvPolynomial (Fin m × Fin m) (LaurentPolynomial K),
-        Computes P s → (∀ d, (∀ i : ℤ, i < 0 → (P.coeff d).coeff i = 0) ∧ (P.coeff d).coeff 0 = (genPerm K m).coeff d) →
-        (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
-      by_cases hne : p = 2
-      · exact ⟨0, fun h => absurd hne h⟩
-      · obtain ⟨M₂, h⟩ := approx_rate_closed (gridComplete_perm (two_ne_zero_of_char K p hp hne))
-        exact ⟨M₂, fun _ => h⟩
-    refine ⟨M₁ + M₂ + 2, fun F _ _ m hm s => ⟨fun hs => ?_, fun hne hs => ?_⟩⟩
-    · rw [← map_genHC (Int.castRingHom F)] at hs
+    obtain ⟨M, hM⟩ := common_family_threshold (p := p) (approx_rate_closed (gridComplete_hc K))
+      fun hne => approx_rate_closed (gridComplete_perm (two_ne_zero_of_char K p hp hne))
+    refine ⟨M, fun F _ _ m hm s => ?_⟩
+    obtain ⟨hm₂, hHC, hPerm⟩ := hM m hm
+    constructor
+    · intro hs
+      rw [← map_genHC (Int.castRingHom F)] at hs
       obtain ⟨P, hP, hc⟩ := lem_transfer_approx (KK := K) p (genHC ℤ m) hs
       rw [map_genHC] at hc
-      exact beyond_of_rate (by omega) (h1 m (by omega) s P hP hc)
-    · rw [← map_permInt] at hs
+      exact beyond_of_rate hm₂ (hHC s P hP hc)
+    · intro hne hs
+      rw [← map_permInt] at hs
       obtain ⟨P, hP, hc⟩ := lem_transfer_approx (KK := K) p (permInt m) hs
       rw [map_permInt] at hc
-      exact beyond_of_rate (by omega) (h2 hne m (by omega) s P hP hc)
+      exact beyond_of_rate hm₂ (hPerm hne s P hP hc)
   refine ⟨⟨1 / 1600 ^ 2, by norm_num, main⟩, fun F _ h => ?_⟩
   obtain ⟨C, hC⟩ := h (hc_mem_VNP F)
   obtain ⟨p, _⟩ := CharP.exists F
   obtain ⟨m₀, hlow⟩ := main p (CharP.char_is_prime_or_zero F p).symm
-  obtain ⟨m, hm1, hm2⟩ := exists_beyond_poly (show (0 : ℝ) < 1 / 1600 ^ 2 by norm_num) m₀ C
-  exact hm2 ((hlow F m hm1 _).1 (hC m).2.2)
+  exact no_poly_size_of_rate (P := fun m s => Approximates (genHC F m) s)
+    (c := 1 / 1600 ^ 2) (by norm_num) (fun m hm s => (hlow F m hm s).1) C fun m => (hC m).2.2
 
 end Paper

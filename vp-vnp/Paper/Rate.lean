@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 import Paper.Scales
 import Paper.Flat
 import Paper.Convex
-import Paper.Ryser
+import Nc.Final.CClasses
 import Nc.CaseI.Hub
 
 /-!
@@ -457,36 +457,6 @@ theorem genPerm_eq.{u} (F : Type u) [Field F] (m : ℕ) :
     genPerm F m = ∑ σ : Equiv.Perm (Fin m), ∏ i, MvPolynomial.X (σ i, i) := by
   simp [genPerm, Matrix.permanent]
 
-/-- **Paper: Theorem thm:simple.** "For every C there is m₀ such that for all m ≥ m₀ no circuit over ℝ with at most m^C
-gates computes PERM_m." -/
-theorem thm_simple (C : ℕ) : ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s : ℕ, s ≤ m ^ C →
-    ¬ Computes (∑ σ : Equiv.Perm (Fin m), ∏ i, MvPolynomial.X (σ i, i) : MvPolynomial (Fin m × Fin m) ℝ) s := by
-  have h2 : (2 : ℝ) ≠ 0 := by norm_num
-  obtain ⟨M₀, h⟩ : ∃ M₀, ∀ m ≥ M₀, ¬ Computes (genPerm ℝ m) (m ^ C) := by
-    rcases thm_alt ℝ with hK | hK
-    · exact thm_flat_simple hK h2 C
-    · obtain ⟨c, hc, M₁, hlow⟩ := thm_contracting hK h2
-      obtain ⟨M₂, hM₂⟩ := thm_main_calculation ((C : ℝ) / c)
-      refine ⟨M₁ + M₂ + 2, fun m hm hcomp => ?_⟩
-      have h1 := hlow m (by omega) _ hcomp
-      have hm0 : (0 : ℝ) < m := by exact_mod_cast (by omega : 0 < m)
-      have hL : 1 ≤ Real.logb 2 m := by
-        rw [Real.le_logb_iff_rpow_le (by norm_num) hm0, Real.rpow_one]
-        exact_mod_cast (by omega : 2 ≤ m)
-      have h3 : (C : ℝ) * Real.logb 2 m ≤ c * Real.logb 2 m ^ 2 / Real.logb 2 (Real.logb 2 m) := by
-        have h4 := mul_le_mul_of_nonneg_left (hM₂ m (by omega)) hc.le
-        rw [← mul_assoc, mul_div_cancel₀ _ hc.ne', ← mul_div_assoc] at h4
-        refine le_trans ?_ h4
-        exact mul_le_mul_of_nonneg_left (Real.self_le_rpow_of_one_le hL (by norm_num)) (Nat.cast_nonneg C)
-      have h5 := (Real.rpow_le_rpow_of_exponent_le (show (1 : ℝ) ≤ 2 by norm_num) h3).trans_lt h1
-      rw [mul_comm, Real.rpow_mul (by norm_num), Real.rpow_logb (by norm_num) (by norm_num) hm0,
-        Real.rpow_natCast] at h5
-      push_cast at h5
-      exact lt_irrefl _ h5
-  refine ⟨M₀, fun m hm s hs hc => h m hm ?_⟩
-  rw [genPerm_eq]
-  exact Computes.mono hc hs
-
 /-- "VP is contained in VNP." -/
 theorem vp_subset_vnp.{u} (F : Type u) [CommSemiring F] : VP F ⊆ VNP F := by
   rintro p ⟨C, hC⟩
@@ -498,22 +468,6 @@ theorem vp_subset_vnp.{u} (F : Type u) [CommSemiring F] : VP F ⊆ VNP F := by
     simp
   · rw [Fintype.sum_unique, bits_rename]
 
-/-- **Paper: Corollary cor:classes.** "Over ℝ, VP is a proper subset of VNP." The witness is the permanent: it is in VNP
-by Ryser's formula and not in VP by Theorem thm:simple. -/
-theorem cor_classes : VP ℝ ⊂ VNP ℝ := by
-  refine ⟨vp_subset_vnp ℝ, fun h => ?_⟩
-  obtain ⟨C, hC⟩ := h (perm_mem_VNP ℝ)
-  obtain ⟨m₀, hlow⟩ := thm_simple (C + 1)
-  obtain ⟨m, hm⟩ : ∃ m, m = m₀ + C + 2 := ⟨_, rfl⟩
-  refine hlow m (by omega) (m ^ C + C) ?_ ?_
-  · have h1 : 1 ≤ m ^ C := Nat.one_le_pow _ _ (by omega)
-    calc m ^ C + C ≤ m ^ C + m ^ C * C := Nat.add_le_add_left (Nat.le_mul_of_pos_left _ h1) _
-      _ = m ^ C * (C + 1) := by ring
-      _ ≤ m ^ C * m := Nat.mul_le_mul_left _ (by omega)
-      _ = m ^ (C + 1) := (pow_succ m C).symm
-  · rw [← genPerm_eq]
-    exact (hC m).2.2
-
 /-- m^(c(log m)^(1/3)) = 2^(c(log m)^(4/3)). -/
 theorem thm_main_form {m : ℕ} (hm : 2 ≤ m) (c : ℝ) :
     (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) = (2 : ℝ) ^ (c * Real.logb 2 m ^ (4 / 3 : ℝ)) := by
@@ -523,28 +477,5 @@ theorem thm_main_form {m : ℕ} (hm : 2 ≤ m) (c : ℝ) :
   rw [show (4 / 3 : ℝ) = 1 + 1 / 3 by norm_num, Real.rpow_add hL, Real.rpow_one, mul_left_comm]
   congr 2
   rw [Real.rpow_logb (by norm_num) (by norm_num) hm0]
-
-/-- **Paper: Theorem thm:main.** "There are c > 0 and m₀ such that for all m ≥ m₀ every circuit over ℝ that computes
-PERM_m has more than m^(c(log m)^(1/3)) gates." -/
-theorem thm_main : ∃ c : ℝ, 0 < c ∧ ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s : ℕ,
-    Computes (∑ σ : Equiv.Perm (Fin m), ∏ i, MvPolynomial.X (σ i, i) : MvPolynomial (Fin m × Fin m) ℝ) s →
-      (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) < s := by
-  have h2 : (2 : ℝ) ≠ 0 := by norm_num
-  obtain ⟨c, hc, m₀, h⟩ : ∃ c : ℝ, 0 < c ∧ ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Computes (genPerm ℝ m) s →
-      (2 : ℝ) ^ (c * Real.logb 2 m ^ (4 / 3 : ℝ)) < s := by
-    rcases thm_alt ℝ with hK | hK
-    · obtain ⟨m₀, h⟩ := thm_flat_rate hK h2
-      refine ⟨1 / 1600 ^ 2, by norm_num, m₀, fun m hm s hs => ?_⟩
-      rw [one_div_mul_eq_div]
-      exact h m hm s hs
-    · obtain ⟨c, hc, m₁, h⟩ := thm_contracting hK h2
-      obtain ⟨m₂, hm₂⟩ := thm_main_calculation 1
-      refine ⟨c, hc, m₁ + m₂, fun m hm s hs => lt_of_le_of_lt ?_ (h m (by omega) s hs)⟩
-      refine Real.rpow_le_rpow_of_exponent_le (by norm_num) ?_
-      rw [mul_div_assoc]
-      exact mul_le_mul_of_nonneg_left (by simpa using hm₂ m (by omega)) hc.le
-  refine ⟨c, hc, m₀ + 2, fun m hm s hs => ?_⟩
-  rw [thm_main_form (by omega) c]
-  exact h m (by omega) s (genPerm_eq ℝ m ▸ hs)
 
 end Paper

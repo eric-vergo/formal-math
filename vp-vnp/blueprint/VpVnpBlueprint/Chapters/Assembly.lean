@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), GPT (OpenAI)
 -/
 import VersoManual
 import VersoBlueprint
@@ -69,7 +69,7 @@ $`\sum_\sigma \prod_i x_{\sigma(i), i}` over `ℝ`; the displayed equality is
 theorem {bpref "Solution.permanent_over_real"}[] is `Paper.thm_main` itself.
 :::
 
-:::proof "thm_main" (uses := "thm_main_calculation")
+:::proof "thm_main" (uses := "thm_allfields")
 *The paper's proof* (page 60), quoted: “By Theorem D.2 we are in the flat case or in the
 contracting case. In the flat case Theorem E.11 gives the bound $`2^{c''(\log m)^{4/3}}` for all
 large $`m`, with an explicit constant $`c'' > 0`. In the contracting case Theorem K.7 gives the
@@ -77,13 +77,9 @@ bound $`2^{c'(\log m)^2/\log\log m}` for some $`c' > 0` and all large $`m`, and
 $`(\log m)^2/\log\log m \geq (\log m)^{4/3}` for large $`m`. Hence the smaller of $`c'` and $`c''`
 serves as the constant $`c` of the theorem.”
 
-*Reading (gloss).* The Lean proof splits on {bpref "thm_alt"}[`thm_alt ℝ`]. In the flat case it
-takes $`c = 1/1600^2` from {bpref "thm_flat_rate"}[`thm_flat_rate`]; in the contracting case it
-takes the constant $`c'` of {bpref "thm_contracting"}[`thm_contracting`] and
-`thm_main_calculation 1`. So the constant of `thm_main` is $`1/1600^2` or the constant of the
-contracting case, of which nothing is known, according to which case holds for $`\mathbb{R}`.
-Where the paper takes the smaller of $`c'` and $`c''`, the Lean proof takes the constant of the
-branch it is in; the proof does not decide which branch that is.
+The Lean proof specializes {bpref "thm_allfields"}[Theorem M.3] to characteristic zero and
+takes its permanent conclusion over $`\mathbb{R}`. The constant is the same absolute constant
+as in Theorem M.3.
 :::
 
 :::lemma_ "thm_main_calculation" (lean := "Paper.thm_main_form, Paper.thm_main_calculation") (parent := "part-assembly")
@@ -96,8 +92,7 @@ $`m^{c(\log m)^{1/3}} = 2^{c(\log m)^{4/3}}` of the statement, and “$`(\log m)
 $`m_0` with $`C(\log m)^{4/3} \leq (\log m)^2/\log\log m` for all $`m \geq m_0`. The stronger form
 is what lets Theorems M.3 and N.5 replace the bound of the contracting case, whatever its
 constant, by the bound of the flat case with the constant $`1/1600^2` (the step
-`Paper.thm_allfields_exceeds` under {bpref "thm_allfields"}[Theorem M.3]). These two theorems are
-used by Theorems L.1, L.2, M.3 and N.5; none of those uses another of them through this node.
+`Paper.thm_allfields_exceeds` under {bpref "thm_allfields"}[Theorem M.3]). Theorems L.1 and L.2 inherit these calculations through Theorem M.3.
 :::
 
 :::theorem "thm_simple" (lean := "Paper.thm_simple") (parent := "part-assembly")
@@ -109,15 +104,15 @@ Section Q.3 (page 66) lists Theorem L.2 and Corollary L.3 among the statements t
 route of the theorems of `Solution`.
 :::
 
-:::proof "thm_simple"
+:::proof "thm_simple" (uses := "thm_main")
 *The paper's proofs* (page 60). First: “Theorem L.2 follows at once from Theorem L.1, since
 $`m^{c(\log m)^{1/3}}` exceeds $`m^C` for large $`m`.” Then a direct proof that “uses of Section E
 only the part that precedes Section E.4”: “In the flat case the claim is Theorem E.6. In the
 contracting case it follows from Theorem K.7, whose bound exceeds $`m^C` for large $`m`.”
 
-The Lean proof is the direct one: {bpref "thm_flat_simple"}[`thm_flat_simple`] (Theorem E.6) in
-the flat case, and {bpref "thm_contracting"}[`thm_contracting`] with `thm_main_calculation` in the
-contracting case. It does not use `thm_main`.
+Lean takes the first proof. The exponent $`c(\log m)^{1/3}` tends to infinity, so it is at least
+$`C` beyond a threshold. The strict bound in {bpref "thm_main"}[Theorem L.1] then rules out
+every circuit of size at most $`m^C`.
 :::
 
 ::::lemma_ "vp_subset_vnp" (lean := "Paper.vp_subset_vnp") (parent := "part-assembly")
@@ -144,7 +139,8 @@ is not in VP.”
 
 In Lean the membership is {bpref "perm_mem_VNP"}[`Paper.perm_mem_VNP`] (with $`n` summation
 variables, the family of summands being in VP with the bound $`n^{700} + 700`), and the lower
-bound used is `thm_simple (C + 1)`.
+bound comes from {bpref "thm_main"}[Theorem L.1]. The lemma `Paper.no_poly_size_of_rate`
+contradicts the polynomial size bound of VP for this same family.
 :::
 
 The paper's remarks after these proofs (page 60): “The constant $`m_0` in our theorems is not
@@ -210,7 +206,7 @@ by {bpref "thm_approx"}[Theorem N.5], which Section Q.3 (page 70) says “uses t
 `thm_allfields_exceeds`” and not Theorem M.3.
 ::::
 
-:::theorem "thm_allfields" (lean := "Paper.thm_allfields, Paper.flat_rate_hc, Paper.contracting_hc") (parent := "part-assembly")
+:::theorem "thm_allfields" (lean := "Paper.thm_allfields, Paper.exact_rate_complete") (parent := "part-assembly")
 *Theorem M.3 of the paper* (lower bound over all fields; page 61; the same text as Theorem 1.1,
 page 2), quoted: “There is an absolute constant $`c > 0` such that for every $`p`, zero or prime,
 there is $`m_0` with the following property. Over every field of characteristic $`p` and for every
@@ -239,24 +235,17 @@ the parameters.”
 2. For $`p` zero or prime, `exists_closed` gives one algebraically closed field `K` of
    characteristic $`p` in the lowest universe. Everything from Appendix A to Appendix K is applied
    to this one field.
-3. For the Hamiltonian cycle polynomial over `K`: {bpref "thm_alt"}[`thm_alt K`] gives `Flat K` or
-   `Contracting K`. In the flat case `flat_rate_hc` gives $`2^{(\log m)^{4/3}/1600^2} < s` for
-   $`m \geq M_1`, from the flat bound for families complete for grid sums
-   ({bpref "flat_rate_complete"}[`flat_rate_complete`]) with factor 40
-   ({bpref "gridComplete"}[`gridComplete_hc`]). In the contracting case
-   `contracting_hc` gives $`2^{c'(\log m)^2/\log\log m} < s` with some $`c' > 0`, and
-   {bpref "thm_allfields_exceeds"}[`thm_allfields_exceeds`] converts this into the *same* bound $`2^{(\log m)^{4/3}/1600^2} < s` for
-   all large $`m`: by `thm_main_calculation` with $`C = 1/(c' \cdot 1600^2)`,
-   $`(\log m)^{4/3}/1600^2 \leq c'(\log m)^2/\log\log m` eventually. So in both cases the bound over
-   `K` has the constant $`1/1600^2`, and only the threshold $`M_1` depends on the case and on $`c'`.
-4. For the permanent, if $`p \neq 2`: the same with {bpref "thm_flat_rate"}[`thm_flat_rate`]
-   (Theorem E.11 itself) and {bpref "thm_contracting"}[`thm_contracting`] (Theorem K.7 itself),
-   which need $`2 \neq 0` in `K`; threshold $`M_2`. Section Q.3 (page 70) says that Theorem M.3
-   uses “the general forms for families that are complete for grid sums”. In `thm_allfields` that
-   holds for the Hamiltonian cycle polynomial; for the permanent the general forms enter only
-   inside the proofs of the two theorems named, in the contracting case through
-   `contracting_complete`.
-5. $`m_0 = M_1 + M_2 + 2`. For a field `F` of characteristic $`p` in any universe, a circuit for
+3. The lemma `Paper.exact_rate_complete` gives an eventual lower bound for any family complete
+   for grid sums over `K`. In the flat case it applies {bpref "flat_rate_complete"}[]. In the
+   contracting case `contracting_complete` and `quasi_of_exponents` give a bound with exponent
+   $`c'(\log m)^2/\log\log m` for some $`c'>0`. The lemma
+   {bpref "thm_allfields_exceeds"}[] shows that this eventually dominates the flat bound.
+4. The Hamiltonian cycle polynomial is complete for grid sums with factor 40 in every
+   characteristic. The permanent is complete with factor 3 when $`p\ne 2`. These two
+   instances of the lemma give the required family thresholds.
+5. Both the exact and approximating proofs use `Paper.common_family_threshold`. In characteristic
+   two it takes the maximum of the HC threshold and two. In every other characteristic it takes
+   the sum of the two family thresholds plus two. For a field `F` of characteristic $`p` in any universe, a circuit for
    $`\mathrm{HC}_m` or $`\mathrm{PERM}_m` over `F` gives one with the same number of gates over `K`
    by {bpref "lem_transfer"}[`lem_transfer`], applied to the polynomial with integer coefficients (`genHC ℤ m`,
    `Paper.permInt m`). `beyond_of_rate` rewrites $`2^{(\log m)^{4/3}/1600^2}` as

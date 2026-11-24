@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), GPT (OpenAI)
 -/
 import VersoManual
 import VersoBlueprint
@@ -378,17 +378,11 @@ goes through it step by step.
 2. For a characteristic $`p`, zero or prime, take an algebraically closed field $`\mathbb{K}` of
    characteristic $`p` ({InlineLean.name}`Paper.exists_closed`: the algebraic closure of
    $`\mathbb{Q}` or of $`\mathbb{F}_p`).
-3. Apply the dichotomy to $`\mathbb{K}` ({InlineLean.name}`Paper.thm_alt`). In the flat case the
-   bound $`2^{(\log m)^{4/3}/1600^2}` holds, for all large $`m`, for $`\mathrm{HC}_m`
-   ({InlineLean.name}`Paper.flat_rate_hc`, the case of the factor 40 of
-   {bpref "flat_rate_complete"}[the general form of Theorem E.11]) and, if $`p \ne 2`, for
-   $`\mathrm{PERM}_m` ({InlineLean.name}`Paper.thm_flat_rate`,
-   {bpref "thm_flat_rate"}[Theorem E.11] itself). In the contracting case the bound
-   $`2^{c'(\log m)^2/\log\log m}` holds for both, with some $`c' > 0`
-   ({InlineLean.name}`Paper.contracting_hc`, {InlineLean.name}`Paper.thm_contracting`), and it
-   exceeds the flat bound for large $`m` ({InlineLean.name}`Paper.thm_allfields_exceeds`). Either
-   way there is $`m_0`, depending on $`\mathbb{K}` and so on $`p`, beyond which the flat bound
-   holds over $`\mathbb{K}`.
+3. Apply the dichotomy to $`\mathbb{K}` ({InlineLean.name}`Paper.exact_rate_complete`).
+   The general flat and contracting bounds apply to any family complete for grid sums.
+   The Hamiltonian cycle polynomial qualifies in every characteristic. The permanent qualifies
+   for $`p\ne 2`. In the contracting case {InlineLean.name}`Paper.thm_allfields_exceeds` converts
+   the stronger bound into the same eventual rate as in the flat case.
 4. A circuit over any field $`F` of characteristic $`p` for a polynomial with integer
    coefficients gives a circuit with the same number of gates over $`\mathbb{K}`
    ({InlineLean.name}`Paper.lem_transfer`, {bpref "lem_transfer"}[Lemma M.1]). Both polynomials

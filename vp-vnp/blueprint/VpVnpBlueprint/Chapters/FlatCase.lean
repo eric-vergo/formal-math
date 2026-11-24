@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), GPT (OpenAI)
 -/
 import VersoManual
 import VersoBlueprint
@@ -535,12 +535,8 @@ Corollary E.2 and the statements about the permanent are instances.” Read agai
 of Theorem M.3 (`Paper.thm_allfields` in
 {repoFile "vp-vnp/Paper/Fields.lean"}[`Paper/Fields.lean`]; see
 {ref "chapter-assembly"}[All fields and approximate computation]): in the flat case that proof
-uses, for $`\mathrm{HC}`, the theorem `Paper.flat_rate_hc`, which is the instance
-$`\kappa = 40` of the present theorem with {bpref "gridComplete"}[], and for $`\mathrm{PERM}`
-the theorem `Paper.thm_flat_rate` itself ({bpref "thm_flat_rate"}[]), whose proof goes through
-{bpref "lem_fkl_perm"}[Lemma E.3] and not through the present theorem. (The general form enters
-that proof one step further down: in Lean, {bpref "cor_clauses"}[Corollary E.2] is proved as the
-instance for the permanent of {bpref "clauses_of_complete"}[].) The proof of the present
+applies the general form to both families. The factors are 40 for HC and 3 for the permanent
+when two is nonzero. The proof of the present
 theorem is that of Theorem E.11 with {bpref "fkl_complete"}[] in the place of Lemma E.3; both are
 instances of {bpref "rate_of_projection"}[].
 :::
@@ -612,10 +608,9 @@ not on $`\varepsilon`).
 # What the rest of the proof takes from this chapter
 
 - {ref "chapter-assembly"}[All fields and approximate computation] takes, as the flat halves of
-  its theorems: {bpref "thm_flat_rate"}[] for Theorem L.1 and for $`\mathrm{PERM}` in Theorem
-  M.3; {bpref "flat_rate_complete"}[] for $`\mathrm{HC}` in Theorem M.3;
-  {bpref "flat_rate_approx_complete"}[] for Theorem N.5; and {bpref "thm_flat_simple"}[] for
-  Theorem L.2. The explicit constant $`1/1600^2` of this chapter
+  its theorems, {bpref "flat_rate_complete"}[] for both families in Theorem M.3 and
+  {bpref "flat_rate_approx_complete"}[] for Theorem N.5. Theorems L.1 and L.2 inherit their flat
+  bound from Theorem M.3. The explicit constant $`1/1600^2` of this chapter
   becomes the absolute constant of the main theorem, because the bound of the contracting case
   exceeds it for large $`m`.
 - The contracting case does not use this chapter, with one exception named by the paper's map of
