@@ -273,7 +273,14 @@ theorem windowConst_nonneg (μ : ℕ) (s : ℝ) (n : ℕ) : 0 ≤ windowConst μ
 
 section Fixed
 
-variable {G Z : Type} [Group G] [MetricSpace Z] [Cat.CN Z]
+variable {G Z : Type} [Group G] [MetricSpace Z]
+
+private theorem dist_act_of_fixed (A : IsoAct G Z) {q : Z} (hq : A.Fix q) (g : G) (z : Z) :
+    dist q (A.act g z) = dist z q := by
+  conv_lhs => rw [← hq g]
+  rw [A.iso', dist_comm]
+
+variable [Cat.CN Z]
 
 open Cat in
 /-- A point of a segment between fixed points is fixed: the point in Lemma lem:toolkit(a) is the only one with these
@@ -290,11 +297,6 @@ theorem segment_fixed (A : IsoAct G Z) {x v q : Z} {t : ℝ} (h0 : 0 ≤ t) (h1 
   · rw [← huniq q e1 e2]
     conv_lhs => rw [← hv g]
     rw [A.iso', e2]
-
-private theorem dist_act_of_fixed (A : IsoAct G Z) {q : Z} (hq : A.Fix q) (g : G) (z : Z) :
-    dist q (A.act g z) = dist z q := by
-  conv_lhs => rw [← hq g]
-  rw [A.iso', dist_comm]
 
 variable [Fintype G]
 
