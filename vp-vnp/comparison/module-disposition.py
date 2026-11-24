@@ -24,7 +24,14 @@ DISPOSITIONS = {
     "Nc/Flag/Num.lean": ("Moved", "`Paper/Groups.lean`", "The needed window decay estimate is proved at its application."),
     "Nc/G/RouteFacts.lean": ("Deleted", "`Nc/G/Move.lean`, `Nc/G/PlayThm.lean`", "The remaining caller uses `Plan.mem_seenAt_end`. Other duplicated membership facts were removed."),
     "Nc/Plus/UnitBits.lean": ("Combined", "`Nc/Cut/Units.lean`", "Packet-bit sizes live beside the packet encoding."),
-    "Paper/Tree.lean": ("Split", "`Paper/Tree.lean`, `Paper/Tree/{Network,Construction,Bounds}.lean`",
+}
+
+SPLITS = {
+    "Paper/Approximate.lean": (("Paper/BorderRate.lean",),
+                               "The shared coefficientwise estimate lives below the separately stated approximate endpoint."),
+    "Paper/Fields.lean": (("Paper/BorderRate.lean",),
+                           "Exact bounds consume the common characteristic-dependent border estimate."),
+    "Paper/Tree.lean": (("Paper/Tree/Network.lean", "Paper/Tree/Construction.lean", "Paper/Tree/Bounds.lean"),
                         "Assembly imports the specification, construction and quantitative estimates."),
 }
 
@@ -87,6 +94,10 @@ def main():
     for path, baseline in sorted(old.items()):
         current = new.get(path)
         status, dest, note = DISPOSITIONS.get(path, (None, None, None))
+        extensions, split_explanation = SPLITS.get(path, ((), None))
+        if extensions and all(extension in new for extension in extensions):
+            status, note = "Split", split_explanation
+            dest = ", ".join(f"[`{target}`]({url(after, target)})" for target in (path, *extensions))
         if current is None and status not in {"Deleted", "Combined", "Moved"}:
             raise ValueError(f"removed module missing disposition: {path}")
         if current is not None and status in {"Deleted", "Combined", "Moved"}:

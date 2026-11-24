@@ -225,7 +225,6 @@ def benchmark_rows(source, revisions):
                    ", ".join(str(len(r["built_modules"])) for r in stages)]
 
 
-
 def module_benchmarks(archive):
     modules = ("Paper.Pieces", "Nc.Dl.Cut", "Nc.Flag.Act", "Nc.Tow.Slp2", "Nc.Tow.Slp3", "Nc.Tow.Slp4", "Paper.Cuts")
     for module in modules:
@@ -237,6 +236,7 @@ def module_benchmarks(archive):
             yield [f"`{module}`", side,
                    ", ".join(f"{reading:g}" if reading is not None else "—" for reading in readings),
                    f"{statistics.median(readings):g}" if all(reading is not None for reading in readings) else "—"]
+
 
 def verification(archive, revisions):
     def stages(side, name, revision):
