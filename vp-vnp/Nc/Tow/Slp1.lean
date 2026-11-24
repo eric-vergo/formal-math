@@ -78,11 +78,8 @@ theorem u1 (ν : NM R FL (ch := ch)) : U1 ≤ Y := by
   have h3 : U1 ≤ Fintype.card (NM R FL (ch := ch)) * U1 := Nat.le_mul_of_pos_left _ h2
   omega
 
-theorem aa1 : AA ≤ Y := by
-  have h1 := hB.aa
-  rcases Nat.eq_zero_or_pos AA with h0 | h0
-  · omega
-  · exact (Nat.le_mul_of_pos_left _ h0).trans h1
+theorem aa1 : AA ≤ Y :=
+  (Nat.le_mul_self _).trans hB.aa
 
 theorem ed (j : Fin (J + 1)) : Fintype.card (T.Ed j) ≤ Y := by
   refine (Fintype.card_le_of_injective (fun e : T.Ed j => (Tg.edge j e : Tg T m AA)) ?_).trans hB.tg
@@ -95,15 +92,17 @@ section Bounds
 
 variable {lhat : ℕ} {n : Fin AA → Fin AA → ℕ} {o : NM R FL (ch := ch) → ℕ}
 
+theorem initial_targets_le (hn : ∀ a c, n a c ≤ U0) (τ : Tg T m AA) :
+    (∑ a, ∑ c, ((range (n a c)).filter fun k => tgB T R ch a c k = τ).card) ≤ AA * AA * U0 := by
+  calc _ ≤ ∑ _a : Fin AA, ∑ _c : Fin AA, U0 := by
+        refine Finset.sum_le_sum fun a _ => Finset.sum_le_sum fun c _ => ?_
+        exact (card_filter_le _ _).trans (by simpa using hn a c)
+    _ = AA * AA * U0 := by simp; ring
+
 theorem bt_le (hn : ∀ a c, n a c ≤ U0) (τ : Tg T m AA) : bt R ch lhat n τ ≤ AA * AA * U0 := by
   unfold bt
   split_ifs
-  · calc _ ≤ ∑ _a : Fin AA, ∑ _c : Fin AA, U0 := by
-          refine Finset.sum_le_sum fun a _ => Finset.sum_le_sum fun c _ => ?_
-          refine (card_filter_le _ _).trans ?_
-          rw [card_range]
-          exact hn a c
-      _ = AA * AA * U0 := by simp; ring
+  · exact initial_targets_le hn τ
   · exact Nat.zero_le _
 
 theorem ld_le (hn : ∀ a c, n a c ≤ U0) (ho : ∀ ν, o ν ≤ U1) (N : Mv T R ch FL → ℕ) (τ : Tg T m AA) :

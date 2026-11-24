@@ -85,17 +85,8 @@ theorem cy_bt (hb : Base nx ox H) (hv : ind (fun x => Valid lhat (nx x)) ∈ H) 
     CY Dd H Y 7 fun x => bt R ch lhat (nx x) τ := by
   classical
   have hY := hA.pos
-  have hb0 : ∀ x, ∑ a, ∑ c, ((range (nx x a c)).filter fun k => tgB T R ch a c k = τ).card ≤ Y := by
-    intro x
-    refine le_trans ?_ hB.w
-    unfold Wb
-    refine le_trans ?_ (Nat.le_add_right _ _)
-    calc _ ≤ ∑ _a : Fin AA, ∑ _c : Fin AA, U0 := by
-          refine Finset.sum_le_sum fun a _ => Finset.sum_le_sum fun c _ => ?_
-          refine (card_filter_le _ _).trans ?_
-          rw [card_range]
-          exact hR.n x a c
-      _ = AA * AA * U0 := by simp; ring
+  have hb0 : ∀ x, ∑ a, ∑ c, ((range (nx x a c)).filter fun k => tgB T R ch a c k = τ).card ≤ Y :=
+    fun x => (initial_targets_le (hR.n x) τ).trans ((Nat.le_add_right _ _).trans hB.w)
   have h1 : CY Dd H Y 5 fun x => ∑ a, ∑ c, ((range (nx x a c)).filter fun k => tgB T R ch a c k = τ).card := by
     refine CY.sum hA univ (by simpa using hB.aa1) (fun a _ => ?_) fun x => hA.lt_of_le (hb0 x)
     refine CY.sum hA univ (by simpa using hB.aa1) (fun c _ => ?_) fun x => hA.lt_of_le ?_
