@@ -121,26 +121,15 @@ theorem exists_diam (h : ℕ) [NeZero h] (h2 : 2 ≤ h) (h3 : 3 ≤ h) :
     intro g
     refine (WL.lift h3 ih g).mono ?_
     have h4 : h * h * (5 * bQ h n) ≤ B * (n + 1) ^ 6 := by
-      have h5 : (n + 2) ^ 3 ≤ 8 * (n + 1) ^ 3 := by
-        calc (n + 2) ^ 3 ≤ (2 * (n + 1)) ^ 3 := Nat.pow_le_pow_left (by omega) 3
-          _ = 8 * (n + 1) ^ 3 := by ring
-      have h6 : bQ h n ≤ 4 ^ (h + 3) * 9 * 8 * (n + 1) ^ 6 := by
-        unfold bQ
-        calc 4 ^ (h + 3) * (9 * (n + 2) ^ 3) * (n + 1) ^ 3 ≤ 4 ^ (h + 3) * (9 * (8 * (n + 1) ^ 3)) * (n + 1) ^ 3 := by
-              gcongr
-          _ = _ := by ring
-      calc h * h * (5 * bQ h n) ≤ h * h * (5 * (4 ^ (h + 3) * 9 * 8 * (n + 1) ^ 6)) := by gcongr
-        _ = B * (n + 1) ^ 6 := by simp only [B]; ring
+      unfold B bQ
+      ring_nf
+      omega
     have h7 : (n + 1) ^ 7 + (n + 1) ^ 6 ≤ (n + 1 + 1) ^ 7 := by
-      have h8 : (n + 1) ^ 6 ≤ (n + 2) ^ 6 := Nat.pow_le_pow_left (by omega) 6
-      calc (n + 1) ^ 7 + (n + 1) ^ 6 = (n + 1) ^ 6 * (n + 2) := by ring
-        _ ≤ (n + 2) ^ 6 * (n + 2) := Nat.mul_le_mul_right _ h8
-        _ = (n + 1 + 1) ^ 7 := by ring
-    calc (C + B) * (n + 1) ^ 7 + h * h * (5 * bQ h n) ≤ (C + B) * (n + 1) ^ 7 + B * (n + 1) ^ 6 :=
-          Nat.add_le_add_left h4 _
-      _ ≤ (C + B) * (n + 1) ^ 7 + (C + B) * (n + 1) ^ 6 := by
-          refine Nat.add_le_add_left (Nat.mul_le_mul_right _ (by omega)) _
-      _ = (C + B) * ((n + 1) ^ 7 + (n + 1) ^ 6) := by ring
-      _ ≤ (C + B) * (n + 1 + 1) ^ 7 := Nat.mul_le_mul_left _ h7
+      ring_nf
+      omega
+    calc (C + B) * (n + 1) ^ 7 + h * h * (5 * bQ h n)
+        ≤ (C + B) * (n + 1) ^ 7 + (C + B) * (n + 1) ^ 6 :=
+          Nat.add_le_add_left (h4.trans (Nat.mul_le_mul_right _ (Nat.le_add_left _ _))) _
+      _ ≤ (C + B) * (n + 1 + 1) ^ 7 := by rw [← Nat.mul_add]; gcongr
 
 end Nc.Tower
