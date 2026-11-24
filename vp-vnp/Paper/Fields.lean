@@ -3,10 +3,7 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-import Paper.Rate
-import Paper.Scales
-import Paper.HcGrid
-import Paper.Transfer
+import Paper.BorderRate
 import Paper.Ryser
 
 /-!
@@ -19,77 +16,12 @@ open Finset MvPolynomial Nc
 
 universe u
 
-theorem map_genHC {R S : Type*} [CommRing R] [CommRing S] (φ : R →+* S) (m : ℕ) :
-    MvPolynomial.map φ (genHC R m) = genHC S m := by
-  simp only [genHC, map_sum, map_prod, map_X]
-
-/-- The permanent with integer coefficients. -/
-noncomputable def permInt (m : ℕ) : MvPolynomial (Fin m × Fin m) ℤ :=
-  ∑ σ : Equiv.Perm (Fin m), ∏ i, X (σ i, i)
-
-theorem map_permInt (F : Type u) [Field F] (m : ℕ) :
-    MvPolynomial.map (Int.castRingHom F) (permInt m) = genPerm F m := by
-  simp only [permInt, genPerm, Matrix.permanent, Matrix.of_apply, map_sum, map_prod, map_X]
-
-/-- KK, "the algebraic closure of the prime field of characteristic p". -/
-theorem exists_closed (p : ℕ) (hp : p = 0 ∨ p.Prime) : ∃ (K : Type) (_ : Field K), IsAlgClosed K ∧ CharP K p := by
-  rcases hp with rfl | hp
-  · exact ⟨AlgebraicClosure ℚ, inferInstance, inferInstance, inferInstance⟩
-  · have : Fact p.Prime := ⟨hp⟩
-    exact ⟨AlgebraicClosure (ZMod p), inferInstance, inferInstance, inferInstance⟩
-
-/-- 2 is not 0 in characteristic other than 2. -/
-theorem two_ne_zero_of_char (K : Type) [Field K] (p : ℕ) [CharP K p] (hp : p = 0 ∨ p.Prime) (h2 : p ≠ 2) :
-    (2 : K) ≠ 0 := by
-  intro h
-  have h3 : ((2 : ℕ) : K) = 0 := by exact_mod_cast h
-  rw [CharP.cast_eq_zero_iff K p] at h3
-  rcases hp with rfl | hp
-  · simp at h3
-  · exact h2 ((Nat.prime_dvd_prime_iff_eq hp Nat.prime_two).1 h3)
-
-/-- "The bound of the contracting case, although its constant depends on p, exceeds that of the flat case for large m." -/
-theorem thm_allfields_exceeds {P : ℕ → ℕ → Prop}
-    (h : ∃ c : ℝ, 0 < c ∧ ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, P m s →
-      (2 : ℝ) ^ (c * Real.logb 2 m ^ 2 / Real.logb 2 (Real.logb 2 m)) < s) :
-    ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, P m s → (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
-  obtain ⟨c, hc, m₁, h⟩ := h
-  obtain ⟨m₂, hm₂⟩ := thm_main_calculation (1 / (c * 1600 ^ 2))
-  refine ⟨m₁ + m₂, fun m hm s hs => lt_of_le_of_lt ?_ (h m (by omega) s hs)⟩
-  refine Real.rpow_le_rpow_of_exponent_le (by norm_num) ?_
-  refine le_trans (le_of_eq ?_) ((mul_le_mul_of_nonneg_left (hm₂ m (by omega)) hc.le).trans_eq (mul_div_assoc _ _ _).symm)
-  field_simp
-
-/-- The field dichotomy gives the same eventual rate for every family complete for
-grid sums. Its threshold may depend on the family and the field. -/
-theorem exact_rate_complete {K : Type} [Field K]
-    {G : ∀ m, MvPolynomial (Fin m × Fin m) K} {κ : ℕ} (hG : GridComplete K G κ) :
-    ∃ M : ℕ, ∀ m ≥ M, ∀ s, Computes (G m) s →
-      (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
-  rcases thm_alt K with hK | hK
-  · obtain ⟨M, h⟩ := flat_rate_complete κ
-    exact ⟨M, h K hK G hG⟩
-  · obtain ⟨C, M, h⟩ := contracting_complete hK hG
-    exact thm_allfields_exceeds (quasi_of_exponents (P := fun m s => Computes (G m) s)
-      (fun _ _ _ hst hs => hs.mono hst) h)
-
-/-- The bound 2^((log m)^(4/3)/1600²) in the form of the main theorems. -/
-theorem beyond_of_rate {m s : ℕ} (hm : 2 ≤ m) (h : (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s) :
-    (m : ℝ) ^ (1 / 1600 ^ 2 * Real.logb 2 m ^ (1 / 3 : ℝ)) < s := by
-  rwa [thm_main_form hm, one_div_mul_eq_div]
-
-/-- Combine the two family thresholds, imposing the permanent bound only away from
-characteristic two. Both bounds then use an index at least two. -/
-theorem common_family_threshold {p : ℕ} {H P : ℕ → Prop}
-    (hc : ∃ M, ∀ m ≥ M, H m) (hp : p ≠ 2 → ∃ M, ∀ m ≥ M, P m) :
-    ∃ M, ∀ m ≥ M, 2 ≤ m ∧ H m ∧ (p ≠ 2 → P m) := by
-  obtain ⟨A, hA⟩ := hc
-  by_cases he : p = 2
-  · exact ⟨max A 2, fun m hm =>
-      ⟨le_trans (le_max_right _ _) hm, hA m (le_trans (le_max_left _ _) hm),
-        fun h => (h he).elim⟩⟩
-  · obtain ⟨B, hB⟩ := hp he
-    exact ⟨A + B + 2, fun m hm => ⟨by omega, hA m (by omega), fun _ => hB m (by omega)⟩⟩
+/-- An exact circuit gives a coefficientwise approximation of the same size by
+viewing its constants as constant Laurent series. -/
+theorem approximates_of_computes {F : Type u} [Field F] {V : Type} {f : MvPolynomial V F}
+    {s : ℕ} (h : Computes f s) : Approximates f s := by
+  refine ⟨_, h.map (HahnSeries.C : F →+* LaurentSeries F), fun d i _ => ?_⟩
+  by_cases hi : i = 0 <;> simp [coeff_map, HahnSeries.C_apply, hi]
 
 /-- **Paper: Theorem thm:allfields.** "There is an absolute constant c > 0 such that for every p, zero or prime,
 there is m₀: over every field of characteristic p and for every m ≥ m₀ every circuit for HC_m, and for PERM_m if p ≠ 2,
@@ -99,22 +31,10 @@ theorem thm_allfields : ∃ c : ℝ, 0 < c ∧ ∀ p : ℕ, p = 0 ∨ p.Prime �
       (Computes (genHC F m) s → (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) < s) ∧
       (p ≠ 2 → Computes (genPerm F m) s → (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) < s) := by
   refine ⟨1 / 1600 ^ 2, by norm_num, fun p hp => ?_⟩
-  obtain ⟨K, _, _, _⟩ := exists_closed p hp
-  obtain ⟨M, hM⟩ := common_family_threshold (p := p) (exact_rate_complete (gridComplete_hc K))
-    fun hne => exact_rate_complete (gridComplete_perm (two_ne_zero_of_char K p hp hne))
-  refine ⟨M, fun F _ _ m hm s => ?_⟩
-  obtain ⟨hm₂, hHC, hPerm⟩ := hM m hm
-  constructor
-  · intro hs
-    rw [← map_genHC (Int.castRingHom F)] at hs
-    have h := lem_transfer (KK := K) p (genHC ℤ m) hs
-    rw [map_genHC] at h
-    exact beyond_of_rate hm₂ (hHC s h)
-  · intro hne hs
-    rw [← map_permInt] at hs
-    have h := lem_transfer (KK := K) p (permInt m) hs
-    rw [map_permInt] at h
-    exact beyond_of_rate hm₂ (hPerm hne s h)
+  obtain ⟨M, hM⟩ := border_rate_allfields.{u} p hp
+  exact ⟨M, fun F _ _ m hm s =>
+    ⟨fun h => (hM F m hm s).1 (approximates_of_computes h),
+     fun hne h => (hM F m hm s).2 hne (approximates_of_computes h)⟩⟩
 
 /-- A bound m^(c(log m)^(1/3)) is beyond every polynomial. -/
 theorem exists_beyond_poly {c : ℝ} (hc : 0 < c) (m₀ C : ℕ) :
