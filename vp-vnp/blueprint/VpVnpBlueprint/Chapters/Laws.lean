@@ -36,9 +36,9 @@ nodes form a tree of small depth in which a node holds fewer packets, by a facto
 than the network holds in all. {ref "chapter-programs"}[Programs, automata and cutting] takes the
 network to be a computation and cuts it along such a tree.
 
-How to read the chapter. Appendix G is among the appendices whose printed proofs the paper calls
-“complete, if terse” (page 17). Appendix H is not uniform. The paper, page 17, quoted: “The proofs
-of Proposition I.1, Theorem H.2(d), (e), Theorem J.3 and Proposition N.4 describe machines and
+How to read the chapter. Appendix G is among the appendices whose printed proofs, the paper says,
+“are meant to be complete, if terse” (page 17). Appendix H is not uniform. The paper, page 17,
+quoted: “The proofs of Proposition I.1, Theorem H.2(d), (e), Theorem J.3 and Proposition N.4 describe machines and
 programs and account for their sizes and running times. That these do exactly what is claimed can
 be verified only in the Lean development, and each of these four statements is followed by a
 formalization note that says so. Consequently the contracting case, and with it every main result,
@@ -50,10 +50,9 @@ neither among the proofs meant to be complete nor among those flagged. For them 
 what the printed proof gives and what the Lean statement gives, and makes no claim about the
 completeness of the printed argument.
 
-The Lean statements of this chapter differ from the printed ones more than those of any earlier
-chapter, and all the differences recorded here are listed by the paper in Section Q.3 (pages
-68–70). Definition G.1 is a Lean structure, `Nc.G.Law`; the clauses of Theorem H.2 are the fields
-of a Lean structure, `Paper.ThinTrees`; Proposition H.1(d) is stated with the exponent $`7` that
+The Lean statements of this chapter differ from the printed ones in several ways, and all the
+differences recorded here are listed by the paper in Section Q.3 (pages 68–70). Definition G.1 is
+a Lean structure, `Nc.G.Law`; the clauses of Theorem H.2 are the fields of a Lean structure, `Paper.ThinTrees`; Proposition H.1(d) is stated with the exponent $`7` that
 Lean proves, where the printed argument gives $`3`; and Theorem H.2 takes the laws as a hypothesis.
 The Lean development says _unit_ for a packet, _table_ for a node tensor, _near pair_ for an edge
 of the Cayley graph of $`U_h`, _chamber_ for an element of a set $`V_j` of the tower and _vertex_
@@ -67,7 +66,7 @@ $`\{g, x_j g\}` of the Cayley graph of $`U_h` for the generators $`x_j = 1 + E_{
 $`0 \le j < h-1`, and there are $`b/2` edges for each $`j`. A _load_ is a vector $`n = (n_e)` of
 natural numbers, indexed by all pairs $`e` of distinct elements of $`U_h` or by the edges only,
 and we measure loads by the norms
-$$`\|n\| = \Bigl(\tfrac{b(b-1)}{2} \sum_e n_e^2\Bigr)^{1/2}, \qquad \|n\|_* = \Bigl(\tfrac{b}{2} \sum_{\text{edges } e} n_e^2\Bigr)^{1/2}.`”
+$$`\begin{aligned} \|n\| &= \Bigl(\tfrac{b(b-1)}{2} \sum_e n_e^2\Bigr)^{1/2}, \\ \|n\|_* &= \Bigl(\tfrac{b}{2} \sum_{\text{edges } e} n_e^2\Bigr)^{1/2}. \end{aligned}`”
 
 In Lean $`b` is `2 ^ ee h` with `ee h = h * (h - 1) / 2`; the edges are the type `Nc.Tower.NN h`
 of near pairs, with the ends `cNear ν` and `dNear ν`; a load on pairs is a function on
@@ -85,13 +84,15 @@ the right side is $`C_0 \cdot \frac{2}{b} \sum |e|^2` over the edges.”
 
 In the Lean statement the real number `C` is the constant $`C_0` of Theorem F.6 and the natural
 number `C₀` is the paper's integer $`C_0'`; this renaming holds throughout the Lean files of this
-chapter. The sum on the left runs over ordered pairs.
+chapter. The sum on the left runs over ordered pairs and is divided by $`b(b-1)`, which is the
+printed mean over pairs.
 :::
 
 The choice of $`h` (page 42), quoted: “Let $`C_1 = 4C_0'`. As $`C_1` does not depend on $`h`, we
 can choose $`h` so large that
-$$`h \ge 3, \qquad 1 + 8C_1 \le h/4. \tag{G.1}`
-From now on $`h` and $`b` are fixed, and $`b \ge 8`.” The paper adds a formalization note (page
+$$`h \ge 3, \qquad 1 + 8C_1 \le h/4.`
+From now on $`h` and $`b` are fixed, and $`b \ge 8`.” The display is (G.1) of the paper. The
+paper adds a formalization note (page
 42), quoted: “Of the second condition in (G.1), the proof of Theorem H.2 uses only
 $`1 + 4C_1 \le h/4`. The Lean proof is coarser at this point and uses (G.1) as it stands.” In Lean
 (G.1) is the pair of hypotheses `3 ≤ h` and `1 + 8 * (4 * C₀) ≤ h / 4` of
@@ -119,9 +120,9 @@ values in $`A`, the _node tensor_ of $`(i, g)`. Its arguments are the bits at $`
 that contain $`g`, and the bits of the channels that contain $`g`.
 
 These data are required to satisfy, for all values of the bits at the ends of the slots,
-$$`\prod_e \bigl[\text{the } \sigma_e \text{ bits agree at both ends of } e\bigr] = \sum_{i \in \mathcal{I}} \sum_y \prod_g (\text{node tensor of } (i, g)), \tag{G.2}`
+$$`\begin{aligned} &\prod_e \bigl[\text{the } \sigma_e \text{ bits agree at both ends of } e\bigr] \\ &\qquad = \sum_{i \in \mathcal{I}} \sum_y \prod_g (\text{node tensor of } (i, g)), \end{aligned}`
 where $`e` runs over all pairs, $`y` over the assignments of $`\mathrm{len}_{i,e}` bits to every
-channel $`e`, and $`g` over $`U_h`.”
+channel $`e`, and $`g` over $`U_h`.” The display is (G.2) of the paper.
 
 The Lean notion is the structure `Nc.G.Law`, and it is more general than the printed one. Section
 Q.3 (page 68): “Laws may have any finite sets of elements, slots and channels. A law in Lean also
@@ -324,9 +325,10 @@ one that is proved in the Lean development; the argument above gives the exponen
 (d) the statement that Lean proves is weaker than what the printed argument yields, and the
 exponent $`3` rests on the printed argument alone. The last conjunct of `prop_tower` is: there is
 a natural number $`C`, depending on $`h` only, such that for every $`n` every element of $`G_n` is
-the product of a list of at most $`C (n+1)^7` generators. Theorem H.2 uses (d) only through the
-remark that “$`\mathsf{L}` is at most a power of $`\lg M`” (page 47), for which either exponent
-serves.
+the product of a list of at most $`C (n+1)^7` generators. In the proof of Theorem H.2 the number
+$`\mathsf{L}` enters the bound $`n_0 = 4\mathsf{L}(N + M^2)` and the term $`\Lambda N` of part
+(e), and the proof uses of it that “$`\mathsf{L}` is at most a power of $`\lg M`” (page 47),
+which holds with either exponent.
 
 *The other differences.* Section Q.3 (page 68): “In Proposition H.1, the set $`V_0` is only stated
 to have as many elements as $`G_n`, bijectivity on cosets is stated as equivariance and freeness,
@@ -375,8 +377,9 @@ gives words of length $`O((n+1)^3)`, which is stronger than (d).”
 _In Lean._ The chain is `Nc.Tower.exists_chain`, by Sylow's theorem in the $`2`-group $`K_n`. The
 bound on words is `Nc.Tower.exists_diam`, proved by induction on $`n`. This blueprint read its
 statement and not its proof, and cannot say at which step the Lean argument is coarser than the
-printed one. The paper says that it relates these groups to the coset complexes of Kaufman and
-Oppenheim (page 44).
+printed one. On the origin of the groups the paper says (page 44): “These groups, with the
+subgroups generated by all but one of the $`X_k`, are close to those of the coset complexes of
+Kaufman and Oppenheim”.
 :::
 
 The paper fixes one more piece of data (page 44), quoted: “An _edge of type_ $`i` of $`V_j` is a
@@ -385,8 +388,9 @@ each coset $`\omega` of type $`i` of $`V_{j+1}` we fix a bijection $`\chi \mapst
 the $`b` cosets of type $`i` of $`V_j` over $`\omega` to the $`b` elements of $`\omega`.” In Lean
 these data, with those of the proposition, are assembled into a term `Nc.Tower.tower` of a
 structure `Nc.Tow.Tower`, whose field `host` is $`\chi \mapsto \hat\chi`; the Lean proof of Theorem
-H.2 is written for an arbitrary term of that structure and uses Proposition H.1 only through this
-one. Section Q.3 (page 70): “Theorem H.2 uses parts (a) and (b) of Proposition H.1 through the
+H.2 is written for an arbitrary term of that structure, with routes on its bottom level, and uses
+the groups of this section only through this term and through the words of part (d)
+({bpref "tree_towers"}[the towers of the proof]). Section Q.3 (page 70): “Theorem H.2 uses parts (a) and (b) of Proposition H.1 through the
 named theorems that also prove the proposition.”
 
 # H.2. Packets, networks and the two moves
@@ -491,8 +495,8 @@ plan that obeys `Plan.Ok cap` and for which every possible outcome is good, with
 outcomes that leaves room for the strings (`cap * (m x + lam) + 1 ≤ U1` for a bound `m x` on the
 loads $`\mathrm{len}` of the law of the move `x`). For initial node tensors `init a` that depend
 only on, and vanish unless they have, the node's copies of its given packets, it states
-$$`\mathrm{val}_0 \;=\; \sum_{o \,:\, \text{all moves good}} \mathrm{val}_{\mathrm{end}}(o),`
-where $`\mathrm{val}_0` is the value at the start (`posVal` with the given packets, all current)
+$$`\mathrm{val}_0 \;=\; \sum_{o \text{ good}} \mathrm{val}_{\mathrm{end}}(o),`
+where the sum runs over the outcomes for which all moves are good, $`\mathrm{val}_0` is the value at the start (`posVal` with the given packets, all current)
 and $`\mathrm{val}_{\mathrm{end}}(o)` is the sum, over the contents of the copies of all packets
 that exist for `o`, with the two copies of every current packet equal, of the product of the
 tables `partyTab`. `thm_tree_move` is the same for one move, and it rests on the identity
@@ -636,8 +640,9 @@ bound on what a node ever holds may count absent ones. The end packets of relays
 and in networks without these packets they would count among the absent ones.”
 
 *Clause (c).* `value`, for every network `tab` on the given nodes with the numbers `n`:
-$$`\mathtt{netValue\ tab} \;=\; \sum_{o \,:\, \text{all moves good}} \;\; \sum_{w} \;\; \prod_{p} \mathrm{val}_p(w).`
-Here $`w` assigns a content, present or absent, to every packet name and is absent outside the
+$$`\mathtt{netValue\ tab} \;=\; \sum_{o \text{ good}} \; \sum_{w} \; \prod_{p} \mathrm{val}_p(w).`
+Here $`o` runs over the outcomes for which all moves are good, $`w` assigns a content, present or
+absent, to every packet name and is absent outside the
 current packets with two different holders, and $`\mathrm{val}_p(w)` (`groupVal`, with every node
 a group of its own) is the sum, over the contents of the copies at $`p` of all packets that $`p`
 has ever held, equal to $`w` on the current packets that $`p` shares with another node, of the
@@ -679,7 +684,7 @@ that join $`p` and its parent is at most `up n o p`. `up_node`: `up n o p` and t
 `up n o q` of the children `q` of `p` add up to at most $`(\lg M)^C M^{1-\gamma}(N + M^2)`.
 `up_total`: all `up n o p` add up to at most $`(\lg M)^C M (N + M^2)`. `copies_le`: for every node
 $`p`,
-$$`\#\{u \in \mathtt{seenAt} : p \text{ holds } u\} + \sum_{r \text{ a role at } p} (1 + s_r)\, t_r \;\le\; C \Bigl(u_p + \sum_{q \text{ child of } p} u_q\Bigr) + \bigl[p \text{ given}\bigr] (\lg M)^C N + C \cdot \#\{u \in \mathtt{dead}\ o : p \text{ holds } u\},`
+$$`\begin{aligned} &\#\{u \in \mathtt{seenAt} : p \text{ holds } u\} + \sum_{r \text{ a role at } p} (1 + s_r)\, t_r \\ &\quad \le\; C \Bigl(u_p + \sum_{q \text{ child of } p} u_q\Bigr) + \bigl[p \text{ given}\bigr] (\lg M)^C N \\ &\qquad + C \cdot \#\{u \in \mathtt{dead}\ o : p \text{ holds } u\}, \end{aligned}`
 where $`t_r` is the number `num` of the move of the role $`r` and $`s_r` the number of slots of
 its law at $`r`. Section Q.3 (page 69): “In part (e) Lean has the constant $`C` of the theorem,
 and it counts for every move at $`p`, with the number $`t`, also $`t` times one plus the number of
@@ -719,7 +724,7 @@ load on the channels of $`\omega` has $`\|o_\omega\|_* \le \sqrt{C_1}(\|n_\omega
 last of the $`o_e + 1` packets on a channel is not counted, “because it is never moved again, and
 these end packets are the dead packets of (b)”. The channels of $`\omega` are its edges of the
 types $`k \ne i`, and by Minkowski's inequality and (G.1), with $`C_2 = \sqrt{C_1}\, a_1/b`,
-$$`Q_{j+1} \le (1 + 4C_1)^{1/2} N_i + C_2 |V_{j+1}| \le \tfrac12 Q_j + C_2 |V_{j+1}|.`
+$$`\begin{aligned} Q_{j+1} &\le (1 + 4C_1)^{1/2} N_i + C_2 |V_{j+1}| \\ &\le \tfrac12 Q_j + C_2 |V_{j+1}|. \end{aligned}`
 As $`b \ge 4`, this gives $`Q_j \le 2^{-j} \bar Q` with $`\bar Q = O(M n_0)`. After stage $`J`
 every packet on an edge of $`V_J` that is not dead is relayed through the root.
 
@@ -887,7 +892,7 @@ most a constant times the loads at it and at its children, and its dead packets.
 
 The Lean statement, for the tower plan: for every node $`p`, the number of packets that $`p` ever
 holds plus $`\sum_r (1 + s_r) t_r` over the roles $`r` at $`p` is at most
-$$`\bigl(4 + (2\,|\mathrm{Nr}|\, G_1 + 1 + S)\,|\mathrm{Di}|\bigr) \cdot 8 \cdot \Bigl(u_p + \sum_{q \text{ child of } p} u_q\Bigr) + \bigl[p \text{ given}\bigr] (1 + 8m) N + 2\, \#\{\text{dead packets that } p \text{ holds}\},`
+$$`\begin{aligned} &\bigl(4 + (2\,|\mathrm{Nr}|\, G_1 + 1 + S)\,|\mathrm{Di}|\bigr) \cdot 8 \cdot \Bigl(u_p + \sum_{q \text{ child of } p} u_q\Bigr) \\ &\quad + \bigl[p \text{ given}\bigr] (1 + 8m) N + 2\, \#\{\text{dead packets that } p \text{ holds}\}, \end{aligned}`
 where $`|\mathrm{Nr}|` is the number of edges of $`U_h`, $`|\mathrm{Di}|` the number of laws,
 $`S` a bound for the number of slots of a law, and $`m` the bound for the length of the routes.
 The term $`(1 + 8m)N` is the paper's $`\Lambda N`: $`m \le c\,(J+1)^7` by Proposition H.1(d), and
@@ -944,8 +949,8 @@ there are a tower with $`b = D = 2^{\mathrm{ee}(h)}` and $`r = 1`, routes on its
 length $`m \le c\,(J+1)^7` in which every edge is used at most $`2|V_0| m` times in all, and laws
 at its vertices, such that the hypotheses `TCst` hold with $`\rho = 1/2` and
 $`y \le |V_0| \le c\,y`. This is the paper's “Take the least $`n \ge 1` with $`M \le |G_n|`, so
-that $`|G_n| = O(M)`”, with the words of Proposition H.1(d) as routes; it is the only place where
-the exponent $`7` enters. `exists_thinTrees` then gives a term of `ThinTrees` for every such
+that $`|G_n| = O(M)`”, with the words of Proposition H.1(d) as routes; this is where the exponent
+$`7` of that proposition enters the proof. `exists_thinTrees` then gives a term of `ThinTrees` for every such
 tower, with the exponent $`C =` `cTree c`, an explicit polynomial in $`c`, and with the fields
 proved by the statements of the preceding nodes.
 :::
@@ -954,7 +959,7 @@ proved by the statements of the preceding nodes.
 
 The following summary is this blueprint's, and it follows the items above.
 
-*Appendix G.* The paper counts the printed proofs among the complete ones. The Lean statement of
+*Appendix G.* The paper counts the printed proofs among those “meant to be complete, if terse”. The Lean statement of
 Definition G.1 is a more general structure, matched to the printed notion by reading; that of
 Theorem G.2 contains the printed statement and the choices of $`u`, $`C_0`, $`C_0'`, $`C_1` and
 $`h`.
@@ -962,11 +967,11 @@ $`h`.
 *Proposition H.1.* The printed proof is a sketch of one paragraph for each part. For (a) to (c)
 the Lean statement expresses the printed one through representatives and freeness; for (d) Lean
 proves the exponent $`7`, and the exponent $`3` rests on the printed sketch alone. The paper
-neither counts this proof among the complete ones nor flags it.
+neither counts this proof among those meant to be complete nor flags it.
 
 *Theorem H.2(a) to (c).* The printed proof gives the construction and the recursion for the
 loads, with constants absorbed in $`O(\cdot)` and in $`\Lambda`; the paper neither counts it among
-the complete ones nor flags it. Lean gives the fields listed under clauses (a) to (c) of
+those meant to be complete nor flags it. Lean gives the fields listed under clauses (a) to (c) of
 {bpref "thin_trees"}[`ThinTrees`], for a construction that differs from the printed one in that
 relays are laws applied to batches and leave copies and end packets, and that there is a move for
 every law at every coset. The identity for the value is not restated as the value of a network in

@@ -227,7 +227,7 @@ closed set that contains the midpoint of any two of its points and the point `P 
 
 :::lemma_ "eq_window" (lean := "Paper.eq_window, Paper.windowConst") (parent := "part-contracting")
 *Display (F.1) of the paper* (page 39). With $`\delta_j(z) = |z, x_j z|`, quoted:
-$$`|z, P_{[p,p+n)} z|^2 \le C(n) \sum_{p \le j < p+n-1} \delta_j(z)^2, \qquad C(n) = \vartheta_n^2 n = o(n^2).`
+$$`\begin{aligned} |z, P_{[p,p+n)} z|^2 &\le C(n) \sum_{p \le j < p+n-1} \delta_j(z)^2, \\ C(n) &= \vartheta_n^2 n = o(n^2). \end{aligned}`
 
 Table 3 of the paper (Section Q.2, pages 66–67) lists this display, with the two Lean theorems
 `eq_window` and `projection_nearest`; Section Q.2 (page 66): “it also lists the display (F.1), and
@@ -268,7 +268,7 @@ and commute with $`[k, 3u)`. As $`x_{k-1}` fixes $`b_{k-1}`, it moves $`b_k` by 
 $`2 |b_{k-1} b_k|`, and $`|b_{k-1} b_k|^2 \le |a b_{k-1}|^2 - |a b_k|^2` by Lemma C.4(d). For the
 barycenter $`\bar b` of the $`u - 1` points $`b_k`, $`u < k < 2u`, Lemma C.4(c) and a telescoping
 sum give
-$$`\sum_j \delta_j(\bar b)^2 \le \frac{4}{(u-1)^2} \sum_{u < k < 2u} \bigl(|a b_{k-1}|^2 - |a b_k|^2\bigr) \le \frac{4R^2}{(u-1)^2}.`
+$$`\begin{aligned} \sum_j \delta_j(\bar b)^2 &\le \frac{4}{(u-1)^2} \sum_{u < k < 2u} \bigl(|a b_{k-1}|^2 - |a b_k|^2\bigr) \\ &\le \frac{4R^2}{(u-1)^2}. \end{aligned}`
 By (F.1) for $`[0, 3u)` and the hypothesis on $`\zeta`, the point $`\bar b` is within $`\zeta R` of
 a point fixed by $`[0, 3u)`, and $`|a \bar b| \le |a b_u|`; hence
 $`R \le |a \bar b| + \zeta R \le |a b_u| + \zeta R`. The gain is the factor $`1/(u-1)`: each
@@ -341,7 +341,7 @@ that $`|Q_i z, Q_{i+1} z|^2 \le (1 + c)(r_i^2 + r_{i+1}^2)`, by Lemma F.5.
 
 _One step of averaging._ For the barycenter $`b` of the $`k` points $`Q_i z`, Lemma C.4(c) and
 (F.3) give
-$$`\Phi(b) \le \Bigl(1 - \frac{1 - 2c}{k}\Bigr) \Phi(z), \qquad k\,|zb|^2 \le \Phi(z) - \Phi(b),`
+$$`\begin{aligned} \Phi(b) &\le \Bigl(1 - \frac{1 - 2c}{k}\Bigr) \Phi(z), \\ k\,|zb|^2 &\le \Phi(z) - \Phi(b), \end{aligned}`
 and hence $`|zb| \le \frac{2}{\sqrt{1-2c}} \bigl(\sqrt{\Phi(z)} - \sqrt{\Phi(b)}\bigr)` if
 $`\Phi(z) > 0`. In this last bound $`k` has cancelled: the decrease of $`\Phi` by the factor
 $`1 - (1-2c)/k` is set against the factor $`k` in the bound for the step, and this is how the
