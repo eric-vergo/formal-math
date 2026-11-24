@@ -512,6 +512,12 @@ that exist for `o`, with the two copies of every current packet equal, of the pr
 tables `partyTab`. `thm_tree_move` is the same for one move, and it rests on the identity
 `Nc.G.move_identity` for one law. Nothing here refers to towers; the paper's two moves are the two
 kinds of laws to which it is applied.
+
+For several moves the proof assigns a prefix its position value if it is good and zero
+otherwise. Setting the outcomes of the next move leaves all earlier goodness tests unchanged.
+The one-move identity therefore expresses a prefix weight as the sum over its extensions.
+Each extension occurs once: erase the new outcomes to recover its parent, and read those
+outcomes to recover the local choice. Iterating the identity gives the displayed sum.
 :::
 
 ::::definition "good_bound" (lean := "Paper.goodBound") (parent := "part-contracting")

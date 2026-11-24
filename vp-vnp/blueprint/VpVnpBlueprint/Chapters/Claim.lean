@@ -182,15 +182,14 @@ equality of the two forms of the bound is the separate theorem `Paper.thm_main_f
 ({bpref "thm_main"}[]), whose statement Lean accepts for this one.
 :::
 
-The five are not independent as statements. The approximate bound contains the exact one, the
-second separation contains the nontrivial half of the first, and the bound over $`\mathbb{R}` is
-a case of Theorem 1.1. The development nevertheless proves each from the theorem of the appendix
-that the paper names for it, and the Lean proofs differ in what they depend on: in this build,
-`Solution.mainTheorem`, `Solution.separation` and `Solution.permanent_over_real` do not depend
-on the three statements of Appendix N that carry the approximate case (Lemmas N.2 and N.3 and
-Proposition N.4), and `Solution.mainTheoremApprox` and `Solution.separationClosure` do. (This
-was read off, for this revision, from the constants on which each of the five theorems depends,
-using the compiled dependency traversal in {repoFile "vp-vnp/scripts/InventoryKernel.lean"}[`InventoryKernel.lean`].)
+An exact circuit embeds into the Laurent-series model with the same gate budget, so the
+approximate lower bound implies the exact one. The baseline blueprint already recorded this
+implication. Eric Vergo and GPT-6.2 formalized the embedding as
+{InlineLean.name}`Paper.approximates_of_computes` and factored the characteristic-uniform bound
+out of Claude's proof of Theorem N.5 as {InlineLean.name}`Paper.border_rate_allfields`.
+The exact and border endpoints now apply this single bound. For the class separations the
+Hamiltonian-cycle family supplies the VNP witness. The permanent result over the reals is
+the characteristic-zero specialization of the exact bound.
 
 # The quantifiers, the constant and the threshold
 
@@ -208,7 +207,7 @@ $`\exists c\; \forall p\; \exists m_0\; \forall F`, as in the printed theorem.
 - _The threshold $`m_0`._ It depends on the characteristic $`p`. Within one characteristic it is
   uniform over all fields, because the proof transfers a circuit over any field of
   characteristic $`p` to one fixed algebraically closed field of that characteristic
-  (Lemma M.1, {bpref "lem_transfer"}[]). It is not effective. The paper (page 8): “In the contracting case the constants,
+  via the coefficientwise transfer of Lemma N.2 ({bpref "lem_transfer_approx"}[]). It is not effective. The paper (page 8): “In the contracting case the constants,
   among them $`m_0`, depend on the integer $`\mu`, for which the proof gives no value, and this
   is why Theorem 1.1 comes with no value for $`m_0`.” And (page 6): “We do not know which of the
   two hypotheses holds, even over $`\mathbb{R}`, nor do we show that the two are mutually

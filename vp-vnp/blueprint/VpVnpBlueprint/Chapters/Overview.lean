@@ -378,18 +378,18 @@ goes through it step by step.
 2. For a characteristic $`p`, zero or prime, take an algebraically closed field $`\mathbb{K}` of
    characteristic $`p` ({InlineLean.name}`Paper.exists_closed`: the algebraic closure of
    $`\mathbb{Q}` or of $`\mathbb{F}_p`).
-3. Apply the dichotomy to $`\mathbb{K}` ({InlineLean.name}`Paper.exact_rate_complete`).
+3. Apply the dichotomy to $`\mathbb{K}` ({InlineLean.name}`Paper.approx_rate_closed`).
    The general flat and contracting bounds apply to any family complete for grid sums.
    The Hamiltonian cycle polynomial qualifies in every characteristic. The permanent qualifies
    for $`p\ne 2`. In the contracting case {InlineLean.name}`Paper.thm_allfields_exceeds` converts
    the stronger bound into the same eventual rate as in the flat case.
-4. A circuit over any field $`F` of characteristic $`p` for a polynomial with integer
-   coefficients gives a circuit with the same number of gates over $`\mathbb{K}`
-   ({InlineLean.name}`Paper.lem_transfer`, {bpref "lem_transfer"}[Lemma M.1]). Both polynomials
-   have integer
-   coefficients, so the bound over $`\mathbb{K}` is a bound over $`F`, with the same $`m_0`.
-   This is the source of the uniformity over all fields of one characteristic.
+4. For each polynomial, its integer coefficients let {bpref "lem_transfer_approx"}[Lemma N.2]
+   transfer an approximating circuit over any field of characteristic $`p` to a circuit over
+   Laurent polynomials over $`\mathbb{K}`, preserving the gate budget and coefficient conditions.
+   The bound over $`\mathbb{K}` therefore holds with one threshold for the entire characteristic.
 5. The bound is rewritten as $`m^{c(\log m)^{1/3}}` ({InlineLean.name}`Paper.thm_main_form`).
+   An exact circuit satisfies the same lower bound by mapping its constants to constant Laurent
+   series ({InlineLean.name}`Paper.approximates_of_computes`).
 
 The separation {InlineLean.name}`Paper.cor_allclasses` ({bpref "cor_allclasses"}[Corollary M.4])
 follows: $`(\mathrm{HC}_n)` is in VNP ({InlineLean.name}`Paper.hc_mem_VNP`,
@@ -397,11 +397,11 @@ follows: $`(\mathrm{HC}_n)` is in VNP ({InlineLean.name}`Paper.hc_mem_VNP`,
 size $`n^a + a` would contradict the bound at a suitable $`n`
 ({InlineLean.name}`Paper.exists_beyond_poly`).
 
-For approximation, {InlineLean.name}`Paper.thm_approx` ({bpref "thm_approx"}[Theorem N.5]) has
-the same skeleton. An approximating circuit over any field of characteristic $`p` is first
+{InlineLean.name}`Paper.thm_approx` ({bpref "thm_approx"}[Theorem N.5]) applies the shared bound
+directly. In that bound an approximating circuit over any field of characteristic $`p` is first
 replaced by one of the same size whose constants are Laurent polynomials in $`\varepsilon` over
 $`\mathbb{K}` ({InlineLean.name}`Paper.lem_transfer_approx`,
-{bpref "lem_transfer_approx"}[Lemma N.2]); over $`\mathbb{K}` both cases are then redone for
+{bpref "lem_transfer_approx"}[Lemma N.2]); over $`\mathbb{K}` the dichotomy applies to
 such circuits ({InlineLean.name}`Paper.approx_rate_closed`), here for both polynomials through
 the forms for families that are complete for grid sums: the flat case with a version of Lemma
 E.7 that allows an error in $`\varepsilon` ({InlineLean.name}`Paper.lem_few_approx`,

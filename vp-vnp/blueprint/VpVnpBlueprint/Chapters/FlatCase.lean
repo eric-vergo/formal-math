@@ -223,6 +223,16 @@ parties for different $`S`”. Since $`\|\tfrac12 u - o\| \leq \tfrac12 - u \cdo
 a unit vector $`u`, the distances from the ends to their hubs add up to at most
 $`N - 2\eta\|w_S\| + k^2\eta^2 \leq N - \tfrac{k}{12}`. (Lean: `Paper.prop_flat_lower_lengths`.)
 
+Lean writes $`Q = k|S|(k-|S|)` and sums the signed projections before estimating their gain.
+The gain is nonnegative and its square is $`2\eta^2 Q`. Substituting $`Q \geq 2k^3/9` and
+$`\eta^2 = 1/(36k)` gives a gain of at least $`k/9`. The quadratic cost is $`k^2\eta^2 = k/36`,
+leaving a saving of $`k/12`.
+
+A related argument in OpenAI's [VP and VNP are different, §2](https://github.com/openai/math/blob/e07100d36b22bcf8bb759f2f1abc7976ba472e47/preprints/VP-and-VNP-are-different-November-23-2026/build/Paper.tex#L261-L275)
+moves one hub in the direction of an expander cut's resultant. That comparison prompted the
+calculation by squares above. The complete graph and the two symmetric hubs here are the
+construction in the original formalization.
+
 _The spectral point._ Let $`\delta = \tfrac{1}{150k}`. “Because we are in the flat case, there
 are a spectral point $`\phi` on the set of the ends and of all hubs and a factor $`c \geq 0`,
 both depending on $`k` only, such that $`c\, d_\phi` differs from the Euclidean distances of the
@@ -529,12 +539,10 @@ Theorem E.11: the family is arbitrary; no hypothesis $`2 \neq 0` appears (it is 
 show that $`\mathrm{PERM}` is complete for grid sums); and $`m_0` is chosen before the field, so
 it depends on $`\kappa` alone. Appendix Q.3 (page 70) says of the route: “Lemma K.3, Theorem M.3
 and Theorem N.5 use the general forms for families that are complete for grid sums, of which
-Corollary E.2 and the statements about the permanent are instances.” Read against the Lean proof
-of Theorem M.3 (`Paper.thm_allfields` in
-{repoFile "vp-vnp/Paper/Fields.lean"}[`Paper/Fields.lean`]; see
-{ref "chapter-assembly"}[All fields and approximate computation]): in the flat case that proof
-applies the general form to both families. The factors are 40 for HC and 3 for the permanent
-when two is nonzero. The proof of the present
+Corollary E.2 and the statements about the permanent are instances.” The shared quantitative proof applies the approximate form
+{bpref "flat_rate_approx_complete"}[] to both families, with factors 40 for HC and 3 for the
+permanent when two is nonzero. Exact circuits enter that result as constant-series circuits
+({ref "chapter-assembly"}[All fields and approximate computation]). The proof of the present
 theorem is that of Theorem E.11 with {bpref "fkl_complete"}[] in the place of Lemma E.3; both are
 instances of {bpref "rate_of_projection"}[].
 :::

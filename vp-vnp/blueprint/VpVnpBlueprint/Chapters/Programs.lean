@@ -619,7 +619,12 @@ formula is guessed exactly once, so the sum formula is the one obtained above.â€
 `Paper.prop_universal` and, for this automaton, a `PieceCut` from `Paper.prop_pieces`; it then
 puts two programs on them, each with its own theorem (the two nodes below), and the rest of its
 proof establishes the arithmetic relations between the numbers of the two theorems and the bounds of the
-statement. The two programs live in two libraries.
+statement. Before choosing the scale $`v`, Lean bounds the evaluator size and cost over the
+finitely many symbol codes of bounded width. Once it has chosen $`K`, it rounds the time per
+block up so the $`K` blocks cover the universal computation and fit the larger time budget.
+A bound from the fixed finite list of law roles covers all the move alphabets, including the
+case of empty role alphabets. These bounds let the proof choose a concrete code and apply the
+pieces theorem to the two programs.
 
 - *The evaluator* is the program `GROUP` of `Nc/Grp` (the Lean word for a piece is
   *group*). `Nc.Grp.exists_group` gives, for a fixed automaton, a fixed code of symbols and a fixed

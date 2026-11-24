@@ -201,12 +201,11 @@ $`c' > 0` and $`m_1` with $`2^{c'(\log m)^2/\log\log m} < s` whenever $`m \geq m
 $`P(m, s)`, then there is $`m_0` with $`2^{(\log m)^{4/3}/1600^2} < s` whenever $`m \geq m_0` and
 $`P(m, s)`. Its proof is {bpref "thm_main_calculation"}[`thm_main_calculation`] with
 $`C = 1/(c' \cdot 1600^2)`. `Paper.beyond_of_rate` rewrites $`2^{(\log m)^{4/3}/1600^2} < s` as
-$`m^{(1/1600^2)(\log m)^{1/3}} < s` for $`m \geq 2`. Both are used by Theorem M.3 and, separately,
-by {bpref "thm_approx"}[Theorem N.5], which Section Q.3 (page 70) says “uses the step
+$`m^{(1/1600^2)(\log m)^{1/3}} < s` for $`m \geq 2`. Both occur in the quantitative bound shared by Theorem M.3 and {bpref "thm_approx"}[Theorem N.5], which Section Q.3 (page 70) says “uses the step
 `thm_allfields_exceeds`” and not Theorem M.3.
 ::::
 
-:::theorem "thm_allfields" (lean := "Paper.thm_allfields, Paper.exact_rate_complete") (parent := "part-assembly")
+:::theorem "thm_allfields" (lean := "Paper.thm_allfields, Paper.approximates_of_computes, Paper.border_rate_allfields") (parent := "part-assembly")
 *Theorem M.3 of the paper* (lower bound over all fields; page 61; the same text as Theorem 1.1,
 page 2), quoted: “There is an absolute constant $`c > 0` such that for every $`p`, zero or prime,
 there is $`m_0` with the following property. Over every field of characteristic $`p` and for every
@@ -235,21 +234,20 @@ the parameters.”
 2. For $`p` zero or prime, `exists_closed` gives one algebraically closed field `K` of
    characteristic $`p` in the lowest universe. Everything from Appendix A to Appendix K is applied
    to this one field.
-3. The lemma `Paper.exact_rate_complete` gives an eventual lower bound for any family complete
-   for grid sums over `K`. In the flat case it applies {bpref "flat_rate_complete"}[]. In the
-   contracting case `contracting_complete` and `quasi_of_exponents` give a bound with exponent
-   $`c'(\log m)^2/\log\log m` for some $`c'>0`. The lemma
-   {bpref "thm_allfields_exceeds"}[] shows that this eventually dominates the flat bound.
+3. The lemma `Paper.approx_rate_closed` splits on the field dichotomy. In the flat case it
+   applies the grid bound for approximating circuits. In the contracting case it applies the
+   approximate accelerator bound, and {bpref "thm_allfields_exceeds"}[] compares the two rates.
 4. The Hamiltonian cycle polynomial is complete for grid sums with factor 40 in every
-   characteristic. The permanent is complete with factor 3 when $`p\ne 2`. These two
-   instances of the lemma give the required family thresholds.
-5. Both the exact and approximating proofs use `Paper.common_family_threshold`. In characteristic
-   two it takes the maximum of the HC threshold and two. In every other characteristic it takes
-   the sum of the two family thresholds plus two. For a field `F` of characteristic $`p` in any universe, a circuit for
-   $`\mathrm{HC}_m` or $`\mathrm{PERM}_m` over `F` gives one with the same number of gates over `K`
-   by {bpref "lem_transfer"}[`lem_transfer`], applied to the polynomial with integer coefficients (`genHC ℤ m`,
-   `Paper.permInt m`). `beyond_of_rate` rewrites $`2^{(\log m)^{4/3}/1600^2}` as
-   $`m^{(1/1600^2)(\log m)^{1/3}}` for $`m \geq 2`.
+   characteristic. The permanent is complete with factor 3 when $`p\ne 2`. The lemma
+   `Paper.common_family_threshold` combines the two thresholds and ensures $`m\geq2`.
+5. {bpref "lem_transfer_approx"}[Lemma N.2] transfers the coefficientwise approximation from
+   any field of this characteristic to a Laurent-polynomial circuit over the chosen field.
+   The gate budget stays the same. Applying the grid bound there and rewriting the exponent
+   gives `Paper.border_rate_allfields`.
+6. An exact circuit over the original field gives a coefficientwise approximation at the same
+   gate budget by interpreting every constant as a constant Laurent series. Its output has the
+   original coefficient in degree zero and zero in every negative degree. Thus the same bound
+   applies to exact computation.
 
 So the dependence is: $`c` on nothing; $`m_0` on $`p`, through which of the two cases holds for
 `K`, through the threshold of that case, and in the contracting case through the constant $`c'`,
@@ -261,7 +259,7 @@ $`(\log m)^{4/3}`; it is paid for in $`m_0`. The proof does not determine which 
 *Universes.* Section Q.3 (page 66): “The theorems with prefix `Paper.` are stated for fields in the
 lowest universe, and so are their rings, algebras, groups, spaces, point sets and index sets. The
 exception is the given field in Theorems M.3 and N.5, Corollary M.4, Definition N.1 and Lemmas M.1
-and N.2, which may lie in any universe.” The bridge is step 5: `lem_transfer` takes a field in any
+and N.2, which may lie in any universe.” The bridge is step 5: `lem_transfer_approx` takes a field in any
 universe to the field `K` in the lowest one, and nothing else of the proof ever sees `F`. The
 reduction that makes the constant uniform over the fields of one characteristic is thus also what
 makes the theorem hold in every universe.
@@ -390,8 +388,7 @@ degree, but the program of Lemma K.2 gives its part of degree at most $`d`, whic
 $`\varepsilon` times that part of $`g`. Proposition N.4 excludes them, with the calculation of
 Theorems K.7 and M.3. For the last claim, $`(\mathrm{HC}_m)` is in VNP.”
 
-*Reading (gloss).* The Lean proof has the skeleton of {bpref "thm_allfields"}[`thm_allfields`],
-with these replacements. `approx_rate_closed` is the bound over one field `K` in the lowest
+*Reading (gloss).* `Paper.border_rate_allfields` supplies the quantitative conclusion of both this theorem and {bpref "thm_allfields"}[Theorem M.3]. `approx_rate_closed` is the bound over one field `K` in the lowest
 universe, for a family complete for grid sums and a circuit over `LaurentPolynomial K` whose
 output has the coefficient property (this is the third theorem with the respelled coefficient,
 see {bpref "def_approx"}[Definition N.1]): it turns the circuit back into `Approximates (G m) s`
@@ -403,7 +400,7 @@ contracting case, `contracting_approx_rate` followed by the same `thm_allfields_
 {bpref "prop_approx_acc"}[Proposition N.4]) with `quasi_of_exponents`. Here the permanent, for
 $`p \neq 2`, is treated as a family complete for grid sums (`gridComplete_perm`), like the
 Hamiltonian cycle polynomial, so that Theorems E.11 and K.7 themselves are not used.
-{bpref "lem_transfer_approx"}[`lem_transfer_approx`] takes the place of `lem_transfer`. The second
+Both endpoints use {bpref "lem_transfer_approx"}[`lem_transfer_approx`]. The second
 sentence is proved as Corollary M.4, with {bpref "hc_mem_VNP"}[`hc_mem_VNP`] and
 `exists_beyond_poly`.
 
@@ -463,8 +460,8 @@ them when it checks the proofs.
   `Paper.thm_approx` are themselves stated for `F : Type u` and are instantiated at the same `u`
   (the fifth theorem, over $`\mathbb{R}`, has no universe parameter).
   All the mathematics from Appendix A to Appendix K, and `Paper.thm_main`, is in the lowest
-  universe; the passage from `Type` to `Type u` is made inside `thm_allfields` and `thm_approx` by
-  `lem_transfer` and `lem_transfer_approx`, as described under Theorem M.3. For the second
+  universe. Both endpoints use `Paper.border_rate_allfields`, where `lem_transfer_approx` carries
+  an approximating circuit from any universe to the chosen field in the lowest one. For the second
   sentences (the classes) no transfer of classes is needed: membership of $`(\mathrm{HC}_n)` in VNP
   and the inclusion of VP in VNP are proved directly in every universe, and the lower bound is the
   first sentence.
