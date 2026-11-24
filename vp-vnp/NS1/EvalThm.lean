@@ -20,20 +20,28 @@ variable {A : Type} [CommRing A] {θ : List Bool → A}
 theorem Run.seq_assoc (r s t : Run A) : (r.seq s).seq t = r.seq (s.seq t) := by
   simp [Run.seq, add_assoc, mul_assoc, List.append_assoc]
 
-theorem Fm.ofTree_cases (f : Tree) :
-    (f.hd.len = 0 ∧ ofTree f = quote f.tl) ∨ (f.hd.len = 1 ∧ ofTree f = id) ∨
-    (f.hd.len = 2 ∧ ofTree f = hd (ofTree f.tl)) ∨ (f.hd.len = 3 ∧ ofTree f = tl (ofTree f.tl)) ∨
-    (f.hd.len = 4 ∧ ofTree f = cons (ofTree f.tl.hd) (ofTree f.tl.tl)) ∨
-    (f.hd.len = 5 ∧ ofTree f = ite (ofTree f.tl.hd) (ofTree f.tl.tl.hd) (ofTree f.tl.tl.tl)) ∨
-    (f.hd.len = 6 ∧ ofTree f = run (ofTree f.tl.hd) (ofTree f.tl.tl)) ∨
-    (f.hd.len = 7 ∧ ofTree f = guess) ∨ ((f.hd.len = 8 ∨ 11 ≤ f.hd.len) ∧ ofTree f = fail) ∨
-    (f.hd.len = 9 ∧ ofTree f = theta (ofTree f.tl)) ∨ (f.hd.len = 10 ∧ ofTree f = mul (ofTree f.tl)) := by
+/-- The opcode and operands recovered when a tree decodes to a specified formula. -/
+private def Fm.DecodeSpec (f : Tree) (F : Fm) : Prop :=
+    match F with
+    | quote c => f.hd.len = 0 ∧ c = f.tl
+    | id => f.hd.len = 1
+    | hd a => f.hd.len = 2 ∧ a = ofTree f.tl
+    | tl a => f.hd.len = 3 ∧ a = ofTree f.tl
+    | cons a b => f.hd.len = 4 ∧ a = ofTree f.tl.hd ∧ b = ofTree f.tl.tl
+    | ite a b c => f.hd.len = 5 ∧ a = ofTree f.tl.hd ∧ b = ofTree f.tl.tl.hd ∧ c = ofTree f.tl.tl.tl
+    | run a b => f.hd.len = 6 ∧ a = ofTree f.tl.hd ∧ b = ofTree f.tl.tl
+    | guess => f.hd.len = 7
+    | fail => f.hd.len = 8 ∨ 11 ≤ f.hd.len
+    | theta a => f.hd.len = 9 ∧ a = ofTree f.tl
+    | mul a => f.hd.len = 10 ∧ a = ofTree f.tl
+
+private theorem Fm.decode_spec (f : Tree) {F : Fm} (hf : ofTree f = F) : DecodeSpec f F := by
   cases f with
-  | nil => left; exact ⟨rfl, by rw [ofTree]; rfl⟩
+  | nil => rw [ofTree] at hf; rw [← hf]; exact ⟨rfl, rfl⟩
   | cons o a =>
-    rw [ofTree]
-    simp only [hd_cons, tl_cons]
-    rcases hn : o.len with _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | n <;> simp
+    rw [ofTree] at hf
+    rcases hn : o.len with _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | _ | n <;>
+      simp [hn] at hf <;> rw [← hf] <;> simp [DecodeSpec, hn]
 
 /-- What the interpreter does in one run: `q` is a run of the formula and the budgets that are left. -/
 structure RelJ (M j : ℕ) (r : Run A) (q : Run A × Bt) : Prop where
@@ -142,8 +150,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
   induction h with
   | quote c x =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain ⟨h1, rfl⟩ := Fm.decode_spec f hf
     refine IF_case (c := .cons (fA .id) (fS .id)) (by rw [h1]; rfl) ⟨_, Dt.cons (Dt.fA (Dt.id _)) (Dt.fS (Dt.id _)), ?_⟩
     simp only [simS, Run.det, List.filterMap_cons, Bt.decAll, Option.map_some, List.filterMap_nil]
     refine .cons ⟨rfl, rfl, rfl, ?_⟩ .nil
@@ -151,8 +158,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
     omega
   | id x =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain h1 := Fm.decode_spec f hf
     refine IF_case (c := .cons (fX .id) (fS .id)) (by rw [h1]; rfl) ⟨_, Dt.cons (Dt.fX (Dt.id _)) (Dt.fS (Dt.id _)), ?_⟩
     simp only [simS, Run.det, List.filterMap_cons, Bt.decAll, Option.map_some, List.filterMap_nil]
     refine .cons ⟨rfl, rfl, rfl, ?_⟩ .nil
@@ -160,8 +166,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
     omega
   | @hd a x l h ih =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain ⟨h1, rfl⟩ := Fm.decode_spec f hf
     refine IF_case (c := _) (by rw [h1]; rfl) ?_
     rw [simS_map (G := fun r => r.tick r.out.hd) (fun _ => rfl), ← flatMap_single]
     refine call0 (ih f.tl rfl t ht) fun q hq => ⟨_, Dt.cons (.hd (.hd (.id _))) (.tl (.id _)), ?_⟩
@@ -170,8 +175,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
     nlinarith
   | @tl a x l h ih =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain ⟨h1, rfl⟩ := Fm.decode_spec f hf
     refine IF_case (c := _) (by rw [h1]; rfl) ?_
     rw [simS_map (G := fun r => r.tick r.out.tl) (fun _ => rfl), ← flatMap_single]
     refine call0 (ih f.tl rfl t ht) fun q hq => ⟨_, Dt.cons (.tl (.hd (.id _))) (.tl (.id _)), ?_⟩
@@ -180,8 +184,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
     nlinarith
   | @cons a b x la lb ha hb iha ihb =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain ⟨h1, rfl, rfl⟩ := Fm.decode_spec f hf
     refine IF_case (c := _) (by rw [h1]; rfl) ?_
     obtain ⟨l1, e1, r1⟩ := call1_rel (iha f.tl.hd rfl t ht)
     rw [simS_flatMap (G := fun r s => (r.seq s).tick (.cons r.out s.out)) (fun _ _ => rfl)]
@@ -201,8 +204,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
       nlinarith
   | @ite a b c x la L ha hb hc iha ihb ihc =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain ⟨h1, rfl, rfl, rfl⟩ := Fm.decode_spec f hf
     refine IF_case (c := _) (by rw [h1]; rfl) ?_
     obtain ⟨l1, e1, r1⟩ := call1_rel (iha f.tl.hd rfl t ht)
     rw [simS_flatMap (G := fun r s => (r.seq s).tick s.out) (fun _ _ => rfl)]
@@ -235,8 +237,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
         nlinarith
   | @run a b x la lb L ha hb hL iha ihb ih =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain ⟨h1, rfl, rfl⟩ := Fm.decode_spec f hf
     refine IF_case (c := _) (by rw [h1]; rfl) ?_
     obtain ⟨l1, e1, r1⟩ := call1_rel (iha f.tl.hd rfl t ht)
     have hlist : (la.flatMap fun r => lb.flatMap fun s => (L r s).map fun t => ((r.seq s).seq t).tick t.out) =
@@ -274,8 +275,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
       nlinarith
   | guess x =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain h1 := Fm.decode_spec f hf
     refine IF_case (c := .cons .guess (fS .id)) (by rw [h1]; rfl) ⟨_, Ev.cons (.guess _) (Dt.fS (Dt.id _)), ?_⟩
     simp only [simS, Run.det, List.filterMap_cons, Bt.decAll, Option.map_some, List.filterMap_nil]
     refine .cons ⟨?_, rfl, rfl, ?_⟩ (.cons ⟨?_, rfl, rfl, ?_⟩ .nil)
@@ -285,8 +285,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
     · simp only [Run.seq, Run.tick]; omega
   | fail x =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain h1 := Fm.decode_spec f hf
     obtain ⟨k', hk', h'⟩ := selF_ev (cs := caseL) (b := fO .id) (Dt.fO (Dt.id (θ := θ) (env f x t))) (l := [])
       (fun c' hc' => by
         rcases h1 with h1 | h1
@@ -299,8 +298,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
     exact ⟨_, h', by simp [simS]⟩
   | @theta a x l h ih =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain ⟨h1, rfl⟩ := Fm.decode_spec f hf
     refine IF_case (c := _) (by rw [h1]; rfl) ?_
     rw [simS_map (G := fun r => ⟨r.cost + 1, r.th * θ r.out.path, r.bill, .nil⟩) (fun _ => rfl), ← flatMap_single]
     refine call0 (ih f.tl rfl t ht) fun q hq => ⟨_, Ev.cons (Ev.theta (Dt.hd (.id _))) (Dt.tl (.id _)), ?_⟩
@@ -310,8 +308,7 @@ theorem interp {H : ℕ} {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l
       nlinarith
   | @mul a x l h ih =>
     intro f hf t ht
-    rcases Fm.ofTree_cases f with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ |
-      ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> rw [hf] at h2 <;> try cases h2
+    obtain ⟨h1, rfl⟩ := Fm.decode_spec f hf
     refine IF_case (c := _) (by rw [h1]; rfl) ?_
     have hlist : simS t (l.map fun r => (⟨r.cost + 1, r.th, r.bill ++ [r.out.path], .nil⟩ : Run A)) =
         (simS t l).flatMap fun q => ((Bt.dec q.1.out.path q.2).map fun t' =>

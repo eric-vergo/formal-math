@@ -52,49 +52,11 @@ theorem rebF_kv {g : Fm} {P z : Tree} {cg T H n : ℕ} {lg l : List (Run A)} {Q 
       (Q.map fun q => q.2 * algebraMap A R (l.map fun r => if ok q.1 r.bill = true then r.th else 0).sum).sum
       (cg + MM H * T + 40 * n + 60) := by
   obtain ⟨lZ, eZ, rZ⟩ := ZE_ev (Dt.quote P z) hg rg
-  have hZ : ∀ s ∈ lZ, ∃ q ∈ Q, wt κ s = q.2 ∧ s.out = zq P z q.1 ∧ (∀ m ∈ s.bill, m ∈ S) ∧ s.cost ≤ cg + 1 + 5 :=
-    fun s hs => forall₂_exists rZ hs
-  have key : ∀ q ∈ Q, ∃ l', Ev θ UF (zq P z q.1) l' ∧ (∀ r ∈ l', r.bill = [] ∧ r.cost ≤ MM H * T + 40 * n + 45) ∧
-      val κ l' = algebraMap A R (l.map fun r => if ok q.1 r.bill = true then r.th else 0).sum := by
-    intro q hq
-    obtain ⟨h1, h2⟩ := hQ q hq
-    obtain ⟨pl, pe, -⟩ := zq_plain hP hT h1 (τ := MM H * T + 40 * n + 40) (by omega)
-    refine ⟨_, UF_ev pl.1.ev, ?_, ?_⟩
-    · intro r hr
-      rw [List.mem_map] at hr
-      obtain ⟨s, hs, rfl⟩ := hr
-      obtain ⟨b1, b2⟩ := pl.2 s hs
-      refine ⟨b1, ?_⟩
-      simp only [Run.delay]
-      omega
-    · rw [← pe, pv, val_plain]
-      · simp [pval, Function.comp_def, Run.delay]
-      · intro r hr
-        rw [List.mem_map] at hr
-        obtain ⟨s, hs, rfl⟩ := hr
-        exact (pl.2 s hs).1
-  have eU := Ev.app (p := UF.code) eZ fun s hs => by
-    obtain ⟨q, hq, -, h, -⟩ := hZ s hs
-    obtain ⟨l', e, -⟩ := key q hq
-    rw [Fm.ofTree_code, h]
-    exact e.hl
-  refine ⟨_, eU, ?_, ?_⟩
-  · intro u hu
-    obtain ⟨s, hs, t, ht, h1, h2, -, -⟩ := mem_app hu
-    obtain ⟨q, hq, -, h4, h5, h6⟩ := hZ s hs
-    obtain ⟨l', e, hl', -⟩ := key q hq
-    rw [Fm.ofTree_code, h4, e.evl] at ht
-    obtain ⟨c1, c2⟩ := hl' t ht
-    refine ⟨by omega, ?_⟩
-    rw [h2, c1, List.append_nil]
-    exact h5
-  · rw [val_eq_sumF, sumF_app]
-    rw [sum_rel (c := fun q : Bt × R => q.2) (o := fun q : Bt × R => zq P z q.1)
-      (rZ.imp fun r q hr => ⟨hr.1, hr.2.1⟩)]
-    congr 1
-    refine List.map_congr_left fun q hq => ?_
-    obtain ⟨l', e, -, hv⟩ := key q hq
-    rw [Fm.ofTree_code, e.evl, ← val_eq_sumF, hv]
+  refine (KV.app_rel (F := UF) (c := Prod.snd) (o := fun q => zq P z q.1) eZ rZ
+    (d := MM H * T + 40 * n + 45) fun q hq => ?_).mono (by omega)
+  obtain ⟨hht, hnds⟩ := hQ q hq
+  obtain ⟨pl, pe, -⟩ := zq_plain hP hT hht (τ := MM H * T + 40 * n + 40) (by omega)
+  exact (KV.uf pl).congr (congrArg (algebraMap A R) pe)
 
 /-- **A program with renamed constants**: with the names `pre ++ p` for the images under `f` of its constants. -/
 theorem rebill_kv (f : R →ₐ[A] R) {K : KT R} {B J : ℕ} {pre : List Bool} {P z : Tree} {T : ℕ} {l : List (Run A)}
