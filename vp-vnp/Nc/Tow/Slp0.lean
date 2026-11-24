@@ -64,6 +64,16 @@ theorem step (a : ℕ) : 3 * Y ^ a ≤ Y ^ (a + 1) := by
   rw [pow_succ, mul_comm]
   exact Nat.mul_le_mul_left _ h.three
 
+private theorem binary_cost (a : ℕ) : Y ^ a + Y ^ a + 1 ≤ Y ^ (a + 1) := by
+  have := h.step a
+  have := h.pow_pos a
+  omega
+
+private theorem unary_cost (a : ℕ) : Y ^ a + 2 ≤ Y ^ (a + 1) := by
+  have := h.binary_cost a
+  have := h.pow_pos a
+  omega
+
 theorem step2 (a : ℕ) : 9 * Y ^ a ≤ Y ^ (a + 2) := by
   have h1 := h.step a
   have h2 : 3 * Y ^ (a + 1) ≤ Y ^ (a + 2) := h.step (a + 1)
@@ -106,17 +116,11 @@ include hA
 
 theorem op {a : ℕ} {f g : Inp → ℕ} (φ : ℕ → ℕ → ℕ) (hf : CY D H Y a f) (hg : CY D H Y a g)
     (hb : ∀ x, φ (f x) (g x) < D) : CY D H Y (a + 1) fun x => φ (f x) (g x) :=
-  Cost.mono (Cost.op φ hf hg hb) (by
-    have := hA.step a
-    have := hA.pow_pos a
-    omega)
+  Cost.mono (Cost.op φ hf hg hb) (hA.binary_cost a)
 
 theorem op1 {a : ℕ} {f : Inp → ℕ} (φ : ℕ → ℕ) (hf : CY D H Y a f) (hb : ∀ x, φ (f x) < D) :
     CY D H Y (a + 1) fun x => φ (f x) :=
-  Cost.mono (Cost.op1 hA.zero_lt φ hf hb) (by
-    have := hA.step a
-    have := hA.pow_pos a
-    omega)
+  Cost.mono (Cost.op1 hA.zero_lt φ hf hb) (hA.unary_cost a)
 
 theorem sum {κ : Type*} (s : Finset κ) {a : ℕ} {f : κ → Inp → ℕ} (hs : s.card ≤ Y)
     (hf : ∀ i ∈ s, CY D H Y a (f i)) (hb : ∀ x, ∑ i ∈ s, f i x < D) :
@@ -153,36 +157,21 @@ theorem const (P : Prop) : PY D H Y 0 fun _ => P := by
 
 theorem rel {a : ℕ} {f g : Inp → ℕ} (r : ℕ → ℕ → Prop) (hf : CY D H Y a f) (hg : CY D H Y a g) :
     PY D H Y (a + 1) fun x => r (f x) (g x) :=
-  CostP.mono (CostP.rel hA.one_lt r hf hg) (by
-    have := hA.step a
-    have := hA.pow_pos a
-    omega)
+  CostP.mono (CostP.rel hA.one_lt r hf hg) (hA.binary_cost a)
 
 theorem rel1 {a : ℕ} {f : Inp → ℕ} (r : ℕ → Prop) (hf : CY D H Y a f) : PY D H Y (a + 1) fun x => r (f x) :=
-  CostP.mono (CostP.rel1 hA.one_lt r hf) (by
-    have := hA.step a
-    have := hA.pow_pos a
-    omega)
+  CostP.mono (CostP.rel1 hA.one_lt r hf) (hA.unary_cost a)
 
 theorem and {a : ℕ} {P Q : Inp → Prop} (hP : PY D H Y a P) (hQ : PY D H Y a Q) :
     PY D H Y (a + 1) fun x => P x ∧ Q x :=
-  CostP.mono (CostP.and hA.one_lt hP hQ) (by
-    have := hA.step a
-    have := hA.pow_pos a
-    omega)
+  CostP.mono (CostP.and hA.one_lt hP hQ) (hA.binary_cost a)
 
 theorem or {a : ℕ} {P Q : Inp → Prop} (hP : PY D H Y a P) (hQ : PY D H Y a Q) :
     PY D H Y (a + 1) fun x => P x ∨ Q x :=
-  CostP.mono (CostP.or hA.one_lt hP hQ) (by
-    have := hA.step a
-    have := hA.pow_pos a
-    omega)
+  CostP.mono (CostP.or hA.one_lt hP hQ) (hA.binary_cost a)
 
 theorem not {a : ℕ} {P : Inp → Prop} (hP : PY D H Y a P) : PY D H Y (a + 1) fun x => ¬ P x :=
-  CostP.mono (CostP.not hA.one_lt hP) (by
-    have := hA.step a
-    have := hA.pow_pos a
-    omega)
+  CostP.mono (CostP.not hA.one_lt hP) (hA.unary_cost a)
 
 theorem exists_mem {κ : Type*} (s : Finset κ) {a : ℕ} {P : κ → Inp → Prop} (hs : s.card ≤ Y)
     (hP : ∀ i ∈ s, PY D H Y a (P i)) : PY D H Y (a + 2) fun x => ∃ i ∈ s, P i x :=
