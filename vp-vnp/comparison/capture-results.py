@@ -29,6 +29,22 @@ def record_file(path):
     return records
 
 
+def baseline_site_record(site, expected, replay_log):
+    for relative, recorded in expected["artifacts"].items():
+        path = site / relative
+        if not path.is_file() or path.stat().st_size != recorded["bytes"] or digest(path) != recorded["sha256"]:
+            raise ValueError(f"rendered baseline artefact differs from verification: {path}")
+    files = [path for path in site.rglob("*") if path.is_file()]
+    if len(files) != expected["site_files"] or sum(path.stat().st_size for path in files) != expected["site_bytes"]:
+        raise ValueError(f"rendered baseline site totals differ from verification: {site}")
+    return {
+        **rendered_stats((site / "Project-Stats/index.html").read_text()),
+        "html_pages": sum(path.suffix == ".html" for path in files),
+        "replay_messages": re.findall(r"^Kernel replay: (.+)$", replay_log, re.M),
+        "omitted_neighbourhood_drawings": omitted_drawings(replay_log),
+    }
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runs", required=True, type=Path,
@@ -52,10 +68,7 @@ def main():
             artifacts = next(row for row in records if row.get("stage") == "site-artifacts")
             replay = next(row for row in records if row.get("stage") == "blueprint-build-and-replay")
             site_log = (args.baseline_verification.parent / replay["log"]).read_text(errors="replace")
-            artifacts.update(rendered_stats((site / "Project-Stats/index.html").read_text()))
-            artifacts["html_pages"] = sum(p.is_file() for p in site.rglob("*.html"))
-            artifacts["replay_messages"] = re.findall(r"^Kernel replay: (.+)$", site_log, re.M)
-            artifacts["omitted_neighbourhood_drawings"] = omitted_drawings(site_log)
+            artifacts.update(baseline_site_record(site, artifacts, site_log))
         result["before/verify.jsonl"] = records
     if not result:
         raise ValueError("no benchmark records collected")
