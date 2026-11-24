@@ -170,6 +170,202 @@ variable (hh : 0 < h) (hr : 0 < r) (hb : 0 < b)
   (hgR : ∀ (x : {x : RM T m AA // okR T R ch x}) (ν : Bool), o ⟨.inl x, ν⟩ = num R ch FL lhat n o (.inl x))
 include hh hr hb hgR
 
+local notation "Lf" => ldL R ch FL lhat n o
+
+omit hh hr hb hgR in
+open Classical in
+private theorem sum_fb_node (j : ℕ) (hj : j ≤ J) (P : Nd T) : (∑ x : T.X j, if nd T j hj x = P then fb Lf j x else 0) =
+    (∑ x : T.X j, if nd T j hj x = P then (∑ e, if T.e0 e = x then Lf j e else 0) else 0) +
+    ∑ x : T.X j, if nd T j hj x = P then (∑ e, if T.e1 e = x then Lf j e else 0) else 0 := by
+  rw [← Finset.sum_add_distrib]
+  refine Finset.sum_congr rfl fun x _ => ?_
+  split_ifs
+  · exact fb_eq Lf j x
+  · rfl
+
+omit hgR in
+open Classical in
+private theorem innerRelayBound (P : Nd T) : ∀ j : Fin J, (∑ i, ∑ e : T.Ed j, ∑ q : Fin 3, if tri T R ch (.inn j i e) q = P then
+    nR R ch FL lhat n o (.inn j i e) else 0) ≤
+    (∑ x : T.X j, if nd T j j.2.le x = P then fb Lf j x else 0) +
+    ∑ e : T.Ed j, if nd T (j + 1) j.2 (hostj hh Lf (T.e0 e)) = P then Lf j e else 0 := by
+  intro j
+  have h1 : ∀ i, (∑ e : T.Ed j, ∑ q : Fin 3, if tri T R ch (.inn j i e) q = P then
+      nR R ch FL lhat n o (.inn j i e) else 0) ≤ if i = imin hh Lf j then
+      ∑ e : T.Ed j, ((if nd T j j.2.le (T.e0 e) = P then Lf j e else 0) +
+        (if nd T (j + 1) j.2 (hostj hh Lf (T.e0 e)) = P then Lf j e else 0) +
+        if nd T j j.2.le (T.e1 e) = P then Lf j e else 0) else 0 := by
+    intro i
+    split_ifs with hi
+    · subst hi
+      refine Finset.sum_le_sum fun e _ => ?_
+      rw [Fin.sum_univ_three]
+      have h2 := nR_inn (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hh hr hb j (imin hh Lf j) e
+      rw [if_pos rfl] at h2
+      refine add_le_add (add_le_add ?_ ?_) ?_
+      · change (if nd T j j.2.le (T.e0 e) = P then _ else 0) ≤ _
+        split_ifs
+        · exact h2
+        · exact le_rfl
+      · change (if nd T (j + 1) j.2 (hst T (imin hh Lf j) (T.e0 e)) = P then _ else 0) ≤
+          if nd T (j + 1) j.2 (hst T (imin hh Lf j) (T.e0 e)) = P then _ else 0
+        split_ifs
+        · exact h2
+        · exact le_rfl
+      · change (if nd T j j.2.le (T.e1 e) = P then _ else 0) ≤ _
+        split_ifs
+        · exact h2
+        · exact le_rfl
+    · refine le_of_eq (Finset.sum_eq_zero fun e _ => Finset.sum_eq_zero fun q _ => ?_)
+      have h2 := nR_inn (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hh hr hb j i e
+      rw [if_neg hi] at h2
+      split_ifs
+      · omega
+      · rfl
+  refine (Finset.sum_le_sum fun i _ => h1 i).trans ?_
+  rw [Finset.sum_ite_eq', if_pos (mem_univ _), Finset.sum_add_distrib, Finset.sum_add_distrib,
+    sum_end (fun e => T.e0 e) (fun x => nd T j j.2.le x = P), sum_end (fun e => T.e1 e) (fun x => nd T j j.2.le x = P)]
+  have h3 := sum_fb_node (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) j j.2.le P
+  rw [h3]
+  omega
+
+open Classical in
+private theorem middleRelayBound (P : Nd T) : ∀ j : Fin J, (∑ e : T.Ed j, ∑ s : Fin 4, ∑ q : Fin 3, if tri T R ch (.mid j e s) q = P then
+    nR R ch FL lhat n o (.mid j e s) else 0) ≤
+    4 * (∑ x : T.X j, if nd T j j.2.le x = P then fb Lf j x else 0) +
+    (2 * (∑ e : T.Ed j, if nd T (j + 1) j.2 (hostj hh Lf (T.e0 e)) = P then Lf j e else 0) +
+      ∑ e : T.Ed j, if nd T (j + 1) j.2 (hostj hh Lf (T.e1 e)) = P then Lf j e else 0) +
+    2 * ∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then fb Lf (j + 1) x else 0 := by
+  intro j
+  have h1 : ∀ e : T.Ed j, (∑ s : Fin 4, ∑ q : Fin 3, if tri T R ch (.mid j e s) q = P then
+      nR R ch FL lhat n o (.mid j e s) else 0) ≤
+      ((if nd T j j.2.le (T.e0 e) = P then Lf j e else 0) + 4 * if nd T j j.2.le (T.e1 e) = P then Lf j e else 0) +
+      (2 * (if nd T (j + 1) j.2 (hostj hh Lf (T.e0 e)) = P then Lf j e else 0) +
+        if nd T (j + 1) j.2 (hostj hh Lf (T.e1 e)) = P then Lf j e else 0) +
+      (2 * (if nd T (j + 1) j.2 (T.π (T.e0 e)) = P then nR R ch FL lhat n o (.mid j e 2) else 0) +
+        2 * if nd T (j + 1) j.2 (T.π (T.e1 e)) = P then nR R ch FL lhat n o (.mid j e 2) else 0) := by
+    intro e
+    have hs : ∀ s, nR R ch FL lhat n o (.mid j e s) ≤ Lf j e ∧ (T.ty e ≠ imin hh Lf j →
+        nR R ch FL lhat n o (.mid j e s) = 0) := by
+      intro s
+      have h2 := nR_mid (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hh hr hb j e s
+      constructor
+      · refine h2.trans ?_
+        split_ifs
+        · exact le_rfl
+        · exact Nat.zero_le _
+      · intro hne
+        rw [if_neg hne] at h2
+        omega
+    have h3 := nR_mid3 (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hr hb j e
+    have h4 := nR_mid1 hr hb hgR j e
+    -- the chambers on the next level
+    have hH : ∀ s (c : T.X j), (if nd T (j + 1) j.2 (hst T (T.ty e) c) = P then nR R ch FL lhat n o (.mid j e s) else 0) ≤
+        if nd T (j + 1) j.2 (hostj hh Lf c) = P then Lf j e else 0 := by
+      intro s c
+      by_cases ht : T.ty e = imin hh Lf j
+      · have : hst T (T.ty e) c = hostj hh Lf c := by rw [ht]; rfl
+        rw [this]
+        split_ifs
+        · exact (hs s).1
+        · exact le_rfl
+      · rw [(hs s).2 ht]
+        split_ifs <;> exact Nat.zero_le _
+    have hle : ∀ s (p : Prop) [Decidable p], (if p then nR R ch FL lhat n o (.mid j e s) else 0) ≤
+        if p then Lf j e else 0 := by
+      intro s p _
+      split_ifs
+      · exact (hs s).1
+      · exact le_rfl
+    have hp : ∀ s (p : Prop) [Decidable p], s = 1 ∨ s = 2 ∨ s = 3 → (if p then nR R ch FL lhat n o (.mid j e s) else 0) ≤
+        if p then nR R ch FL lhat n o (.mid j e 2) else 0 := by
+      intro s p _ hs'
+      split_ifs
+      · rcases hs' with rfl | rfl | rfl
+        · exact h4
+        · exact le_rfl
+        · exact h3
+      · exact le_rfl
+    rw [Fin.sum_univ_four, Fin.sum_univ_three, Fin.sum_univ_three, Fin.sum_univ_three, Fin.sum_univ_three]
+    have a0 := hle 0 (nd T j j.2.le (T.e0 e) = P)
+    have b0 := hle 0 (nd T j j.2.le (T.e1 e) = P)
+    have b1 := hle 1 (nd T j j.2.le (T.e1 e) = P)
+    have b2 := hle 2 (nd T j j.2.le (T.e1 e) = P)
+    have b3 := hle 3 (nd T j j.2.le (T.e1 e) = P)
+    have c0 := hH 0 (T.e0 e)
+    have c1 := hH 1 (T.e0 e)
+    have c3 := hH 3 (T.e1 e)
+    have d1 := hp 1 (nd T (j + 1) j.2 (T.π (T.e0 e)) = P) (Or.inl rfl)
+    have d2 := hp 2 (nd T (j + 1) j.2 (T.π (T.e0 e)) = P) (Or.inr (Or.inl rfl))
+    have d3 := hp 2 (nd T (j + 1) j.2 (T.π (T.e1 e)) = P) (Or.inr (Or.inl rfl))
+    have d4 := hp 3 (nd T (j + 1) j.2 (T.π (T.e1 e)) = P) (Or.inr (Or.inr rfl))
+    change ((if nd T j j.2.le (T.e0 e) = P then _ else 0) + (if nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)) = P then _ else 0) +
+        if nd T j j.2.le (T.e1 e) = P then _ else 0) +
+      ((if nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)) = P then _ else 0) +
+        (if nd T (j + 1) j.2 (T.π (T.e0 e)) = P then _ else 0) + if nd T j j.2.le (T.e1 e) = P then _ else 0) +
+      ((if nd T (j + 1) j.2 (T.π (T.e0 e)) = P then _ else 0) +
+        (if nd T (j + 1) j.2 (T.π (T.e1 e)) = P then _ else 0) + if nd T j j.2.le (T.e1 e) = P then _ else 0) +
+      ((if nd T (j + 1) j.2 (T.π (T.e1 e)) = P then _ else 0) +
+        (if nd T (j + 1) j.2 (hst T (T.ty e) (T.e1 e)) = P then _ else 0) +
+          if nd T j j.2.le (T.e1 e) = P then _ else 0) ≤ _
+    omega
+  refine (Finset.sum_le_sum fun e _ => h1 e).trans ?_
+  simp only [Finset.sum_add_distrib, ← Finset.mul_sum]
+  have e0 := sum_end (fun e : T.Ed j => T.e0 e) (fun x => nd T j j.2.le x = P) (fun e => Lf j e)
+  have e1 := sum_end (fun e : T.Ed j => T.e1 e) (fun x => nd T j j.2.le x = P) (fun e => Lf j e)
+  have e2 := sum_end (fun e : T.Ed j => T.π (T.e0 e)) (fun x => nd T (j + 1) j.2 x = P)
+    (fun e => nR R ch FL lhat n o (.mid j e 2))
+  have e3 := sum_end (fun e : T.Ed j => T.π (T.e1 e)) (fun x => nd T (j + 1) j.2 x = P)
+    (fun e => nR R ch FL lhat n o (.mid j e 2))
+  have h3 := sum_fb_node (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) j j.2.le P
+  have h4 : (∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then
+        (∑ e, if T.π (T.e0 e) = x then nR R ch FL lhat n o (.mid j e 2) else 0) else 0) +
+      (∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then
+        (∑ e, if T.π (T.e1 e) = x then nR R ch FL lhat n o (.mid j e 2) else 0) else 0) ≤
+      ∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then fb Lf (j + 1) x else 0 := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_le_sum fun x _ => ?_
+    split_ifs
+    · exact sum_mid2 hr hb hgR j x
+    · exact le_rfl
+  rw [e0, e1, e2, e3, h3]
+  omega
+
+omit hh hgR in
+open Classical in
+private theorem finalRelayBound (P : Nd T) : (∑ e : T.Ed J, ∑ q : Fin 3, if tri T R ch (.fin e) q = P then nR R ch FL lhat n o (.fin e) else 0) ≤
+    (∑ x : T.X J, if nd T J le_rfl x = P then fb Lf J x else 0) +
+    if none = P then ∑ e : T.Ed J, Lf J e else 0 := by
+  have h1 : ∀ e : T.Ed J, (∑ q : Fin 3, if tri T R ch (.fin e) q = P then nR R ch FL lhat n o (.fin e) else 0) ≤
+      (if nd T J le_rfl (T.e0 e) = P then Lf J e else 0) + (if none = P then Lf J e else 0) +
+        if nd T J le_rfl (T.e1 e) = P then Lf J e else 0 := by
+    intro e
+    have h2 := nR_fin (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hr hb e
+    rw [Fin.sum_univ_three]
+    refine add_le_add (add_le_add ?_ ?_) ?_
+    · change (if nd T J le_rfl (T.e0 e) = P then _ else 0) ≤ _
+      split_ifs
+      · exact h2
+      · exact le_rfl
+    · change (if none = P then _ else 0) ≤ _
+      split_ifs
+      · exact h2
+      · exact le_rfl
+    · change (if nd T J le_rfl (T.e1 e) = P then _ else 0) ≤ _
+      split_ifs
+      · exact h2
+      · exact le_rfl
+  refine (Finset.sum_le_sum fun e _ => h1 e).trans ?_
+  rw [Finset.sum_add_distrib, Finset.sum_add_distrib, sum_end (fun e => T.e0 e) (fun x => nd T J le_rfl x = P),
+    sum_end (fun e => T.e1 e) (fun x => nd T J le_rfl x = P)]
+  have h3 := sum_fb_node (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) J le_rfl P
+  have h4 : (∑ _e : T.Ed J, if none = P then Lf J _e else 0) = if none = P then ∑ e : T.Ed J, Lf J e else 0 := by
+    split_ifs
+    · rfl
+    · simp
+  rw [h3, h4]
+  omega
+
 open Classical in
 /-- Relays of the stages, by the levels of the nodes. -/
 theorem NR_le (P : Nd T) : NR R ch FL lhat n o P ≤ NR0 R ch FL lhat n o P +
@@ -178,205 +374,11 @@ theorem NR_le (P : Nd T) : NR R ch FL lhat n o P ≤ NR0 R ch FL lhat n o P +
       3 * chs hh (ldL R ch FL lhat n o) j x + 2 * fb (ldL R ch FL lhat n o) (j + 1) x else 0) +
     (∑ x : T.X J, if nd T J le_rfl x = P then fb (ldL R ch FL lhat n o) J x else 0) +
     (if none = P then ∑ e : T.Ed J, ldL R ch FL lhat n o J e else 0) := by
-  set Lf := ldL R ch FL lhat n o with hLf
   unfold NR NR0
   rw [sum_RM]
-  have hinn : ∀ j : Fin J, (∑ i, ∑ e : T.Ed j, ∑ q : Fin 3, if tri T R ch (.inn j i e) q = P then
-      nR R ch FL lhat n o (.inn j i e) else 0) ≤
-      (∑ x : T.X j, if nd T j j.2.le x = P then fb Lf j x else 0) +
-      ∑ e : T.Ed j, if nd T (j + 1) j.2 (hostj hh Lf (T.e0 e)) = P then Lf j e else 0 := by
-    intro j
-    have h1 : ∀ i, (∑ e : T.Ed j, ∑ q : Fin 3, if tri T R ch (.inn j i e) q = P then
-        nR R ch FL lhat n o (.inn j i e) else 0) ≤ if i = imin hh Lf j then
-        ∑ e : T.Ed j, ((if nd T j j.2.le (T.e0 e) = P then Lf j e else 0) +
-          (if nd T (j + 1) j.2 (hostj hh Lf (T.e0 e)) = P then Lf j e else 0) +
-          if nd T j j.2.le (T.e1 e) = P then Lf j e else 0) else 0 := by
-      intro i
-      split_ifs with hi
-      · subst hi
-        refine Finset.sum_le_sum fun e _ => ?_
-        rw [Fin.sum_univ_three]
-        have h2 := nR_inn (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hh hr hb j (imin hh Lf j) e
-        rw [if_pos rfl] at h2
-        refine add_le_add (add_le_add ?_ ?_) ?_
-        · change (if nd T j j.2.le (T.e0 e) = P then _ else 0) ≤ _
-          split_ifs
-          · exact h2
-          · exact le_rfl
-        · change (if nd T (j + 1) j.2 (hst T (imin hh Lf j) (T.e0 e)) = P then _ else 0) ≤
-            if nd T (j + 1) j.2 (hst T (imin hh Lf j) (T.e0 e)) = P then _ else 0
-          split_ifs
-          · exact h2
-          · exact le_rfl
-        · change (if nd T j j.2.le (T.e1 e) = P then _ else 0) ≤ _
-          split_ifs
-          · exact h2
-          · exact le_rfl
-      · refine le_of_eq (Finset.sum_eq_zero fun e _ => Finset.sum_eq_zero fun q _ => ?_)
-        have h2 := nR_inn (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hh hr hb j i e
-        rw [if_neg hi] at h2
-        split_ifs
-        · omega
-        · rfl
-    refine (Finset.sum_le_sum fun i _ => h1 i).trans ?_
-    rw [Finset.sum_ite_eq', if_pos (mem_univ _), Finset.sum_add_distrib, Finset.sum_add_distrib,
-      sum_end (fun e => T.e0 e) (fun x => nd T j j.2.le x = P), sum_end (fun e => T.e1 e) (fun x => nd T j j.2.le x = P)]
-    have h3 : (∑ x : T.X j, if nd T j j.2.le x = P then fb Lf j x else 0) =
-        (∑ x : T.X j, if nd T j j.2.le x = P then (∑ e, if T.e0 e = x then Lf j e else 0) else 0) +
-        ∑ x : T.X j, if nd T j j.2.le x = P then (∑ e, if T.e1 e = x then Lf j e else 0) else 0 := by
-      rw [← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl fun x _ => ?_
-      split_ifs
-      · exact fb_eq Lf j x
-      · rfl
-    rw [h3]
-    omega
-  have hmid : ∀ j : Fin J, (∑ e : T.Ed j, ∑ s : Fin 4, ∑ q : Fin 3, if tri T R ch (.mid j e s) q = P then
-      nR R ch FL lhat n o (.mid j e s) else 0) ≤
-      4 * (∑ x : T.X j, if nd T j j.2.le x = P then fb Lf j x else 0) +
-      (2 * (∑ e : T.Ed j, if nd T (j + 1) j.2 (hostj hh Lf (T.e0 e)) = P then Lf j e else 0) +
-        ∑ e : T.Ed j, if nd T (j + 1) j.2 (hostj hh Lf (T.e1 e)) = P then Lf j e else 0) +
-      2 * ∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then fb Lf (j + 1) x else 0 := by
-    intro j
-    have h1 : ∀ e : T.Ed j, (∑ s : Fin 4, ∑ q : Fin 3, if tri T R ch (.mid j e s) q = P then
-        nR R ch FL lhat n o (.mid j e s) else 0) ≤
-        ((if nd T j j.2.le (T.e0 e) = P then Lf j e else 0) + 4 * if nd T j j.2.le (T.e1 e) = P then Lf j e else 0) +
-        (2 * (if nd T (j + 1) j.2 (hostj hh Lf (T.e0 e)) = P then Lf j e else 0) +
-          if nd T (j + 1) j.2 (hostj hh Lf (T.e1 e)) = P then Lf j e else 0) +
-        (2 * (if nd T (j + 1) j.2 (T.π (T.e0 e)) = P then nR R ch FL lhat n o (.mid j e 2) else 0) +
-          2 * if nd T (j + 1) j.2 (T.π (T.e1 e)) = P then nR R ch FL lhat n o (.mid j e 2) else 0) := by
-      intro e
-      have hs : ∀ s, nR R ch FL lhat n o (.mid j e s) ≤ Lf j e ∧ (T.ty e ≠ imin hh Lf j →
-          nR R ch FL lhat n o (.mid j e s) = 0) := by
-        intro s
-        have h2 := nR_mid (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hh hr hb j e s
-        constructor
-        · refine h2.trans ?_
-          split_ifs
-          · exact le_rfl
-          · exact Nat.zero_le _
-        · intro hne
-          rw [if_neg hne] at h2
-          omega
-      have h3 := nR_mid3 (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hr hb j e
-      have h4 := nR_mid1 hr hb hgR j e
-      -- the chambers on the next level
-      have hH : ∀ s (c : T.X j), (if nd T (j + 1) j.2 (hst T (T.ty e) c) = P then nR R ch FL lhat n o (.mid j e s) else 0) ≤
-          if nd T (j + 1) j.2 (hostj hh Lf c) = P then Lf j e else 0 := by
-        intro s c
-        by_cases ht : T.ty e = imin hh Lf j
-        · have : hst T (T.ty e) c = hostj hh Lf c := by rw [ht]; rfl
-          rw [this]
-          split_ifs
-          · exact (hs s).1
-          · exact le_rfl
-        · rw [(hs s).2 ht]
-          split_ifs <;> exact Nat.zero_le _
-      have hle : ∀ s (p : Prop) [Decidable p], (if p then nR R ch FL lhat n o (.mid j e s) else 0) ≤
-          if p then Lf j e else 0 := by
-        intro s p _
-        split_ifs
-        · exact (hs s).1
-        · exact le_rfl
-      have hp : ∀ s (p : Prop) [Decidable p], s = 1 ∨ s = 2 ∨ s = 3 → (if p then nR R ch FL lhat n o (.mid j e s) else 0) ≤
-          if p then nR R ch FL lhat n o (.mid j e 2) else 0 := by
-        intro s p _ hs'
-        split_ifs
-        · rcases hs' with rfl | rfl | rfl
-          · exact h4
-          · exact le_rfl
-          · exact h3
-        · exact le_rfl
-      rw [Fin.sum_univ_four, Fin.sum_univ_three, Fin.sum_univ_three, Fin.sum_univ_three, Fin.sum_univ_three]
-      have a0 := hle 0 (nd T j j.2.le (T.e0 e) = P)
-      have b0 := hle 0 (nd T j j.2.le (T.e1 e) = P)
-      have b1 := hle 1 (nd T j j.2.le (T.e1 e) = P)
-      have b2 := hle 2 (nd T j j.2.le (T.e1 e) = P)
-      have b3 := hle 3 (nd T j j.2.le (T.e1 e) = P)
-      have c0 := hH 0 (T.e0 e)
-      have c1 := hH 1 (T.e0 e)
-      have c3 := hH 3 (T.e1 e)
-      have d1 := hp 1 (nd T (j + 1) j.2 (T.π (T.e0 e)) = P) (Or.inl rfl)
-      have d2 := hp 2 (nd T (j + 1) j.2 (T.π (T.e0 e)) = P) (Or.inr (Or.inl rfl))
-      have d3 := hp 2 (nd T (j + 1) j.2 (T.π (T.e1 e)) = P) (Or.inr (Or.inl rfl))
-      have d4 := hp 3 (nd T (j + 1) j.2 (T.π (T.e1 e)) = P) (Or.inr (Or.inr rfl))
-      change ((if nd T j j.2.le (T.e0 e) = P then _ else 0) + (if nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)) = P then _ else 0) +
-          if nd T j j.2.le (T.e1 e) = P then _ else 0) +
-        ((if nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)) = P then _ else 0) +
-          (if nd T (j + 1) j.2 (T.π (T.e0 e)) = P then _ else 0) + if nd T j j.2.le (T.e1 e) = P then _ else 0) +
-        ((if nd T (j + 1) j.2 (T.π (T.e0 e)) = P then _ else 0) +
-          (if nd T (j + 1) j.2 (T.π (T.e1 e)) = P then _ else 0) + if nd T j j.2.le (T.e1 e) = P then _ else 0) +
-        ((if nd T (j + 1) j.2 (T.π (T.e1 e)) = P then _ else 0) +
-          (if nd T (j + 1) j.2 (hst T (T.ty e) (T.e1 e)) = P then _ else 0) +
-            if nd T j j.2.le (T.e1 e) = P then _ else 0) ≤ _
-      omega
-    refine (Finset.sum_le_sum fun e _ => h1 e).trans ?_
-    simp only [Finset.sum_add_distrib, ← Finset.mul_sum]
-    have e0 := sum_end (fun e : T.Ed j => T.e0 e) (fun x => nd T j j.2.le x = P) (fun e => Lf j e)
-    have e1 := sum_end (fun e : T.Ed j => T.e1 e) (fun x => nd T j j.2.le x = P) (fun e => Lf j e)
-    have e2 := sum_end (fun e : T.Ed j => T.π (T.e0 e)) (fun x => nd T (j + 1) j.2 x = P)
-      (fun e => nR R ch FL lhat n o (.mid j e 2))
-    have e3 := sum_end (fun e : T.Ed j => T.π (T.e1 e)) (fun x => nd T (j + 1) j.2 x = P)
-      (fun e => nR R ch FL lhat n o (.mid j e 2))
-    have h3 : (∑ x : T.X j, if nd T j j.2.le x = P then fb Lf j x else 0) =
-        (∑ x : T.X j, if nd T j j.2.le x = P then (∑ e, if T.e0 e = x then Lf j e else 0) else 0) +
-        ∑ x : T.X j, if nd T j j.2.le x = P then (∑ e, if T.e1 e = x then Lf j e else 0) else 0 := by
-      rw [← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl fun x _ => ?_
-      split_ifs
-      · exact fb_eq Lf j x
-      · rfl
-    have h4 : (∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then
-          (∑ e, if T.π (T.e0 e) = x then nR R ch FL lhat n o (.mid j e 2) else 0) else 0) +
-        (∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then
-          (∑ e, if T.π (T.e1 e) = x then nR R ch FL lhat n o (.mid j e 2) else 0) else 0) ≤
-        ∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then fb Lf (j + 1) x else 0 := by
-      rw [← Finset.sum_add_distrib]
-      refine Finset.sum_le_sum fun x _ => ?_
-      split_ifs
-      · exact sum_mid2 hr hb hgR j x
-      · exact le_rfl
-    rw [e0, e1, e2, e3, h3]
-    omega
-  have hfin : (∑ e : T.Ed J, ∑ q : Fin 3, if tri T R ch (.fin e) q = P then nR R ch FL lhat n o (.fin e) else 0) ≤
-      (∑ x : T.X J, if nd T J le_rfl x = P then fb Lf J x else 0) +
-      if none = P then ∑ e : T.Ed J, Lf J e else 0 := by
-    have h1 : ∀ e : T.Ed J, (∑ q : Fin 3, if tri T R ch (.fin e) q = P then nR R ch FL lhat n o (.fin e) else 0) ≤
-        (if nd T J le_rfl (T.e0 e) = P then Lf J e else 0) + (if none = P then Lf J e else 0) +
-          if nd T J le_rfl (T.e1 e) = P then Lf J e else 0 := by
-      intro e
-      have h2 := nR_fin (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hr hb e
-      rw [Fin.sum_univ_three]
-      refine add_le_add (add_le_add ?_ ?_) ?_
-      · change (if nd T J le_rfl (T.e0 e) = P then _ else 0) ≤ _
-        split_ifs
-        · exact h2
-        · exact le_rfl
-      · change (if none = P then _ else 0) ≤ _
-        split_ifs
-        · exact h2
-        · exact le_rfl
-      · change (if nd T J le_rfl (T.e1 e) = P then _ else 0) ≤ _
-        split_ifs
-        · exact h2
-        · exact le_rfl
-    refine (Finset.sum_le_sum fun e _ => h1 e).trans ?_
-    rw [Finset.sum_add_distrib, Finset.sum_add_distrib, sum_end (fun e => T.e0 e) (fun x => nd T J le_rfl x = P),
-      sum_end (fun e => T.e1 e) (fun x => nd T J le_rfl x = P)]
-    have h3 : (∑ x : T.X J, if nd T J le_rfl x = P then fb Lf J x else 0) =
-        (∑ x : T.X J, if nd T J le_rfl x = P then (∑ e, if T.e0 e = x then Lf J e else 0) else 0) +
-        ∑ x : T.X J, if nd T J le_rfl x = P then (∑ e, if T.e1 e = x then Lf J e else 0) else 0 := by
-      rw [← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl fun x _ => ?_
-      split_ifs
-      · exact fb_eq Lf J x
-      · rfl
-    have h4 : (∑ _e : T.Ed J, if none = P then Lf J _e else 0) = if none = P then ∑ e : T.Ed J, Lf J e else 0 := by
-      split_ifs
-      · rfl
-      · simp
-    rw [h3, h4]
-    omega
+  have hinn := innerRelayBound (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) hh hr hb P
+  have hmid := middleRelayBound (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) hh hr hb hgR P
+  have hfin := finalRelayBound (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) hr hb P
   have hchs : ∀ j : Fin J, (∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then chs hh Lf j x else 0) =
       (∑ e : T.Ed j, if nd T (j + 1) j.2 (hostj hh Lf (T.e0 e)) = P then Lf j e else 0) +
       ∑ e : T.Ed j, if nd T (j + 1) j.2 (hostj hh Lf (T.e1 e)) = P then Lf j e else 0 := by
