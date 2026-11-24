@@ -271,6 +271,22 @@ theorem flat_rate_approximating {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk
   simp only [map_sum, HahnSeries.coeff_sum]
   exact Finset.sum_congr rfl fun j _ => Finset.sum_congr rfl fun y _ => hterm j y
 
+/-- **Paper: Proposition prop:flat-rate.** "In the flat case, for k ≥ 2 and ℓ ≥ 100√k every circuit over k for f_{k,ℓ}
+has at least 2^(ℓk^(3/2)/16) gates." An exact circuit approximates with the same number of gates. -/
+theorem prop_flat_rate {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk : 2 ≤ k) {ℓ s : ℕ}
+    (hℓ : 100 * √k ≤ (ℓ : ℝ)) (hcomp : Computes (fkl K k ℓ) s) :
+    (2 : ℝ) ^ ((ℓ : ℝ) * (k : ℝ) ^ (3 / 2 : ℝ) / 16) ≤ s := by
+  have hs : 1 ≤ s := by
+    obtain ⟨l, -, a, ha, -⟩ := hcomp
+    omega
+  exact rate_pow hk hs (flat_rate_approximating hK hk hℓ (approximates_of_computes hcomp))
+
+/-- **Paper: Proposition prop:flat-rate**, for f_{k,ℓ} with exactly the printed variables. -/
+theorem prop_flat_rate_printed {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk : 2 ≤ k) {ℓ s : ℕ}
+    (hℓ : 100 * √k ≤ (ℓ : ℝ)) (hcomp : Computes (fklExact K k ℓ) s) :
+    (2 : ℝ) ^ ((ℓ : ℝ) * (k : ℝ) ^ (3 / 2 : ℝ) / 16) ≤ s :=
+  prop_flat_rate hK hk hℓ (fklExact_computes.1 hcomp)
+
 /-- "… and with it Theorem thm:flat-rate", for every family that is complete for grid sums. -/
 theorem flat_rate_approx_complete (κ : ℕ) : ∃ m₀ : ℕ, ∀ (K : Type) [Field K], Flat K →
     ∀ G : ∀ S : ℕ, MvPolynomial (Fin S × Fin S) K, GridComplete K G κ →
@@ -282,6 +298,32 @@ theorem flat_rate_approx_complete (κ : ℕ) : ∃ m₀ : ℕ, ∀ (K : Type) [F
   refine rate_pow hk ?_ (flat_rate_approximating hK hk hℓk hap)
   obtain ⟨Q, ⟨l, -, a, ha, -⟩, -⟩ := hap
   omega
+
+/-- Theorem thm:flat-rate for every family that is complete for grid sums ("the factor 3 becomes 40"). -/
+theorem flat_rate_complete (κ : ℕ) : ∃ m₀ : ℕ, ∀ (K : Type) [Field K], Flat K →
+    ∀ G : ∀ S : ℕ, MvPolynomial (Fin S × Fin S) K, GridComplete K G κ →
+    ∀ m ≥ m₀, ∀ s : ℕ, Computes (G m) s → (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
+  obtain ⟨m₀, h⟩ := flat_rate_approx_complete κ
+  exact ⟨m₀, fun K _ hK G hG m hm s hs => h K hK G hG m hm s (approximates_of_computes hs)⟩
+
+/-- **Paper: Theorem thm:flat-rate.** "In the flat case there is m₀ such that for m ≥ m₀ every circuit over k for PERM_m
+has more than 2^((log m)^(4/3)/1600²) gates." -/
+theorem thm_flat_rate {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) :
+    ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Computes (genPerm K m) s →
+      (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
+  obtain ⟨M, h⟩ := flat_rate_complete 3
+  exact ⟨M, h K hK _ (gridComplete_perm h2)⟩
+
+/-- **Paper: Theorem thm:flat-simple.** "In the flat case, for every C there is m₀ such that PERM_m has no circuit
+over k with m^C gates for m ≥ m₀." -/
+theorem thm_flat_simple {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) (C : ℕ) :
+    ∃ m₀ : ℕ, ∀ m ≥ m₀, ¬ Computes (genPerm K m) (m ^ C) := by
+  obtain ⟨A, hA⟩ := thm_flat_rate hK h2
+  obtain ⟨M, hM⟩ := excludes_poly_size (P := fun m s => Computes (genPerm K m) s)
+    (c := 1 / 1600 ^ 2) (by norm_num) (A := A + 2) (fun m hm s hs => by
+      rw [thm_main_form (by omega), one_div_mul_eq_div]
+      exact hA m (by omega) s hs) C
+  exact ⟨M, fun m hm => hM m hm _ le_rfl⟩
 
 /-- The contracting case with the calculation of Theorem thm:contracting. -/
 theorem contracting_approx_rate {K : Type} [Field K] (hK : Contracting K)

@@ -293,31 +293,6 @@ theorem fklTen_onEnds (K : Type) [Field K] (k ℓ : ℕ) (q : RPt k)
   have : IsEmpty {a // (Sum.inl : End k → RPt k) a = q} := ⟨fun a => hq (mem_image.2 ⟨a.1, mem_univ _, a.2⟩)⟩
   exact inferInstanceAs (Subsingleton (∀ a : {a // (Sum.inl : End k → RPt k) a = q}, (fklTen K k ℓ).ι a.1))
 
-/-- **Paper: Proposition prop:flat-rate.** "In the flat case, for k ≥ 2 and ℓ ≥ 100√k every circuit over k for f_{k,ℓ}
-has at least 2^(ℓk^(3/2)/16) gates." -/
-theorem prop_flat_rate {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk : 2 ≤ k) {ℓ s : ℕ}
-    (hℓ : 100 * √k ≤ (ℓ : ℝ)) (hcomp : Computes (fkl K k ℓ) s) :
-    (2 : ℝ) ^ ((ℓ : ℝ) * (k : ℝ) ^ (3 / 2 : ℝ) / 16) ≤ s := by
-  classical
-  have hs : 1 ≤ s := by
-    obtain ⟨l, -, a, ha, -⟩ := hcomp
-    omega
-  refine rate_pow hk hs (rate_of_someSetPays hK hk hℓ hs fun φ => ?_)
-  have := bal_nonempty hk
-  have : NeZero (Fintype.card (bal (univ : Finset (Fin k)))) := ⟨Fintype.card_ne_zero⟩
-  have : Nonempty (RPt k) := ⟨hubPt ∅ true⟩
-  -- the tensor of f is a sum of at most 2^k hub tensors
-  have hsum := prop_flat_lower_sum hk hcomp (Sum.inl : End k → RPt k) hubPt
-  rw [show ((fklTen K k ℓ).withVal fun z => cf univ (fkl K k ℓ) (tables z)) = fklTen K k ℓ from
-    congrArg _ (funext fun z => (fklTen_val K z).symm)] at hsum
-  exact someSetPays_of_few φ hs (lem_few φ _ _ (fklTen_onEnds K k ℓ) _ (hsum.reindex (balEnum k)))
-
-/-- **Paper: Proposition prop:flat-rate**, for f_{k,ℓ} with exactly the printed variables. -/
-theorem prop_flat_rate_printed {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk : 2 ≤ k) {ℓ s : ℕ}
-    (hℓ : 100 * √k ≤ (ℓ : ℝ)) (hcomp : Computes (fklExact K k ℓ) s) :
-    (2 : ℝ) ^ ((ℓ : ℝ) * (k : ℝ) ^ (3 / 2 : ℝ) / 16) ≤ s :=
-  prop_flat_rate hK hk hℓ (fklExact_computes.1 hcomp)
-
 /-- The largest cube with 200 r³ ≤ B. -/
 theorem exists_cube_root (B : ℕ) : ∃ r, 200 * r ^ 3 ≤ B ∧ B < 200 * (r + 1) ^ 3 := by
   classical
@@ -405,23 +380,6 @@ theorem rate_of_projection (κ : ℕ) : ∃ m₀ : ℕ, ∀ P : ℕ → ℕ → 
   rw [← Real.lt_logb_iff_rpow_lt (by norm_num) hs0, div_lt_iff₀ (by norm_num)]
   nlinarith
 
-/-- Theorem thm:flat-rate for every family that is complete for grid sums ("the factor 3 becomes 40"). -/
-theorem flat_rate_complete (κ : ℕ) : ∃ m₀ : ℕ, ∀ (K : Type) [Field K], Flat K →
-    ∀ G : ∀ S : ℕ, MvPolynomial (Fin S × Fin S) K, GridComplete K G κ →
-    ∀ m ≥ m₀, ∀ s : ℕ, Computes (G m) s → (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
-  obtain ⟨m₀, h⟩ := rate_of_projection κ
-  refine ⟨m₀, fun K _ hK G hG => h _ fun k ℓ m s hk hℓ hℓk hm hs => prop_flat_rate hK hk hℓk ?_⟩
-  obtain ⟨E, hE, he⟩ := fkl_complete hG hk hℓ hm
-  exact he ▸ hs.aeval E hE
-
-/-- **Paper: Theorem thm:flat-rate.** "In the flat case there is m₀ such that for m ≥ m₀ every circuit over k for PERM_m
-has more than 2^((log m)^(4/3)/1600²) gates." -/
-theorem thm_flat_rate {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) :
-    ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Computes (genPerm K m) s →
-      (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
-  obtain ⟨M, h⟩ := flat_rate_complete 3
-  exact ⟨M, h K hK _ (gridComplete_perm h2)⟩
-
 /-- "(log m)²/log log m ≥ (log m)^(4/3) for large m", and indeed more than any multiple: the bound of the contracting
 case exceeds that of the flat case. -/
 theorem thm_main_calculation (C : ℝ) : ∃ m₀ : ℕ, ∀ m ≥ m₀,
@@ -493,16 +451,5 @@ theorem excludes_poly_size {P : ℕ → ℕ → Prop} {c : ℝ} (hc : 0 < c) {A 
   rw [Real.rpow_natCast] at hpow
   exact (not_lt_of_ge (show (s : ℝ) ≤ (m : ℝ) ^ C by exact_mod_cast hs))
     (hpow.trans_lt (hA m (by omega) s hcomp))
-
-/-- **Paper: Theorem thm:flat-simple.** "In the flat case, for every C there is m₀ such that PERM_m has no circuit
-over k with m^C gates for m ≥ m₀." -/
-theorem thm_flat_simple {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) (C : ℕ) :
-    ∃ m₀ : ℕ, ∀ m ≥ m₀, ¬ Computes (genPerm K m) (m ^ C) := by
-  obtain ⟨A, hA⟩ := thm_flat_rate hK h2
-  obtain ⟨M, hM⟩ := excludes_poly_size (P := fun m s => Computes (genPerm K m) s)
-    (c := 1 / 1600 ^ 2) (by norm_num) (A := A + 2) (fun m hm s hs => by
-      rw [thm_main_form (by omega), one_div_mul_eq_div]
-      exact hA m (by omega) s hs) C
-  exact ⟨M, fun m hm => hM m hm _ le_rfl⟩
 
 end Paper
