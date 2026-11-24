@@ -72,7 +72,7 @@ theorem nR_mid3 (j : Fin J) (e : T.Ed j) : nR R ch FL lhat n o (.mid j e 3) ≤ 
         have h1 : ν = true := h1
         subst h1
         exact mem_singleton_self _
-      · simp [tgM, inpR_mid] at hν
+      · simp [tgM] at hν
     · rw [Finset.sum_singleton]
       exact alv_le_num hr hb _ _
   · exact Nat.zero_le _
@@ -201,7 +201,7 @@ private theorem innerRelayBound (P : Nd T) : ∀ j : Fin J, (∑ i, ∑ e : T.Ed
       refine Finset.sum_le_sum fun e _ => ?_
       rw [Fin.sum_univ_three]
       have h2 := nR_inn (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hh hr hb j (imin hh Lf j) e
-      rw [if_pos rfl] at h2
+      rw [ite_eq_left rfl] at h2
       refine add_le_add (add_le_add ?_ ?_) ?_
       · change (if nd T j j.2.le (T.e0 e) = P then _ else 0) ≤ _
         split_ifs
@@ -218,12 +218,12 @@ private theorem innerRelayBound (P : Nd T) : ∀ j : Fin J, (∑ i, ∑ e : T.Ed
         · exact le_rfl
     · refine le_of_eq (Finset.sum_eq_zero fun e _ => Finset.sum_eq_zero fun q _ => ?_)
       have h2 := nR_inn (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hh hr hb j i e
-      rw [if_neg hi] at h2
+      rw [ite_eq_right hi] at h2
       split_ifs
       · omega
       · rfl
   refine (Finset.sum_le_sum fun i _ => h1 i).trans ?_
-  rw [Finset.sum_ite_eq', if_pos (mem_univ _), Finset.sum_add_distrib, Finset.sum_add_distrib,
+  rw [Finset.sum_ite_eq', ite_eq_left (mem_univ _), Finset.sum_add_distrib, Finset.sum_add_distrib,
     sum_end (fun e => T.e0 e) (fun x => nd T j j.2.le x = P), sum_end (fun e => T.e1 e) (fun x => nd T j j.2.le x = P)]
   have h3 := sum_fb_node (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) j j.2.le P
   rw [h3]
@@ -255,7 +255,7 @@ private theorem middleRelayBound (P : Nd T) : ∀ j : Fin J, (∑ e : T.Ed j, �
         · exact le_rfl
         · exact Nat.zero_le _
       · intro hne
-        rw [if_neg hne] at h2
+        rw [ite_eq_right hne] at h2
         omega
     have h3 := nR_mid3 (lhat := lhat) (n := n) (o := o) (R := R) (ch := ch) (FL := FL) hr hb j e
     have h4 := nR_mid1 hr hb hgR j e

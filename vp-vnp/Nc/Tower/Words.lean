@@ -93,7 +93,7 @@ private theorem WL.adjacent (i j : Fin h) (hij : i ≠ j) (hd : i.val + 1 = j.va
     rw [Fin.sub_val_of_le h3, Fin.val_one', Nat.mod_eq_of_lt (show 1 < h by omega)]
     omega
   have h3 := WL.gen (n := n) (h2 := h2) j
-  rw [gen_eq_El, tt, if_neg hj] at h3
+  rw [gen_eq_El, tt, ite_eq_right hj] at h3
   subst h1
   exact h3
 

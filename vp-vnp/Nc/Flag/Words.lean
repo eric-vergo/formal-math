@@ -33,7 +33,7 @@ theorem x_mul_apply (j : Fin (n - 1)) (A : U n) (i k : Fin n) :
   · subst h
     simp
   · rw [ite_eq_right h]
-    simp [Matrix.mul_apply, Matrix.single_apply, Ne.symm h]
+    simp [Matrix.mul_apply, Ne.symm h]
 
 theorem mul_x_apply (j : Fin (n - 1)) (A : U n) (i k : Fin n) :
     mat (A * x n j) i k = mat A i k + if k = hi j then mat A i (lo j) else 0 := by
@@ -43,7 +43,7 @@ theorem mul_x_apply (j : Fin (n - 1)) (A : U n) (i k : Fin n) :
   · subst h
     simp
   · rw [ite_eq_right h]
-    simp [Matrix.mul_apply, Matrix.single_apply, Ne.symm h]
+    simp [Matrix.mul_apply, Ne.symm h]
 
 /-- The sum of the lengths of the generators of types ≥ p. -/
 noncomputable def Len.T (l : Len (U n)) (p : ℕ) : ℝ :=
