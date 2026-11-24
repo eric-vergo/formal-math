@@ -107,6 +107,9 @@ theorem len_ofBits (w : List Bool) : (ofBits w).len = w.length := by
     simp only [ofBits, path, ih]
     cases b <;> simp [bit, one]
 
+theorem ofBits_injective : Function.Injective ofBits :=
+  (show Function.LeftInverse path ofBits from path_ofBits).injective
+
 theorem bit_ne_nil {b : Bool} : bit b ≠ nil ↔ b = true := by cases b <;> simp [bit, one]
 
 theorem size_ofBits (w : List Bool) : (ofBits w).size ≤ 4 * w.length + 1 := by

@@ -253,25 +253,17 @@ theorem dstepsF_does (n : List Bool) (sts : List DStep) {wf : Fm} {x W : Tree} {
   choose f hf1 hf2 hf3 using fun st W => dstepF_does (θ := θ) n st W
   -- a function of trees
   classical
-  let F : Tree → Tree → List (A × Tree) := fun t W => if h : ∃ st : DStep, st.tree = t then f h.choose W else []
-  have hF : ∀ st : DStep, ∃ st' : DStep, st'.tree = st.tree ∧ ∀ W, F st.tree W = f st' W := by
-    intro st
-    have h : ∃ st' : DStep, st'.tree = st.tree := ⟨st, rfl⟩
-    exact ⟨h.choose, h.choose_spec, fun W => dif_pos h⟩
-  have hinj : ∀ st st' : DStep, st.tree = st'.tree → st = st' := by
-    have hob : ∀ a b : List Bool, ofBits a = ofBits b → a = b := fun a b h => by
-      rw [← path_ofBits a, h, path_ofBits]
+  have hinj : Function.Injective DStep.tree := by
     intro st st' h
     cases st <;> cases st' <;> simp only [DStep.tree, Tree.cons.injEq, num] at h <;>
       simp only [reduceCtorEq, false_and, and_false, true_and, and_true, Tree.cons.injEq] at h
-    · rw [hob _ _ h.1, h.2]
-    · rw [hob _ _ h.1, hob _ _ h.2.1, hob _ _ h.2.2.1, h.2.2.2]
-    · rw [hob _ _ h.1, hob _ _ h.2]
-    · rw [hob _ _ h]
-  have hF' : ∀ (st : DStep) W, F st.tree W = f st W := by
-    intro st W
-    obtain ⟨st', h1, h2⟩ := hF st
-    rw [h2, hinj _ _ h1]
+    · rw [ofBits_injective h.1, h.2]
+    · rw [ofBits_injective h.1, ofBits_injective h.2.1, ofBits_injective h.2.2.1, h.2.2.2]
+    · rw [ofBits_injective h.1, ofBits_injective h.2]
+    · rw [ofBits_injective h]
+  let F := Function.extend DStep.tree f (fun _ _ => [])
+  have hF' (st : DStep) (W : Tree) : F st.tree W = f st W :=
+    congrFun (hinj.extend_apply f _ st) W
   have hsum : ∀ (sts : List DStep) (W : Tree) (Φ : (List Bool → Tree) → A),
       wsum (foldW F (sts.map DStep.tree) W) (fun o => Φ (gets o)) = ((execAll (KT.val n) sts (gets W)).map Φ).sum := by
     intro sts
@@ -299,12 +291,8 @@ theorem dstepsF_does (n : List Bool) (sts : List DStep) {wf : Fm} {x W : Tree} {
       rw [hF'] at hq1
       rw [e, execAll, List.mem_flatMap]
       exact ⟨_, hf2 st W q1 hq1, ih q1.2 r hr⟩
-  let d : Tree → ℕ := fun t => if h : ∃ st : DStep, st.tree = t then c h.choose else 0
-  have hd : ∀ st : DStep, d st.tree = c st := by
-    intro st
-    have h : ∃ st' : DStep, st'.tree = st.tree := ⟨st, rfl⟩
-    have h1 : d st.tree = c h.choose := dif_pos h
-    rw [h1, hinj _ _ h.choose_spec]
+  let d := Function.extend DStep.tree c (fun _ => 0)
+  have hd (st : DStep) : d st.tree = c st := hinj.extend_apply c _ st
   have hfold := foldF_does (f := F) (xs := sts.map DStep.tree) (d := d)
     (Inv := fun ys W => ∃ sts' : List DStep, ys = sts'.map DStep.tree ∧ I sts' (gets W)) hw
     (Gives.quote (θ := θ) (listT (sts.map DStep.tree)) x) (step := dstepF n) (by
@@ -349,6 +337,20 @@ def tree : Tm → Tree
   | ifeq p t a b => .cons (num 3) (.cons (ofBits p) (.cons t (.cons a.tree b.tree)))
   | app a b => .cons (num 4) (.cons a.tree b.tree)
 
+theorem tree_injective : Function.Injective tree := by
+  intro x
+  induction x with
+  | c t => intro y h; cases y <;> simp_all [tree, num]
+  | get p => intro y h; cases y <;> simp_all [tree, num, ofBits_injective.eq_iff]
+  | cons a b iha ihb | app a b iha ihb =>
+    intro y h
+    cases y <;> simp_all [tree, num]
+    exact ⟨iha rfl, ihb rfl⟩
+  | ifeq p t a b iha ihb =>
+    intro y h
+    cases y <;> simp_all [tree, num, ofBits_injective.eq_iff]
+    exact ⟨iha rfl, ihb rfl⟩
+
 /-- Fill in the values. -/
 def expand (σ : List Bool → Tree) : Tm → Tree
   | c t => t
@@ -362,7 +364,7 @@ def cost (σ : List Bool → Tree) : Tm → ℕ
   | c _ => 20
   | get p => 30 * p.length + 50
   | cons a b => a.cost σ + b.cost σ + 100
-  | ifeq p _ a b => 30 * p.length + 60 * (σ p).size + (if σ p = .nil then 0 else 0) + a.cost σ + b.cost σ + 200
+  | ifeq p _ a b => 30 * p.length + 60 * (σ p).size + a.cost σ + b.cost σ + 200
   | app a b => a.cost σ + b.cost σ + 62 * (a.expand σ).toList.length + 250
 
 end Tm
@@ -413,9 +415,6 @@ theorem tmB_gives (t : Tm) (W : Tree) :
     simp only [Tm.tree, hd_cons, tl_cons, path_ofBits, len_ofBits] at hg
     have he := eqF_gives hg (Gives.id (θ := θ) (.cons tmB.code (.cons (Tm.ifeq p t a b).tree W))).tl.hd.tl.tl.hd
     have e0 : (Tm.ifeq p t a b).expand (gets W) = if tget p W = t then a.expand (gets W) else b.expand (gets W) := rfl
-    have hc : (Tm.ifeq p t a b).cost (gets W) = 30 * p.length + 60 * (tget p W).size + (if gets W p = .nil then 0 else 0) +
-      a.cost (gets W) + b.cost (gets W) + 200 := rfl
-    have hc0 : (if gets W p = .nil then 0 else 0) = 0 := by split_ifs <;> rfl
     rw [e0]
     by_cases h : tget p W = t
     · rw [if_pos h]
@@ -423,7 +422,7 @@ theorem tmB_gives (t : Tm) (W : Tree) :
       refine ((Gives.id _).tl.hd.hd.ite_true (by simp [Tm.tree, num]) ((Gives.id _).tl.hd.hd.tl.ite_true
         (by simp [Tm.tree, num]) ((Gives.id _).tl.hd.hd.tl.tl.ite_true (by simp [Tm.tree, num])
         ((Gives.id _).tl.hd.hd.tl.tl.tl.ite_false (Gives.ite_true he hb' ha))))).mono ?_
-      rw [hc, hc0]
+      simp only [Tm.cost, gets]
       omega
     · rw [if_neg h]
       have hb' : bit (decide (tget p W = t)) = .nil := by simp [h, bit]
@@ -431,7 +430,7 @@ theorem tmB_gives (t : Tm) (W : Tree) :
       refine ((Gives.id _).tl.hd.hd.ite_true (by simp [Tm.tree, num]) ((Gives.id _).tl.hd.hd.tl.ite_true
         (by simp [Tm.tree, num]) ((Gives.id _).tl.hd.hd.tl.tl.ite_true (by simp [Tm.tree, num])
         ((Gives.id _).tl.hd.hd.tl.tl.tl.ite_false (Gives.ite_false he hb))))).mono ?_
-      rw [hc, hc0]
+      simp only [Tm.cost, gets]
       omega
   | app a b iha ihb =>
     have ha := tmRec_gives (Gives.id (θ := θ) (.cons tmB.code (.cons (Tm.app a b).tree W))).tl.hd.tl.hd iha
@@ -461,39 +460,19 @@ theorem tmsF_gives {wf : Fm} {x W : Tree} {cw c : ℕ} {ts : List Tm} (hw : Give
     (hc : ∀ t ∈ ts, t.cost (gets W) ≤ c) :
     Gives θ (tmsF ts wf) x (listT (ts.map fun t => t.expand (gets W))) (cw + ts.length * (c + 60) + 30) := by
   classical
-  let g : Tree → Tree := fun y => if h : ∃ t ∈ ts, t.tree = y then h.choose.expand (gets W) else .nil
-  have hg : ∀ y ∈ ts.map Tm.tree, ∃ t ∈ ts, t.tree = y ∧ g y = t.expand (gets W) := by
-    intro y hy
-    rw [List.mem_map] at hy
-    obtain ⟨t, ht, rfl⟩ := hy
-    have h : ∃ t' ∈ ts, t'.tree = t.tree := ⟨t, ht, rfl⟩
-    exact ⟨h.choose, h.choose_spec.1, h.choose_spec.2, dif_pos h⟩
-  have hall : ∀ t ∈ ts, g t.tree = t.expand (gets W) := by
-    intro t ht
-    obtain ⟨t', ht', h1, h2⟩ := hg t.tree (List.mem_map.2 ⟨t, ht, rfl⟩)
-    rw [h2]
-    have e1 := tmB_gives (θ := fun _ => (0 : ℤ)) t W
-    have e2 := tmB_gives (θ := fun _ => (0 : ℤ)) t' W
-    rw [h1] at e2
-    -- both are the value of the program at the same tree
-    have h3 := e1.evl.2 fun o => if o = t.expand (gets W) then 1 else 0
-    have h4 := e2.evl.2 fun o => if o = t.expand (gets W) then 1 else 0
-    rw [h3] at h4
-    simp only [wsum_cons, wsum_nil, if_true, mul_one, add_zero, one_mul] at h4
-    by_contra hne
-    rw [if_neg hne] at h4
-    exact one_ne_zero h4
+  let g := Function.extend Tm.tree (Tm.expand (gets W)) (fun _ => .nil)
+  have hall (t : Tm) : g t.tree = t.expand (gets W) := Tm.tree_injective.extend_apply _ _ t
   have := mapF_gives (step := tmF (.tl .id) (.hd .id)) (g := g) (d := fun _ => c + 20) (xs := ts.map Tm.tree) hw
     (Gives.quote (θ := θ) (listT (ts.map Tm.tree)) x) (by
       intro y hy
-      obtain ⟨t, ht, rfl, h2⟩ := hg y hy
-      rw [h2]
+      obtain ⟨t, ht, rfl⟩ := List.mem_map.1 hy
+      rw [hall]
       refine (tmF_gives (t := t) (Gives.id _).tl (Gives.id _).hd).mono ?_
       have := hc t ht
       simp only [hd_cons]
       omega)
   rw [List.map_map] at this
-  have e : ts.map (g ∘ Tm.tree) = ts.map fun t => t.expand (gets W) := List.map_congr_left fun t ht => hall t ht
+  have e : ts.map (g ∘ Tm.tree) = ts.map fun t => t.expand (gets W) := List.map_congr_left fun t _ => hall t
   rw [e] at this
   refine this.mono ?_
   rw [List.map_const', List.sum_replicate, smul_eq_mul, List.length_map]
