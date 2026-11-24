@@ -97,18 +97,7 @@ theorem exists_MX {tr : List P.Step} {bits : List Bool} (hgv : Mach.GV (σi P bi
     change i0 l0 :: sts.map (fun s => cw s.2 (P.dr s.1 i)) = sts.map (fun s => cw s.2 (rv i)) ++ [(unb L fin).map fun v => v i]
     rw [e0, unb_proj]
     simp only [sts, List.map_map]
-    have a1 : ((fun s : P.Rl × List (Fin 9 → Bool) => cw s.2 (P.dr s.1 i)) ∘ fun st : P.Step => (st.1, unb L st.2)) =
-        bin L ∘ fun st => st.2 (P.dr st.1 i) := by
-      funext st
-      simp only [Function.comp, cw]
-      exact unb_proj L st.2 _
-    have a2 : ((fun s : P.Rl × List (Fin 9 → Bool) => cw s.2 (rv i)) ∘ fun st : P.Step => (st.1, unb L st.2)) =
-        bin L ∘ fun st => st.2 (rv i) := by
-      funext st
-      simp only [Function.comp, cw]
-      exact unb_proj L st.2 _
-    rw [a1, a2]
-    exact h6
+    simpa only [Function.comp_def, cw, unb_proj, σi, List.map_cons, List.map_nil] using h6
   · change P.m0 :: sts.map (fun s => P.dst s.1) = sts.map (fun s => P.src s.1) ++ [P.mh]
     simp only [sts, List.map_map]
     exact h1
@@ -130,12 +119,8 @@ theorem exists_MX {tr : List P.Step} {bits : List Bool} (hgv : Mach.GV (σi P bi
     have h6 := congrArg (List.map (bin L)) h3
     rw [List.map_map, List.map_map] at h6
     simp only [sts, List.map_map]
-    have a1 : ((fun s : P.Rl × List (Fin 9 → Bool) => cw s.2 8) ∘ fun st : P.Step => (st.1, unb L st.2)) =
-        bin L ∘ fun st => st.2 8 := by
-      funext st
-      simp only [Function.comp, cw]
-      exact unb_proj L st.2 _
-    rw [a1, h6]
+    simp only [Function.comp_def, cw, unb_proj] at h6 ⊢
+    rw [h6]
     refine List.map_congr_left fun j _ => ?_
     simp only [Function.comp, σi]
     congr 1
