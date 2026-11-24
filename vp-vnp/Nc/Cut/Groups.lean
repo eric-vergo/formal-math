@@ -148,12 +148,7 @@ theorem posVal_move' {O : Type*} [Fintype O] (h0 h1 : U → A) (e : W) (Seen Cur
         if Agree h0 h1 (New o) y then (if Agree h0 h1 (Cur \ Out) y then E y * C o y else 0) else 0 := by
       intro y
       have : Agree h0 h1 ((Cur \ Out) ∪ New o) y ↔ Agree h0 h1 (New o) y ∧ Agree h0 h1 (Cur \ Out) y := by
-        simp only [Agree, Finset.mem_union]
-        constructor
-        · exact fun h => ⟨fun id hid => h id (Or.inr hid), fun id hid => h id (Or.inl hid)⟩
-        · rintro ⟨ha, hb⟩ id (hid | hid)
-          · exact hb id hid
-          · exact ha id hid
+        simp only [Agree, Finset.forall_mem_union, and_comm]
       by_cases ha : Agree h0 h1 (New o) y <;> by_cases hb : Agree h0 h1 (Cur \ Out) y <;>
         simp [this, ha, hb]
     rw [posVal, Finset.sum_congr rfl fun y _ => e1 y, sum_contents_union h0 h1 e Seen (New o) (hNew o)]
@@ -165,8 +160,7 @@ theorem posVal_move' {O : Type*} [Fintype O] (h0 h1 : U → A) (e : W) (Seen Cur
       refine forall₂_congr fun id hid => ?_
       have := hne id (hCur (Finset.mem_sdiff.1 hid).1)
       rw [ext_of_not this, ext_of_not this]
-    have e3 : ∀ z, E (ext h0 h1 (New o) y z) = E y := fun z => hE o y z
-    simp only [e2, e3]
+    simp only [e2, hE]
     split_ifs
     · rw [Finset.mul_sum]
     · simp
