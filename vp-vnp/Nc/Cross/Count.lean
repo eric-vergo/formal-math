@@ -75,17 +75,14 @@ theorem en_glueSet {k : ℕ} (s : Fin k → Finset ℕ × Finset ℕ) (h : ∀ r
   have hr : ((r.rev : Fin k) : ℕ) + r + 1 = k := by
     rw [Fin.val_rev]
     omega
-  have a1 : ∑ i ∈ (s r).1, (2 * (k * i + r) + 1) = k * ∑ i ∈ (s r).1, 2 * i + (s r).1.card * (2 * r + 1) := by
-    rw [Finset.mul_sum, Finset.card_eq_sum_ones, Finset.sum_mul, ← Finset.sum_add_distrib]
-    exact Finset.sum_congr rfl fun i _ => by ring
-  have a2 : ∑ i ∈ (s r).2, (2 * (k * i + (r.rev : Fin k)) + 1) =
-      k * ∑ i ∈ (s r).2, 2 * i + (s r).2.card * (2 * (r.rev : Fin k) + 1) := by
+  have row (S : Finset ℕ) (j : ℕ) :
+      ∑ i ∈ S, (2 * (k * i + j) + 1) = k * ∑ i ∈ S, 2 * i + S.card * (2 * j + 1) := by
     rw [Finset.mul_sum, Finset.card_eq_sum_ones, Finset.sum_mul, ← Finset.sum_add_distrib]
     exact Finset.sum_congr rfl fun i _ => by ring
   have a3 : ∀ S : Finset ℕ, en S = ∑ i ∈ S, 2 * i + S.card := by
     intro S
     rw [en, Finset.sum_add_distrib, Finset.card_eq_sum_ones]
-  rw [a1, a2, a3, a3, ← h r]
+  rw [row, row, a3, a3, ← h r]
   have : (2 * (r : ℕ) + 1) + (2 * ((r.rev : Fin k) : ℕ) + 1) = 2 * k := by omega
   calc k * ∑ i ∈ (s r).1, 2 * i + (s r).1.card * (2 * ↑r + 1) +
         (k * ∑ i ∈ (s r).2, 2 * i + (s r).1.card * (2 * ((r.rev : Fin k) : ℕ) + 1))
@@ -128,24 +125,7 @@ noncomputable def lp (E : ℕ) : ℝ := Real.log (pairs E).card
 theorem lp_nonneg (E : ℕ) : 0 ≤ lp E := Real.log_natCast_nonneg _
 
 theorem lp_zero : lp 0 = 0 := by
-  have : pairs 0 = {(∅, ∅)} := by
-    ext s
-    rw [mem_pairs, mem_singleton]
-    constructor
-    · rintro ⟨-, h⟩
-      have h1 : s.1 = ∅ := by
-        by_contra hne
-        obtain ⟨i, hi⟩ := Finset.nonempty_iff_ne_empty.2 hne
-        exact absurd (lt_of_mem_en (E := 0) (by omega) hi) (by omega)
-      have h2 : s.2 = ∅ := by
-        by_contra hne
-        obtain ⟨i, hi⟩ := Finset.nonempty_iff_ne_empty.2 hne
-        exact absurd (lt_of_mem_en (E := 0) (by omega) hi) (by omega)
-      exact Prod.ext h1 h2
-    · rintro rfl
-      simp [en]
-  rw [lp, this]
-  simp
+  simp [lp, pairs, en, Finset.filter_singleton]
 
 theorem lp_mono {E E' : ℕ} (h : E ≤ E') : lp E ≤ lp E' :=
   Real.log_le_log (by exact_mod_cast pairs_pos E) (by exact_mod_cast card_le_card (pairs_mono h))

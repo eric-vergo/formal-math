@@ -4,15 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import Nc.Rate.Defs
-import Paper.Curvature
+import Ov.Core.Wire
 
 /-!
-# The exponent of a unit tensor; hyperedges are convex
+# The exponent of a unit tensor
 
 For a spectral point F over the parties I and a map π : A → I, the number `hexp F π` is the exponent g of the unit tensor
 with one leg at π a for every a in A (a hyperedge): F has the value n ^ g at the one of size n. This file has the simple
-facts on g (it depends only on the set of parties, it is a distance for two parties, legs can be moved along edges), and the
-lemma "hyperedges are convex": if every leg is moved to the midpoint of two places, g is at most the mean of the two values.
+facts on g (it depends only on the set of parties, it is a distance for two parties, and moving the legs costs at most the sum of the traversed distances).
 -/
 
 namespace Nc.Price

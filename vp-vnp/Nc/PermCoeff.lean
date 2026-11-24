@@ -34,26 +34,8 @@ theorem sum_single_eq_ones [DecidableEq C] (f : I → C) :
     intro c
     rw [Finsupp.finsetSum_apply, Finset.card_filter]
     exact Finset.sum_congr rfl fun i _ => by rw [Finsupp.single_apply]
-  rw [Function.bijective_iff_existsUnique]
-  constructor
-  · intro h c
-    have := hap c
-    rw [h, ones_apply] at this
-    obtain ⟨i, hi⟩ := Finset.card_eq_one.1 this.symm
-    refine ⟨i, ?_, fun j hj => ?_⟩
-    · have : i ∈ ({i | f i = c} : Finset I) := by rw [hi]; simp
-      simpa using this
-    · have : j ∈ ({i | f i = c} : Finset I) := by simpa using hj
-      rw [hi] at this
-      simpa using this
-  · intro h
-    ext c
-    rw [hap, ones_apply, Finset.card_eq_one]
-    obtain ⟨i, hi, hu⟩ := h c
-    refine ⟨i, ?_⟩
-    ext j
-    simp only [mem_filter, mem_univ, true_and, mem_singleton]
-    exact ⟨hu j, fun e => e ▸ hi⟩
+  simp only [DFunLike.ext_iff, hap, ones_apply, Finset.card_eq_one_iff_existsUnique,
+    Finset.mem_filter, Finset.mem_univ, true_and, Function.bijective_iff_existsUnique]
 
 variable {N J κ : Type*} [Fintype N] [Fintype J] [Fintype κ] [DecidableEq N]
 
@@ -105,9 +87,7 @@ theorem permanent_eq_coeff [DecidableEq C] (M : Matrix C C R) :
   refine (sum_perm_eq (fun i j => M i j)).trans (Finset.sum_congr rfl fun f _ => ?_)
   have hiff : Function.Bijective f ↔ Function.Bijective fun p : C × Unit => f p.1 :=
     ⟨fun hb => hb.comp (Equiv.prodPUnit C).bijective, fun hb => hb.comp (Equiv.prodPUnit C).symm.bijective⟩
-  by_cases hb : Function.Bijective f
-  · rw [if_pos hb, if_pos (hiff.1 hb)]
-  · rw [if_neg hb, if_neg (fun h' => hb (hiff.2 h'))]
+  simp only [← hiff]
 
 end Bij
 

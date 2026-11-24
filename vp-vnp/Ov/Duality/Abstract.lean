@@ -76,24 +76,13 @@ theorem isPre_iInf {ι : Type*} [Nonempty ι] {P : ι → M → ℝ} (dir : Dire
   refine ⟨h0, ?_, ?_, ?_⟩
   · simp [one]
   · intro s t
-    refine le_of_forall_pos_le_add fun δ hδ => ?_
-    set A := ⨅ i, P i s with hA
-    set B := ⨅ i, P i t with hB
-    have hA0 : 0 ≤ A := h0 s
-    have hB0 : 0 ≤ B := h0 t
-    obtain ⟨ε, hε, hε1, hε2⟩ : ∃ ε : ℝ, 0 < ε ∧ ε ≤ 1 ∧ ε * (A + B + 1) ≤ δ := by
-      refine ⟨min 1 (δ / (A + B + 1)), by positivity, min_le_left _ _, ?_⟩
-      calc min 1 (δ / (A + B + 1)) * (A + B + 1) ≤ δ / (A + B + 1) * (A + B + 1) := by
-            gcongr; exact min_le_right _ _
-        _ = δ := by field_simp
-    obtain ⟨i, hi⟩ := le_iInf_add dir (q := fun t => ⨅ i, P i t) (fun _ => rfl) hε {s, t}
-    have h1 := hi s (by simp)
-    have h2 := hi t (by simp)
-    obtain ⟨j, hj⟩ := mul_le i s t
-    have h3 : P i s * P i t ≤ (A + ε) * (B + ε) :=
-      mul_le_mul h1 h2 (nonneg _ _) (by positivity)
-    have h4 := hle j (s * t)
-    nlinarith
+    rw [Real.mul_iInf_of_nonneg (h0 s)]
+    refine le_ciInf fun j => ?_
+    rw [Real.iInf_mul_of_nonneg (nonneg j t)]
+    refine le_ciInf fun i => ?_
+    obtain ⟨k, hki, hkj⟩ := dir i j
+    obtain ⟨l, hl⟩ := mul_le k s t
+    exact ((hle l _).trans hl).trans (mul_le_mul (hki s) (hkj t) (nonneg k t) (nonneg i s))
   · intro κ _ t b hb
     refine le_of_forall_pos_le_add fun δ hδ => ?_
     set ε := δ / (Fintype.card κ + 1) with hεd
