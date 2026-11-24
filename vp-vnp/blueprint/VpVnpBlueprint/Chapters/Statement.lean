@@ -90,7 +90,7 @@ writes the same coefficient `q.coeff d`. The outer `.coeff i`, the coefficient o
 $`\varepsilon^i` in a Laurent series, is spelled as before. No other line of the file differs:
 the script {repoFile "vp-vnp/scripts/statement-diff.py"}[`scripts/statement-diff.py`] compares
 every declaration of `Statement.lean`, of the challenge and the solution and of the `Paper`
-library with upstream and reports this definition and three theorems of `Paper` as changed in
+library at the pinned port `9fd368ad` with upstream `918c8e2`. For that comparison it reports this definition and three theorems of `Paper` as changed in
 this spelling only, and everything else as the same
 ({ref "chapter-checking"}[How to check this yourself] gives the command and its output).
 
@@ -252,8 +252,8 @@ than $`m^{c(\log m)^{1/3}}` gates.”
 
 - $`c` is chosen first. It does not depend on the characteristic, the field or $`m`.
 - $`m_0` is chosen after $`p` and before $`F`. It depends on the characteristic only, and is the
-  same for all fields of that characteristic, in particular for all their extensions. It is not
-  uniform over characteristics.
+  same for all fields of that characteristic, in particular for all their extensions. The statement allows it to vary
+  across characteristics.
 - $`F` ranges over all fields of characteristic $`p` in the universe `u`, and `u` is a universe
   variable of the file: the theorem `Solution.mainTheorem : MainTheorem.{u}` is polymorphic in
   it, so the statement holds for fields in every universe. The variables $`x_{i,j}` are indexed

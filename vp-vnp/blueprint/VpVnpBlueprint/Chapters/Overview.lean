@@ -353,12 +353,10 @@ note (page 52); the evaluator and the cutting program of a single cut
 ({bpref "thm_onecut"}[Theorem J.3]); and the exclusion of approximate accelerators
 ({bpref "prop_approx_acc"}[Proposition N.4]). For these the chapters of this blueprint describe
 the machines and programs from the Lean code, and say what was and was not understood from it.
-Since both cases are needed and it is not known which holds, every one of the five theorems
-depends on the first three items. The fourth concerns approximation only: in this build the
-Lean proofs of `Solution.mainTheorem`, `Solution.separation` and
-`Solution.permanent_over_real` do not depend on `Paper.prop_approx_acc`, and those of
-`Solution.mainTheoremApprox` and `Solution.separationClosure` do
-({ref "chapter-claim"}[What is claimed] says how this was read off).
+The compiled dependency closures of the five exports contain all four results. Proposition
+N.4 excludes approximate accelerators in the contracting branch of the shared coefficientwise
+bound. The exact lower bound uses it as well, through the constant-series embedding
+({ref "chapter-claim"}[What is claimed]).
 
 In the Lean development Steps 4 and 5 are also separated formally: Propositions K.5 and N.4 and
 Theorem K.6 take the conclusion of the cutting theorem as a hypothesis, for a commutative ring
