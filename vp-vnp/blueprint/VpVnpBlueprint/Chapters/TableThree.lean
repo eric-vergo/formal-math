@@ -639,7 +639,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.prop_next`, {InlineLean.name}`Paper.scales_setting`
   * differs as the paper says
   * yes
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. Does not assume the contracting case: the conclusion of Theorem J.4 is a hypothesis (`CutHyp`), with $`H = 16h`, $`h \ge 17`; `scales_setting` is the instance in the contracting case (page 69).
+  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. Does not assume the contracting case: the conclusion of Theorem J.4 is a hypothesis (`CutHyp`), with $`H = 16h`, $`h \ge 17`; `scales_setting` is the instance in the contracting case ({bpref "scales_setting"}[its node]; page 69).
 *
   * {bpref "thm_noacc"}[Theorem K.6]
   * 58
@@ -810,27 +810,27 @@ five theorems depend on it, with the letters explained above.
   * {InlineLean.name}`Paper.vp_subset_vnp`
   * $`\mathrm{VP} \subseteq \mathrm{VNP}` over every commutative semiring, with $`r = 0`.
   * S
-  * {ref "chapter-assembly"}[All fields and approximate computation]
+  * {bpref "vp_subset_vnp"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Paper.exists_beyond_poly`
   * For $`c > 0` and all $`m_0`, $`C` there is $`m \ge m_0` with $`m^{c(\log m)^{1/3}} \ge m^C + C`: the step from the bound to the separations.
   * S A C
-  * {ref "chapter-assembly"}[All fields and approximate computation]
+  * {bpref "exists_beyond_poly"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Paper.thm_allfields_exceeds`
   * A bound $`2^{c(\log m)^2/\log\log m}` for all large $`m`, for any $`c > 0`, implies the bound $`2^{(\log m)^{4/3}/1600^2}` for all large $`m`: why the absolute constant is that of the flat case.
   * M S A C
-  * {ref "chapter-assembly"}[All fields and approximate computation]
+  * {bpref "thm_allfields_exceeds"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Paper.thm_main_calculation`
   * For every real $`C`, $`C(\log m)^{4/3} \le (\log m)^2/\log\log m` for all large $`m`.
   * all five
-  * {ref "chapter-assembly"}[All fields and approximate computation]
+  * {bpref "thm_main_calculation"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Paper.exists_closed`
   * For $`p` zero or prime, an algebraically closed field of characteristic $`p` in the lowest universe.
   * M S A C
-  * {ref "chapter-assembly"}[All fields and approximate computation]
+  * {bpref "lem_transfer"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Paper.gridComplete_perm`
   * $`(\mathrm{PERM}_m)` is complete for grid sums when $`2 \neq 0` (factor 3).
@@ -875,32 +875,32 @@ five theorems depend on it, with the letters explained above.
   * {InlineLean.name}`Paper.contracting_complete`
   * The contracting bound for every family that is complete for grid sums.
   * M S R
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
+  * {bpref "thm_contracting"}[its node] in {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
 *
   * {InlineLean.name}`Paper.contracting_approx_complete`
   * The same for approximating circuits.
   * A C
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
+  * {bpref "lem_circuit_approx"}[its node] in {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
 *
   * {InlineLean.name}`Paper.approx_rate_closed`
   * Both cases over one field, for circuits with constants in the Laurent polynomials and a family that is complete for grid sums.
   * A C
-  * {ref "chapter-assembly"}[All fields and approximate computation]
+  * {bpref "thm_approx"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Paper.lem_circuit_phi`
   * What the proof uses of $`\Phi`.
   * all five
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
+  * {bpref "lem_circuit_phi"}[its node] in {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
 *
   * {InlineLean.name}`Paper.lem_circuit_approx`
   * The analogue of Lemma K.3 for approximating circuits.
   * A C
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
+  * {bpref "lem_circuit_approx"}[its node] in {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
 *
   * {InlineLean.name}`Paper.exists_laws`
   * Supplies the laws, a standing hypothesis of Theorems H.2 to J.4, in the contracting case.
   * all five
-  * {ref "chapter-laws"}[Rerouting laws and tree networks]
+  * {bpref "exists_laws"}[its node] in {ref "chapter-laws"}[Rerouting laws and tree networks]
 *
   * {InlineLean.name}`Paper.exists_generates`
   * Supplies the named generators of $`A`, a standing hypothesis of Theorems J.3 and J.4.
@@ -910,17 +910,17 @@ five theorems depend on it, with the letters explained above.
   * {InlineLean.name}`Paper.thm_onecut_evaluator`
   * The evaluator of Theorem J.3, written out.
   * all five
-  * {ref "chapter-programs"}[Programs, automata and cutting]
+  * {bpref "thm_onecut_evaluator"}[its node] in {ref "chapter-programs"}[Programs, automata and cutting]
 *
   * {InlineLean.name}`Paper.thm_onecut_program`
   * The cutting program of Theorem J.3, written out.
   * all five
-  * {ref "chapter-programs"}[Programs, automata and cutting]
+  * {bpref "thm_onecut_program"}[its node] in {ref "chapter-programs"}[Programs, automata and cutting]
 *
   * {InlineLean.name}`Paper.universal_symbols_ne`
   * The two symbols of the word of an instance are different.
   * all five
-  * {ref "chapter-programs"}[Programs, automata and cutting]
+  * {bpref "prop_universal"}[its node] in {ref "chapter-programs"}[Programs, automata and cutting]
 *
   * {InlineLean.name}`Nc.Approximates.exists_laurentPolynomial`
   * An approximating circuit with $`s` gates gives one with $`s` gates whose constants are Laurent polynomials in $`\varepsilon`, over every field.

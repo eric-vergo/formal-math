@@ -15,6 +15,9 @@ see `blueprint/README.md`.
 open Verso Doc
 open Verso.Genre Manual
 
+-- The limit is raised because the render model, computed when this file is elaborated, follows
+-- every dependency path of the graph.
+set_option maxHeartbeats 0 in
 def main (args : List String) : IO UInt32 :=
   Informal.PreviewManifest.blueprintMainWithPreviewData
     (%doc VpVnpBlueprint)

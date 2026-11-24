@@ -91,6 +91,28 @@ the code and say what their authors did and did not understand from it. Those de
 exposition by an AI model of code written by AI models; they make the Lean proof easier to enter
 and do not replace reading it.
 
+*Which Lean proofs this blueprint describes from their statements only.* Lean's kernel checked
+every proof of the development, these like all others. What the blueprint lacks for the
+following is an account written from the proofs: nobody who wrote or reviewed its chapters read
+them, and the chapters describe them by the statements of their theorems, by their definitions
+and by the organisation of the files.
+
+- The evaluator and the cutting program of Theorem J.3: the folders `Nc/Grp` and `Nc/Dl`, 11,676
+  lines.
+- The proofs about the tower plan behind Theorem H.2 in the folder `Nc/Tow`, about 8,900 lines,
+  and the start of the construction in `Nc/G/Start.lean`.
+- In the folder `Nc/Uni`, the universal automaton of Proposition I.1: the rules of the machine,
+  the proof of `evOK`, and the specification of the sorting pass.
+- The interpreter of Lemma K.4, `NS1/Eval.lean` and `NS1/EvalThm.lean`.
+- The programs of Proposition N.4: the files `NS1/Approx*.lean`, and `Paper/ApproxRound.lean` and
+  `Paper/ApproxScales.lean` beyond the proof of `Paper.prop_approx_acc`.
+- The folder `Nc/Acc`, and the induction over repeated cuts in `NS1/OneCut.lean`.
+
+For the common part and the flat case (Appendices A to E) the chapters summarize the printed
+proofs, which the paper means to be complete; of the Lean proofs there, those of the theorems
+that assemble a statement from its named steps were read, and the proofs of the steps mostly
+were not.
+
 *There is a zone the paper is silent on.* The paper calls the printed proofs of Sections A to G,
 of Appendix O and of the deduction of Theorem L.1 complete, and flags four statements as complete
 only in Lean. It says neither of the other statements of Sections H to N: Proposition H.1 (whose
@@ -243,7 +265,7 @@ from the compiled Lean code. A reader should know three things about it.
 
 - _No informal statement._ A generated node shows a Lean declaration, its status and its
   dependencies, and the sentence that it was generated from the Lean code. The written chapters
-  name 400 declarations in their nodes; when this text was last revised, 2,003 further
+  name 400 declarations in their 169 nodes; when this text was last revised, 2,003 further
   declarations were shown as generated nodes. The Project Stats page gives the numbers for the
   build a reader is looking at, among them how many nodes have an informal statement.
 - _Listed by name only._ Theorems of the library `Nc` whose names do not begin with `Paper.`

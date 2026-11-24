@@ -324,7 +324,7 @@ From “Notation and conventions” (pages 17–18).
 *
   * window; projection
   * Section F.2 ({bpref "windows"}[the definition]); the projection is defined in Lean as the barycenter of the orbit (page 68)
-  * {InlineLean.name}`Nc.Flag.IsoAct`, {InlineLean.name}`Paper.projection_nearest`
+  * {InlineLean.name}`Nc.Flag.IsoAct`; the window {InlineLean.name}`Nc.Flag.IsoAct.W`, its projection {InlineLean.name}`Nc.Flag.IsoAct.P`; {InlineLean.name}`Paper.projection_nearest`
 :::
 
 # Appendices G and H: laws and tree networks
@@ -363,11 +363,11 @@ From “Notation and conventions” (pages 17–18).
 *
   * packet
   * Appendix P: “a string of $`\ell` bits carried between two nodes”; Lean says _unit_
-  * {InlineLean.name}`Paper.NetUnit`
+  * the packets of a given network: {InlineLean.name}`Paper.NetUnit`; the names of the packets in the construction of Theorem H.2: {InlineLean.name}`Nc.G.Uid`; a content, absent or a string of $`\ell` bits: {InlineLean.name}`Nc.UW`
 *
   * network; node tensor; value; outcome
   * Appendix P: “numbers of packets on pairs of nodes and a tensor at each node; the sum over all contents of the packets of the product of the node tensors; the numbers of packets that a law puts on its channels”; Lean says _table_ for a node tensor ({bpref "network_value"}[the definition], page 45)
-  * {InlineLean.name}`Paper.NodeTable`, {InlineLean.name}`Paper.netValue`; the trees of Theorem H.2 are the structure {InlineLean.name}`Paper.ThinTrees`
+  * {InlineLean.name}`Paper.NodeTable`, {InlineLean.name}`Paper.netValue`; an outcome is the argument `o` of the conditions of {InlineLean.name}`Nc.G.Plan` ({bpref "law_move"}[the definition]); the trees of Theorem H.2 are the structure {InlineLean.name}`Paper.ThinTrees`
 *
   * relay
   * a move that replaces a packet between two nodes by two packets through a third (page 45); in Lean “a law with one slot, two channels, one index and $`\lambda = 0`, applied to a batch of packets” (page 68; {bpref "relay"}[the definition])
@@ -448,8 +448,12 @@ From “Notation and conventions” (pages 17–18).
   * {InlineLean.name}`NS1.CutD`, {InlineLean.name}`NS1.CutProg`
 *
   * piece
-  * the short instances that a run of the cutting program lists (page 9; {bpref "prop_pieces"}[Proposition J.2])
-  * {InlineLean.name}`Paper.PieceCut`
+  * the short instances that a run of the cutting program lists (page 9; {bpref "prop_pieces"}[Proposition J.2]); Lean says _group_
+  * the value of a piece: {InlineLean.name}`Nc.G.grpVal`; the clauses of Proposition J.2: {InlineLean.name}`Paper.PieceCut`
+*
+  * evaluator
+  * the program of Theorem J.3 that evaluates a piece ({bpref "thm_onecut_evaluator"}[the node])
+  * its specification: {InlineLean.name}`Nc.Dl.GroupOK`
 *
   * the conclusion of the cutting theorem
   * {bpref "thm_cut"}[Theorem J.4]; a hypothesis of Proposition K.5, Theorem K.6 and Proposition N.4 in Lean
@@ -478,6 +482,18 @@ From “Notation and conventions” (pages 17–18).
   * approximate accelerator
   * Section N.3 (page 63; {bpref "def_approx_acc"}[the definition])
   * {InlineLean.name}`NS1.HasAccA`, {InlineLean.name}`NS1.IsAccA`
+*
+  * exponent vector $`e`; the instances $`z_e`
+  * Lemma K.4 ({bpref "lem_postpone"}[the node]); Lean says _budget_ for an exponent vector
+  * {InlineLean.name}`NS1.Bt`, {InlineLean.name}`Paper.postponed`
+*
+  * interpreter
+  * the fixed program of Lemma K.4 that runs a program and counts the names it uses ({bpref "lem_postpone"}[the node])
+  * {InlineLean.name}`NS1.IF`, inside the fixed program {InlineLean.name}`NS1.WF`
+*
+  * the diagonal program $`\mathsf{P}`
+  * proof of Theorem K.6 (page 59; {bpref "thm_noacc_diagonal"}[the node])
+  * {InlineLean.name}`NS1.diagF`
 :::
 
 # The libraries

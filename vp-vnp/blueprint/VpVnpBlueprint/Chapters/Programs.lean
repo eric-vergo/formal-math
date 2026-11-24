@@ -547,7 +547,15 @@ The paper (page 53): “The next theorem turns Proposition J.2 into a program. E
 instance again, whose program is a fixed *evaluator* and whose argument is a *script* that describes
 the piece.”
 
-:::theorem "thm_onecut" (lean := "Paper.thm_onecut, Paper.Generates") (parent := "part-contracting")
+:::definition "def_generates" (lean := "Paper.Generates") (parent := "part-contracting")
+*The standing hypothesis on the generators of $`A`* (Section I.1, page 48: “Finitely many generators
+of $`A`, one of which is $`-1`, have names, and every other name has the weight 0”), as a Lean
+definition. `Generates θ` says that the table `θ` of named elements has finite support and that
+every element of $`A` is the value of a fixed sum of products of named generators. It is a hypothesis of Theorems J.3 and J.4 in Lean; in the contracting case
+`Paper.exists_generates` supplies it.
+:::
+
+:::theorem "thm_onecut" (lean := "Paper.thm_onecut") (parent := "part-contracting")
 *Theorem J.3 of the paper* (one cut; page 53), quoted: “There are constants $`a_0, C, v_0` such that
 the following holds with $`\Lambda = (\lg v)^C`, for all $`v \geq v_0`, all $`\tau \geq v^{a_0}` with
 $`4 \lg \tau \leq (\lg v)^2`, all $`s \leq \tau` and all $`2 \leq k \leq v^{64}`. Some program of size

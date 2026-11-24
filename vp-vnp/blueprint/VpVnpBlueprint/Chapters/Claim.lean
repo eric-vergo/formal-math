@@ -7,6 +7,7 @@ import VersoManual
 import VersoBlueprint
 import VpVnpBlueprint.Generated.Part
 import VpVnpBlueprint.Chapters.Statement
+import VpVnpBlueprint.Chapters.Assembly
 import Comparator.VpVnp.Solution
 
 open Verso.Genre Manual
