@@ -115,11 +115,6 @@ theorem thm_allfields : ∃ c : ℝ, 0 < c ∧ ∀ p : ℕ, p = 0 ∨ p.Prime �
     rw [map_permInt] at h
     exact beyond_of_rate hm₂ (hPerm hne s h)
 
-private theorem tendsto_rate_exponent {c : ℝ} (hc : 0 < c) :
-    Filter.Tendsto (fun m : ℕ => c * Real.logb 2 m ^ (1 / 3 : ℝ)) Filter.atTop Filter.atTop :=
-  ((tendsto_rpow_atTop (by norm_num)).comp
-    ((Real.tendsto_logb_atTop (by norm_num)).comp tendsto_natCast_atTop_atTop)).const_mul_atTop hc
-
 /-- A bound m^(c(log m)^(1/3)) is beyond every polynomial. -/
 theorem exists_beyond_poly {c : ℝ} (hc : 0 < c) (m₀ C : ℕ) :
     ∃ m ≥ m₀, ¬ (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) < ((m ^ C + C : ℕ) : ℝ) := by
@@ -179,13 +174,7 @@ gates computes PERM_m." -/
 theorem thm_simple (C : ℕ) : ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s : ℕ, s ≤ m ^ C →
     ¬ Computes (∑ σ : Equiv.Perm (Fin m), ∏ i, MvPolynomial.X (σ i, i) : MvPolynomial (Fin m × Fin m) ℝ) s := by
   obtain ⟨c, hc, A, hA⟩ := thm_main
-  obtain ⟨B, hB⟩ := Filter.eventually_atTop.1 ((tendsto_rate_exponent hc).eventually_ge_atTop (C : ℝ))
-  refine ⟨A + B + 1, fun m hm s hs hcomp => ?_⟩
-  have hpow := Real.rpow_le_rpow_of_exponent_le
-    (show (1 : ℝ) ≤ m by exact_mod_cast (by omega : 1 ≤ m)) (hB m (by omega))
-  rw [Real.rpow_natCast] at hpow
-  exact (not_lt_of_ge (show (s : ℝ) ≤ (m : ℝ) ^ C by exact_mod_cast hs))
-    (hpow.trans_lt (hA m (by omega) s hcomp))
+  exact excludes_poly_size hc hA C
 
 /-- **Paper: Corollary cor:classes.** "Over ℝ, VP is a proper subset of VNP." The witness is the permanent: it is in VNP
 by Ryser's formula and exceeds every polynomial size bound by Theorem thm:main. -/

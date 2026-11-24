@@ -406,14 +406,6 @@ theorem rate_of_projection (κ : ℕ) : ∃ m₀ : ℕ, ∀ P : ℕ → ℕ → 
   rw [← Real.lt_logb_iff_rpow_lt (by norm_num) hs0, div_lt_iff₀ (by norm_num)]
   nlinarith
 
-/-- **Paper: Theorem thm:flat-rate.** "In the flat case there is m₀ such that for m ≥ m₀ every circuit over k for PERM_m
-has more than 2^((log m)^(4/3)/1600²) gates." -/
-theorem thm_flat_rate {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) :
-    ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Computes (genPerm K m) s →
-      (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
-  obtain ⟨m₀, h⟩ := rate_of_projection 3
-  exact ⟨m₀, h _ fun k ℓ m s hk hℓ hℓk hm hs => prop_flat_rate hK hk hℓk (lem_fkl_perm h2 hk hℓ hm hs)⟩
-
 /-- Theorem thm:flat-rate for every family that is complete for grid sums ("the factor 3 becomes 40"). -/
 theorem flat_rate_complete (κ : ℕ) : ∃ m₀ : ℕ, ∀ (K : Type) [Field K], Flat K →
     ∀ G : ∀ S : ℕ, MvPolynomial (Fin S × Fin S) K, GridComplete K G κ →
@@ -422,6 +414,14 @@ theorem flat_rate_complete (κ : ℕ) : ∃ m₀ : ℕ, ∀ (K : Type) [Field K]
   refine ⟨m₀, fun K _ hK G hG => h _ fun k ℓ m s hk hℓ hℓk hm hs => prop_flat_rate hK hk hℓk ?_⟩
   obtain ⟨E, hE, he⟩ := fkl_complete hG hk hℓ hm
   exact he ▸ hs.aeval E hE
+
+/-- **Paper: Theorem thm:flat-rate.** "In the flat case there is m₀ such that for m ≥ m₀ every circuit over k for PERM_m
+has more than 2^((log m)^(4/3)/1600²) gates." -/
+theorem thm_flat_rate {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) :
+    ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Computes (genPerm K m) s →
+      (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
+  obtain ⟨M, h⟩ := flat_rate_complete 3
+  exact ⟨M, h K hK _ (gridComplete_perm h2)⟩
 
 /-- "(log m)²/log log m ≥ (log m)^(4/3) for large m", and indeed more than any multiple: the bound of the contracting
 case exceeds that of the flat case. -/
@@ -477,5 +477,33 @@ theorem thm_main_form {m : ℕ} (hm : 2 ≤ m) (c : ℝ) :
   rw [show (4 / 3 : ℝ) = 1 + 1 / 3 by norm_num, Real.rpow_add hL, Real.rpow_one, mul_left_comm]
   congr 2
   rw [Real.rpow_logb (by norm_num) (by norm_num) hm0]
+
+theorem tendsto_rate_exponent {c : ℝ} (hc : 0 < c) :
+    Filter.Tendsto (fun m : ℕ => c * Real.logb 2 m ^ (1 / 3 : ℝ)) Filter.atTop Filter.atTop :=
+  ((tendsto_rpow_atTop (by norm_num)).comp
+    ((Real.tendsto_logb_atTop (by norm_num)).comp tendsto_natCast_atTop_atTop)).const_mul_atTop hc
+
+/-- An eventual superpolynomial rate excludes every fixed polynomial size budget. -/
+theorem excludes_poly_size {P : ℕ → ℕ → Prop} {c : ℝ} (hc : 0 < c) {A : ℕ}
+    (hA : ∀ m ≥ A, ∀ s, P m s → (m : ℝ) ^ (c * Real.logb 2 m ^ (1 / 3 : ℝ)) < s)
+    (C : ℕ) : ∃ M : ℕ, ∀ m ≥ M, ∀ s, s ≤ m ^ C → ¬ P m s := by
+  obtain ⟨B, hB⟩ := Filter.eventually_atTop.1 ((tendsto_rate_exponent hc).eventually_ge_atTop (C : ℝ))
+  refine ⟨A + B + 1, fun m hm s hs hcomp => ?_⟩
+  have hpow := Real.rpow_le_rpow_of_exponent_le
+    (show (1 : ℝ) ≤ m by exact_mod_cast (by omega : 1 ≤ m)) (hB m (by omega))
+  rw [Real.rpow_natCast] at hpow
+  exact (not_lt_of_ge (show (s : ℝ) ≤ (m : ℝ) ^ C by exact_mod_cast hs))
+    (hpow.trans_lt (hA m (by omega) s hcomp))
+
+/-- **Paper: Theorem thm:flat-simple.** "In the flat case, for every C there is m₀ such that PERM_m has no circuit
+over k with m^C gates for m ≥ m₀." -/
+theorem thm_flat_simple {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) (C : ℕ) :
+    ∃ m₀ : ℕ, ∀ m ≥ m₀, ¬ Computes (genPerm K m) (m ^ C) := by
+  obtain ⟨A, hA⟩ := thm_flat_rate hK h2
+  obtain ⟨M, hM⟩ := excludes_poly_size (P := fun m s => Computes (genPerm K m) s)
+    (c := 1 / 1600 ^ 2) (by norm_num) (A := A + 2) (fun m hm s hs => by
+      rw [thm_main_form (by omega), one_div_mul_eq_div]
+      exact hA m (by omega) s hs) C
+  exact ⟨M, fun m hm => hM m hm _ le_rfl⟩
 
 end Paper

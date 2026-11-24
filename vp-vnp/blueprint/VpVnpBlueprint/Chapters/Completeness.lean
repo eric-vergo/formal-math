@@ -322,8 +322,8 @@ $`k(k-1)\ell\, 2^{(k-1)\ell} \leq M/3` literals, so by Corollary E.2 it is the p
 $`M \times M` matrix whose entries are affine in one variable each. We substitute these entries
 for the variables of the given circuit, and an affine function of one variable takes five gates.”
 
-In Lean the proof applies {bpref "cor_clauses"}[Corollary E.2] to the clause sum of
-{bpref "lem_fkl_perm_steps"}[the two steps above], and then `Nc.Computes.aeval` (substituting
+Lean specializes {bpref "fkl_complete"}[the general grid-family projection] to the permanent
+with completeness factor three. It then applies `Nc.Computes.aeval` (substituting
 affine polynomials for the variables of a circuit with $`s` gates gives a circuit with $`5s`
 gates).
 :::

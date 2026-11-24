@@ -258,17 +258,20 @@ $`\Bbbk` with at most $`m^C` gates computes $`\mathrm{PERM}_m`.”
 In the Lean statement the standing hypothesis $`2 \neq 0` of Sections A to L is written out
 (`h2`), and $`C` is a natural number (Appendix Q.3, page 68: “The numbers $`C`, $`a` and
 $`\alpha` are natural numbers”). Like Proposition E.5, the theorem is not used by the theorems of
-`Solution`; it serves the direct proof of Theorem L.2 (page 60: “The following direct proof uses
+`Solution`; the paper uses it in its direct proof of Theorem L.2 (page 60: “The following direct proof uses
 of Section E only the part that precedes Section E.4”).
 :::
 
-:::proof "thm_flat_simple"
+:::proof "thm_flat_simple" (uses := "thm_flat_rate")
 *The paper's proof* (page 35), quoted: “We apply Proposition E.5 with a fixed $`k` for which
 $`\sqrt{k} \geq 30(C+1)`. For large $`m` let $`\ell` be the largest integer with
 $`3k^3\ell\, 2^{k\ell} \leq m`, so that $`m < 3k^3(\ell+1)2^{k(\ell+1)}`, and hence
 $`\log m \leq 2k\ell` and $`\ell \geq \ell_0`. By Lemma E.3 a circuit with at most $`m^C` gates
 for $`\mathrm{PERM}_m` then gives $`\ell k^{3/2}/6 \leq 3 + 2Ck\ell`, which is false by the
 choice of $`k`.”
+
+Lean deduces this conclusion from {bpref "thm_flat_rate"}[Theorem E.11].
+The exponent of the resulting bound on circuit size eventually exceeds every fixed degree.
 :::
 
 # E.4. Sums with few terms
@@ -515,8 +518,9 @@ $$`\log(5L) \geq \frac{\ell k^{3/2}}{16} = \frac{25}{4} r^4.`
 Hence $`\log L > r^4 \geq (\log m/1600)^{4/3} \geq (\log m)^{4/3}/1600^2`.”
 
 The constant $`1/1600^2` of the main theorem is this one. In Lean the calculation is
-{bpref "rate_of_projection"}[], and `Paper.thm_flat_rate` is its instance $`\kappa = 3` with
-{bpref "lem_fkl_perm"}[Lemma E.3] and {bpref "prop_flat_rate"}[Proposition E.10].
+{bpref "rate_of_projection"}[]. The general family theorem {bpref "flat_rate_complete"}[] uses
+this calculation and {bpref "prop_flat_rate"}[Proposition E.10]. Taking the permanent with
+completeness factor three gives `Paper.thm_flat_rate`.
 :::
 
 :::theorem "flat_rate_complete" (lean := "Paper.flat_rate_complete") (parent := "part-flat")

@@ -133,11 +133,8 @@ theorem fkl_complete {F : Type} [Field F] {G : ∀ M, MvPolynomial (Fin M × Fin
 one with 5s gates." (2 ≠ 0 is a standing hypothesis of the section.) -/
 theorem lem_fkl_perm {F : Type} [Field F] (h2 : (2 : F) ≠ 0) {k ℓ : ℕ} (hk : 2 ≤ k) (hℓ : 1 ≤ ℓ) {S s : ℕ}
     (hS : 3 * k ^ 3 * ℓ * 2 ^ (k * ℓ) ≤ S) (hs : Computes (genPerm F S) s) : Computes (fkl F k ℓ) (5 * s) := by
-  obtain ⟨M, hM, hp⟩ := cor_clauses h2 fklLits (fklLits_ne hk hℓ) fklLits_occ (fklWt F)
-    (fun κ => Or.inl ⟨κ.1, rfl⟩) (S := S) (le_trans (le_trans (Nat.mul_le_mul_left _ (fklLits_count hk))
-      (le_of_eq (by ring))) hS)
-  rw [← lem_fkl_perm_clauseSum, ← hp, ← aeval_genPerm]
-  exact hs.aeval _ fun q => hM q.1 q.2
+  obtain ⟨E, hE, he⟩ := fkl_complete (gridComplete_perm h2) hk hℓ hS
+  exact he ▸ hs.aeval E hE
 
 /-- f_{k,ℓ} with exactly the variables that occur, k blocks of 2^((k-1)ℓ) variables, as printed. -/
 noncomputable def fklExact (F : Type) [Field F] (k ℓ : ℕ) : MvPolynomial (Val k ℓ) F :=
@@ -434,20 +431,10 @@ theorem prop_flat_lower_lengths {k : ℕ} (hk : 1 ≤ k) (A : Finset (Fin k)) (h
         ring
   have h5 : ∑ a : Fin k, ∑ b : Fin k, (if a = b then (0 : ℝ) else 1 / 2 + η ^ 2) =
       k * (k - 1) * (1 / 2 + η ^ 2) := by
-    have h6 : ∀ a : Fin k, ∑ b : Fin k, (if a = b then (0 : ℝ) else 1 / 2 + η ^ 2) =
-        (k - 1) * (1 / 2 + η ^ 2) := by
-      intro a
-      have h7 : ∀ b : Fin k, (if a = b then (0 : ℝ) else 1 / 2 + η ^ 2) =
-          (1 / 2 + η ^ 2) - if a = b then (1 / 2 + η ^ 2) else 0 := by
-        intro b
-        split_ifs <;> ring
-      simp only [h7]
-      rw [Finset.sum_sub_distrib, Finset.sum_ite_eq, if_pos (Finset.mem_univ _), Finset.sum_const,
-        Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-      ring
-    simp only [h6]
-    rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    ring
+    have row (a : Fin k) := sum_ite_card ({a} : Finset (Fin k)) 0 (1 / 2 + η ^ 2)
+    simp only [Finset.mem_singleton, Finset.card_singleton, Nat.cast_one, mul_zero, zero_add] at row
+    rw [Finset.sum_comm]
+    simp only [row, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_assoc]
   refine (Finset.sum_le_sum fun a _ => Finset.sum_le_sum fun b _ => hterm a b).trans ?_
   simp only [Finset.sum_sub_distrib]
   rw [h5]
@@ -590,58 +577,5 @@ theorem prop_flat_lower_printed {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk
       (2 : ℝ) ^ ((ℓ : ℝ) * (k : ℝ) ^ (3 / 2 : ℝ) / 6) ≤ s := by
   obtain ⟨ℓ₀, h⟩ := prop_flat_lower hK hk
   exact ⟨ℓ₀, fun ℓ hℓ s hs => h ℓ hℓ s (fklExact_computes.1 hs)⟩
-
-/-- **Paper: Theorem thm:flat-simple.** "In the flat case, for every C there is m₀ such that PERM_m has no circuit
-over k with m^C gates for m ≥ m₀." -/
-theorem thm_flat_simple {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) (C : ℕ) :
-    ∃ m₀ : ℕ, ∀ m ≥ m₀, ¬ Computes (genPerm K m) (m ^ C) := by
-  -- √k = 30 (C + 1)
-  obtain ⟨k, hk⟩ : ∃ k : ℕ, k = (30 * (C + 1)) ^ 2 := ⟨_, rfl⟩
-  have hk3 : 3 ≤ k := hk ▸ le_trans (by omega) (Nat.le_self_pow two_ne_zero (30 * (C + 1)))
-  obtain ⟨ℓ₀, hℓ₀⟩ := prop_flat_lower hK (show 2 ≤ k by omega)
-  obtain ⟨ℓ₁, hℓ₁⟩ : ∃ ℓ₁, ℓ₁ = ℓ₀ + 3 * k ^ 3 + k + 1 := ⟨_, rfl⟩
-  let size : ℕ → ℕ := fun ℓ => 3 * k ^ 3 * ℓ * 2 ^ (k * ℓ)
-  refine ⟨size ℓ₁, fun m hm hcomp => ?_⟩
-  have hle : ∀ ℓ, ℓ ≤ size ℓ := fun ℓ => by
-    show ℓ ≤ 3 * k ^ 3 * ℓ * 2 ^ (k * ℓ)
-    calc ℓ = 1 * ℓ * 1 := by simp
-      _ ≤ _ := Nat.mul_le_mul (Nat.mul_le_mul_right _ (by nlinarith [Nat.one_le_pow 3 k (by omega)])) Nat.one_le_two_pow
-  obtain ⟨ℓ, hℓd⟩ : ∃ ℓ, ℓ = Nat.findGreatest (fun ℓ => size ℓ ≤ m) m := ⟨_, rfl⟩
-  have hℓ1 : ℓ₁ ≤ ℓ := hℓd ▸ Nat.le_findGreatest ((hle ℓ₁).trans hm) hm
-  have hℓm : size ℓ ≤ m := by
-    rw [hℓd]
-    exact Nat.findGreatest_spec (P := fun ℓ => size ℓ ≤ m) ((hle ℓ₁).trans hm) hm
-  have hnext : m < size (ℓ + 1) := by
-    by_contra hh
-    push Not at hh
-    have h := Nat.le_findGreatest (P := fun ℓ => size ℓ ≤ m) ((hle (ℓ + 1)).trans hh) hh
-    omega
-  -- log m ≤ 2kℓ
-  have hm2 : m ≤ 2 ^ (2 * (k * ℓ)) := by
-    refine hnext.le.trans ?_
-    show 3 * k ^ 3 * (ℓ + 1) * 2 ^ (k * (ℓ + 1)) ≤ _
-    have a1 : 3 * k ^ 3 ≤ 2 ^ ℓ := le_trans (by omega) (Nat.lt_two_pow_self (n := ℓ)).le
-    have a2 : ℓ + 1 ≤ 2 ^ ℓ := Nat.lt_two_pow_self
-    calc 3 * k ^ 3 * (ℓ + 1) * 2 ^ (k * (ℓ + 1)) ≤ 2 ^ ℓ * 2 ^ ℓ * 2 ^ (k * ℓ + ℓ) :=
-          Nat.mul_le_mul (Nat.mul_le_mul a1 a2) (Nat.pow_le_pow_right (by norm_num) (by rw [Nat.mul_succ]; omega))
-      _ = 2 ^ (3 * ℓ + k * ℓ) := by rw [← pow_add, ← pow_add]; congr 1; ring
-      _ ≤ _ := Nat.pow_le_pow_right (by norm_num) (by nlinarith)
-  have hup : 5 * m ^ C ≤ 2 ^ (3 + 2 * (k * ℓ) * C) := by
-    calc 5 * m ^ C ≤ 2 ^ 3 * (2 ^ (2 * (k * ℓ))) ^ C := Nat.mul_le_mul (by norm_num) (Nat.pow_le_pow_left hm2 C)
-      _ = _ := by rw [← pow_mul, ← pow_add]
-  have hlow := hℓ₀ ℓ (by omega) _ (lem_fkl_perm h2 (by omega) (by omega) hℓm hcomp)
-  have h4 := hlow.trans ((Nat.cast_le (α := ℝ)).2 hup)
-  rw [Nat.cast_pow, Nat.cast_ofNat, ← Real.rpow_natCast 2 (3 + _),
-    Real.rpow_le_rpow_left_iff (by norm_num)] at h4
-  have hk0 : (0 : ℝ) < k := by exact_mod_cast (by omega : 0 < k)
-  have hsqrt : √(k : ℝ) = 30 * (C + 1) := by
-    rw [hk, Nat.cast_pow, Real.sqrt_sq (Nat.cast_nonneg _)]
-    push_cast
-    ring
-  rw [show (3 / 2 : ℝ) = 1 + 1 / 2 by norm_num, Real.rpow_add hk0, Real.rpow_one, ← Real.sqrt_eq_rpow, hsqrt] at h4
-  push_cast at h4
-  have hkl : (3 : ℝ) ≤ (k : ℝ) * ℓ := by
-    exact_mod_cast (le_trans hk3 (Nat.le_mul_of_pos_right k (by omega)) : 3 ≤ k * ℓ)
-  nlinarith [mul_nonneg (show (0 : ℝ) ≤ (k : ℝ) * ℓ by linarith) (Nat.cast_nonneg C)]
 
 end Paper
