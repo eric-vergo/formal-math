@@ -137,6 +137,13 @@ inductive Uid (A U0 : ℕ) (N : Type) (U1 : ℕ) where
 
 variable {F : Type} [CommRing F] {A A' E U0 U1 : ℕ} {N : Type} [Fintype N] [DecidableEq N]
 
+/-- Sum over initial units and the units created by channels. -/
+theorem sum_uid {M : Type*} [AddCommMonoid M] (f : Uid A U0 N U1 → M) :
+    ∑ u, f u = (∑ a, ∑ c, ∑ k, f (.init a c k)) + ∑ ν, ∑ k, f (.new ν k) := by
+  rw [← (proxy_equiv% Uid A U0 N U1).sum_comp f]
+  simp only [Fintype.sum_sum_type, Fintype.sum_sigma]
+  rfl
+
 /-- The holders of a unit (`np`: the parties at the ends of the channels). There are `A` base parties and `A'` extra
 parties. -/
 def cparty (np : N → Bool → Fin (A + A')) : Uid A U0 N U1 → Bool → Fin (A + A')

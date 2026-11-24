@@ -22,24 +22,6 @@ section Held
 
 variable {F : Type} [CommRing F] {A A' E U0 U1 : ℕ}
 
-/-- Sums over units. -/
-theorem sum_uid {N : Type} [Fintype N] [DecidableEq N] (f : Uid A U0 N U1 → ℕ) :
-    ∑ u, f u = (∑ a, ∑ c, ∑ k, f (.init a c k)) + ∑ ν, ∑ k, f (.new ν k) := by
-  let e : Uid A U0 N U1 ≃ (Fin A × Fin A × Fin U0) ⊕ (N × Fin U1) :=
-    { toFun := fun u => match u with
-        | .init a c k => .inl (a, c, k)
-        | .new ν k => .inr (ν, k)
-      invFun := fun s => match s with
-        | .inl p => .init p.1 p.2.1 p.2.2
-        | .inr p => .new p.1 p.2
-      left_inv := fun u => by cases u <;> rfl
-      right_inv := fun s => by rcases s with ⟨a, c, k⟩ | ⟨ν, k⟩ <;> rfl }
-  rw [← Equiv.sum_comp e.symm, Fintype.sum_sum_type, Fintype.sum_prod_type, Fintype.sum_prod_type]
-  congr 1
-  refine Finset.sum_congr rfl fun a _ => ?_
-  rw [Fintype.sum_prod_type]
-  rfl
-
 /-- The number of initial units of a party. -/
 def initN (n : Fin A → Fin A → Fin (U0 + 1)) (p : Fin (A + A')) : ℕ :=
   ∑ a, ∑ c, ((if Fin.castAdd A' a = p then (n a c).1 else 0) + if Fin.castAdd A' c = p then (n a c).1 else 0)
@@ -122,6 +104,15 @@ noncomputable def chanN (p : Fin (AA + A')) : ℕ := ∑ ν : (sys R FL Pl).N, �
   if (sys R FL Pl).np ν d = p then 1 else 0
 
 variable {R FL Pl lhat n o}
+
+open Classical in
+/-- The active relays contribute at most the total relay load at a node. -/
+theorem sum_valid_relays_le (P : Nd T) : (∑ x : {x : RM T m AA // okR T R ch x}, 2 * ∑ q : Fin 3, if tri T R ch x.1 q = P then
+    nR R ch FL lhat (nn n) (oo R FL Pl o) x.1 else 0) ≤ 2 * NR R ch FL lhat (nn n) (oo R FL Pl o) P := by
+  rw [← Finset.mul_sum]
+  refine Nat.mul_le_mul_left _ ?_
+  exact sum_sub_le (fun x => okR T R ch x) fun x => ∑ q : Fin 3, if tri T R ch x q = P then
+    nR R ch FL lhat (nn n) (oo R FL Pl o) x else 0
 
 section
 
@@ -232,12 +223,7 @@ theorem held_le (P : Nd T) : heldN R FL Pl n o (Pl.pt P) ≤ initN (A' := A') n 
         rw [Fintype.sum_bool, Fintype.sum_bool, Fintype.sum_bool, Fin.sum_univ_three, h6]
         simp only [hgR, if_true, Bool.false_eq_true, if_false]
         split_ifs <;> omega
-      have h7 : (∑ x : {x : RM T m AA // okR T R ch x}, 2 * ∑ q : Fin 3, if tri T R ch x.1 q = P then
-          nR R ch FL lhat (nn n) (oo R FL Pl o) x.1 else 0) ≤ 2 * NR R ch FL lhat (nn n) (oo R FL Pl o) P := by
-        rw [← Finset.mul_sum]
-        refine Nat.mul_le_mul_left _ ?_
-        exact sum_sub_le (fun x => okR T R ch x) fun x => ∑ q : Fin 3, if tri T R ch x q = P then
-          nR R ch FL lhat (nn n) (oo R FL Pl o) x else 0
+      have h7 := sum_valid_relays_le (R := R) (FL := FL) (Pl := Pl) (lhat := lhat) (n := n) (o := o) P
       refine le_trans (Finset.sum_le_sum fun x _ => ?_) h7
       refine le_trans (le_of_eq ?_) (h5 x)
       refine Finset.sum_congr rfl fun ν _ => Finset.sum_congr rfl fun d _ => ?_

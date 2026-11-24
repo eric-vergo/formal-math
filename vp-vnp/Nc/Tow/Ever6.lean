@@ -103,25 +103,11 @@ theorem initN_le {ℓf : ℕ} (P : Nd T) (hP : ∀ a, P = nd T 0 (Nat.zero_le _)
     refine le_trans (le_of_eq ?_) (hP a rfl)
     rw [Pl.pt_base]
     unfold initN
-    have h1 : ∀ a' c : Fin AA, (if Fin.castAdd A' a' = Fin.castAdd A' a then (n a' c).1 else 0) =
-        if a' = a then (n a c).1 else 0 := by
-      intro a' c
-      by_cases ha : a' = a
-      · subst ha; simp
-      · rw [if_neg fun he => ha (Fin.castAdd_injective _ _ he), if_neg ha]
-    have h2 : ∀ a' c : Fin AA, (if Fin.castAdd A' c = Fin.castAdd A' a then (n a' c).1 else 0) =
-        if c = a then (n a' a).1 else 0 := by
-      intro a' c
-      by_cases ha : c = a
-      · subst ha; simp
-      · rw [if_neg fun he => ha (Fin.castAdd_injective _ _ he), if_neg ha]
-    simp only [h1, h2, Finset.sum_add_distrib]
+    simp only [Fin.castAdd_inj, Finset.sum_add_distrib]
     congr 1
     · rw [Finset.sum_comm]
-      refine Finset.sum_congr rfl fun c _ => ?_
-      rw [Finset.sum_ite_eq', if_pos (mem_univ _)]
-    · refine Finset.sum_congr rfl fun a' _ => ?_
-      rw [Finset.sum_ite_eq', if_pos (mem_univ _)]
+      simp
+    · simp
   · refine le_trans (le_of_eq ?_) (Nat.zero_le _)
     unfold initN
     refine Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun c _ => ?_

@@ -138,7 +138,7 @@ theorem card_AsU (hr : 0 < r) (hb : 0 < b) (hh : 0 < h) (s : Σ j : Fin (J + 1),
   have h1 : (AsU R FL Pl lhat n o ⟨j, c⟩ : Finset (Un R FL Pl U0 U1)).card =
       ∑ u : Un R FL Pl U0 U1, if u ∈ AsU R FL Pl lhat n o ⟨j, c⟩ then 1 else 0 := by
     rw [← card_filter, filter_mem_eq_inter, univ_inter]
-  rw [h1, sum_units]
+  rw [h1, sum_uid]
   have h2 : (∑ a, ∑ c', ∑ kk, if (Uid.init a c' kk : Un R FL Pl U0 U1) ∈ AsU R FL Pl lhat n o ⟨j, c⟩ then 1 else 0) = 0 :=
     Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun c' _ => Finset.sum_eq_zero fun kk _ => if_neg mem_AsU_init
   rw [h2, Nat.zero_add]

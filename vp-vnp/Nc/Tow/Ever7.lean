@@ -43,12 +43,7 @@ theorem pads_node {Sm : ℕ} (hSm : ∀ d, Fintype.card (FL.L d).Sl ≤ Sm) (P :
     exact Pl.pt.injective.eq_iff
   rw [h1, Fintype.sum_sigma, Fintype.sum_sum_type]
   refine add_le_add ?_ ?_
-  · have h7 : (∑ x : {x : RM T m AA // okR T R ch x}, 2 * ∑ q : Fin 3, if tri T R ch x.1 q = P then
-        nR R ch FL lhat (nn n) (oo R FL Pl o) x.1 else 0) ≤ 2 * NR R ch FL lhat (nn n) (oo R FL Pl o) P := by
-      rw [← Finset.mul_sum]
-      refine Nat.mul_le_mul_left _ ?_
-      exact sum_sub_le (fun x => okR T R ch x) fun x => ∑ q : Fin 3, if tri T R ch x q = P then
-        nR R ch FL lhat (nn n) (oo R FL Pl o) x else 0
+  · have h7 := sum_valid_relays_le (R := R) (FL := FL) (Pl := Pl) (lhat := lhat) (n := n) (o := o) P
     refine le_trans (Finset.sum_le_sum fun x _ => ?_) h7
     rw [Finset.mul_sum]
     have h6 : nR R ch FL lhat (nn n) (oo R FL Pl o) x.1 = num R ch FL lhat (nn n) (oo R FL Pl o) (.inl x) := by
@@ -115,18 +110,6 @@ theorem held_node_le (hh : 0 < h) (hr : 0 < r) (hb : 0 < b)
       c1 * (Fintype.card FL.Di * onN f f0 P) + (1 + Sm) * (Fintype.card FL.Di * onN f f0 P) := by ring
   have e2 : isB ch P * (ℓf + 8 * m * lhat) = isB ch P * ℓf + 4 * (isB ch P * (2 * m * lhat)) := by ring
   rw [e1, e2]
-  generalize (∑ r' : (sys R FL Pl).R, if (sys R FL Pl).rp r' = Pl.pt P then padR R ch FL Pl lhat n o r' else 0) = pv
-    at a2 ⊢
-  generalize heldN R FL Pl n o (Pl.pt P) = hv at a1 ⊢
-  generalize initN (A' := A') n (Pl.pt P) = iv at a1 a5
-  generalize chanN R FL Pl (Pl.pt P) = cv at a1 ⊢
-  generalize onN f f0 P = ov at a3 a6 a7 ⊢
-  generalize c1 * (Fintype.card FL.Di * ov) = x1 at a6 ⊢
-  generalize (1 + Sm) * (Fintype.card FL.Di * ov) = x2 at a7 ⊢
-  generalize c1 * NLv = x3 at a1 a6
-  generalize (1 + Sm) * NLv = x4 at a2 a7
-  generalize isB ch P * ℓf = x5 at a5 ⊢
-  generalize isB ch P * (2 * m * lhat) = x6 at a3 ⊢
   omega
 
 end Nc.Tow

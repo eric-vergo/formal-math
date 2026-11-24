@@ -92,24 +92,6 @@ theorem card_fin_lt' (N c : ℕ) (hc : c ≤ N) : ((univ : Finset (Fin N)).filte
       exact ⟨⟨k, by omega⟩, mem_filter.2 ⟨mem_univ _, hk'⟩, rfl⟩
   rw [h1, card_range]
 
-/-- Sums over units. -/
-theorem sum_units {M : Type*} [AddCommMonoid M] (f : Un R FL Pl U0 U1 → M) :
-    ∑ u, f u = (∑ a, ∑ c, ∑ k, f (.init a c k)) + ∑ ν, ∑ k, f (.new ν k) := by
-  let e : Un R FL Pl U0 U1 ≃ (Fin AA × Fin AA × Fin U0) ⊕ ((sys R FL Pl).N × Fin U1) :=
-    { toFun := fun u => match u with
-        | .init a c k => .inl (a, c, k)
-        | .new ν k => .inr (ν, k)
-      invFun := fun s => match s with
-        | .inl p => .init p.1 p.2.1 p.2.2
-        | .inr p => .new p.1 p.2
-      left_inv := fun u => by cases u <;> rfl
-      right_inv := fun s => by rcases s with ⟨a, c, k⟩ | ⟨ν, k⟩ <;> rfl }
-  rw [← Equiv.sum_comp e.symm, Fintype.sum_sum_type, Fintype.sum_prod_type, Fintype.sum_prod_type]
-  congr 1
-  refine Finset.sum_congr rfl fun a _ => ?_
-  rw [Fintype.sum_prod_type]
-  rfl
-
 /-- The number of alive units with a target. -/
 theorem load_eq (τ : Tg T m AA) : load R ch FL lhat (nn n) (oo R FL Pl o) τ =
     ((Al R FL Pl lhat n o).filter fun u => tgU R FL Pl u = τ).card := by
@@ -120,7 +102,7 @@ theorem load_eq (τ : Tg T m AA) : load R ch FL lhat (nn n) (oo R FL Pl o) τ =
     congr 1
     ext u
     simp only [mem_filter, mem_Al, mem_univ, true_and]
-  rw [e1, sum_units, load, ld]
+  rw [e1, sum_uid, load, ld]
   congr 1
   · unfold bt
     by_cases hv : Valid lhat (nn n)
