@@ -139,6 +139,22 @@ theorem lem_few_approx {K : Type} [Field K] {V : Type} [Fintype V] [DecidableEq 
     (M := univ.sup' univ_nonempty fun j => φ.F (T j)) (fun j => Finset.le_sup' (fun j => φ.F (T j)) (mem_univ j))
   rwa [Fintype.card_fin] at this
 
+/-- **Paper: Lemma lem:few.** "Let P ⊆ V, let t be a tensor on P and T_1, …, T_J tensors on V, and suppose that
+t = ∑_j ⟨f_j|T_j⟩, where each f_j consists of one functional at every party outside P. Then φ(t) ≤ J^g(P) max_j φ(T_j)
+for every spectral point on V." (A tensor on P is one on V with legs of size at most one outside P.) It is Lemma
+lem:few-approx with constant local maps. -/
+theorem lem_few {K : Type} [Field K] {V : Type} [Fintype V] [DecidableEq V] [Nonempty V] (φ : Spec K V) (P : Finset V)
+    (t : Ten K V) (ht : ∀ q, q ∉ P → Subsingleton (t.ι q)) {J : ℕ} [NeZero J] (T : Fin J → Ten K V)
+    (h : Ten.SumRestr t T) :
+    φ.F t ≤ (J : ℝ) ^ hexp φ (Subtype.val : P → V) * univ.sup' univ_nonempty fun j => φ.F (T j) := by
+  obtain ⟨L, hL⟩ := h
+  refine lem_few_approx φ P t ht T (fun j p a b => LaurentPolynomial.C (L j p a b)) fun x i _ => ?_
+  have e : ∑ j, ∑ y : ∀ p, (T j).ι p, (∏ p, LaurentPolynomial.C (L j p (x p) (y p))) *
+      LaurentPolynomial.C ((T j).val y) = LaurentPolynomial.C (t.val x) := by
+    simp only [← map_prod, ← map_mul, ← map_sum, hL x, Ten.app]
+  rw [e, ← LaurentPolynomial.single_eq_C, AddMonoidAlgebra.coeff_single, Finsupp.single_apply]
+  simp only [eq_comm]
+
 /-- "Cut the constants off": finitely many series can be replaced by Laurent polynomials so that the products of
 n of them keep the coefficients of ε^i, i ≤ 0. -/
 theorem exists_cut_off {K : Type} [Field K] {ι V : Type} [Fintype ι] [Fintype V] (c : ι → LaurentSeries K) :
