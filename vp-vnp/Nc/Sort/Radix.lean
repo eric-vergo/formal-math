@@ -186,34 +186,20 @@ theorem chk_table {bs : List B} (hbs : ∀ b, b ∈ bs) (hn : bs.Nodup) (T L : L
     rw [List.filter_append, List.filter_map, List.filter_map]
     rfl
   simp only [h1]
+  have empty_iff (l : List (Fin n → B)) (k : Fin n → B) : l.filter (· = k) = [] ↔ k ∉ l := by
+    simp only [List.filter_eq_nil_iff, decide_eq_true_eq]
+    exact ⟨fun h hk => h k hk rfl, fun h a ha e => h (e ▸ ha)⟩
   constructor
   · intro h x hx
-    have := h x
     by_contra hT
-    have e : T.filter (· = x) = [] := by
-      rw [List.filter_eq_nil_iff]
-      intro a ha
-      simp only [decide_eq_true_eq]
-      rintro rfl
-      exact hT ha
-    have hx' : x ∈ L.filter (· = x) := by simp [hx]
-    rw [e] at this
-    rcases hL : L.filter (· = x) with _ | ⟨a, l⟩
-    · rw [hL] at hx'; simp at hx'
-    · rw [hL] at this
-      simp [headOk] at this
+    have hh := h x
+    rw [(empty_iff T x).2 hT] at hh
+    obtain ⟨a, l, he⟩ := List.exists_cons_of_ne_nil (mt (empty_iff L x).1 (not_not_intro hx))
+    simp [he, headOk] at hh
   · intro h k
     rcases hT : T.filter (· = k) with _ | ⟨a, l⟩
-    · have : L.filter (· = k) = [] := by
-        rw [List.filter_eq_nil_iff]
-        intro a ha
-        simp only [decide_eq_true_eq]
-        rintro rfl
-        have := h a ha
-        have h2 : a ∈ T.filter (· = a) := by simp [this]
-        rw [hT] at h2
-        simp at h2
-      simp [this, headOk]
+    · have he := (empty_iff L k).2 (fun hk => (empty_iff T k).1 hT (h k hk))
+      simp [he, headOk]
     · simp [headOk]
 
 theorem sum_filter [Fintype B] (j : Fin n) (l : List (Rc n B)) :

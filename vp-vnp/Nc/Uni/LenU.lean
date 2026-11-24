@@ -234,17 +234,11 @@ theorem MX.total {x : XP P} {bits : List Bool} (hx : MX x bits) :
     simp [lsN, dfN]
     ring
   rw [hN] at e6
-  have e7 : (emX P x (.tp .ls true)).length = (emU x.2.2.2.2.2 lsT).length := by rw [← emX_ls_true]
-  have e8 : ∀ b, (emX P x (.tp (.bk b) true)).length = (emU x.2.2.2.2.2 (.tp (.bk b) true)).length := by
-    intro b; rw [← emX_bk]
-  have e9 : ∀ k, (emX P x (.tp (.cm k) true)).length = (emU x.2.2.2.2.2 (.tp (.cm k) true)).length := by
-    intro k; rw [← emX_cm]
-  rw [sum_Tp (fun s => (emX P x (.tp s true)).length), Finset.sum_congr rfl fun i _ => e1 i, e2, e3, e4, e5, e7,
-    Finset.sum_congr rfl fun b _ => e8 b, Finset.sum_congr rfl fun k _ => e9 k]
+  rw [sum_Tp (fun s => (emX P x (.tp s true)).length)]
+  simp only [e1, e2, e3, e4, e5, emX_ls_true, emX_bk, emX_cm]
   simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, smul_eq_mul]
   unfold tU
-  have e10 : ∀ a b c d e f g h' : ℕ, a + b + c + d + e + f + g + h' = a + b + c + d + e + (f + g + h') := by
-    intros; omega
-  rw [e10, e6]
+  rw [← e6]
+  ac_rfl
 
 end Nc.Uni
