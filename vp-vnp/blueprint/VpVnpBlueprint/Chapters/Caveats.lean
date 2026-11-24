@@ -265,7 +265,7 @@ from the compiled Lean code. A reader should know three things about it.
 
 - _No informal statement._ A generated node shows a Lean declaration, its status and its
   dependencies, and the sentence that it was generated from the Lean code. The written chapters
-  name 400 declarations in their 169 nodes; when this text was last revised, 2,003 further
+  name 400 declarations in their 170 nodes; when this text was last revised, 2,003 further
   declarations were shown as generated nodes. The Project Stats page gives the numbers for the
   build a reader is looking at, among them how many nodes have an informal statement.
 - _Listed by name only._ Theorems of the library `Nc` whose names do not begin with `Paper.`
