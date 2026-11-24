@@ -45,23 +45,6 @@ theorem mul_x_apply (j : Fin (n - 1)) (A : U n) (i k : Fin n) :
   · rw [if_neg h]
     simp [Matrix.mul_apply, Matrix.single_apply, Ne.symm h]
 
-theorem f2_add_self (a : F2) : a + a = 0 := CharTwo.add_self_eq_zero a
-
-theorem lo_ne_hi' (j : Fin (n - 1)) : hi j ≠ lo j := (Nc.Tower.lo_ne_hi j).symm
-
-theorem x_mul_x (j : Fin (n - 1)) : x n j * x n j = 1 := by
-  apply mat_inj
-  ext i k
-  rw [x_mul_apply, mat_x, mat_one]
-  by_cases h : i = lo j
-  · subst h
-    simp only [Matrix.add_apply, if_true, Matrix.single_apply]
-    by_cases h2 : hi j = k
-    · subst h2
-      simp [lo_ne_hi', f2_add_self, (lo_ne_hi' j).symm]
-    · simp [h2, (lo_ne_hi' j).symm, Matrix.one_apply]
-  · simp [h, Matrix.single_apply, Ne.symm h]
-
 /-- The sum of the lengths of the generators of types ≥ p. -/
 noncomputable def Len.T (l : Len (U n)) (p : ℕ) : ℝ :=
   ∑ j ∈ univ.filter (fun j : Fin (n - 1) => p ≤ j.1), l.val (x n j)
@@ -170,7 +153,7 @@ theorem exists_col_aux (l : Len (U n)) (a : Fin n) (k : ℕ) : ∀ p : ℕ, p + 
     · refine ⟨c * x n j, x n j * d, fun i k hi => ?_, hd', hda', fun i => ?_, ?_, hld'⟩
       · rw [mul_x_apply, hclo, Matrix.one_apply_ne (hrow i hi), ite_self, add_zero,
           hc i k (hrow' i hi)]
-      · rw [mul_assoc, ← mul_assoc (x n j), x_mul_x, one_mul, hcd]
+      · rw [mul_assoc, ← mul_assoc (x n j), Nc.Tower.x_mul_self, one_mul, hcd]
         by_cases h : i = lo j
         · rw [h, Function.update_self, hu]
         · rw [Function.update_of_ne h]

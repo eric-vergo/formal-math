@@ -266,7 +266,7 @@ theorem lem_words {n : ℕ} (l : Len (U n)) (k : ℕ) (u φ : Fin n → F2) (hu 
         rw [this, add_zero]
         ext i m
         simp only [Matrix.add_apply, Matrix.vecMulVec_apply]
-        have := f2_add_self (u i * (Pi.single (hi j) 1 : Fin n → F2) m)
+        have := CharTwo.add_self_eq_zero (u i * (Pi.single (hi j) 1 : Fin n → F2) m)
         linear_combination (-1 : F2) * this
       rw [hABC]
       have := l.mul' B C

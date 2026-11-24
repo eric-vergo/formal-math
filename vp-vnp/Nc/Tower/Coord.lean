@@ -76,17 +76,8 @@ theorem x_ne_one (l : Fin (h - 1)) : x h l ≠ 1 := by
   rw [h2, Matrix.one_apply_ne (lo_ne_hi l)] at h1
   exact absurd h1 (by decide)
 
-theorem x_mul_self (l : Fin (h - 1)) : x h l * x h l = 1 := by
-  refine Subtype.ext (Subtype.ext ?_)
-  refine (Matrix.transvection_mul_transvection_same _ _ (lo_ne_hi l) (1 : ZMod 2) 1).trans ?_
-  rw [show (1 : ZMod 2) + 1 = 0 from rfl, Matrix.transvection_zero]
-  rfl
-
-theorem exists_other (h2 : 2 ≤ h) (k : Fin h) : ∃ i : Fin h, k ≠ i := by
-  by_contra hc
-  push Not at hc
-  have h1 := hc (k - 1)
-  exact sub_one_ne h2 k h1.symm
+theorem exists_other (h2 : 2 ≤ h) (k : Fin h) : ∃ i : Fin h, k ≠ i :=
+  ⟨k - 1, (sub_one_ne h2 k).symm⟩
 
 theorem gen_ne (h2 : 2 ≤ h) (k : Fin h) : evG (gen h2 k : G h n) ≠ 1 := by
   obtain ⟨i, hi⟩ := exists_other h2 k
