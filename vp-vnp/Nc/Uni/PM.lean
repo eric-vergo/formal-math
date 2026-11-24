@@ -162,14 +162,7 @@ theorem Closed.nxt {σ : State (M := M) (K := K)} (hσ : Closed σ) {st : P.Step
     simp only [Mach.nxt, List.mem_append, List.mem_singleton] at hc ⊢
     rcases hc with hc | rfl
     · exact (hσ.le c hc i).trans (Nat.le_succ _)
-    · have h4 : ∀ i : Fin 4, (al st).2 i ≤ σ.n + 1 := by
-        intro i
-        fin_cases i
-        · exact he _
-        · exact he _
-        · exact he _
-        · exact he _
-      exact h4 i
+    · fin_cases i <;> exact he _
   · intro j hj
     simp only [Mach.nxt] at hj ⊢
     rcases Nat.lt_or_ge σ.n j with h | h
@@ -361,9 +354,7 @@ theorem SumTo.fin {σ : State (M := M) (K := K)} (hm : σ.mode ≠ P.mh) (F : Fi
 /-- No step. -/
 theorem SumTo.none {σ : State (M := M) (K := K)} (hm : σ.mode ≠ P.mh) (h : ∀ st : P.Step, ¬ Fire σ st) (B : ℤ) :
     SumTo P σ 0 B := by
-  have h1 := SumTo.fin hm (∅ : Finset P.Step) (by simpa using h) (fun _ => 0) 0 (by simp)
   refine ⟨∅, ?_, by simp, by simp⟩
-  obtain ⟨R, hR, -, -⟩ := h1
   intro tr
   simp only [Finset.notMem_empty, false_iff]
   intro htr

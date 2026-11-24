@@ -217,9 +217,7 @@ theorem sum_outTab (hub : 0 < ub) {m B : ℕ} (hm : L.Le m) (hB : B * (m + L.lam
         exact Fin.ext (by simpa using this.symm)
       · rintro rfl p ν
         rfl
-    by_cases h : o = fun ν => (⟨cnt i ν, hlt i ν⟩ : Fin U1)
-    · rw [ite_eq_left h, ite_eq_left (key.2 h)]
-    · rw [ite_eq_right h, ite_eq_right fun h' => h (key.1 h')]
+    simp only [key]
   simp only [e2]
   have swap : (∑ o : L.Cn → Fin U1, ∑ i : Fin B → L.I,
       ∑ g : (ν : L.Cn) → (k : Fin B) → Fin (L.len (i k) ν) → Bool,
@@ -463,12 +461,8 @@ theorem move_identity (hub : 0 < ub) (x : Fin E) {m t : ℕ} (hm : (M.kind x).Le
       if ∀ e, ∀ id ∈ ids e, y (M.part x ((M.kind x).a e)) id = y (M.part x ((M.kind x).b e)) id then 1 else 0 := by
   classical
   rw [Finset.sum_congr rfl fun oo _ => move_outcome x o Seen hSeen hy ids hids ht hne oo, sum_outTab hub hm hB]
-  by_cases hall : ∀ e, ∀ id ∈ ids e, y (M.part x ((M.kind x).a e)) id = y (M.part x ((M.kind x).b e)) id
-  · rw [ite_eq_left hall, ite_eq_left]
-    exact fun e => (slotBits_eq_iff (fun id hid => (hne e id hid).1) (fun id hid => (hne e id hid).2) (ht e)).2 (hall e)
-  · rw [ite_eq_right hall, ite_eq_right]
-    exact fun h => hall fun e =>
-      (slotBits_eq_iff (fun id hid => (hne e id hid).1) (fun id hid => (hne e id hid).2) (ht e)).1 (h e)
+  refine if_congr (forall_congr' fun e => ?_) rfl rfl
+  exact slotBits_eq_iff (fun id hid => (hne e id hid).1) (fun id hid => (hne e id hid).2) (ht e)
 
 /-- Impossible outcomes of a move contribute nothing. -/
 theorem move_zero (hub : 0 < ub) (x : Fin E) {m t : ℕ} (hm : (M.kind x).Le m)
