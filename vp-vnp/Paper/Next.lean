@@ -65,19 +65,20 @@ theorem prop_next_round {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤ α) 
   obtain ⟨g, hg⟩ : ∃ g, e + 11 = g + 16 * h := ⟨e + 11 - 16 * h, by omega⟩
   have h1 := hnBX 1 (by omega)
   have hJX : J + 1 ≤ X := by omega
+  have budget_le (c d : ℕ) (hc : c * X ^ 2 ≤ 1000 * X ^ 3) (hd : h * α + 2 ≤ d) :
+      c * (nB * (J + 1)) ≤ u ^ d := by
+    calc c * (nB * (J + 1)) ≤ c * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
+      _ = nB * (c * X) := by ring
+      _ ≤ 2 * u ^ (h * α + 1) := hnBX c hc
+      _ ≤ u ^ (h * α + 2) := (Nat.mul_le_mul_right _ (by decide : 2 ≤ 2000)).trans (pbig _)
+      _ ≤ u ^ d := pow_le_pow hu1 hd
   refine ⟨_, round hD hp hJ hG (tG := u ^ f) (Ln := u ^ g) (t := u ^ e) ?_ ?_ ?_ ?_ ?_, ?_⟩
   · -- time of the plain instances
     rw [← hnB]
     have m1 : MM (K.ht + B + J + 1) + 2 ≤ u := by
       unfold MM
       omega
-    have m2 : 40 * (nB * (J + 1)) ≤ u ^ (e + 8) := by
-      have := hnBX 40 (by omega)
-      calc 40 * (nB * (J + 1)) ≤ 40 * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
-        _ = nB * (40 * X) := by ring
-        _ ≤ 2 * u ^ (h * α + 1) := this
-        _ ≤ u ^ (h * α + 1 + 1) := by have := pbig (h * α + 1); omega
-        _ ≤ u ^ (e + 8) := pow_le_pow hu1 (by omega)
+    have m2 := budget_le 40 (e + 8) (by omega) (by omega)
     have m3 : 40 ≤ u ^ (e + 8) := by
       have h7 : 2000 * u ^ (e + 7) ≤ u ^ (e + 8) := pbig (e + 7)
       have := ppos (e + 7)
@@ -95,13 +96,7 @@ theorem prop_next_round {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤ α) 
       have : 4 * h * α = 4 * (h * α) := by ring
       omega))
     have m3 : (u ^ α) ^ (16 * h - 32) = u ^ (α * (16 * h - 32)) := by rw [← pow_mul]
-    have m4 : 4 * (nB * (J + 1)) ≤ u ^ (α * (16 * h - 32)) := by
-      have := hnBX 4 (by omega)
-      calc 4 * (nB * (J + 1)) ≤ 4 * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
-        _ = nB * (4 * X) := by ring
-        _ ≤ 2 * u ^ (h * α + 1) := this
-        _ ≤ u ^ (h * α + 1 + 1) := by have := pbig (h * α + 1); omega
-        _ ≤ _ := pow_le_pow hu1 (by omega)
+    have m4 := budget_le 4 (α * (16 * h - 32)) (by omega) (by omega)
     have := pbig (α * (16 * h - 32))
     rw [m3]
     omega
