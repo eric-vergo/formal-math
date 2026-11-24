@@ -21,6 +21,14 @@ variable (ub : ℕ)
 /-- The content of a unit: absent, or `ub` bits. -/
 abbrev UW := Option (Fin ub → Bool)
 
+/-- A missing unit contributes no bits. -/
+def uwBits {ub : ℕ} : UW ub → List Bool
+  | none => []
+  | some w => List.ofFn w
+
+theorem length_uwBits_le {ub : ℕ} (w : UW ub) : (uwBits w).length ≤ ub := by
+  cases w <;> simp [uwBits]
+
 /-- The number of units of a string. -/
 def ucount (L : List Bool) : ℕ := L.length / ub + 1
 

@@ -5,7 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 -/
 import Nc.Grp.PutDef
 import Nc.Cut.Units
-import Nc.Plus.UnitBits
 
 /-!
 # Writing the units of a string into a store

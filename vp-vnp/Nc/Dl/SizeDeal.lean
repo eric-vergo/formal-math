@@ -18,33 +18,6 @@ open NS1 NS1.Tree Finset Nc.G Nc.Cut Codes
 
 namespace Sz
 
-theorem size_quote (c : Tree) : (Fm.quote c).code.size = c.size + 2 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_id : Fm.id.code.size = 5 := by
-  simp only [Fm.code, Tree.size, size_num]
-
-theorem size_hd (a : Fm) : (Fm.hd a).code.size = a.code.size + 6 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_tl (a : Fm) : (Fm.tl a).code.size = a.code.size + 8 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_cons (a b : Fm) : (Fm.cons a b).code.size = a.code.size + b.code.size + 11 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_ite (a b c : Fm) : (Fm.ite a b c).code.size = a.code.size + b.code.size + c.code.size + 14 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_run (a b : Fm) : (Fm.run a b).code.size = a.code.size + b.code.size + 15 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_app (p : Tree) (e : Fm) : (app p e).code.size = p.size + e.code.size + 17 := by
-  rw [app, size_run, size_quote]; ring
-
-theorem size_lett (e b : Fm) : (lett e b).code.size = b.code.size + e.code.size + 17 := by
-  rw [lett, size_run, size_quote]; ring
-
 theorem size_foldF (step s l : Fm) : (foldF step s l).code.size ≤ 2 * step.code.size + s.code.size + l.code.size + 500 := by
   rw [foldF, size_app, size_cons, size_cons, size_quote, foldB, size_ite, size_run, size_cons, size_cons, size_lett,
     size_cons]
