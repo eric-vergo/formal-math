@@ -208,13 +208,8 @@ theorem sum_NN {M : Type*} [AddCommMonoid M] (f : Fin (h - 1) → U h → M) (hf
   classical
   rw [← Fintype.sum_prod_type (fun p : Fin (h - 1) × U h => f p.1 p.2),
     ← Finset.sum_filter_add_sum_filter_not univ (fun p : Fin (h - 1) × U h => FU p.1 p.2)]
-  have h1 : ∑ p ∈ univ.filter (fun p : Fin (h - 1) × U h => FU p.1 p.2), f p.1 p.2 = ∑ ν : NN h, f ν.1.1 ν.1.2 := by
-    refine Finset.sum_bij' (fun p hp => (⟨p, (mem_filter.1 hp).2⟩ : NN h)) (fun ν _ => ν.1) ?_ ?_ ?_ ?_ ?_
-    · intro p _; exact mem_univ _
-    · intro ν _; exact mem_filter.2 ⟨mem_univ _, ν.2⟩
-    · intro p _; rfl
-    · intro ν _; rfl
-    · intro p _; rfl
+  have h1 : ∑ p ∈ univ.filter (fun p : Fin (h - 1) × U h => FU p.1 p.2), f p.1 p.2 = ∑ ν : NN h, f ν.1.1 ν.1.2 :=
+    Finset.sum_subtype _ (by simp) _
   have h3 : ∑ p ∈ univ.filter (fun p : Fin (h - 1) × U h => ¬ FU p.1 p.2), f p.1 p.2 =
       ∑ p ∈ univ.filter (fun p : Fin (h - 1) × U h => FU p.1 p.2), f p.1 p.2 := by
     refine Finset.sum_bij' (fun p _ => (p.1, x h p.1 * p.2)) (fun p _ => (p.1, x h p.1 * p.2)) ?_ ?_ ?_ ?_ ?_
@@ -225,13 +220,9 @@ theorem sum_NN {M : Type*} [AddCommMonoid M] (f : Fin (h - 1) → U h → M) (hf
       rw [mem_filter] at hp ⊢
       exact ⟨mem_univ _, fun e => (FU_iff _ _).1 e hp.2⟩
     · intro p _
-      refine Prod.ext rfl ?_
-      change x h p.1 * (x h p.1 * p.2) = p.2
-      rw [← mul_assoc, x_mul_self, one_mul]
+      exact Prod.ext rfl (by simp [← mul_assoc, x_mul_self])
     · intro p _
-      refine Prod.ext rfl ?_
-      change x h p.1 * (x h p.1 * p.2) = p.2
-      rw [← mul_assoc, x_mul_self, one_mul]
+      exact Prod.ext rfl (by simp [← mul_assoc, x_mul_self])
     · intro p _
       exact (hf _ _).symm
   rw [h3, h1]
@@ -257,7 +248,6 @@ theorem card_XJ (h2 : 2 ≤ h) :
   have h4 : 2 ^ ((h ^ 2 - 1) * n) < (2 ^ ee h) ^ (JJ h n) * 2 ^ ee h := by
     rw [← pow_succ, ← pow_mul]
     exact Nat.pow_lt_pow_right (by omega) h3
-  have hp : 0 < (2 ^ ee h) ^ JJ h n := Nat.pow_pos (Nat.pow_pos (by omega))
   refine Nat.lt_of_mul_lt_mul_right (a := (2 ^ ee h) ^ JJ h n) ?_
   have h5 : Fintype.card ((tower h n h2).X (JJ h n)) * (2 ^ ee h) ^ JJ h n = Nat.card (SL2 h) * 2 ^ ((h ^ 2 - 1) * n) := h1
   rw [h5, mul_assoc, mul_comm (2 ^ ee h)]
