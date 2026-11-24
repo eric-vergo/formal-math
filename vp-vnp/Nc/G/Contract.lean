@@ -35,9 +35,7 @@ theorem codeTab_congr {p : Ro} {G : (i : ι) → ((ν : {ν // c ν = p ∨ d ν
   have : (∀ ν : {ν // c ν = p ∨ d ν = p}, code ν i (g ν) = z ν) ↔
       ∀ ν : {ν // c ν = p ∨ d ν = p}, code ν i (g ν) = z' ν :=
     forall_congr' fun ν => by rw [h ν.1 ν.2]
-  by_cases h1 : ∀ ν : {ν // c ν = p ∨ d ν = p}, code ν i (g ν) = z ν
-  · rw [ite_eq_left h1, ite_eq_left (this.1 h1)]
-  · rw [ite_eq_right h1, ite_eq_right fun h2 => h1 (this.2 h2)]
+  exact if_congr this rfl rfl
 
 variable {c d code}
 
@@ -90,9 +88,7 @@ theorem contract [Nonempty Ro]
       simp only
       rw [hcond (c ν) ⟨ν, Or.inl rfl⟩, hcond (d ν) ⟨ν, Or.inr rfl⟩]
     have hall : ∀ p, (f p).1 = (f p0).1 := fun p =>
-      conn (fun p => (f p).1) (fun ν => by
-        have := congrArg Sigma.fst (hpair ν)
-        exact this) p p0
+      conn (fun p => (f p).1) (fun ν => congrArg Sigma.fst (hpair ν)) p p0
     obtain ⟨i, hi⟩ : ∃ i, i = (f p0).1 := ⟨_, rfl⟩
     have hex : ∀ p, ∃ gp : (ν : {ν // c ν = p ∨ d ν = p}) → S i ν, f p = ⟨i, gp⟩ := by
       intro p
