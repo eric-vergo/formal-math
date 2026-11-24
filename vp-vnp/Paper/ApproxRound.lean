@@ -538,7 +538,7 @@ theorem prop_approx_acc_exact {H v t t' : ℕ} {K : KT E[T;T⁻¹]} {B : ℕ} {D
       | cons q L ih =>
         have h0 : (((KT.val q.2.2 : ℕ) : ZMod (2 ^ W)) = 0) ↔ KT.val q.2.2 = 0 := by
           rw [ZMod.natCast_eq_zero_iff]
-          exact ⟨fun h => Nat.eq_zero_of_dvd_of_lt h (val_lt_of_length (hL q List.mem_cons_self)), fun h => h ▸ dvd_zero _⟩
+          exact ⟨fun h => Nat.eq_zero_of_dvd_of_lt h (KT.val_lt_of_length (hL q List.mem_cons_self)), fun h => h ▸ dvd_zero _⟩
         simp only [List.map_cons, List.sum_cons, AddMonoidAlgebra.coeff_add, Finsupp.add_apply,
           ih fun x hx => hL x (List.mem_cons_of_mem _ hx)]
         congr 1

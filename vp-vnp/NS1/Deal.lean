@@ -63,11 +63,6 @@ end Assign
 
 section Bits
 
-/-- All bit lists of a given length. -/
-def allBits : ℕ → List (List Bool)
-  | 0 => [[]]
-  | n + 1 => (allBits n).map (true :: ·) ++ (allBits n).map (false :: ·)
-
 /-- Guess a bit list. The argument is (this program, (length in binary, bits so far)). -/
 def bitsB : Fm := .ite (app nzB.code (.cons (.quote nzB.code) (.hd (.tl .id))))
   (.ite .guess

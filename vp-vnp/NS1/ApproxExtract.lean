@@ -131,23 +131,6 @@ theorem coeff_wrap_zero {W n : ℕ} {P : E[T;T⁻¹]} (h : Span n P) (hn : n < 2
   · intro h0
     simp [Finsupp.notMem_support_iff.1 h0]
 
-theorem sum_words_range (n : ℕ) {G : Type*} [AddCommMonoid G] (f : ℕ → G) :
-    ((KT.words n).map fun w => f (KT.val w)).sum = ∑ k ∈ Finset.range (2 ^ n), f k := by
-  induction n generalizing f with
-  | zero => simp [KT.words, KT.val]
-  | succ n ih =>
-    have e : ((KT.words (n + 1)).map fun w => f (KT.val w)).sum =
-        ((KT.words n).map fun w => f (2 * KT.val w)).sum + ((KT.words n).map fun w => f (1 + 2 * KT.val w)).sum := by
-      simp [KT.words, KT.val, Function.comp_def]
-    rw [e, ih fun k => f (2 * k), ih fun k => f (1 + 2 * k), pow_succ, mul_comm]
-    clear e ih
-    induction 2 ^ n with
-    | zero => simp
-    | succ k ih =>
-      rw [Finset.sum_range_succ, Finset.sum_range_succ, mul_add, mul_one, Finset.sum_range_succ, Finset.sum_range_succ,
-        ← ih, show 1 + 2 * k = 2 * k + 1 by ring]
-      abel
-
 theorem sum_words_split (J m : ℕ) {G : Type*} [AddCommMonoid G] (F : List Bool → List Bool → G) :
     ((KT.words (J + m)).map fun w => F (w.take J) (w.drop J)).sum =
       ((KT.words J).map fun v => ((KT.words m).map fun w => F v w).sum).sum := by
@@ -262,7 +245,7 @@ theorem sum_xL {J m W : ℕ} {K : KT E[T;T⁻¹]} (hK : K.All fun c => ∀ n < 2
       mark W (expBits W (termExp (c ^ KT.val v) (KT.val w))) (termCoef (c ^ KT.val v) (KT.val w))]
     congr 1
     refine List.map_congr_left fun v hv => ?_
-    rw [List.sum_map_mul_left, sum_terms (A := A) _ (hK _ (val_lt_of_length (KT.length_words hv)))]
+    rw [List.sum_map_mul_left, sum_terms (A := A) _ (hK _ (KT.val_lt_of_length (KT.length_words hv)))]
   | node l r ihl ihr =>
     simp only [xL, KT.budg, sum_flatMap_map, List.map_map, Function.comp_def]
     calc ((xL J m W l).map fun p => ((xL J m W r).map fun q =>

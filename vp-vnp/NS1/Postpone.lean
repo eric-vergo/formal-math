@@ -30,6 +30,11 @@ inductive KT (R : Type) where
   /-- constants whose names begin with 0, constants whose names begin with 1 -/
   | node (l r : KT R)
 
+/-- All bit lists of a given length. -/
+def allBits : ℕ → List (List Bool)
+  | 0 => [[]]
+  | n + 1 => (allBits n).map (true :: ·) ++ (allBits n).map (false :: ·)
+
 namespace KT
 
 /-- The number of nodes. -/
@@ -63,6 +68,17 @@ def val : List Bool → ℕ
   | [] => 0
   | b :: w => (if b then 1 else 0) + 2 * val w
 
+theorem val_lt_of_length {m : ℕ} {w : List Bool} (h : w.length = m) : KT.val w < 2 ^ m := by
+  induction w generalizing m with
+  | nil =>
+    subst h
+    simp [KT.val]
+  | cons b w ih =>
+    subst h
+    have := ih rfl
+    rw [KT.val, List.length_cons, pow_succ]
+    cases b <;> simp <;> omega
+
 /-- All budgets with `J` digits for the names of a trie, with the products of the powers of its constants. -/
 def budg (J : ℕ) : KT R → List (Bt × R)
   | none => [(.none, 1)]
@@ -70,6 +86,24 @@ def budg (J : ℕ) : KT R → List (Bt × R)
   | node l r => (l.budg J).flatMap fun p => (r.budg J).map fun q => (.node p.1 q.1, p.2 * q.2)
 
 end KT
+
+theorem sum_words_range (n : ℕ) {G : Type*} [AddCommMonoid G] (f : ℕ → G) :
+    ((KT.words n).map fun w => f (KT.val w)).sum = ∑ k ∈ Finset.range (2 ^ n), f k := by
+  induction n generalizing f with
+  | zero => simp [KT.words, KT.val]
+  | succ n ih =>
+    have e : ((KT.words (n + 1)).map fun w => f (KT.val w)).sum =
+        ((KT.words n).map fun w => f (2 * KT.val w)).sum + ((KT.words n).map fun w => f (1 + 2 * KT.val w)).sum := by
+      simp [KT.words, KT.val, Function.comp_def]
+    rw [e, ih fun k => f (2 * k), ih fun k => f (1 + 2 * k), pow_succ, mul_comm]
+    clear e ih
+    induction 2 ^ n with
+    | zero => simp
+    | succ k ih =>
+      rw [Finset.sum_range_succ, Finset.sum_range_succ, mul_add, mul_one, Finset.sum_range_succ, Finset.sum_range_succ,
+        ← ih, show 1 + 2 * k = 2 * k + 1 by ring]
+      abel
+
 
 /-- The bill uses up the budgets. -/
 def ok (t : Bt) (b : List (List Bool)) : Bool := ((Bt.decAll b t).map Bt.zero).getD false

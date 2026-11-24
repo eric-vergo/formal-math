@@ -26,15 +26,15 @@ def gwd : ℕ → Fm
   | 0 => .quote .nil
   | M + 1 => .cons (.ite .guess (.quote one) (.quote .nil)) (gwd M)
 
-theorem gwd_does (M : ℕ) (x : Tree) : Does θ (gwd M) x ((wd M).map fun w => (1, ofBits w)) (6 * M + 1) := by
+theorem gwd_does (M : ℕ) (x : Tree) : Does θ (gwd M) x ((allBits M).map fun w => (1, ofBits w)) (6 * M + 1) := by
   induction M with
   | zero => exact (Gives.quote .nil x).mono (by norm_num)
   | succ M ih =>
     have h := ((Gives.quote (θ := θ) one x).either (Gives.quote .nil x)).cons ih
     have e : (([(1, one)] ++ [(1, Tree.nil)] : List (A × Tree)).flatMap fun q =>
-        ((wd M).map fun w => ((1 : A), ofBits w)).map fun r => (q.1 * r.1, Tree.cons q.2 r.2)) =
-        (wd (M + 1)).map fun w => (1, ofBits w) := by
-      simp [wd, Function.comp_def, ofBits, bit]
+        ((allBits M).map fun w => ((1 : A), ofBits w)).map fun r => (q.1 * r.1, Tree.cons q.2 r.2)) =
+        (allBits (M + 1)).map fun w => (1, ofBits w) := by
+      simp [allBits, Function.comp_def, ofBits, bit]
     rw [e] at h
     exact h.mono (by omega)
 
@@ -48,14 +48,14 @@ def walkF : ℕ → Fm
   | m + 1 => lett stepW (walkF m)
 
 theorem walkF_does (m : ℕ) (T : Tree) (acc : List Bool) : Does θ (walkF m) (.cons T (ofBits acc))
-    ((wd m).map fun p => (1, .cons (look p T) (ofBits (p.reverse ++ acc)))) (12 * m + 1) := by
+    ((allBits m).map fun p => (1, .cons (look p T) (ofBits (p.reverse ++ acc)))) (12 * m + 1) := by
   induction m generalizing T acc with
   | zero => exact (Gives.id _).mono (by norm_num)
   | succ m ih =>
     have h0 := (Gives.cons (Gives.id (θ := θ) (.cons T (ofBits acc))).hd.tl
       (Gives.cons (Gives.quote one _) (Gives.id _).tl)).either
       (Gives.cons (Gives.id (θ := θ) (.cons T (ofBits acc))).hd.hd (Gives.cons (Gives.quote .nil _) (Gives.id _).tl))
-    have h := h0.lett (G := walkF m) (R := fun o => (wd m).map fun p => (1, .cons (look p o.hd)
+    have h := h0.lett (G := walkF m) (R := fun o => (allBits m).map fun p => (1, .cons (look p o.hd)
       (ofBits (p.reverse ++ o.tl.path)))) (d := 12 * m + 1) (by
         intro q hq
         simp only [hd_cons, tl_cons, List.cons_append, List.nil_append, List.mem_cons, List.not_mem_nil, or_false] at hq
@@ -80,10 +80,10 @@ theorem walkF_does (m : ℕ) (T : Tree) (acc : List Bool) : Does θ (walkF m) (.
       rw [← this, path_ofBits]
     simp only [bindW, hd_cons, tl_cons, List.cons_append, List.nil_append, List.flatMap_cons, List.flatMap_nil,
       List.append_nil, List.map_map, Function.comp_def, one_mul, e1, e2] at h
-    have e : ((wd (m + 1)).map fun p => ((1 : A), Tree.cons (look p T) (ofBits (p.reverse ++ acc)))) =
-        ((wd m).map fun p => ((1 : A), Tree.cons (look p T.tl) (ofBits (p.reverse ++ true :: acc)))) ++
-        (wd m).map fun p => ((1 : A), Tree.cons (look p T.hd) (ofBits (p.reverse ++ false :: acc))) := by
-      simp [wd, Function.comp_def, look]
+    have e : ((allBits (m + 1)).map fun p => ((1 : A), Tree.cons (look p T) (ofBits (p.reverse ++ acc)))) =
+        ((allBits m).map fun p => ((1 : A), Tree.cons (look p T.tl) (ofBits (p.reverse ++ true :: acc)))) ++
+        (allBits m).map fun p => ((1 : A), Tree.cons (look p T.hd) (ofBits (p.reverse ++ false :: acc))) := by
+      simp [allBits, Function.comp_def, look]
     rw [e]
     exact h.mono (by omega)
 
@@ -179,7 +179,7 @@ theorem loopF_kv {M m : ℕ} {T : Tree} {κ : List Bool → R} {S : Set (List Bo
       κ ([false, false] ++ g ++ l ++ r ++ [false]) = k (KT.val g) (KT.val l) (KT.val r) ∧
       [false, false] ++ g ++ l ++ r ++ [false] ∈ S)
     (ha : ∀ g : List Bool, g.length = M →
-      ((wd m).map fun p => κ ([false, true] ++ g ++ p.reverse ++ lc (look p T) ++ [false])).sum = a (KT.val g))
+      ((allBits m).map fun p => κ ([false, true] ++ g ++ p.reverse ++ lc (look p T) ++ [false])).sum = a (KT.val g))
     (hS : ∀ g p c : List Bool, g.length = M → p.length = m → c.length = 2 → [false, true] ++ g ++ p ++ c ++ [false] ∈ S)
     (hT : ∀ p : List Bool, p.length = m → look p T = .nil ∨ ∃ c : List Bool, c.length = 2 ∧ look p T = ofBits c)
     (n b : ℕ) (ws : List (List Bool)) (hn : 2 * b + ws.length ≤ n) (hws : ∀ w ∈ ws, w.length = M) :

@@ -255,10 +255,10 @@ theorem accF_kv {M m N d s : ℕ} {p : MvPolynomial (Fin N × Option Bool) R} (h
     rw [look_pairTree hzm hp]
     exact ltr_cases _
   have ha : ∀ g : List Bool, g.length = M →
-      ((wd m).map fun p => K.lk ([false, true] ++ g ++ p.reverse ++ lc (look p (pairTree m z)) ++ [false])).sum =
+      ((allBits m).map fun p => K.lk ([false, true] ++ g ++ p.reverse ++ lc (look p (pairTree m z)) ++ [false])).sum =
         ∑ i, lam (KT.val g) i * codeB R N (tbits z) i := by
     intro g hg
-    have h1 : ∀ p ∈ wd m, K.lk ([false, true] ++ g ++ p.reverse ++ lc (look p (pairTree m z)) ++ [false]) =
+    have h1 : ∀ p ∈ allBits m, K.lk ([false, true] ++ g ++ p.reverse ++ lc (look p (pairTree m z)) ++ [false]) =
         (fun w => lamK (lam (KT.val g)) (KT.val w) (((tbits z).map some ++ [none])[KT.val w]?)) p.reverse := by
       intro p hp
       have hpm := length_of_mem_wd hp

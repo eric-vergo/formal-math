@@ -253,21 +253,12 @@ theorem span_budg {n J : ℕ} {K : KT E[T;T⁻¹]} (h : K.All (Span n)) {q : Bt 
     obtain ⟨w, hw, rfl⟩ := hq
     refine ((show Span n c from h).pow _).mono ?_
     rw [KT.nds, one_mul]
-    exact Nat.mul_le_mul_right _ (val_lt_of_length' w (KT.length_words hw)).le
+    exact Nat.mul_le_mul_right _ (KT.val_lt_of_length (KT.length_words hw)).le
   | node l r ihl ihr =>
     simp only [KT.budg, List.mem_flatMap, List.mem_map] at hq
     obtain ⟨p, hp, q', hq', rfl⟩ := hq
     refine ((ihl h.1 hp).mul (ihr h.2 hq')).mono ?_
     simp only [KT.nds, add_mul]
     exact Nat.le_add_right _ _
-where
-  val_lt_of_length' {J : ℕ} (w : List Bool) (hw : w.length = J) : KT.val w < 2 ^ J := by
-    induction w generalizing J with
-    | nil => simp [KT.val, ← hw]
-    | cons b w ih =>
-      subst hw
-      have := ih rfl
-      rw [KT.val, List.length_cons, pow_succ]
-      cases b <;> simp <;> omega
 
 end NS1
