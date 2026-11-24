@@ -1,0 +1,95 @@
+# Build vp-vnp and its blueprint site, and publish the site to GitHub Pages.
+# Runs on pushes to the branch `blueprint` only (and when started by hand); the repository's other
+# workflows run on `main` and on pull requests, so none of them runs on this branch.
+# Pages must use "GitHub Actions" as its source (Settings → Pages), and the environment
+# `github-pages` must allow deployments from `blueprint` (Settings → Environments).
+name: vp-vnp blueprint
+
+on:
+  push:
+    branches: [blueprint]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One run at a time; a run that is deploying is never cancelled.
+concurrency:
+  group: vp-vnp-blueprint-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build vp-vnp and the blueprint site
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    defaults:
+      run:
+        working-directory: vp-vnp
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - name: Install elan
+        run: |
+          curl -sSfL -o elan-init.sh \
+            https://raw.githubusercontent.com/leanprover/elan/227caca133724d5516bee25c2aeb3e609478f2d8/elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          rm elan-init.sh
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Install the project's toolchain
+        run: |
+          elan toolchain install "$(cat lean-toolchain)"
+          lean --version
+          lake --version
+
+      - name: Restore Lake packages
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: vp-vnp/.lake/packages
+          key: ${{ runner.os }}-vp-vnp-packages-v1-${{ hashFiles('vp-vnp/lean-toolchain', 'vp-vnp/lake-manifest.json') }}
+
+      - name: Restore the project's build
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5.1.0
+        with:
+          path: vp-vnp/.lake/build
+          key: ${{ runner.os }}-vp-vnp-build-v1-${{ hashFiles('vp-vnp/lean-toolchain', 'vp-vnp/lake-manifest.json', 'vp-vnp/lakefile.toml') }}-${{ hashFiles('vp-vnp/**/*.lean') }}
+          restore-keys: |
+            ${{ runner.os }}-vp-vnp-build-v1-${{ hashFiles('vp-vnp/lean-toolchain', 'vp-vnp/lake-manifest.json', 'vp-vnp/lakefile.toml') }}-
+
+      - name: Get Mathlib's prebuilt cache
+        run: lake exe cache get
+
+      - name: Build the project and the blueprint site
+        # The runner has 4 cores and 16 GB: the kernel replay gets more time and memory than its
+        # defaults (900 s; a quarter of the memory for each process). A limit can only stop the
+        # replay, never make it accept.
+        env:
+          VERSO_BLUEPRINT_KERNEL_REPLAY_SECONDS: "7200"
+          VERSO_BLUEPRINT_KERNEL_REPLAY_MEMORY_MB: "12000"
+        run: |
+          /usr/bin/time -v ./scripts/ci-pages.sh
+          df -h .
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: vp-vnp/_out/site/html-multi
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.ref == 'refs/heads/blueprint'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
