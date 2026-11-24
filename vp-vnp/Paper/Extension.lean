@@ -72,13 +72,11 @@ theorem prop_extend_lower (ι : I → I') (π : L → I' → I) (hπ : ∀ l i, 
   obtain ⟨a, ha, hr⟩ := prop_extend_cover ι hb
   refine (φ.le_sum A a ha).trans (Finset.sum_le_sum fun k _ => ?_)
   -- φ(a_j) is at most every factor φ(π_l b_j), so at most their weighted geometric mean
-  rcases (φ.nonneg (a k)).eq_or_lt with h0 | h0
-  · rw [← h0]
-    exact (prop_extend_product π θ hθ φ).1 _
-  · calc φ.F (a k) = φ.F (a k) ^ (∑ l, θ l) := by rw [hθ1, Real.rpow_one]
-      _ = ∏ l, φ.F (a k) ^ θ l := Real.rpow_sum_of_pos h0 _ _
-      _ ≤ extendProduct π θ φ (b k) := Finset.prod_le_prod₀ (fun l _ => Real.rpow_nonneg h0.le _) fun l _ =>
-        Real.rpow_le_rpow h0.le ((def_spectral_congr φ).1 (hr k _ (hπ l))) (hθ l)
+  have ha := φ.nonneg (a k)
+  calc φ.F (a k) = φ.F (a k) ^ (∑ l, θ l) := by rw [hθ1, Real.rpow_one]
+    _ = ∏ l, φ.F (a k) ^ θ l := Real.rpow_sum_of_nonneg ha fun l _ => hθ l
+    _ ≤ extendProduct π θ φ (b k) := Finset.prod_le_prod₀ (fun l _ => Real.rpow_nonneg ha _) fun l _ =>
+      Real.rpow_le_rpow ha ((def_spectral_congr φ).1 (hr k _ (hπ l))) (hθ l)
 
 /-- Proof of Proposition prop:extend: "f(ιA) = φ(A), as π_l ι = id." -/
 theorem prop_extend_upper (ι : I → I') (π : L → I' → I) (hπ : ∀ l i, π l (ι i) = i) (θ : L → ℝ)

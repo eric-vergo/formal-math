@@ -49,22 +49,15 @@ theorem exists_mix_spec_keep (F : Spec K P) (θ : Fin 2 → ℝ) (hθ : ∀ l, 0
   obtain ⟨F', hle, hWC⟩ := prop_extend (K := K) (Sum.inl : P → P ⊕ Q)
     (fun l => Sum.elim id (σ l)) (fun l i => rfl) θ hθ hθ1 F (W * C)
   -- on tensors over P the extension is not larger
-  have hA : ∀ A : Ten K P, 0 < F.F A → F'.F (Ten.push Sum.inl A) ≤ F.F A := by
-    intro A h0
-    refine (hle _).trans (le_of_eq ?_)
-    have h1 : ∀ l, F.F (Ten.push (Sum.elim id (σ l)) (Ten.push Sum.inl A)) = F.F A := by
-      intro l
-      have h := Ten.Equi.push_push (Sum.elim id (σ l)) (Sum.inl : P → P ⊕ Q) A
-      rw [show Sum.elim id (σ l) ∘ (Sum.inl : P → P ⊕ Q) = id from rfl] at h
-      exact F.congr (h.trans (Ten.Equi.push_id _))
-    simp only [h1]
-    rw [← Real.rpow_sum_of_pos h0, hθ1, Real.rpow_one]
+  have hA (A : Ten K P) : F'.F (Ten.push Sum.inl A) ≤ F.F A :=
+    (hle _).trans (prop_extend_upper Sum.inl (fun l => Sum.elim id (σ l)) (fun l i => rfl)
+      θ hθ1 F A).le
   have hW0 : 0 < F.F W := by
     rw [hW, F.prod]
     exact Finset.prod_pos fun e _ => by rw [F.wire_two]; positivity
   rw [F'.congr (Ten.Equi.push_mul _ W C), F'.mul, F.mul] at hWC
-  have h1 := hA W hW0
-  have h2 := hA C hC
+  have h1 := hA W
+  have h2 := hA C
   have h3 : 0 ≤ F'.F (Ten.push Sum.inl W) := F'.nonneg _
   have h4 : 0 ≤ F'.F (Ten.push Sum.inl C) := F'.nonneg _
   have hC' : F'.F (Ten.push Sum.inl C) = F.F C := by
@@ -78,7 +71,7 @@ theorem exists_mix_spec_keep (F : Spec K P) (θ : Fin 2 → ℝ) (hθ : ∀ l, 0
   refine ⟨F', hle, ?_, hC'⟩
   have hle' : ∀ p p', F'.e (Sum.inl p) (Sum.inl p') ≤ F.e p p' := by
     intro p p'
-    have h := hA (Ten.wire K 2 p p') (by rw [F.wire_two]; positivity)
+    have h := hA (Ten.wire K 2 p p')
     rw [← F'.pull_F, (F'.pull _).wire_two, F'.pull_e, F.wire_two] at h
     exact (Real.rpow_le_rpow_left_iff (by norm_num)).1 h
   have hsum : ∑ e : P × P, F'.e (Sum.inl e.1) (Sum.inl e.2) = ∑ e : P × P, F.e e.1 e.2 := by
