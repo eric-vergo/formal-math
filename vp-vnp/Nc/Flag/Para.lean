@@ -82,12 +82,10 @@ theorem exists_factor (M : Mt m) :
   have hu : ∀ L : List (TransvectionStruct (Fin m) F2),
       ∃ u : GLM (Fin m), (u : Mt m) = (L.map TransvectionStruct.toMatrix).prod := by
     intro L
-    induction L with
-    | nil => exact ⟨1, by simp⟩
-    | cons t L ih =>
-      obtain ⟨u, hu⟩ := ih
-      refine ⟨⟨t.toMatrix, t.inv.toMatrix, t.mul_inv, t.inv_mul⟩ * u, ?_⟩
-      rw [Units.val_mul, hu, List.map_cons, List.prod_cons]
+    have h : IsUnit (L.map TransvectionStruct.toMatrix).prod := by
+      rw [Matrix.isUnit_iff_isUnit_det, TransvectionStruct.det_toMatrix_prod]
+      exact isUnit_one
+    exact ⟨h.unit, h.unit_spec⟩
   obtain ⟨u, hu1⟩ := hu L
   obtain ⟨v, hv1⟩ := hu L'
   refine ⟨u, v, univ.filter fun i => D i ≠ 0, ?_⟩
