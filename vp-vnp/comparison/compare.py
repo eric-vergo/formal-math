@@ -175,6 +175,14 @@ def exposition(inventory):
                 len(inventory["proof_candidates_with_no_source_usages"])}
 
 
+def exposition_proofs(inventory, paths):
+    exported = set().union(*map(set, inventory["export_project_names"].values()))
+    cited = set(inventory["blueprint_declared_roots"]) - exported
+    return {p["name"]: source_link(inventory, paths[p["module"]], p["source_line"], p["name"])
+            for p in inventory["proofs"].values()
+            if p["name"] in cited and p["module"] != "Comparator.VpVnp.Challenge"}
+
+
 def benchmark_rows(source, revisions):
     main_stage = {"clean": "proof", "warm": "proof", "foundation": "edited", "branch": "edited", "chapter": "edited"}
     conditions = None
@@ -331,6 +339,11 @@ def main():
     for role in ("authored", "generated"):
         paired(f"{role.capitalize()} blueprint directives", *(blueprint_metrics(inv, role) for inv in inventories))
     paired("Exposition and source proofs outside the exports", *map(exposition, inventories))
+    print("### Named exposition proofs outside all five exports\n")
+    print("Each row is a written Lean theorem or lemma command resolved from authored blueprint text. The export test uses the compiled closures.\n")
+    old_exposition, new_exposition = (exposition_proofs(inv, path) for inv, path in zip(inventories, paths, strict=True))
+    table(["Before", "After"], [[old_exposition.get(name, "—"), new_exposition.get(name, "—")]
+                                 for name in sorted(old_exposition.keys() | new_exposition.keys())])
     if args.timings:
         print("### Local build benchmark\n")
         table(["Scenario", "Revision", "Wall trials (s)", "Wall median (range), s", "CPU median (s)",
