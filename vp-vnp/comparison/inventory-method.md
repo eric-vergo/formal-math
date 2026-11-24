@@ -100,3 +100,10 @@ numbered and display rows use their first declaration for the route label. Defin
 keep their editorial label and report the computed membership of each name. The unnumbered
 table is checked as well. A missing declaration, missing source file, unexpected table format,
 or mismatch between a printed route label and the compiled membership fails the check.
+
+Pass `--baseline-root PATH_TO_BASELINE_VP_VNP` to compare the primary declaration for each
+formalized numbered or display row with the port. This reuses the comment and whitespace rules
+of `statement-diff.py`, requires a unique declaration name in the Paper library on each side
+and allows it to move between modules. It compares the written declaration, including definition
+bodies. Surrounding section parameters and the meanings of referenced definitions are outside
+this text comparison. The frozen specification check compares the files themselves.

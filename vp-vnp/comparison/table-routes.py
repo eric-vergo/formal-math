@@ -6,11 +6,14 @@ import argparse
 import json
 import re
 import sys
+from runpy import run_path
 from pathlib import Path
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("kernel", type=Path)
 parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parents[1])
+parser.add_argument("--baseline-root", type=Path,
+                    help="compare primary paper-row declaration texts with the pinned port tree")
 args = parser.parse_args()
 data = json.loads(args.kernel.read_text())
 exports = {
@@ -33,6 +36,19 @@ for path in re.findall(r'\{repoFile "([^"]+)"', docs):
     if not (args.root.parent / path).exists():
         errors.append(f"Missing linked source: {path}")
 paper_rows = set()
+
+def public_declarations(root):
+    parse = run_path(str(args.root / "scripts/statement-diff.py"))["parse"]
+    declarations = {}
+    for path in (root / "Paper").rglob("*.lean"):
+        for name, (_, body) in parse(path.read_text())[0].items():
+            short = name.rsplit(".", 1)[-1]
+            declarations.setdefault(short, []).append(body)
+    return declarations
+
+if args.baseline_root:
+    before = public_declarations(args.baseline_root)
+    after = public_declarations(args.root)
 print("row\tdeclaration\tsource\texports\tprinted_label")
 for block in re.findall(r"^:::table \+header\n(.*?)^:::$", table.read_text(), re.M | re.S):
     for row in re.split(r"^\*\n", block, flags=re.M)[2:]:
@@ -52,6 +68,13 @@ for block in re.findall(r"^:::table \+header\n(.*?)^:::$", table.read_text(), re
             if names_cell != "not formalized" or label != "—":
                 raise ValueError(cells)
             print(title, "—", "—", "—", label, sep="\t")
+        if args.baseline_root and len(cells) == 6 and names:
+            primary = names[0]
+            short = primary.rsplit(".", 1)[-1]
+            if not primary.startswith("Paper.") or len(before.get(short, [])) != 1:
+                errors.append(f"{title}: cannot identify unique paper declaration {primary}")
+            elif before[short] != after.get(short):
+                errors.append(f"{title}: changed or missing primary declaration {primary}")
         for i, name in enumerate(names):
             source = Path(modules[name].replace(".", "/") + ".lean")
             flags = " ".join(letter for letter, closure in exports.items() if name in closure)
