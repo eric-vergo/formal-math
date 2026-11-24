@@ -93,6 +93,6 @@ theorem csize_ryser : CSize (ryserWit F n) (40 * (n + 1) ^ 4) (40 * (n + 1) ^ 4)
 
 /-- **The permanent is in VNP (Ryser's formula).** -/
 theorem perm_mem_VNP : ({ X := fun n => Fin n × Fin n, poly := genPerm F } : Family F) ∈ VNP F :=
-  Hc.mem_VNP_of_quartic_witness _ id _ (fun n => Nat.le_add_left _ _) (csize_ryser F) (genPerm_eq_ryser F)
+  Hc.mem_VNP_of_quartic_witness _ id _ (fun _ => Nat.le_add_left _ _) (csize_ryser F) (genPerm_eq_ryser F)
 
 end Paper

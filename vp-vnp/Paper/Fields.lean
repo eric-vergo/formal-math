@@ -143,7 +143,7 @@ theorem no_poly_size_of_rate {P : ℕ → ℕ → Prop} {c : ℝ} (hc : 0 < c)
 /-- "(HC_m) is in VNP." -/
 theorem hc_mem_VNP (F : Type u) [Field F] :
     ({ X := fun n => Fin n × Fin n, poly := genHC F } : Family F) ∈ VNP F :=
-  Hc.mem_VNP_of_quartic_witness _ (fun n => n * n) _ (fun n => Nat.le_add_right _ _)
+  Hc.mem_VNP_of_quartic_witness _ (fun n => n * n) _ (fun _ => Nat.le_add_right _ _)
     (Hc.csize_hcWit F) (Hc.genHC_eq_sum_wit F)
 
 /-- **Paper: Corollary cor:allclasses.** "Over every field, VP is a proper subset of VNP." -/
