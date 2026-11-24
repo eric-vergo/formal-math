@@ -214,8 +214,8 @@ theorem lem_exponents_tree {A E : Type} [Fintype A] [DecidableEq A] [Nonempty A]
       intro p x x' l l' hx hl
       refine Finset.prod_congr rfl fun e _ => ?_
       by_cases he : a e = p ∨ b e = p
-      · rw [if_pos he, if_pos he, hl e he, hx p rfl]
-      · rw [if_neg he, if_neg he])
+      · rw [ite_eq_left he, ite_eq_left he, hl e he, hx p rfl]
+      · rw [ite_eq_right he, ite_eq_right he])
     (by
       intro x
       refine Eq.trans ?_ (Fintype.sum_eq_single (fun e => (x (a e) : Fin q)) ?_).symm

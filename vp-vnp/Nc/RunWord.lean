@@ -35,7 +35,7 @@ theorem emit_getElem (o : List (Letter S J Γ)) (z : Ch S J) (τ : ℕ) (γ : Γ
     rw [(List.getElem?_eq_some_iff.1 h).2]
     rfl
   conv_lhs => rw [ho]
-  rw [emit_append, emit_append, emit_some, if_pos rfl, List.take_append_of_le_length (by simp; omega),
+  rw [emit_append, emit_append, emit_some, ite_eq_left rfl, List.take_append_of_le_length (by simp; omega),
     List.take_take, min_self, List.getElem?_append_right le_rfl, Nat.sub_self]
   rfl
 

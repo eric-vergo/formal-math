@@ -71,7 +71,7 @@ theorem Computes.mono {p : MvPolynomial X F} {s t : ℕ} (h : Computes p s) (hst
   obtain ⟨l, hl, a, ha, rfl⟩ := h
   refine ⟨fun k => if k < s then l k else MvPolynomial.C 0, fun k hk => ?_, a, by omega, ite_eq_left ha⟩
   by_cases h : k < s
-  · exact (hl k h).reindex id strictMono_id fun i hi => if_pos (hi.trans_lt h)
+  · exact (hl k h).reindex id strictMono_id fun i hi => ite_eq_left (hi.trans_lt h)
   · exact Or.inr (Or.inl ⟨0, by simp only [h, ite_false]⟩)
 
 /-- Apply a ring map that sends input gates to inputs and constant gates to constants. -/

@@ -161,13 +161,13 @@ theorem posVal_start (tab : ∀ a, NodeTable R (fun a c => (n a c).1) ℓ a) :
     · intro id hid
       rcases id with ⟨a, c, k⟩ | ⟨ν, k⟩
       · simp only [W]
-        rw [dif_neg]
+        rw [dite_eq_right]
         simpa [seen0] using hid
       · rfl
     · intro id hid
       rcases id with ⟨a, c, k⟩ | ⟨ν, k⟩
       · simp only [W]
-        rw [dif_pos (by simpa [seen0] using hid)]
+        rw [dite_eq_left (by simpa [seen0] using hid)]
         exact Option.some_ne_none _
       · simp [seen0] at hid
   · intro z _
@@ -342,7 +342,7 @@ theorem thm_tree_good {R : Type} [CommRing R] {laws : List (G.Law R)} {AA N ℓ 
     refine and_congr_left fun _ => ?_
     rw [Real.sqrt_le_left h3, mul_pow, mul_pow, Real.sq_sqrt hC]
     constructor <;> intro h <;> linarith
-  rw [e, T.good_iff n o x, if_pos hlaw]
+  rw [e, T.good_iff n o x, ite_eq_left hlaw]
   refine ⟨fun h => ⟨?_, h.2⟩, fun ⟨g, hg⟩ h => ⟨?_, h.2⟩⟩
   · have h2 : (b : ℝ) * ∑ ν : (T.sys.kind x).Cn, ((o ⟨x, ν⟩).val : ℝ) ^ 2 ≤
         goodBound C₁ a₁ * (T.plan.num n o x : ℝ) ^ 2 := by exact_mod_cast h.1

@@ -143,9 +143,9 @@ theorem card_treeChildren (hh : 0 < h) (n : Fin AA → Fin AA → Fin (N + 1)) (
     rw [← Equiv.apply_symm_apply Pl.pt p, e]
   by_cases hν : ν = none
   · subst hν
-    rw [if_pos rfl]
+    rw [ite_eq_left rfl]
     exact h1.trans (card_ndRoot _ _)
-  · rw [if_neg fun e => hν (Pl.pt.injective e)]
+  · rw [ite_eq_right fun e => hν (Pl.pt.injective e)]
     exact h1.trans (card_ndChildren _ _ hν)
 
 open Classical in
@@ -291,7 +291,7 @@ theorem onN_le_up (hh : 0 < h) (n : Fin AA → Fin AA → Fin (N + 1)) (o : (sys
   rcases nd_cases P with rfl | ⟨j, hj, x, rfl⟩
   · have h1 := kids J le_rfl univ fun x _ => by
       unfold parN
-      rw [dif_neg (by omega)]
+      rw [dite_eq_right (by omega)]
     have h2 := T.sum_bet (LfO R ch FL Pl N n o J)
     have h3 : ∑ x, fb (LfO R ch FL Pl N n o) J x = ∑ x, T.bet (LfO R ch FL Pl N n o J) x := rfl
     simp only [onN]
@@ -308,7 +308,7 @@ theorem onN_le_up (hh : 0 < h) (n : Fin AA → Fin AA → Fin (N + 1)) (o : (sys
         le_trans (le_of_eq (by rw [chF, chs, Finset.sum_filter]))
           (kids j (by omega) (univ.filter fun y => hostj hh (LfO R ch FL Pl N n o) y = x) fun y hy => by
             unfold parN
-            rw [dif_pos hj, (mem_filter.1 hy).2])
+            rw [dite_eq_left hj, (mem_filter.1 hy).2])
       omega
 
 open Classical in
@@ -350,9 +350,9 @@ theorem thm_tree_copies (hH : THypR FL ρ) {n : Fin AA → Fin AA → Fin (N + 1
     rw [Fintype.sum_bool]
     by_cases e : Holds (hold0 (sys R FL Pl).np) (hold1 (sys R FL Pl).np) (Pl.pt P)
         (Uid.new ν (o ν) : Un R FL Pl N U1)
-    · rw [if_pos e]
+    · rw [ite_eq_left e]
       split_ifs <;> omega
-    · rw [if_neg e, if_neg fun h => e (Or.inr h.symm), if_neg fun h => e (Or.inl h.symm)]
+    · rw [ite_eq_right e, ite_eq_right fun h => e (Or.inr h.symm), ite_eq_right fun h => e (Or.inl h.symm)]
       exact Nat.zero_le _
   have h4 := onN_le_up (R := R) (FL := FL) (Pl := Pl) hH.h_pos n o P
   rw [Finset.sum_filter]
@@ -394,8 +394,8 @@ theorem tree_value (hH : THypR FL ρ) (hℓ : 1 ≤ ℓ) {cap : ℕ} (hcap : cap
   refine Finset.sum_congr rfl fun o _ => ?_
   by_cases hg : ∀ x, (Tow.plan R FL Pl N N U1).good n o x
   swap
-  · rw [if_neg hg, if_neg hg]
-  rw [if_pos hg, if_pos hg, posVal_groups _ _ _ _ _ id]
+  · rw [ite_eq_right hg, ite_eq_right hg]
+  rw [ite_eq_left hg, ite_eq_left hg, posVal_groups _ _ _ _ _ id]
 
 open Classical in
 /-- The program that computes the trees. -/

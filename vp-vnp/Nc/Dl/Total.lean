@@ -172,11 +172,11 @@ theorem sum_steps18 (hK : 0 < K) [Nonempty Q] [Nonempty (Fin U1)] : ∃ st : (Fi
   rw [e4, hs7 q ρ n o, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, add_zero]
   have hm := hm7 q ρ n o
   by_cases hcond : ValidRows ρ ∧ tab.valid n ∧ ∀ x, P.good n o x
-  · rw [if_pos hcond, phase8_pos C (fun s p => (hm.row s p).2 (hcond.1 s p)) (fun c => by
+  · rw [ite_eq_left hcond, phase8_pos C (fun s p => (hm.row s p).2 (hcond.1 s p)) (fun c => by
       cases c with
       | none => exact hm.valid.2 hcond.2.1
       | some x => exact (hm.good x).2 (hcond.2.2 x)), List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, add_zero]
-  · rw [if_neg hcond, phase8_neg]
+  · rw [ite_eq_right hcond, phase8_neg]
     · simp
     · by_contra hc
       push Not at hc
@@ -221,10 +221,10 @@ theorem sum_allSteps (hK : 0 < K) [Nonempty Q] [Nonempty (Fin U1)] : ∃ st : (F
     refine Finset.sum_congr rfl fun q _ => if_congr Iff.rfl ?_ rfl
     refine Finset.sum_congr rfl fun ρ _ => ?_
     by_cases hv : ValidRows ρ
-    · rw [if_pos hv]
+    · rw [ite_eq_left hv]
       refine Finset.sum_congr rfl fun n _ => ?_
       by_cases hn : tab.valid n
-      · rw [if_pos hn]
+      · rw [ite_eq_left hn]
         refine Finset.sum_congr rfl fun o _ => ?_
         simp only [hv, hn, true_and]
         refine if_congr Iff.rfl ?_ rfl

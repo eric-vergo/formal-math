@@ -254,13 +254,13 @@ theorem size_endIns (hU : Fintype.card (G.Uid (K + K) U0 M.N U1) ≤ X) (hkey : 
         have lw := length_uwBits_le (b id)
         by_cases h0 : grp (G.hold0 M.np id) = g
         · by_cases h1 : grp (G.hold1 M.np id) = g
-          · simp only [h0, h1, if_true, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num]
+          · simp only [h0, h1, ite_true, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num]
             omega
           · have hcut : id ∈ cutAt P n o grp g := by
               refine mem_filter.2 ⟨mem_univ _, hc, ?_, Or.inl h0⟩
               rw [h0]
               exact fun h => h1 h.symm
-            simp only [h0, h1, if_true, if_false, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num,
+            simp only [h0, h1, ite_true, ite_false, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num,
               ite_eq_left hcut]
             omega
         · by_cases h1 : grp (G.hold1 M.np id) = g
@@ -268,7 +268,7 @@ theorem size_endIns (hU : Fintype.card (G.Uid (K + K) U0 M.N U1) ≤ X) (hkey : 
               refine mem_filter.2 ⟨mem_univ _, hc, ?_, Or.inr h1⟩
               rw [h1]
               exact h0
-            simp only [h0, h1, if_true, if_false, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num,
+            simp only [h0, h1, ite_true, ite_false, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num,
               ite_eq_left hcut]
             omega
           · simp only [h0, h1, ite_false]

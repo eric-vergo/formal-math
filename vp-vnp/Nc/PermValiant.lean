@@ -90,7 +90,7 @@ private theorem affine_gate_block {κ : Type*} (E : κ → MvPolynomial ι F) (h
       have h2 := hm 2 (by omega)
       have h3 := hm 3 (by omega)
       have h4 := hm 4 (by omega)
-      simp only [if_true, OfNat.ofNat_ne_zero, OfNat.ofNat_ne_one, if_false, one_ne_zero,
+      simp only [ite_true, OfNat.ofNat_ne_zero, OfNat.ofNat_ne_one, ite_false, one_ne_zero,
         Nat.reduceEqDiff] at h0 h1 h2 h3 h4
       interval_cases t
       · exact Or.inr (Or.inl ⟨a, h0⟩)
@@ -106,14 +106,14 @@ private theorem affine_gate_block {κ : Type*} (E : κ → MvPolynomial ι F) (h
       refine Or.inr (Or.inr (Or.inl ⟨5 * i + 4, by omega, 5 * j + 4, by omega, ?_⟩))
       have h4 : m (5 * n + 4) = MvPolynomial.aeval E (l n) := hm 4 (by omega)
       rw [h4, hprev i hi, hprev j hj, e, map_add]
-    · exact Or.inr (Or.inl ⟨0, (hm t ht).trans ((if_neg h4).trans (map_zero C).symm)⟩)
+    · exact Or.inr (Or.inl ⟨0, (hm t ht).trans ((ite_eq_right h4).trans (map_zero C).symm)⟩)
   · refine ⟨fun t => if t = 4 then MvPolynomial.aeval E (l n) else 0, rfl, fun m hprev hm t ht => ?_⟩
     by_cases h4 : t = 4
     · subst h4
       refine Or.inr (Or.inr (Or.inr ⟨5 * i + 4, by omega, 5 * j + 4, by omega, ?_⟩))
       have h4 : m (5 * n + 4) = MvPolynomial.aeval E (l n) := hm 4 (by omega)
       rw [h4, hprev i hi, hprev j hj, e, map_mul]
-    · exact Or.inr (Or.inl ⟨0, (hm t ht).trans ((if_neg h4).trans (map_zero C).symm)⟩)
+    · exact Or.inr (Or.inl ⟨0, (hm t ht).trans ((ite_eq_right h4).trans (map_zero C).symm)⟩)
 
 omit [Fintype ι] [DecidableEq ι] in
 /-- Substituting affine polynomials into a circuit costs a factor 5. -/

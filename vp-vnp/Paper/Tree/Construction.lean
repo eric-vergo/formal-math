@@ -68,7 +68,7 @@ theorem card_ndChildren (hh : 0 < h) (Lf : ∀ j, T.Ed j → ℕ) [DecidableEq (
     refine mem_image.2 ⟨c, mem_filter.2 ⟨mem_univ _, ?_⟩, rfl⟩
     have h2 : parN hh Lf i c = nd T (i + 1) hi c' := hμ2
     unfold parN at h2
-    rw [dif_pos hi, nd_inj] at h2
+    rw [dite_eq_left hi, nd_inj] at h2
     exact h2
 
 theorem card_ndRoot (hh : 0 < h) (Lf : ∀ j, T.Ed j → ℕ) [DecidableEq (Nd T)] :
@@ -137,7 +137,7 @@ theorem cur_tree (hH : THypR FL ρ) {n : Fin AA → Fin AA → Fin (N + 1)}
       subst e
       exact hloop rfl
     unfold tgB at hdone
-    rw [if_neg hne] at hdone
+    rw [ite_eq_right hne] at hdone
     split_ifs at hdone with hs
     exact (edgeO_hold (R := R) (ch := ch) (AA := AA) (m := m) (c := ch a) (c' := ch c) (γ := gam T ch a kk) (s := 0)
       (R.pl_pos (fun e => hne (ch.injective e)) _)).1 hdone
@@ -352,7 +352,7 @@ theorem par_computed {U0' : ℕ} {n' : Inp → Fin AA → Fin AA → Fin (U0' + 
         intro x hx
         have := congrArg Pl.pt.symm hx
         rw [Equiv.symm_apply_apply, eq] at this
-        simp only [ndPar, nd, parN, dif_pos (show j + 1 ≤ J by omega)] at this
+        simp only [ndPar, nd, parN, dite_eq_left (show j + 1 ≤ J by omega)] at this
         exact absurd this (Option.some_ne_none _)
       rw [show (fun x => Pl.pt (ndPar hh (lev (load R ch FL U0' (nn (n' x)) (oo R FL Pl (o' x)))) (nd T j hj c)) = q) =
         fun _ => False from funext fun x => eq_false (this x)]
@@ -364,7 +364,7 @@ theorem par_computed {U0' : ℕ} {n' : Inp → Fin AA → Fin AA → Fin (U0' + 
             fun x => hostj hh (lev (load R ch FL U0' (nn (n' x)) (oo R FL Pl (o' x)))) c = c' := by
           funext x
           rw [← Equiv.eq_symm_apply, eq]
-          simp only [ndPar, nd, parN, dif_pos (show j + 1 ≤ J by omega)]
+          simp only [ndPar, nd, parN, dite_eq_left (show j + 1 ≤ J by omega)]
           simp
         rw [e2]
         exact hH j hjJ c c'
@@ -381,7 +381,7 @@ theorem par_computed {U0' : ℕ} {n' : Inp → Fin AA → Fin AA → Fin (U0' + 
   · have e2 : (fun x => Pl.pt (ndPar hh (lev (load R ch FL U0' (nn (n' x)) (oo R FL Pl (o' x)))) (nd T j hj c)) = q) =
         fun _ => Pl.pt none = q := by
       funext x
-      simp only [ndPar, nd, parN, dif_neg (show ¬ j + 1 ≤ J by omega)]
+      simp only [ndPar, nd, parN, dite_eq_right (show ¬ j + 1 ≤ J by omega)]
     rw [e2]
     exact hconst _
 

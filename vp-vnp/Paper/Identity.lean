@@ -45,7 +45,7 @@ private theorem linear_series_recurrence (a b : A) (f : ℕ → ℕ → A)
     ext n
     cases n with
     | zero => rw [coeff_mk_mul_zero, hcol]; simp
-    | succ n => rw [coeff_mk_mul_succ, hrow, hrow, PowerSeries.coeff_one, if_neg (Nat.succ_ne_zero n)]; ring
+    | succ n => rw [coeff_mk_mul_succ, hrow, hrow, PowerSeries.coeff_one, ite_eq_right (Nat.succ_ne_zero n)]; ring
   | succ r ih =>
     have step : PowerSeries.mk (f (r + 1)) * (1 + PowerSeries.C b * PowerSeries.X) =
         PowerSeries.mk (f r) * (1 + PowerSeries.C a * PowerSeries.X) := by
@@ -124,11 +124,11 @@ theorem eq_orth (y : A) (R i j : ℕ) :
       rw [← Finset.sum_mul] at this
       linear_combination this
     | succ j =>
-      simpa only [mB_zero_right, one_mul, (Nat.succ_ne_zero j).symm, if_false, sub_zero] using orth_boundary y R j
+      simpa only [mB_zero_right, one_mul, (Nat.succ_ne_zero j).symm, ite_false, sub_zero] using orth_boundary y R j
   | succ i ih =>
     cases j with
     | zero =>
-      simpa only [mB_zero_right, mul_one, Nat.succ_ne_zero i, if_false, sub_zero] using orth_boundary y R i
+      simpa only [mB_zero_right, mul_one, Nat.succ_ne_zero i, ite_false, sub_zero] using orth_boundary y R i
     | succ j =>
       have := tele y
         (fun r => (mB y r (i + 1) + mB y r i) * (mB y r (j + 1) + mB y r j))
