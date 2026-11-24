@@ -60,20 +60,8 @@ section Cards
 
 theorem card_uid_le {A0 U0 U1 : ℕ} {N : Type} [Fintype N] [DecidableEq N] :
     Fintype.card (G.Uid A0 U0 N U1) ≤ A0 * A0 * U0 + Fintype.card N * U1 := by
-  let f : G.Uid A0 U0 N U1 → (Fin A0 × Fin A0 × Fin U0) ⊕ (N × Fin U1) := fun id => match id with
-    | .init a b k => .inl (a, b, k)
-    | .new ν k => .inr (ν, k)
-  have hf : Function.Injective f := by
-    intro x y h
-    cases x <;> cases y <;> simp only [f, Sum.inl.injEq, Sum.inr.injEq, reduceCtorEq, Prod.mk.injEq] at h
-    · obtain ⟨rfl, rfl, rfl⟩ := h
-      rfl
-    · obtain ⟨rfl, rfl⟩ := h
-      rfl
-  have h := Fintype.card_le_of_injective f hf
-  simp only [Fintype.card_sum, Fintype.card_prod, Fintype.card_fin] at h
-  calc _ ≤ _ := h
-    _ = _ := by ring
+  rw [← Fintype.card_congr (proxy_equiv% G.Uid A0 U0 N U1)]
+  simp [Fintype.card_sigma, Nat.mul_assoc]
 
 theorem card_row (A0 : ℕ) : Fintype.card (RowData A0) = 2 * (A0 * A0) := by
   simp [RowData, Fintype.card_prod]

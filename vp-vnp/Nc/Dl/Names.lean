@@ -113,33 +113,18 @@ theorem size_tset (p : List Bool) (v t : Tree) : (tset p v t).size ≤ t.size + 
     simp only [tset, Tree.size, List.length_nil]
     omega
   | cons b p ih =>
-    cases t with
-    | nil =>
-      cases b
-      · have := ih .nil
-        simp only [tset, tl_nil, hd_nil, Tree.size, List.length_cons] at this ⊢
-        omega
-      · have := ih .nil
-        simp only [tset, tl_nil, hd_nil, Tree.size, List.length_cons] at this ⊢
-        omega
-    | cons a t =>
-      cases t with
-      | nil =>
-        cases b
-        · have := ih .nil
-          simp only [tset, tl_nil, hd_nil, tl_cons, hd_cons, Tree.size, List.length_cons] at this ⊢
-          omega
-        · have := ih .nil
-          simp only [tset, tl_nil, hd_nil, tl_cons, hd_cons, Tree.size, List.length_cons] at this ⊢
-          omega
-      | cons l r =>
-        cases b
-        · have := ih l
-          simp only [tset, tl_cons, hd_cons, Tree.size, List.length_cons] at this ⊢
-          omega
-        · have := ih r
-          simp only [tset, tl_cons, hd_cons, Tree.size, List.length_cons] at this ⊢
-          omega
+    have parts (u : Tree) : u.hd.size + u.tl.size ≤ u.size + 1 := by
+      cases u <;> simp [Tree.size]
+      omega
+    have := parts t
+    have := parts t.tl
+    cases b
+    · have := ih t.tl.hd
+      simp only [tset, Tree.size, List.length_cons]
+      omega
+    · have := ih t.tl.tl
+      simp only [tset, Tree.size, List.length_cons]
+      omega
 
 theorem size_trieOf_le {α : Type} [Fintype α] {code : α → List Bool} {f : α → Tree} {L s : ℕ}
     (hL : ∀ a, (code a).length ≤ L) (hs : ∀ a, (f a).size ≤ s) :
