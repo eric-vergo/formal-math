@@ -16,6 +16,13 @@ open _root_.NS1.Tree
 
 variable {A : Type} [CommRing A] {θ : List Bool → A} {R : Type} [CommRing R] [Algebra A R]
 
+/-- Exponent bounds common to a single accelerator round and to its iteration. -/
+theorem round_exponent_bounds {h α : ℕ} (hh : 17 ≤ h) (hα : 5 ≤ α) :
+    5 * h ≤ h * α ∧ 17 * α ≤ h * α ∧ α * (16 * h - 32) = 16 * (h * α) - 32 * α := by
+  refine ⟨by simpa only [Nat.mul_comm h α] using Nat.mul_le_mul_right h hα,
+    Nat.mul_le_mul_right α hh, ?_⟩
+  simp only [Nat.mul_sub, Nat.mul_comm, Nat.mul_left_comm, Nat.mul_assoc]
+
 /-- Time and size of the plain instances submitted to the cut in either kind of accelerator round. -/
 theorem round_plain_bounds {u h α B J X e ht nB ps : ℕ}
     (hu4 : 2000 ≤ u) (hW : WF.code.size + 3 ≤ u) (hX10 : 10 ≤ X) (hX2 : 10 * X ≤ X ^ 2)
@@ -85,13 +92,7 @@ theorem prop_next_round {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤ α) 
   rw [← hsU, ← hsW] at hcst
   have hu4 : 2000 ≤ u := by omega
   have hu1 : 1 ≤ u := by omega
-  have hh1 : 5 * h ≤ h * α := by rw [Nat.mul_comm h α]; exact Nat.mul_le_mul_right _ hα
-  have hα32 : α * (16 * h - 32) = 16 * (h * α) - 32 * α := by
-    rw [Nat.mul_sub]
-    congr 1
-    · ring
-    · ring
-  have hαh : 17 * α ≤ h * α := Nat.mul_le_mul_right _ hh
+  obtain ⟨hh1, hαh, hα32⟩ := round_exponent_bounds hh hα
   have he3 : h * α + 3 ≤ e := by omega
   have he4 : 16 * h ≤ e := by omega
   have hH : 16 * h ≤ e + 9 := by omega
@@ -99,7 +100,7 @@ theorem prop_next_round {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤ α) 
   obtain ⟨nB, hnB⟩ : ∃ n, n = (K.expand B).nds := ⟨_, rfl⟩
   have hnBX : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * u ^ (h * α + 1) :=
     fun _ hc => hnB ▸ K.expand_cost_le hK (by omega) (hc.trans hXu)
-  have pu : ∀ a, u ^ (a + 1) = u * u ^ a := fun a => by rw [pow_succ]; ring
+  have pu := pow_succ' u
   have pbig : ∀ a, 2000 * u ^ a ≤ u ^ (a + 1) := fun a => by rw [pu]; exact Nat.mul_le_mul_right _ hu4
   have ppos : ∀ a, 1 ≤ u ^ a := fun a => Nat.one_le_pow _ _ (by omega)
   -- the cut
@@ -258,18 +259,12 @@ theorem prop_next {h : ℕ} (hh : 17 ≤ h) {C₀ v₀ : ℕ} (hcut : CutHyp θ 
     rw [cst_def] at hcst
     exact ((Nat.le_add_left _ _).trans (Nat.le_add_right _ 2000)).trans hcst
   have hu1 : 1 ≤ v := by omega
-  have pu : ∀ a, v ^ (a + 1) = v * v ^ a := fun a => by rw [pow_succ]; ring
+  have pu := pow_succ' v
   have pbig : ∀ a, 2000 * v ^ a ≤ v ^ (a + 1) := fun a => by rw [pu]; exact Nat.mul_le_mul_right _ hu4
   have hαX : 3 * α + 1 ≤ X := by
     have : (3 * α + 1) * 1 ≤ (3 * α + 1) * (J + 1) := Nat.mul_le_mul_left _ (by omega)
     omega
-  have hh1 : 5 * h ≤ h * α := by rw [Nat.mul_comm h α]; exact Nat.mul_le_mul_right _ hα
-  have hαh : 17 * α ≤ h * α := Nat.mul_le_mul_right _ hh
-  have hα32 : α * (16 * h - 32) = 16 * (h * α) - 32 * α := by
-    rw [Nat.mul_sub]
-    congr 1
-    · ring
-    · ring
+  obtain ⟨hh1, hαh, hα32⟩ := round_exponent_bounds hh hα
   have hα16 : α * (16 * h - 17) = 16 * (h * α) - 17 * α := by
     rw [Nat.mul_sub]
     congr 1

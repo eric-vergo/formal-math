@@ -169,17 +169,11 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
   rw [← hsU, ← hsW] at hcst
   have hu4 : 2000 ≤ u := by omega
   have hu1 : 1 ≤ u := by omega
-  have hh1 : 5 * h ≤ h * α := by rw [Nat.mul_comm h α]; exact Nat.mul_le_mul_right _ hα
-  have hα32 : α * (16 * h - 32) = 16 * (h * α) - 32 * α := by
-    rw [Nat.mul_sub]
-    congr 1
-    · ring
-    · ring
-  have hαh : 17 * α ≤ h * α := Nat.mul_le_mul_right _ hh
+  obtain ⟨hh1, hαh, hα32⟩ := round_exponent_bounds hh hα
   have he3 : h * α + 3 ≤ e := by omega
   have he4 : 16 * h ≤ e := by omega
   have hH : 16 * h ≤ e + 9 := by omega
-  have pu : ∀ a, u ^ (a + 1) = u * u ^ a := fun a => by rw [pow_succ]; ring
+  have pu := pow_succ' u
   have pbig : ∀ a, 2000 * u ^ a ≤ u ^ (a + 1) := fun a => by rw [pu]; exact Nat.mul_le_mul_right _ hu4
   have ppos : ∀ a, 1 ≤ u ^ a := fun a => Nat.one_le_pow _ _ (by omega)
   -- the tries of powers
@@ -325,18 +319,12 @@ theorem prop_approx_acc_next {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤
     rw [cst_def] at hcst
     exact ((Nat.le_add_left _ _).trans (Nat.le_add_right _ 2000)).trans hcst
   have hu1 : 1 ≤ u := by omega
-  have pu : ∀ a, u ^ (a + 1) = u * u ^ a := fun a => by rw [pow_succ]; ring
+  have pu := pow_succ' u
   have pbig : ∀ a, 2000 * u ^ a ≤ u ^ (a + 1) := fun a => by rw [pu]; exact Nat.mul_le_mul_right _ hu4
   have hαX : 2 * α + 2 ≤ X := by
     have : (2 * α + 2) * 1 ≤ (2 * α + 2) * (J + 1) := Nat.mul_le_mul_left _ (by omega)
     omega
-  have hh1 : 5 * h ≤ h * α := by rw [Nat.mul_comm h α]; exact Nat.mul_le_mul_right _ hα
-  have hαh : 17 * α ≤ h * α := Nat.mul_le_mul_right _ hh
-  have hα32 : α * (16 * h - 32) = 16 * (h * α) - 32 * α := by
-    rw [Nat.mul_sub]
-    congr 1
-    · ring
-    · ring
+  obtain ⟨hh1, hαh, hα32⟩ := round_exponent_bounds hh hα
   have e16 : 16 * h * α = 16 * (h * α) := by ring
   have e4 : 4 * h * α = 4 * (h * α) := by ring
   have e17 : 16 * h * (2 * α) = 32 * (h * α) := by ring
