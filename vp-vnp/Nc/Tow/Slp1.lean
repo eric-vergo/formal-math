@@ -166,11 +166,11 @@ theorem tmin_sum {L : Tg T m AA → ℕ} {l : LMv T FL} {B : ℕ} (hlt : tmin FL
   have h1 : ∀ s, (ind (fun _ : Unit => ¬ ∃ d, Fits FL L (withD FL l d) s) ()) = if s < tmin FL L l then 1 else 0 := by
     intro s
     by_cases hs : s < tmin FL L l
-    · rw [if_pos hs, ind_true]
+    · rw [ite_eq_left hs, ind_true]
       intro hd
       have h3 : tmin FL L l ≤ s := Nat.sInf_le hd
       omega
-    · rw [if_neg hs, ind_false]
+    · rw [ite_eq_right hs, ind_false]
       intro hn
       obtain ⟨d, hd⟩ := tmin_spec L l
       exact hn ⟨d, fits_mono (not_lt.1 hs) hd⟩

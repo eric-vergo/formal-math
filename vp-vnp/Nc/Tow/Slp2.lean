@@ -60,9 +60,9 @@ theorem py_valid (hb : Base nx ox H) : PY Dd H Y 6 fun x => Valid lhat (nx x) :=
   refine PY.forall_univ hA (by simpa using hB.aa1) fun a => PY.rel1 hA (fun s => s ≤ lhat) ?_
   refine CY.sum hA univ (by simpa using hB.aa1) (fun c _ => ?_) fun x => hA.lt_of_le3 ?_
   · by_cases hca : c = a
-    · simp only [if_pos hca]
+    · simp only [ite_eq_left hca]
       exact (CY.const 0 hA.zero_lt).mono hY (Nat.zero_le 1)
-    · simp only [if_neg hca]
+    · simp only [ite_eq_right hca]
       refine CY.op hA (fun s t => s + t) (CY.base (hb.n a c) hY) (CY.base (hb.n c a) hY) fun x => hA.lt_of_le3 ?_
       have h1 := hR.n x a c
       have h2 := hR.n x c a
