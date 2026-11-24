@@ -203,8 +203,7 @@ After every check of this chapter a reader still relies on:
    for a replay the exporter, the two checkers and the elaborator.
 4. Mathlib's definitions of the notions the statement file uses, in their documented meaning.
 
-The proofs themselves are not on this list: none of the development's roughly 73,000 lines of
-Lean below the statement file has to be read to know that the five statements are proved. That
+The proofs themselves are not on this list: none of the proof code below the statement file has to be read to know that the five statements are proved. That
 is the point of the formalization, and it is why this blueprint asks its reader to spend the
 effort on the first item.
 

@@ -610,10 +610,10 @@ formula is guessed exactly once, so the sum formula is the one obtained above.�
 *Reading (gloss): the Lean proof.* `Paper.thm_onecut` obtains the universal automaton from
 `Paper.prop_universal` and, for this automaton, a `PieceCut` from `Paper.prop_pieces`; it then
 puts two programs on them, each with its own theorem (the two nodes below), and the rest of its
-proof, about 350 lines, is arithmetic between the numbers of the two theorems and the bounds of the
+proof establishes the arithmetic relations between the numbers of the two theorems and the bounds of the
 statement. The two programs live in two libraries.
 
-- *The evaluator* is the program `GROUP` of `Nc/Grp` (28 files; the Lean word for a piece is
+- *The evaluator* is the program `GROUP` of `Nc/Grp` (the Lean word for a piece is
   *group*). `Nc.Grp.exists_group` gives, for a fixed automaton, a fixed code of symbols and a fixed
   finite list of roles of laws, one program `GROUP` and a step cost `κ`. Its specification is the
   predicate `Nc.Grp.GroupOK`: for every plan, every choice `q`, `ρ`, `n`, `o`, every assignment `grp`
@@ -632,7 +632,7 @@ statement. The two programs live in two libraries.
   transducer run for $`t \cdot \mathtt{ub}` steps (`Nc/Grp/Role*.lean`, `Trans.lean`); the value of a
   piece is first rewritten as a sum over executions of these steps in a fixed order
   (`Nc/Grp/GrpSteps.lean`, `GrpVal.lean`, `Steps.lean`).
-- *The cutting program* is the *dealing program* of `Nc/Dl` (22 files) on the general machinery
+- *The cutting program* is the *dealing program* of `Nc/Dl` on the general machinery
   of `NS1` for programs that proceed by steps writing named values into a trie (`NS1/Deal.lean`,
   `DSteps.lean`, `Picks.lean`, `Parts.lean`). Its theorem `Paper.thm_onecut_program` (below) takes
   as hypotheses the specification `GroupOK` of the evaluator, the statement of the universal
@@ -643,7 +643,7 @@ statement. The two programs live in two libraries.
 *What was read.* The statement and the first part of the proof of `Paper.thm_onecut`, the
 statements of the two nodes below and of `Nc.Grp.exists_group`, the definitions of `GroupOK`,
 `GrpTimeOK` and `Nc.Grp.grpTime`, and the module headers of `Nc/Grp`, `Nc/Dl` and `Nc/Cut`. Not read: the
-programs themselves and the proofs about them (about 11,700 lines in `Nc/Grp` and `Nc/Dl`). What
+programs themselves and the proofs about them (in `Nc/Grp` and `Nc/Dl`). What
 is said above about the three clauses of `GroupOK` is a reading of that definition. What is said
 about the internal structure of `GROUP` and of the dealing program (the last sentence of the
 first item, and the first sentence of the second) is taken from the names of the files and from

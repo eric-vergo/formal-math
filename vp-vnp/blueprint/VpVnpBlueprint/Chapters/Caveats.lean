@@ -82,8 +82,7 @@ Three things follow for a reader.
 *The four items cannot be refereed from the paper.* What the universal automaton, the programs of
 Theorem H.2, the evaluator and cutting program of Theorem J.3 and the programs of Proposition N.4
 are, and that they do what is claimed, is in the Lean code, for the most part in the libraries `Nc/Uni`,
-`Nc/Sort`, `Nc/Tow`, `Nc/Dl` and `Nc/Grp`, about 26,000 lines by a count of the files, and with
-`Nc/Tape`, `Nc/Cut` and the program model `NS1` about 36,000 of the development's 73,000. The chapters
+`Nc/Sort`, `Nc/Tow`, `Nc/Dl` and `Nc/Grp`, together with `Nc/Tape`, `Nc/Cut` and the program model `NS1`. The chapters
 {ref "chapter-laws"}[Rerouting laws and tree networks],
 {ref "chapter-programs"}[Programs, automata and cutting] and
 {ref "chapter-accelerators"}[Accelerators and the diagonal argument] describe these programs from
@@ -93,13 +92,12 @@ and do not replace reading it.
 
 *Which Lean proofs this blueprint describes from their statements only.* Lean's kernel checked
 every proof of the development, these like all others. What the blueprint lacks for the
-following is an account written from the proofs: nobody who wrote or reviewed its chapters read
-them, and the chapters describe them by the statements of their theorems, by their definitions
-and by the organisation of the files.
+following is a proof-by-proof exposition. For these arguments the chapters give the
+statements, definitions and organization of the files; individual explanations of revised steps
+are identified where they occur.
 
-- The evaluator and the cutting program of Theorem J.3: the folders `Nc/Grp` and `Nc/Dl`, 11,676
-  lines.
-- The proofs about the tower plan behind Theorem H.2 in the folder `Nc/Tow`, about 8,900 lines,
+- The evaluator and the cutting program of Theorem J.3: the folders `Nc/Grp` and `Nc/Dl`.
+- The proofs about the tower plan behind Theorem H.2 in the folder `Nc/Tow`,
   and the start of the construction in `Nc/G/Start.lean`.
 - In the folder `Nc/Uni`, the universal automaton of Proposition I.1: the rules of the machine,
   the proof of `evOK`, and the specification of the sorting pass.
@@ -256,12 +254,11 @@ does not print. They are in the part
 from the compiled Lean code. A reader should know three things about it.
 
 - _No informal statement._ A generated node shows a Lean declaration, its status and its
-  dependencies, and the sentence that it was generated from the Lean code. The written chapters
-  name 400 declarations in their 170 nodes; when this text was last revised, 2,003 further
-  declarations were shown as generated nodes. The Project Stats page gives the numbers for the
+  dependencies, and the sentence that it was generated from the Lean code. At the port baseline `9fd368ad`, the written chapters
+  named 400 declarations in 170 nodes and 2,003 further declarations had generated nodes. The Project Stats page gives the numbers for the
   build a reader is looking at, among them how many nodes have an informal statement.
 - _Listed by name only._ Theorems of the library `Nc` whose names do not begin with `Paper.`
-  (2,210 of them when this text was last revised) are listed by name with a link to the source,
+  (2,210 at the port baseline) are listed by name with a link to the source,
   and have no node, because a node for each would make the site too large to publish. Lean's
   kernel checked them when the development was compiled; they do not appear in the graph.
 - _The graph is not the full dependency relation._ An edge from a written node is drawn when the

@@ -721,7 +721,7 @@ produces, from an approximate accelerator over a nonzero $`A`-algebra `R`, an ex
 over the same `R` at a larger scale, of size $`u^{4400h+6}`, and applies the exact theorem. Its
 steps are the three nodes below. The proof of `prop_approx_acc` itself and the statements of the
 nodes were read; of the proofs behind them (`Paper/ApproxRound.lean`, `Paper/ApproxScales.lean`,
-`NS1/Approx*.lean`, about 2,600 lines) only the statements and the definitions `OrdGE`, `Span`,
+`NS1/Approx*.lean`) only the statements and the definitions `OrdGE`, `Span`,
 `Thin`, `IsAccA`, `InvA` were read. In particular the programs of the round and of the extraction
 were not read, and the summary of what they do is the paper's.
 :::
