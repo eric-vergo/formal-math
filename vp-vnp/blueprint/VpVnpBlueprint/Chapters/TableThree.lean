@@ -49,11 +49,11 @@ The column _Lean statement_ has one of three entries.
 - _no Lean counterpart_: Remark N.6 only.
 
 These entries are a reading of the printed statements against the Lean statements, made for this
-blueprint by an AI model. No tool checks such a comparison, and no human has made it. It was made
-for all rows from the paper and the Lean sources; for the rows of Theorems H.2 and Proposition
-J.2, of Definition G.1, of Lemma I.2 and of Proposition E.1, whose content lies in the fields of
-structures or in long statements, it was made against the paper's own list of differences and not
-clause by clause. No difference was found that the paper does not name. A difference in a row
+blueprint by AI models: once for every row, from the paper and the Lean sources, and a second
+time for a sample of 32 rows. No tool checks such a comparison, and no human has made it. For
+Theorem H.2, Proposition J.2, Definition G.1, Lemma I.2 and Proposition E.1, whose content lies
+in the fields of structures or in long statements, it was made against the paper's own list of
+differences and not clause by clause. No difference was found that the paper does not name. A difference in a row
 below cannot affect what the five theorems of `Solution.lean` state, which is fixed by
 `Statement.lean` alone ({ref "chapter-statement"}[The statement to trust]); it affects how far
 the printed text can serve as a guide to the Lean proof.
