@@ -22,6 +22,20 @@ def listT : List Tree → Tree
   | [] => .nil
   | x :: xs => .cons x (listT xs)
 
+/-- Each list cell contributes one node in addition to the tree it holds. -/
+theorem size_listT (l : List Tree) : (listT l).size = (l.map fun t => t.size + 1).sum + 1 := by
+  induction l with
+  | nil => rfl
+  | cons a l ih => simp only [listT, Tree.size, ih, List.map_cons, List.sum_cons]; omega
+
+theorem size_listT_le {l : List Tree} {n b : ℕ} (hl : l.length ≤ n) (hb : ∀ t ∈ l, t.size ≤ b) :
+    (listT l).size ≤ n * (b + 1) + 1 := by
+  rw [size_listT]
+  apply Nat.add_le_add_right
+  refine (List.sum_le_length_nsmul _ (b + 1) ?_).trans ?_
+  · simpa using fun t ht => Nat.succ_le_succ (hb t ht)
+  · simpa [smul_eq_mul] using Nat.mul_le_mul_right (b + 1) hl
+
 @[simp] theorem toList_listT (xs : List Tree) : (listT xs).toList = xs := by
   induction xs with
   | nil => rfl

@@ -30,11 +30,6 @@ theorem size_mapF (step s l : Fm) : (mapF step s l).code.size ≤ 2 * step.code.
   simp only [size_hd, size_tl, size_id, size_quote, Tree.size]
   omega
 
-theorem size_listT (l : List Tree) : (listT l).size = (l.map Tree.size).sum + l.length + 1 := by
-  induction l with
-  | nil => rfl
-  | cons t l ih => simp only [listT, Tree.size, ih, List.map_cons, List.sum_cons, List.length_cons]; ring
-
 theorem sum_le {α : Type*} {l : List α} {f : α → ℕ} {n b : ℕ} (hl : l.length ≤ n) (hb : ∀ t ∈ l, f t ≤ b) :
     (l.map f).sum ≤ n * b := by
   have h : (l.map f).sum ≤ l.length * b := by
@@ -47,12 +42,6 @@ theorem sum_le {α : Type*} {l : List α} {f : α → ℕ} {n b : ℕ} (hl : l.l
       rw [List.map_cons, List.sum_cons, List.length_cons, add_mul, one_mul]
       omega
   exact h.trans (Nat.mul_le_mul_right _ hl)
-
-theorem size_listT_le {l : List Tree} {n b : ℕ} (hl : l.length ≤ n) (hb : ∀ t ∈ l, t.size ≤ b) :
-    (listT l).size ≤ n * (b + 1) + 1 := by
-  have h := sum_le hl hb
-  rw [size_listT, mul_add, mul_one]
-  omega
 
 theorem size_c (t : Tree) : (Tm.c t).tree.size = t.size + 2 := by
   simp only [Tm.tree, Tree.size, size_num]; ring

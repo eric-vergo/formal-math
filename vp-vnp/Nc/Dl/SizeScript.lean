@@ -16,33 +16,9 @@ namespace Nc.Dl
 
 open NS1 NS1.Tree Finset Nc.G Nc.Cut Nc.Grp
 
-theorem size_listT (l : List Tree) : (listT l).size = (l.map fun t => t.size + 1).sum + 1 := by
-  induction l with
-  | nil => rfl
-  | cons a l ih =>
-    simp only [listT, Tree.size, ih, List.map_cons, List.sum_cons]
-    omega
-
-theorem size_listT_le {l : List Tree} {s : ℕ} (h : ∀ t ∈ l, t.size ≤ s) :
-    (listT l).size ≤ l.length * (s + 1) + 1 := by
-  rw [size_listT]
-  have := List.sum_le_card_nsmul (l.map fun t => t.size + 1) (s + 1) (by
-    intro n hn
-    rw [List.mem_map] at hn
-    obtain ⟨t, ht, rfl⟩ := hn
-    exact Nat.succ_le_succ (h t ht))
-  rw [List.length_map, smul_eq_mul] at this
-  omega
-
-theorem size_listT_le' {l : List Tree} {s X : ℕ} (hl : l.length ≤ X) (h : ∀ t ∈ l, t.size ≤ s) :
-    (listT l).size ≤ X * (s + 1) + 1 := by
-  refine (size_listT_le h).trans ?_
-  have := Nat.mul_le_mul_right (s + 1) hl
-  omega
-
 theorem size_keys {ks : List (List Bool)} {X Lc : ℕ} (hl : ks.length ≤ X) (h : ∀ k ∈ ks, k.length ≤ Lc) :
     (listT (ks.map ofBits)).size ≤ X * (4 * Lc + 2) + 1 := by
-  refine size_listT_le' (s := 4 * Lc + 1) (by rw [List.length_map]; exact hl) ?_
+  refine size_listT_le (b := 4 * Lc + 1) (by rw [List.length_map]; exact hl) ?_
   intro t ht
   rw [List.mem_map] at ht
   obtain ⟨k, hk, rfl⟩ := ht
@@ -53,7 +29,7 @@ theorem size_keys {ks : List (List Bool)} {X Lc : ℕ} (hl : ks.length ≤ X) (h
 theorem size_keysT {l : List (List (List Bool))} {X Lc : ℕ} (hl : l.length ≤ X)
     (h : ∀ ks ∈ l, ks.length ≤ X ∧ ∀ k ∈ ks, k.length ≤ Lc) :
     (keysT l).size ≤ X * (X * (4 * Lc + 2) + 2) + 1 := by
-  refine size_listT_le' (s := X * (4 * Lc + 2) + 1) (by rw [List.length_map]; exact hl) ?_
+  refine size_listT_le (b := X * (4 * Lc + 2) + 1) (by rw [List.length_map]; exact hl) ?_
   intro t ht
   rw [List.mem_map] at ht
   obtain ⟨ks, hks, rfl⟩ := ht
@@ -66,11 +42,11 @@ theorem size_body {B : Body} {X Lc : ℕ} (h1 : B.flags.length ≤ X)
     (h6 : ∀ ks ∈ B.kC, ks.length ≤ X ∧ ∀ k ∈ ks, k.length ≤ Lc) :
     B.tree.size ≤ X * X * (8 * Lc + 10) + 6 * X + 5 := by
   have e1 : (listT (B.flags.map fun l => listT (l.map num))).size ≤ X * (X * 6 + 1 + 1) + 1 := by
-    refine size_listT_le' (by rw [List.length_map]; exact h1) ?_
+    refine size_listT_le (by rw [List.length_map]; exact h1) ?_
     intro t ht
     rw [List.mem_map] at ht
     obtain ⟨l, hl, rfl⟩ := ht
-    refine size_listT_le' (s := 5) (by rw [List.length_map]; exact (h2 l hl).1) ?_
+    refine size_listT_le (b := 5) (by rw [List.length_map]; exact (h2 l hl).1) ?_
     intro t ht
     rw [List.mem_map] at ht
     obtain ⟨k, hk, rfl⟩ := ht
@@ -146,7 +122,7 @@ theorem size_baseIns (hK : K + K ≤ X) (hU0 : U0 ≤ X) (hS : Fintype.card (Opt
       X * X * (8 * Lc + 10) + 10 * X + 12 + X * (8 * Lc + 10) + plen x p * (4 * c + 2) := by
   have hboth : ((((List.finRange U0).filter fun k => k.1 < (n p p).1).map fun k =>
       (Ins.both (key (Fin.castAdd A' p, .init p p k)) (dkey (p, k))).tree.size + 1)).sum ≤ X * (8 * Lc + 10) := by
-    refine (List.sum_le_card_nsmul _ (8 * Lc + 10) ?_).trans ?_
+    refine (List.sum_le_length_nsmul _ (8 * Lc + 10) ?_).trans ?_
     · intro m hm
       rw [List.mem_map] at hm
       obtain ⟨k, -, rfl⟩ := hm
@@ -181,7 +157,7 @@ theorem size_baseIns (hK : K + K ≤ X) (hU0 : U0 ≤ X) (hS : Fintype.card (Opt
       have h1 := size_bodyOf (ρ := ρ) (n := n) hK hU0 hS hkey hdkey (Fin.natAdd K κ)
       have h2 : (listT ((((x κ).map fun a => List.ofFn (cb (some a))).reverse).map ofBits)).size ≤
           (x κ).length * (4 * c + 1 + 1) + 1 := by
-        refine size_listT_le' (by simp) ?_
+        refine size_listT_le (by simp) ?_
         intro t ht
         rw [List.mem_map] at ht
         obtain ⟨w, hw, rfl⟩ := ht
@@ -360,7 +336,7 @@ theorem size_scriptT (hX : 1 ≤ X) (hLc : 1 ≤ Lc) (hK : K + K ≤ X) (hU0 : U
   -- roles
   have h2 : ((((roleList grp g M).map (roleIns P n o key tg)).map Ins.tree).map fun t => t.size + 1).sum ≤
       X * (X * X * (8 * Lc + 4) + 8 * X + 16) := by
-    refine (List.sum_le_card_nsmul _ (X * X * (8 * Lc + 4) + 8 * X + 16) ?_).trans ?_
+    refine (List.sum_le_length_nsmul _ (X * X * (8 * Lc + 4) + 8 * X + 16) ?_).trans ?_
     · intro m hm
       rw [List.mem_map] at hm
       obtain ⟨t, ht, rfl⟩ := hm
