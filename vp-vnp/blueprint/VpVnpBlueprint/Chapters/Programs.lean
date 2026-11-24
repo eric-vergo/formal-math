@@ -229,12 +229,13 @@ $`27(2C + 2)`. The content is in four layers, each with its own Lean objects.
    $`\mathrm{sum}(z)`, and each has at most $`3|z| + C\tau + 10` steps. It is proved by induction
    over the relation `Ev` (`Nc.Uni.evOK`, one case per construct), after a parsing phase that
    builds the tree in the heap (`Nc.Uni.parse`). The table `θ` enters through its finite support:
-   the modes of the machine include the prefixes of the names in the support.
+   the type of modes of the machine is built from the prefixes of the names in the support
+   (`Nc.Uni.Md`, `Nc.Uni.Nm`).
 3. *Tape programs as rational series* (`Nc/Tape`, `Nc/Sort`, `Nc/Uni/Prog.lean`). A tape program
    is a function from words over (channel, symbol) to $`A` that has a linear representation of
    bounded dimension (`Nc.RatLe`); sums, products and stars keep this property. `Nc.Uni.runs_X`
-   writes the simulating program as a product of such pieces (input, counter, a star over the
-   steps, end, and the sorting loop) and proves that its sum over all words with given projections
+   writes the simulating program as a product of six such pieces (among them a star over the
+   steps of the machine and the sorting loop) and proves that its sum over all words with given projections
    to the channels is the sum of the weights of *structured runs* with these projections
    (`Nc.IsRuns`). `Nc.Uni.mt_X` characterises the structured runs whose two sides agree on every
    tape, and `Paper.prop_universal_automaton` (below) concludes that the value of the program is
