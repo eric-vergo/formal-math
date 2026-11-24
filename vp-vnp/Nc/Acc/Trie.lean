@@ -70,16 +70,6 @@ theorem ht_full (n : ℕ) (f : List Bool → R) : (full n f).ht = n := by
 
 end KT
 
-theorem length_of_mem_wd {m : ℕ} {w : List Bool} (h : w ∈ allBits m) : w.length = m := by
-  induction m generalizing w with
-  | zero =>
-    simp only [allBits, List.mem_singleton] at h
-    subst h
-    rfl
-  | succ m ih =>
-    simp only [allBits, List.mem_append, List.mem_map] at h
-    rcases h with ⟨v, hv, rfl⟩ | ⟨v, hv, rfl⟩ <;> simp [ih hv]
-
 theorem exists_word {m k : ℕ} (h : k < 2 ^ m) : ∃ w : List Bool, w.length = m ∧ KT.val w = k := by
   induction m generalizing k with
   | zero => exact ⟨[], rfl, by simp [KT.val]; omega⟩

@@ -209,7 +209,7 @@ theorem loopF_kv {M m : ℕ} {T : Tree} {κ : List Bool → R} {S : Set (List Bo
             intro q hq
             rw [List.mem_map] at hq
             obtain ⟨p, hp, rfl⟩ := hq
-            have hpm := length_of_mem_wd hp
+            have hpm := length_of_mem_allBits hp
             simp only [tl_cons, hd_cons, path_ofBits]
             have m1 := KV.mul (κ := κ) (S := S) (nameL_gives (θ := θ) (self := (loopF M m).code) (b := num b) (T := T)
               (g := g) (ws := ws) (acc := p.reverse) (hT p hpm)) (by
@@ -247,8 +247,8 @@ theorem loopF_kv {M m : ℕ} {T : Tree} {κ : List Bool → R} {S : Set (List Bo
               obtain ⟨l, hl, hq⟩ := hq
               rw [List.mem_map] at hq
               obtain ⟨r, hr, rfl⟩ := hq
-              have hlm := length_of_mem_wd hl
-              have hrm := length_of_mem_wd hr
+              have hlm := length_of_mem_allBits hl
+              have hrm := length_of_mem_allBits hr
               simp only [tl_cons, hd_cons, path_ofBits]
               have m1 := KV.mul (κ := κ) (S := S) (nameK_gives (θ := θ) (self := (loopF M m).code) (b := num (b + 1)) (T := T)
                 (g := g) (ws := ws) (l := l) (r := r)) (by
@@ -280,7 +280,7 @@ theorem loopF_kv {M m : ℕ} {T : Tree} {κ : List Bool → R} {S : Set (List Bo
             rw [← sum_wd M fun r => k (KT.val g) (KT.val l) r * W E b (KT.val l :: r :: ws.map KT.val)]
             congr 1
             refine List.map_congr_left fun r hr => ?_
-            rw [(hk g l r hg (length_of_mem_wd hl) (length_of_mem_wd hr)).1]
+            rw [(hk g l r hg (length_of_mem_allBits hl) (length_of_mem_allBits hr)).1]
       have h3 := KV.ite_true (H := .quote .nil) (Gives.id (θ := θ) x).tl.tl.hd (by rw [hx]; simp [listT]) (KV.either h1 h2)
       refine (h3.mono ?_).congr ?_
       · have e : (n + 1 + 1) * (400 * (M + m) + 2000) = (n + 1) * (400 * (M + m) + 2000) + (400 * (M + m) + 2000) := by ring

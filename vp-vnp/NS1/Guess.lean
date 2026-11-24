@@ -330,7 +330,7 @@ theorem node_rel {f g : Fm} {x : Tree} {lf lg : List (Run A)} {Qf Qg : List (Bt 
       lg.map fun s => ((r.seq s).tick (.cons r.out s.out)).seq (.det 1 .nil) |>.tick (.cons (.cons r.out s.out) .nil) := by
     rw [List.flatMap_map]
     simp only [List.map_cons, List.map_nil]
-    exact flatMap_single _ _
+    exact List.map_eq_flatMap.symm
   rw [e, List.forall₂_map_left_iff, List.forall₂_map_right_iff]
   refine rg.imp fun s q hs => ⟨?_, ?_, ?_, ?_, ?_⟩
   · simp [Run.seq, Run.tick, Run.det, hr.th, hs.th]

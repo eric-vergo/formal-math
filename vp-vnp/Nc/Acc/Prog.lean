@@ -182,6 +182,12 @@ section names
 
 variable {M m N : ℕ} {γ : R} {k : ℕ → ℕ → ℕ → R} {lam : ℕ → Fin N × Option Bool → R}
 
+private theorem split_name {g l r : List Bool} {M m : ℕ} (hg : g.length = M) (hl : l.length = m) :
+    (g ++ l ++ r).take M = g ∧ ((g ++ l ++ r).drop M).take m = l ∧ (g ++ l ++ r).drop (M + m) = r := by
+  refine ⟨?_, ?_, List.drop_left' (by simp [hg, hl])⟩
+  · rw [List.append_assoc, List.take_left' hg]
+  · rw [List.append_assoc, List.drop_left' hg, List.take_left' hl]
+
 theorem accK_k {g l r : List Bool} (hg : g.length = M) (hl : l.length = M) (hr : r.length = M) :
     (accK M m N γ k lam).lk ([false, false] ++ g ++ l ++ r ++ [false]) = k (KT.val g) (KT.val l) (KT.val r) ∧
     (accK M m N γ k lam).InB 1 ([false, false] ++ g ++ l ++ r ++ [false]) := by
@@ -192,10 +198,7 @@ theorem accK_k {g l r : List Bool} (hg : g.length = M) (hl : l.length = M) (hr :
   refine ⟨?_, KT.inB_full _ h⟩
   have h1 := KT.lk_full (fun w => k (KT.val (w.take M)) (KT.val ((w.drop M).take M)) (KT.val (w.drop (M + M)))) h
   refine h1.trans ?_
-  have e1 : (g ++ l ++ r).take M = g := by rw [List.append_assoc, List.take_left' hg]
-  have e2 : ((g ++ l ++ r).drop M).take M = l := by
-    rw [List.append_assoc, List.drop_left' hg, List.take_left' hl]
-  have e3 : (g ++ l ++ r).drop (M + M) = r := List.drop_left' (by simp [hg, hl])
+  obtain ⟨e1, e2, e3⟩ := split_name (r := r) hg hl
   simp only [e1, e2, e3]
 
 theorem accK_l {g p c : List Bool} (hg : g.length = M) (hp : p.length = m) (hc : c.length = 2) :
@@ -209,10 +212,7 @@ theorem accK_l {g p c : List Bool} (hg : g.length = M) (hp : p.length = m) (hc :
   refine ⟨?_, KT.inB_full _ h⟩
   have h1 := KT.lk_full (fun w => lamK (lam (KT.val (w.take M))) (KT.val ((w.drop M).take m)) (decL (w.drop (M + m)))) h
   refine h1.trans ?_
-  have e1 : (g ++ p ++ c).take M = g := by rw [List.append_assoc, List.take_left' hg]
-  have e2 : ((g ++ p ++ c).drop M).take m = p := by
-    rw [List.append_assoc, List.drop_left' hg, List.take_left' hp]
-  have e3 : (g ++ p ++ c).drop (M + m) = c := List.drop_left' (by simp [hg, hp])
+  obtain ⟨e1, e2, e3⟩ := split_name (r := c) hg hp
   simp only [e1, e2, e3]
 
 theorem accK_c : (accK M m N γ k lam).lk [true, false] = γ ∧ (accK M m N γ k lam).InB 1 [true, false] :=
@@ -261,7 +261,7 @@ theorem accF_kv {M m N d s : ℕ} {p : MvPolynomial (Fin N × Option Bool) R} (h
     have h1 : ∀ p ∈ allBits m, K.lk ([false, true] ++ g ++ p.reverse ++ lc (look p (pairTree m z)) ++ [false]) =
         (fun w => lamK (lam (KT.val g)) (KT.val w) (((tbits z).map some ++ [none])[KT.val w]?)) p.reverse := by
       intro p hp
-      have hpm := length_of_mem_wd hp
+      have hpm := length_of_mem_allBits hp
       rw [look_pairTree hzm hpm, hK, (accK_l hg (by simpa using hpm) (length_lc _)).1, decL_lc]
     rw [List.map_congr_left h1]
     refine (sum_wd_reverse m fun w => lamK (lam (KT.val g)) (KT.val w)

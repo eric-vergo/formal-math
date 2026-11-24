@@ -35,6 +35,16 @@ def allBits : ℕ → List (List Bool)
   | 0 => [[]]
   | n + 1 => (allBits n).map (true :: ·) ++ (allBits n).map (false :: ·)
 
+theorem length_of_mem_allBits {m : ℕ} {w : List Bool} (h : w ∈ allBits m) : w.length = m := by
+  induction m generalizing w with
+  | zero =>
+    simp only [allBits, List.mem_singleton] at h
+    subst h
+    rfl
+  | succ m ih =>
+    simp only [allBits, List.mem_append, List.mem_map] at h
+    rcases h with ⟨v, hv, rfl⟩ | ⟨v, hv, rfl⟩ <;> simp [ih hv]
+
 namespace KT
 
 /-- The number of nodes. -/
@@ -200,52 +210,8 @@ theorem ok_none (b : List (List Bool)) : ok .none b = true ↔ b = [] := by
 
 theorem sum_words (J n : ℕ) (c : R) :
     ((KT.words J).map fun w => if KT.val w = n then c else 0).sum = if n < 2 ^ J then c else 0 := by
-  induction J generalizing n with
-  | zero =>
-    by_cases h : n = 0
-    · subst h
-      simp [KT.words, KT.val]
-    · have h' : ¬ 0 = n := fun e => h e.symm
-      simp [KT.words, KT.val, h, h']
-  | succ J ih =>
-    have e0 : ((KT.words J).map fun w => if KT.val (false :: w) = n then c else 0).sum =
-        if n % 2 = 0 ∧ n < 2 ^ (J + 1) then c else 0 := by
-      by_cases h : n % 2 = 0
-      · have : ∀ w, (KT.val (false :: w) = n) = (KT.val w = n / 2) := by
-          intro w
-          simp only [KT.val, Bool.false_eq_true, if_false, zero_add, eq_iff_iff]
-          omega
-        simp only [this, ih, h, true_and]
-        refine if_congr ?_ rfl rfl
-        rw [pow_succ]
-        omega
-      · have : ∀ w, (KT.val (false :: w) = n) = False := by
-          intro w
-          simp only [KT.val, Bool.false_eq_true, if_false, zero_add, eq_iff_iff, iff_false]
-          omega
-        simp [this, h]
-    have e1 : ((KT.words J).map fun w => if KT.val (true :: w) = n then c else 0).sum =
-        if n % 2 = 1 ∧ n < 2 ^ (J + 1) then c else 0 := by
-      by_cases h : n % 2 = 1
-      · have : ∀ w, (KT.val (true :: w) = n) = (KT.val w = n / 2) := by
-          intro w
-          simp only [KT.val, if_true, eq_iff_iff]
-          omega
-        simp only [this, ih, h, true_and]
-        refine if_congr ?_ rfl rfl
-        rw [pow_succ]
-        omega
-      · have : ∀ w, (KT.val (true :: w) = n) = False := by
-          intro w
-          simp only [KT.val, if_true, eq_iff_iff, iff_false]
-          omega
-        simp [this, h]
-    simp only [KT.words, List.flatMap_cons, List.flatMap_nil, List.append_nil, List.map_append, List.map_map,
-      List.sum_append, Function.comp_def]
-    rw [e0, e1]
-    by_cases hn : n < 2 ^ (J + 1)
-    · rcases Nat.mod_two_eq_zero_or_one n with h | h <;> simp [h, hn]
-    · simp [hn]
+  rw [sum_words_range J (fun k => if k = n then c else 0)]
+  simp
 
 theorem sum_flatMap_map {α β : Type*} (l : List α) (f : α → List β) (g : β → R) :
     ((l.flatMap f).map g).sum = (l.map fun a => ((f a).map g).sum).sum := by

@@ -131,7 +131,7 @@ theorem foldB_does {step : Fm} {f : Tree → Tree → List (A × Tree)} {Inv : L
       exact ⟨_, mem_bindW_of hq2 hr, h3.symm⟩
     · rw [foldW, wsum_bindW, wsum_bindW]
       simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.map_cons, List.map_nil]
-      simp only [wsum, List.map_map, one_mul, mul_one, flatMap_single, Function.comp_def, hd_cons, tl_cons]
+      simp only [wsum, List.map_map, one_mul, mul_one, ← List.map_eq_flatMap, Function.comp_def, hd_cons, tl_cons]
     · simp only [List.map_cons, List.sum_cons]
       omega
 

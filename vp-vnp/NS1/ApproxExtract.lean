@@ -360,7 +360,7 @@ theorem xF_ev {J m W : ℕ} {κ : List Bool → E} {S : Set (List Bool)} (x : Tr
             rw [add_mul (l.nds + r.nds) 1]
             omega)
     refine ⟨L, eL, ?_⟩
-    simpa [xL, KT.nds, List.flatMap_assoc, List.flatMap_map, flatMap_single] using rL
+    simpa [xL, KT.nds, List.flatMap_assoc, List.flatMap_map, ← List.map_eq_flatMap] using rL
 
 end Gadget
 

@@ -123,7 +123,7 @@ theorem _root_.Paper.thm_cut_compose {τ s τ₁ s₁ P₁ t₁ τ₂ s₂ P₂ 
       simp only [List.mem_map, List.mem_flatMap, List.map_cons, List.map_nil, List.mem_singleton] at hq'
       obtain ⟨q1, ⟨q2, hq2, rfl⟩, rfl⟩ := hq'
       exact ⟨_, List.mem_map.2 ⟨q2, hq2, rfl⟩, rfl⟩
-    · simp only [f, wsum, List.map_map, List.map_cons, List.map_nil, mul_one, flatMap_single,
+    · simp only [f, wsum, List.map_map, List.map_cons, List.map_nil, mul_one, ← List.map_eq_flatMap,
         Function.comp_def, hd_cons, tl_cons]
   -- the fold
   have hfold : ∀ q ∈ Q₁, Does θ (foldF (stepC G₂) (.quote .nil) .id) q.2 (foldW f q.2.toList .nil)

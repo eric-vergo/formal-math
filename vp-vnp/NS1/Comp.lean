@@ -410,7 +410,7 @@ theorem ite_false (hF : Gives θ F x .nil c) (hH : Gives θ H x o' d) : Gives θ
 theorem after {Q : List (A × Tree)} (h : Does θ F x Q c) {f : Tree → Tree} (h' : ∀ q ∈ Q, Gives θ G q.2 (f q.2) d) :
     Does θ (NS1.lett F G) x (Q.map fun q => (q.1, f q.2)) (c + d + 2) := by
   have := h.lett (R := fun o => [(1, f o)]) h'
-  simpa [bindW, flatMap_single] using this
+  simpa [bindW, ← List.map_eq_flatMap] using this
 
 end Gives
 
