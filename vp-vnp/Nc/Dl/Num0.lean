@@ -160,9 +160,19 @@ theorem time {κ : ℕ} (hκ : κ ≤ m) : κ * (2 * (Lc + 1) * (T + ub + 2) + �
     _ = τ * m ^ 9 := by ring
     _ ≤ τ * m ^ 10 := Nat.mul_le_mul_left _ (h.mpow (by norm_num))
 
+omit h in
+/-- The fixed part of the script size is cubic in the number and length of its codes. -/
+private theorem setupSize_le {X Lc m : ℕ} (hX : 1 ≤ X) (hm : 10000 ≤ m) (hL : Lc ≤ m) :
+    X + 1 + 200 * X ^ 3 * Lc + (m + X) * m ≤ X ^ 3 * m ^ 3 := by
+  calc _ ≤ X + 1 + 200 * X ^ 3 * m + (m + X) * m := by gcongr
+    _ ≤ _ := by
+      obtain ⟨x, rfl⟩ := Nat.exists_eq_add_of_le hX
+      obtain ⟨r, rfl⟩ := Nat.exists_eq_add_of_le hm
+      ring_nf
+      omega
+
 /-- **Size of the pieces.** -/
 theorem size : X + 1 + (200 * X ^ 3 * Lc + ιb * ℓ * (4 * c + 2) + bd * (4 * ub)) ≤ (s / k + τ / v ^ 256) * m ^ 10 := by
-  have hm := h.m_pos
   have hk := h.k_pos
   have B1 : ιb * ℓ ≤ m * (s / k) + m + X := by
     have h1 : ιb * (s / K) ≤ m * (s / k) + m := by
@@ -172,10 +182,8 @@ theorem size : X + 1 + (200 * X ^ 3 * Lc + ιb * ℓ * (4 * c + 2) + bd * (4 * u
           _ = m * (K * (s / K)) := by ring
           _ ≤ m * s := Nat.mul_le_mul_left _ (Nat.mul_div_le _ _)
       have h3 : s ≤ (s / k + 1) * k := by
-        have := Nat.div_add_mod s k
-        have h4 := Nat.mod_lt s (show 0 < k by omega)
-        rw [add_mul, one_mul, Nat.mul_comm (s / k)]
-        omega
+        rw [Nat.mul_comm]
+        exact (Nat.lt_mul_div_succ s (by omega)).le
       have h4 : ιb * (s / K) * k ≤ (m * (s / k) + m) * k := by
         calc ιb * (s / K) * k ≤ m * s := h2
           _ ≤ m * ((s / k + 1) * k) := Nat.mul_le_mul_left _ h3
@@ -187,26 +195,7 @@ theorem size : X + 1 + (200 * X ^ 3 * Lc + ιb * ℓ * (4 * c + 2) + bd * (4 * u
   have hX : 1 ≤ X := h.X_ge
   have S1 : X + 1 + 200 * X ^ 3 * Lc + (m + X) * m ≤ τ / v ^ 256 := by
     refine le_trans ?_ h.X6'
-    have hL := h.Lc_le
-    have e1 : X ≤ X ^ 3 * m ^ 2 := by
-      calc X = X ^ 1 * 1 := by rw [pow_one, mul_one]
-        _ ≤ X ^ 3 * m ^ 2 := Nat.mul_le_mul (h.Xpow (by norm_num)) (Nat.pow_pos hm)
-    have e2 : 1 ≤ X ^ 3 * m ^ 2 := Nat.mul_pos (Nat.pow_pos hX) (Nat.pow_pos hm)
-    have e3 : 200 * X ^ 3 * Lc ≤ X ^ 3 * m ^ 2 := by
-      calc 200 * X ^ 3 * Lc ≤ m * X ^ 3 * m :=
-            Nat.mul_le_mul (Nat.mul_le_mul_right _ (le_trans (by norm_num) h.m_ge)) (by omega)
-        _ = X ^ 3 * m ^ 2 := by ring
-    have e4 : m * m ≤ X ^ 3 * m ^ 2 := by
-      calc m * m = 1 * m ^ 2 := by ring
-        _ ≤ X ^ 3 * m ^ 2 := Nat.mul_le_mul_right _ (Nat.pow_pos hX)
-    have e5 : X * m ≤ X ^ 3 * m ^ 2 := by
-      calc X * m = X ^ 1 * m ^ 1 := by rw [pow_one, pow_one]
-        _ ≤ X ^ 3 * m ^ 2 := Nat.mul_le_mul (h.Xpow (by norm_num)) (h.mpow (by norm_num))
-    calc X + 1 + 200 * X ^ 3 * Lc + (m + X) * m = X + 1 + 200 * X ^ 3 * Lc + (m * m + X * m) := by ring
-      _ ≤ X ^ 3 * m ^ 2 * 5 := by omega
-      _ ≤ X ^ 3 * m ^ 2 * m := Nat.mul_le_mul_left _ (le_trans (by norm_num) h.m_ge)
-      _ = X ^ 3 * m ^ 3 := by ring
-      _ ≤ X ^ 6 * m ^ 20 := h.Xm_le (by norm_num) (by norm_num)
+    exact (setupSize_le hX h.m_ge (Nat.le_of_succ_le h.Lc_le)).trans (h.Xm_le (by norm_num) (by norm_num))
   have S2 : bd * (4 * ub) ≤ 4 * (τ / v ^ 256) := by
     have := h.bdub
     calc bd * (4 * ub) = 4 * (bd * ub) := by ring
@@ -219,6 +208,23 @@ theorem size : X + 1 + (200 * X ^ 3 * Lc + ιb * ℓ * (4 * c + 2) + bd * (4 * u
   calc X + 1 + (200 * X ^ 3 * Lc + ιb * ℓ * (4 * c + 2) + bd * (4 * ub)) ≤ m ^ 2 * (s / k) + 5 * (τ / v ^ 256) := by omega
     _ ≤ m ^ 10 * (s / k) + m ^ 10 * (τ / v ^ 256) := Nat.add_le_add (Nat.mul_le_mul_right _ hm10) (Nat.mul_le_mul_right _ h5)
     _ = (s / k + τ / v ^ 256) * m ^ 10 := by ring
+
+omit h in
+/-- The part of the dealing cost independent of the input and boundary fits in the fixed overhead. -/
+private theorem setupCost_le {K mm Lc X m : ℕ} (hK : K ≤ X) (hmm : mm ≤ X) (hL : Lc ≤ m)
+    (hX : 1 ≤ X) (hm : 10000 ≤ m) :
+    K * (60 * Lc + 100) + K * (60 * Lc + 130) + (4 * (X * X) + 10 * X) * (stepB Lc X + 30) +
+        X * (90 * Lc + 230) + mm * (tmB' Lc X + 60) + 300 ≤ X ^ 4 * m ^ 4 := by
+  calc _ ≤ X * (60 * m + 100) + X * (60 * m + 130) + (4 * (X * X) + 10 * X) * (stepB m X + 30) +
+        X * (90 * m + 230) + X * (tmB' m X + 60) + 300 := by
+          unfold stepB tmB'
+          gcongr
+    _ ≤ _ := by
+      obtain ⟨x, rfl⟩ := Nat.exists_eq_add_of_le hX
+      obtain ⟨r, rfl⟩ := Nat.exists_eq_add_of_le hm
+      unfold stepB tmB'
+      ring_nf
+      omega
 
 /-- **Time of the dealing program.** -/
 theorem deal : dealB Lc X K mm ub (mm * bd) (4 * (X * X) + 10 * X) s ≤ (s + τ * k / v ^ 256) * m ^ 10 := by
@@ -247,99 +253,7 @@ theorem deal : dealB Lc X K mm ub (mm * bd) (4 * (X * X) + 10 * X) s ≤ (s + τ
       refine (h.Xm_le (by norm_num) (by norm_num)).trans (h.X6'.trans ?_)
       exact Nat.div_le_div_right (Nat.le_mul_of_pos_right _ (by omega))
     refine le_trans ?_ hsm
-    have hK := h.K_X
-    have x1 : X ≤ X ^ 4 := Nat.le_self_pow (by norm_num) X
-    have x2 : X ^ 2 ≤ X ^ 4 := h.Xpow (by norm_num)
-    have x3 : X ^ 3 ≤ X ^ 4 := h.Xpow (by norm_num)
-    have L1 : 60 * Lc + 100 ≤ 100 * m := by omega
-    have f1 : K * (60 * Lc + 100) ≤ X ^ 4 * (100 * m) := Nat.mul_le_mul (hK.trans x1) L1
-    have f2 : K * (60 * Lc + 130) ≤ X ^ 4 * (130 * m) := Nat.mul_le_mul (hK.trans x1) (by omega)
-    have st : stepB Lc X + 30 ≤ X * (1000 * m) := by
-      have e1 : 60 * Lc ≤ X * (60 * m) := by
-        calc 60 * Lc ≤ 1 * (60 * m) := by omega
-          _ ≤ X * (60 * m) := Nat.mul_le_mul_right _ hX
-      have e2 : 20 * X ≤ X * (20 * m) := by nlinarith
-      have e3 : X * (4 * (60 * Lc + 80)) ≤ X * (320 * m) := Nat.mul_le_mul_left _ (by omega)
-      have e4 : 180 * Lc ≤ X * (180 * m) := by
-        calc 180 * Lc ≤ 1 * (180 * m) := by omega
-          _ ≤ X * (180 * m) := Nat.mul_le_mul_right _ hX
-      have e5 : 230 ≤ X * (230 * m) := by
-        calc 230 ≤ 1 * (230 * m) := by omega
-          _ ≤ X * (230 * m) := Nat.mul_le_mul_right _ hX
-      have e6 : X * (1000 * m) = X * (60 * m) + X * (20 * m) + X * (320 * m) + X * (180 * m) + X * (230 * m) + X * (190 * m) := by
-        ring
-      unfold stepB
-      omega
-    have f3 : (4 * (X * X) + 10 * X) * (stepB Lc X + 30) ≤ X ^ 4 * (14000 * m) := by
-      have e1 : 4 * (X * X) + 10 * X ≤ 14 * X ^ 2 := by nlinarith
-      calc (4 * (X * X) + 10 * X) * (stepB Lc X + 30) ≤ 14 * X ^ 2 * (X * (1000 * m)) := Nat.mul_le_mul e1 st
-        _ = X ^ 3 * (14000 * m) := by ring
-        _ ≤ X ^ 4 * (14000 * m) := Nat.mul_le_mul_right _ x3
-    have f4 : X * (90 * Lc + 230) ≤ X ^ 4 * (230 * m) := Nat.mul_le_mul x1 (by omega)
-    have tb : tmB' Lc X + 60 ≤ X ^ 3 * (20000 * m) := by
-      have y1 : X ^ 2 ≤ X ^ 3 := h.Xpow (by norm_num)
-      have y2 : X ≤ X ^ 3 := Nat.le_self_pow (by norm_num) X
-      have y3 : 1 ≤ X ^ 3 := Nat.pow_pos hX
-      have g1 : X * (3 * (X * (30 * Lc + 150)) + 360 * Lc + 62 * X + 2000) ≤ X ^ 3 * (3000 * m) := by
-        calc X * (3 * (X * (30 * Lc + 150)) + 360 * Lc + 62 * X + 2000)
-            ≤ X * (3 * (X * (150 * m)) + X * (360 * m) + X * (62 * m) + X * (2000 * m)) := by
-              refine Nat.mul_le_mul_left _ ?_
-              have e1 : 3 * (X * (30 * Lc + 150)) ≤ 3 * (X * (150 * m)) :=
-                Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ (by omega))
-              have e2 : 360 * Lc ≤ X * (360 * m) := by
-                calc 360 * Lc ≤ 1 * (360 * m) := by omega
-                  _ ≤ X * (360 * m) := Nat.mul_le_mul_right _ hX
-              have e3 : 62 * X ≤ X * (62 * m) := by nlinarith
-              have e4 : 2000 ≤ X * (2000 * m) := by
-                calc 2000 ≤ 1 * (2000 * m) := by omega
-                  _ ≤ X * (2000 * m) := Nat.mul_le_mul_right _ hX
-              omega
-          _ = X ^ 2 * (2872 * m) := by ring
-          _ ≤ X ^ 3 * (3000 * m) := Nat.mul_le_mul y1 (by omega)
-      have g2 : X * (X * (X * (270 * Lc + 700) + 120) + X * (30 * Lc + 150) + 300 * Lc + 1500) ≤ X ^ 3 * (4000 * m) := by
-        calc X * (X * (X * (270 * Lc + 700) + 120) + X * (30 * Lc + 150) + 300 * Lc + 1500)
-            ≤ X * (X * (X * (700 * m) + X * (120 * m)) + X * (X * (150 * m)) + X * (X * (300 * m)) + X * (X * (1500 * m))) := by
-              refine Nat.mul_le_mul_left _ ?_
-              have e0 : 1 ≤ X * X := Nat.mul_pos hX hX
-              have e1 : X * (X * (270 * Lc + 700) + 120) ≤ X * (X * (700 * m) + X * (120 * m)) := by
-                refine Nat.mul_le_mul_left _ (Nat.add_le_add (Nat.mul_le_mul_left _ (by omega)) ?_)
-                calc 120 ≤ 1 * (120 * m) := by omega
-                  _ ≤ X * (120 * m) := Nat.mul_le_mul_right _ hX
-              have e2 : X * (30 * Lc + 150) ≤ X * (X * (150 * m)) := Nat.mul_le_mul_left _ (by
-                calc 30 * Lc + 150 ≤ 1 * (150 * m) := by omega
-                  _ ≤ X * (150 * m) := Nat.mul_le_mul_right _ hX)
-              have e3 : 300 * Lc ≤ X * (X * (300 * m)) := by
-                calc 300 * Lc ≤ 1 * (300 * m) := by omega
-                  _ ≤ X * X * (300 * m) := Nat.mul_le_mul_right _ e0
-                  _ = X * (X * (300 * m)) := by ring
-              have e4 : 1500 ≤ X * (X * (1500 * m)) := by
-                calc 1500 ≤ 1 * (1500 * m) := by omega
-                  _ ≤ X * X * (1500 * m) := Nat.mul_le_mul_right _ e0
-                  _ = X * (X * (1500 * m)) := by ring
-              linarith
-          _ = X ^ 3 * (2770 * m) := by ring
-          _ ≤ X ^ 3 * (4000 * m) := Nat.mul_le_mul_left _ (by omega)
-      have g3 : X * (2000 * Lc + 5000) ≤ X ^ 3 * (5000 * m) := Nat.mul_le_mul y2 (by omega)
-      have g4 : 1060 ≤ X ^ 3 * (1060 * m) := by
-        calc 1060 ≤ 1 * (1060 * m) := by omega
-          _ ≤ X ^ 3 * (1060 * m) := Nat.mul_le_mul_right _ y3
-      have g5 : X ^ 3 * (20000 * m) = X ^ 3 * (3000 * m) + X ^ 3 * (4000 * m) + X ^ 3 * (5000 * m) + X ^ 3 * (1060 * m) +
-          X ^ 3 * (6940 * m) := by ring
-      unfold tmB'
-      linarith
-    have f5 : mm * (tmB' Lc X + 60) ≤ X ^ 4 * (20000 * m) := by
-      calc mm * (tmB' Lc X + 60) ≤ X * (X ^ 3 * (20000 * m)) := Nat.mul_le_mul h.mmX tb
-        _ = X ^ 4 * (20000 * m) := by ring
-    have f6 : 300 ≤ X ^ 4 * (300 * m) := by
-      calc 300 ≤ 1 * (300 * m) := by omega
-        _ ≤ X ^ 4 * (300 * m) := Nat.mul_le_mul_right _ (Nat.pow_pos hX)
-    have f7 : X ^ 4 * (100 * m) + X ^ 4 * (130 * m) + X ^ 4 * (14000 * m) + X ^ 4 * (230 * m) + X ^ 4 * (20000 * m) +
-        X ^ 4 * (300 * m) = X ^ 4 * (34760 * m) := by ring
-    have f8 : X ^ 4 * (34760 * m) ≤ X ^ 4 * m ^ 4 := by
-      refine Nat.mul_le_mul_left _ ?_
-      calc 34760 * m ≤ m * m * m * m := by nlinarith [Nat.mul_le_mul hm1 hm1, Nat.mul_pos hm hm]
-        _ = m ^ 4 := by ring
-    omega
+    exact setupCost_le h.K_X h.mmX (by omega) hX hm1
   have D3 : 60 * s + s * (60 * Lc + 100) ≤ s * (200 * m) := by
     calc 60 * s + s * (60 * Lc + 100) = s * (60 * Lc + 160) := by ring
       _ ≤ s * (200 * m) := Nat.mul_le_mul_left _ (by omega)
