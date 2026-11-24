@@ -199,18 +199,9 @@ theorem lem_toolkit_b_first (x₁ x₂ x₃ x₄ : Y) :
     have h := lem_toolkit_b_box x₁ x₃ x₄ x₂ hs0 hs1 hs0 hs1
     have e1 : 1 - τ / (1 + τ) = 1 / (1 + τ) := by field_simp; ring
     rw [e1] at h
-    have hpos : 0 < (1 + τ) ^ 2 / τ := by positivity
-    have h2 := mul_le_mul_of_nonneg_left h hpos.le
-    have e2 : (1 + τ) ^ 2 / τ * (τ / (1 + τ) * (1 / (1 + τ)) * dist x₁ x₃ ^ 2 +
-        τ / (1 + τ) * (1 / (1 + τ)) * dist x₄ x₂ ^ 2) =
-        dist x₁ x₃ ^ 2 + dist x₄ x₂ ^ 2 := by field_simp
-    have e3 : (1 + τ) ^ 2 / τ * (1 / (1 + τ) * (1 / (1 + τ)) * dist x₁ x₄ ^ 2 +
-        1 / (1 + τ) * (τ / (1 + τ)) * dist x₁ x₂ ^ 2 +
-        τ / (1 + τ) * (1 / (1 + τ)) * dist x₃ x₄ ^ 2 +
-        τ / (1 + τ) * (τ / (1 + τ)) * dist x₃ x₂ ^ 2) =
-        dist x₁ x₄ ^ 2 / τ + dist x₁ x₂ ^ 2 + dist x₃ x₄ ^ 2 + τ * dist x₃ x₂ ^ 2 := by
-      field_simp
-    rw [e2, e3, dist_comm x₄ x₂, dist_comm x₃ x₂] at h2
+    rw [dist_comm x₄ x₂, dist_comm x₃ x₂] at h
+    have hden : 0 < 1 + τ := by positivity
+    field_simp at h ⊢
     linarith
   linarith
 
