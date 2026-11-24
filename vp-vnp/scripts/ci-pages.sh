@@ -5,8 +5,18 @@
 
 set -euo pipefail
 
+# The long steps report their wall time and peak memory where GNU time is installed (as on
+# GitHub's Linux runners); elsewhere they run as they are.
+timed() {
+  if /usr/bin/time -v true >/dev/null 2>&1; then
+    /usr/bin/time -v "$@"
+  else
+    "$@"
+  fi
+}
+
 # The development, the statement file, the challenge and the solution (the default targets).
-lake build
+timed lake build
 
 # The axioms of the five theorems: nothing beyond Lean's standard three.
 axioms=$(lake env lean scripts/PrintAxioms.lean)
@@ -18,10 +28,10 @@ lake exe vbp comparator-check
 
 # The chapters generated from the compiled code: every declaration that no written chapter
 # discusses yet, without an informal statement.
-lake env lean --run blueprint/scripts/GenerateNodes.lean
+timed lake env lean --run blueprint/scripts/GenerateNodes.lean
 
 # The site, with the kernel replay of the compiled modules by con-leche and con-ron.
-lake exe vbp build
+timed lake exe vbp build
 
 # The consistency check of the generated site prints a JSON report with "ok": true or false.
 report=$(lake exe vbp check | tail -n 1)

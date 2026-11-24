@@ -90,7 +90,7 @@ jobs:
           VERSO_BLUEPRINT_KERNEL_REPLAY_SECONDS: "7200"
           VERSO_BLUEPRINT_KERNEL_REPLAY_MEMORY_MB: "12000"
         run: |
-          /usr/bin/time -v ./scripts/ci-pages.sh
+          ./scripts/ci-pages.sh
           df -h .
 
       - name: Save Lake packages
