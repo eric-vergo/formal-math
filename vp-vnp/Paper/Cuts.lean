@@ -89,6 +89,81 @@ theorem lg_mul_sq_le {τ v : ℕ} : lg (τ * v ^ 2) ≤ lg τ + 2 * lg v + 1 := 
   · have := Nat.log_lt_of_lt_pow (by omega) h1
     omega
 
+
+/-- A fixed finite list of laws and a bound on the code width give a uniform bound on the
+size and step constant of the evaluator. The code and its evaluator can then be chosen
+at the chosen scale. -/
+private theorem uniform_evaluator {θ : List Bool → A} (hθ : Generates θ) {Γ S Q : Type}
+    [Fintype Γ] [DecidableEq Γ] [Fintype S] [DecidableEq S] [Fintype Q] [DecidableEq Q]
+    (mu : Nc.Letter S Unit Γ → Matrix Q Q A) (kinds : List (Σ L : Nc.G.Law A, L.Ro)) (width : ℕ) :
+    ∃ bound : ℕ, ∀ (c : ℕ) (cb : Option Γ → Fin c → Bool), c ≤ width →
+      ∃ (GROUP : Fm) (κ : ℕ), Nc.Grp.GroupOK θ mu cb kinds (fun z => (Nc.Grp.qn Q z : ℕ)) GROUP κ ∧
+        Nc.Dl.GrpTimeOK (S := S) A cb (fun z => (Nc.Grp.qn Q z : ℕ)) ∧ GROUP.code.size + κ ≤ bound := by
+  classical
+  choose eval cost heval hcost using fun (c : Fin (width + 1)) (cb : Option Γ → Fin c.1 → Bool) =>
+    thm_onecut_evaluator hθ mu cb kinds
+  let weight (c : Fin (width + 1)) (cb : Option Γ → Fin c.1 → Bool) := (eval c cb).code.size + cost c cb
+  refine ⟨∑ c, ∑ cb, weight c cb, fun c cb hc => ?_⟩
+  let i : Fin (width + 1) := ⟨c, Nat.lt_succ_of_le hc⟩
+  refine ⟨eval i cb, cost i cb, heval i cb, hcost i cb, ?_⟩
+  exact (Finset.single_le_sum (f := weight i) (fun _ _ => Nat.zero_le _) (mem_univ cb)).trans
+    (Finset.single_le_sum (f := fun j => ∑ cb, weight j cb) (fun _ _ => Nat.zero_le _) (mem_univ i))
+
+/-- A finite list of law roles bounds the alphabets of all moves that use those roles. -/
+private def roleAlphabetBound (kinds : List (Σ L : Nc.G.Law A, L.Ro)) : ℕ :=
+  (kinds.map fun role => Fintype.card role.1.Ro + Fintype.card role.1.Sl + Fintype.card role.1.Cn).sum
+
+private theorem role_alphabet_le {P E : ℕ} {sys : Nc.G.Sys A P E} {kinds : List (Σ L : Nc.G.Law A, L.Ro)}
+    (hkinds : ∀ r : sys.R, ⟨sys.kind r.1, r.2⟩ ∈ kinds) (x : Fin E) :
+    Fintype.card (sys.kind x).Ro + Fintype.card (sys.kind x).Sl + Fintype.card (sys.kind x).Cn ≤
+      roleAlphabetBound kinds := by
+  rcases Nat.eq_zero_or_pos (Fintype.card (sys.kind x).Ro) with h | h
+  · have hempty := Fintype.card_eq_zero_iff.1 h
+    have hslots : Fintype.card (sys.kind x).Sl = 0 := Fintype.card_eq_zero_iff.2 ⟨fun z => hempty.false ((sys.kind x).a z)⟩
+    have hchannels : Fintype.card (sys.kind x).Cn = 0 := Fintype.card_eq_zero_iff.2 ⟨fun z => hempty.false ((sys.kind x).c z)⟩
+    simp [hslots, hchannels]
+  · let r : sys.R := ⟨x, (Fintype.card_pos_iff.1 h).some⟩
+    exact List.single_le_sum (fun _ _ => Nat.zero_le _) _ (List.mem_map.2 ⟨_, hkinds r, rfl⟩)
+
+/-- Rounding up the universal machine time per block gives enough total steps. Its
+logarithmic cost and the rounding overhead fit within the enlarged step budget. -/
+private theorem universal_block_budget {cost τ K L m : ℕ} (hτ : 1 ≤ τ) (hK : 0 < K) (hKτ : K ≤ τ)
+    (hcost : 16 * (cost + 1) ≤ L) (hlog : 4 * lg τ ≤ L ^ 2) (hm : L ^ 6 ≤ m) :
+    let time := (cost + 1) * (2 * τ + 2) * lg (2 * τ + 2) ^ 2
+    τ ≤ time ∧ time ≤ K * (time / K + 1) ∧ K * (time / K + 1) ≤ τ * m := by
+  dsimp only
+  set time := (cost + 1) * (2 * τ + 2) * lg (2 * τ + 2) ^ 2 with htime
+  have hL : 2 ≤ L := by omega
+  have hlog' : lg (2 * τ + 2) ≤ 2 * L ^ 2 := by
+    have hpow : 2 * τ + 2 < 2 ^ (lg τ + 2) := by
+      have := lt_two_pow_lg τ
+      rw [pow_add]
+      omega
+    have hlog₂ : Nat.log 2 (2 * τ + 2) < lg τ + 2 := Nat.log_lt_of_lt_pow (by omega) hpow
+    have e : lg (2 * τ + 2) = Nat.log 2 (2 * τ + 2) + 1 := rfl
+    have hLsq : L ≤ L ^ 2 := Nat.le_self_pow (by norm_num) L
+    omega
+  have htime_le : time ≤ τ * L ^ 5 := by
+    calc time ≤ (cost + 1) * (4 * τ) * (2 * L ^ 2) ^ 2 := by
+          rw [htime]
+          exact Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (Nat.pow_le_pow_left hlog' 2)
+      _ = τ * (16 * (cost + 1) * L ^ 4) := by ring
+      _ ≤ τ * (L * L ^ 4) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_right _ hcost)
+      _ = τ * L ^ 5 := by ring
+  have htime_ge : τ ≤ time := by
+    rw [htime]
+    have h : 1 ≤ lg (2 * τ + 2) ^ 2 := Nat.pow_pos (Nat.succ_pos _)
+    calc τ ≤ 1 * (2 * τ + 2) * 1 := by omega
+      _ ≤ (cost + 1) * (2 * τ + 2) * lg (2 * τ + 2) ^ 2 := Nat.mul_le_mul (Nat.mul_le_mul_right _ (by omega)) h
+  refine ⟨htime_ge, (Nat.lt_mul_div_succ time hK).le, ?_⟩
+  calc K * (time / K + 1) = K * (time / K) + K := by ring
+    _ ≤ time + τ := Nat.add_le_add (Nat.mul_div_le _ _) hKτ
+    _ ≤ τ * L ^ 5 + τ * L ^ 5 := Nat.add_le_add htime_le (Nat.le_mul_of_pos_right _ (Nat.pow_pos (by omega)))
+    _ = τ * (2 * L ^ 5) := by ring
+    _ ≤ τ * (L * L ^ 5) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_right _ hL)
+    _ = τ * L ^ 6 := by ring
+    _ ≤ τ * m := Nat.mul_le_mul_left _ hm
+
 set_option maxHeartbeats 1200000 in
 /-- **Paper: Theorem thm:onecut.** "There are constants a₀, C, v₀ such that for all v ≥ v₀, all τ ≥ v^a₀ with
 4 lg τ ≤ (lg v)², all s ≤ τ and 2 ≤ k ≤ v^64, with Λ = (lg v)^C, a program of size at most v^a₀ cuts (τ,s) into
@@ -106,15 +181,10 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
   obtain ⟨S, Γ, Q, i1, i2, i3, i4, i5, i6, mu, i, e', b0, b1, CU, hCU⟩ := prop_universal θ hθ.1
   obtain ⟨a, e, he, hpieces⟩ := prop_pieces VL h3 hgain
   obtain ⟨Cp, v₁, hP⟩ := hpieces Γ S Q mu
-  obtain ⟨kinds, hkinds⟩ : ∃ l, l = Nc.Tow.kindList A ((univ : Finset VL.Di).toList.map VL.L) := ⟨_, rfl⟩
-  rw [← hkinds] at hP
-  -- one evaluator for each code of symbols
-  choose GR κ hGR hGT using fun (c : Fin (Cp + 1)) (cb : Option Γ → Fin c.1 → Bool) =>
-    thm_onecut_evaluator hθ mu cb kinds
-  obtain ⟨Zg, hZg⟩ : ∃ Z, Z = ∑ c : Fin (Cp + 1), ∑ cb : Option Γ → Fin c.1 → Bool, ((GR c cb).code.size + κ c cb) :=
-    ⟨_, rfl⟩
-  obtain ⟨ml, hml⟩ : ∃ m, m = (kinds.map fun L : (Σ L : Nc.G.Law A, L.Ro) =>
-      Fintype.card L.1.Ro + Fintype.card L.1.Sl + Fintype.card L.1.Cn).sum := ⟨_, rfl⟩
+  -- All evaluator constants are fixed before choosing the scale.
+  let kinds := Nc.Tow.kindList A ((univ : Finset VL.Di).toList.map VL.L)
+  obtain ⟨Zg, hEval⟩ := uniform_evaluator hθ mu kinds Cp
+  set ml := roleAlphabetBound kinds with hml
   obtain ⟨cq, hcq⟩ : ∃ cq, ∀ q, (Nc.Grp.qn Q q : ℕ) ≤ cq :=
     ⟨univ.sup fun q => (Nc.Grp.qn Q q : ℕ), fun q => Finset.le_sup (f := fun q => (Nc.Grp.qn Q q : ℕ)) (Finset.mem_univ q)⟩
   obtain ⟨b₁, hb₁⟩ : ∃ b, b = 3 * Cp + 3 * e + a + 8 := ⟨_, rfl⟩
@@ -173,42 +243,14 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
           (Nat.pow_pos hm1)) (vpos 300)
       _ ≤ τ := hsmall
   have hτ1 : 1 ≤ τ := hX1.trans hXτ
-  -- the steps: a plain instance is the value of the universal automaton in KT steps
-  obtain ⟨tU, htU⟩ : ∃ t, t = (CU + 1) * (2 * τ + 2) * lg (2 * τ + 2) ^ 2 := ⟨_, rfl⟩
-  have hl2 : lg τ + 3 ≤ 2 * l ^ 2 := by
-    have : l ≤ l ^ 2 := Nat.le_self_pow (by norm_num) l
-    rw [← hl] at hlτ
-    omega
-  have hlgτ : lg (2 * τ + 2) ≤ 2 * l ^ 2 := by
-    have h1 : 2 * τ + 2 < 2 ^ (lg τ + 2) := by
-      have := lt_two_pow_lg τ
-      rw [pow_add]
-      omega
-    have h2 : Nat.log 2 (2 * τ + 2) < lg τ + 2 := Nat.log_lt_of_lt_pow (by omega) h1
-    have e1 : lg (2 * τ + 2) = Nat.log 2 (2 * τ + 2) + 1 := rfl
-    omega
-  have htUle : tU ≤ τ * l ^ 5 := by
-    calc tU ≤ (CU + 1) * (4 * τ) * (2 * l ^ 2) ^ 2 := by
-          rw [htU]
-          exact Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (Nat.pow_le_pow_left hlgτ 2)
-      _ = τ * (16 * (CU + 1) * l ^ 4) := by ring
-      _ ≤ τ * (l * l ^ 4) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_right _ (by omega))
-      _ = τ * l ^ 5 := by ring
-  obtain ⟨T, hT⟩ : ∃ T, T = tU / K + 1 := ⟨_, rfl⟩
-  have hKTge : tU ≤ K * T := hT ▸ (Nat.lt_mul_div_succ tU hK0).le
-  have hKT : K * T ≤ τ * m := by
-    calc K * T = K * (tU / K) + K := by rw [hT]; ring
-      _ ≤ tU + τ := Nat.add_le_add (Nat.mul_div_le _ _) (hKX.trans hXτ)
-      _ ≤ τ * l ^ 5 + τ * l ^ 5 := Nat.add_le_add htUle (Nat.le_mul_of_pos_right _ (Nat.pow_pos hl1))
-      _ = τ * (2 * l ^ 5) := by ring
-      _ ≤ τ * (l * l ^ 5) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_right _ (by omega))
-      _ = τ * l ^ 6 := by ring
-      _ ≤ τ * m := Nat.mul_le_mul_left _ (hml' 6 (by omega))
-  have hτtU : τ ≤ tU := by
-    rw [htU]
-    have h1 : 1 ≤ lg (2 * τ + 2) ^ 2 := Nat.pow_pos (by unfold lg; omega)
-    calc τ ≤ 1 * (2 * τ + 2) * 1 := by omega
-      _ ≤ (CU + 1) * (2 * τ + 2) * lg (2 * τ + 2) ^ 2 := Nat.mul_le_mul (Nat.mul_le_mul_right _ (by omega)) h1
+  -- Give each block enough steps for its share of the universal evaluation.
+  set tU := (CU + 1) * (2 * τ + 2) * lg (2 * τ + 2) ^ 2 with htU
+  set T := tU / K + 1 with hT
+  have hlog : 4 * lg τ ≤ l ^ 2 := by simpa only [hl] using hlτ
+  have hBudget := universal_block_budget (cost := CU) hτ1 hK0 (hKX.trans hXτ)
+    (by omega) hlog (hml' 6 (by omega))
+  change τ ≤ tU ∧ tU ≤ K * T ∧ K * T ≤ τ * m at hBudget
+  obtain ⟨hτtU, hKTge, hKT⟩ := hBudget
   have hTa : v ^ a ≤ T := by
     refine Nat.le_of_mul_le_mul_left (?_ : v ^ (e + 1) * v ^ a ≤ v ^ (e + 1) * T) (vpos _)
     calc v ^ (e + 1) * v ^ a = v ^ (e + 1 + a) := (pow_add _ _ _).symm
@@ -216,7 +258,7 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
       _ ≤ K * T := hτ.trans (hτtU.trans hKTge)
       _ ≤ v ^ (e + 1) * T := Nat.mul_le_mul_right _ hKe
   obtain ⟨pc⟩ := hP T k hTa hk hkv
-  obtain ⟨ℓ, hℓ⟩ : ∃ ℓ, ℓ = s / K + 1 := ⟨_, rfl⟩
+  set ℓ := s / K + 1 with hℓ
   have hℓT : ℓ ≤ T := by
     rw [hℓ, hT]
     exact Nat.add_le_add_right (Nat.div_le_div_right (hsτ.trans hτtU)) 1
@@ -254,21 +296,10 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
   have hkind : ∀ r : pc.sys.R, ∃ t : ℕ, kinds[t]? = some ⟨pc.sys.kind r.1, r.2⟩ := fun r =>
     List.mem_iff_getElem?.1 (pc.kinds_mem r)
   choose tg htg using hkind
-  have hlaw : ∀ r : pc.sys.R, Fintype.card (pc.sys.kind r.1).Ro + Fintype.card (pc.sys.kind r.1).Sl +
-      Fintype.card (pc.sys.kind r.1).Cn ≤ ml := fun r => by
+  have hlaw' (x : Fin pc.E) : Fintype.card (pc.sys.kind x).Ro + Fintype.card (pc.sys.kind x).Sl +
+      Fintype.card (pc.sys.kind x).Cn ≤ ml := by
     rw [hml]
-    exact List.single_le_sum (fun _ _ => Nat.zero_le _) _ (List.mem_map.2 ⟨_, pc.kinds_mem r, rfl⟩)
-  have hrole : ∀ x, Fintype.card (pc.sys.kind x).Ro = 0 → Fintype.card (pc.sys.kind x).Sl = 0 ∧
-      Fintype.card (pc.sys.kind x).Cn = 0 := fun x h0 => by
-    have := Fintype.card_eq_zero_iff.1 h0
-    exact ⟨Fintype.card_eq_zero_iff.2 ⟨fun z => this.false ((pc.sys.kind x).a z)⟩,
-      Fintype.card_eq_zero_iff.2 ⟨fun z => this.false ((pc.sys.kind x).c z)⟩⟩
-  have hlaw' : ∀ x, Fintype.card (pc.sys.kind x).Ro + Fintype.card (pc.sys.kind x).Sl +
-      Fintype.card (pc.sys.kind x).Cn ≤ ml := fun x => by
-    rcases Nat.eq_zero_or_pos (Fintype.card (pc.sys.kind x).Ro) with h0 | h0
-    · obtain ⟨h1, h2⟩ := hrole x h0
-      omega
-    · exact hlaw ⟨x, (Fintype.card_pos_iff.1 h0).some⟩
+    exact role_alphabet_le pc.kinds_mem x
   have hcR : Fintype.card pc.sys.R ≤ X := by
     calc Fintype.card pc.sys.R = ∑ x, Fintype.card (pc.sys.kind x).Ro := Fintype.card_sigma
       _ ≤ ∑ _x : Fin pc.E, ml := Finset.sum_le_sum fun x _ => le_trans (by omega) (hlaw' x)
@@ -381,21 +412,7 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
     have h2 := (pc.tab.fn (pc.tab.knum y) (n, o)).2
     simp only at h1
     omega
-  -- the evaluator of this code
-  obtain ⟨ci, hci⟩ : ∃ ci : Fin (Cp + 1), ci.1 = pc.c := ⟨⟨pc.c, Nat.lt_succ_of_le pc.c_le⟩, rfl⟩
-  obtain ⟨cb, hcb⟩ : ∃ cb : Option Γ → Fin ci.1 → Bool, cb = fun z j => pc.cb z (Fin.cast hci j) := ⟨_, rfl⟩
-  obtain ⟨GROUP, κ', hG, hGtime, hsize⟩ : ∃ (GROUP : Fm) (κ' : ℕ),
-      Nc.Grp.GroupOK θ mu pc.cb kinds (fun z => (Nc.Grp.qn Q z : ℕ)) GROUP κ' ∧
-      Nc.Dl.GrpTimeOK (S := S) A pc.cb (fun z => (Nc.Grp.qn Q z : ℕ)) ∧ GROUP.code.size + κ' ≤ Zg := by
-    obtain ⟨cn, hcn⟩ := ci
-    simp only at hci
-    subst hci
-    refine ⟨GR ⟨pc.c, hcn⟩ pc.cb, κ ⟨pc.c, hcn⟩ pc.cb, hGR ⟨pc.c, hcn⟩ pc.cb, hGT ⟨pc.c, hcn⟩ pc.cb, ?_⟩
-    rw [hZg]
-    exact le_trans (Finset.single_le_sum (f := fun cb => (GR ⟨pc.c, hcn⟩ cb).code.size + κ ⟨pc.c, hcn⟩ cb)
-      (fun _ _ => Nat.zero_le _) (mem_univ pc.cb))
-      (Finset.single_le_sum (f := fun c : Fin (Cp + 1) => ∑ cb : Option Γ → Fin c.1 → Bool,
-        ((GR c cb).code.size + κ c cb)) (fun _ _ => Nat.zero_le _) (mem_univ (⟨pc.c, hcn⟩ : Fin (Cp + 1))))
+  obtain ⟨GROUP, κ', hG, hGtime, hsize⟩ := hEval pc.c pc.cb pc.c_le
   -- the program G
   have : Nonempty Q := ⟨i⟩
   obtain ⟨G, hGs, hcut⟩ := thm_onecut_program (θ := θ) (mu := mu) (i := i) (e := e') (b0 := b0) (b1 := b1) (τ := τ) (s := s)
