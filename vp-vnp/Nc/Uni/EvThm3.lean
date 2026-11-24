@@ -61,7 +61,7 @@ theorem EvOK.run {a b : Fm} {x : Tree} {la lb : List (Run A)} {L : Run A → Run
       ((r.seq s).seq t).tick t.out) := by
   intro σ hσ m Bd B h
   obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
-  obtain ⟨o, a', rfl, hl, rfl, rfl⟩ := inv_run hF
+  obtain ⟨o, a', rfl, hl, rfl, rfl⟩ := codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   rw [tot_seq3]
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
@@ -70,7 +70,7 @@ theorem EvOK.run {a b : Fm} {x : Tree} {la lb : List (Run A)} {L : Run A → Run
   have ok2 := ok1.nx (θ := θ) (.inl .d6) 0 0 0
   obtain ⟨p, q, s, hrec, hp, hq⟩ := (h12.mono (heap_nx (θ := θ) σ1 (.inl .d6) 0 0 0)).load ok2
   generalize decide (a' ≠ .nil) = bt at hrec
-  refine lstep ok2 (md := .K6) rfl rfl hrec (.k6 bt) (by cases bt <;> rfl) (by simp) (by simp) rfl rfl ?_
+  refine heapStep ok2 (md := .K6) rfl rfl hrec (.k6 bt) (by cases bt <;> rfl) (by simp) (by simp) rfl rfl ?_
   set σ2 := nx θ σ1 (.inl .d6) 0 0 0 with hσ2
   have hh2 : σ.heap ⊆ (nx θ σ2 (.inl (.k6 bt)) p q s).heap := fun _ hc => heap_nx _ _ _ _ _ (heap_nx _ _ _ _ _ (hh1 hc))
   have hr2 : σ2.regs 2 = σ.regs 2 := h13
@@ -142,7 +142,7 @@ theorem EvOK.guess (x : Tree) : EvOK θ supp .guess x [.det 1 .nil, .det 1 Tree.
     have : ((Run.det 1 Tree.one : Run A).cost : ℤ) = 1 := rfl
     rw [this] at hB1
     linarith
-  obtain ⟨o, a, rfl, hl⟩ := inv_guess hF
+  obtain ⟨o, a, rfl, hl⟩ := codeShape_of_decode hF
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
   have hm1' : σ1.mode = .D 7 := by rw [hm1]; congr 1; exact Fin.ext hl
   have hrec : ((.N, ![σ1.regs (laM σ1.mode), 0, 0, 0]) : Rec Kd) ∈ σ1.heap := by
@@ -198,7 +198,7 @@ theorem EvOK.mul {a : Fm} {x : Tree} {l : List (Run A)} :
     obtain ⟨r, -, rfl⟩ := hy
     simp
   rw [ht]
-  obtain ⟨o, a', rfl, hl⟩ := inv_mul hF
+  obtain ⟨o, a', rfl, hl⟩ := codeShape_of_decode hF
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
   have hm1' : σ1.mode = .D 10 := by rw [hm1]; congr 1; exact Fin.ext hl
   have hrec : ((.N, ![σ1.regs (laM σ1.mode), 0, 0, 0]) : Rec Kd) ∈ σ1.heap := by
@@ -216,7 +216,7 @@ theorem EvOK.theta (hθ : ∀ q, q ∉ supp → θ q = 0) {a : Fm} {x : Tree} {l
     EvOK θ supp (.theta a) x (l.map fun r => ⟨r.cost + 1, r.th * θ r.out.path, r.bill, .nil⟩) := by
   intro σ hσ m Bd B h
   obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
-  obtain ⟨o, a', rfl, hl, rfl⟩ := inv_theta hF
+  obtain ⟨o, a', rfl, hl, rfl⟩ := codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   let f : Run A → Run A := fun r => ⟨r.cost + 1, r.th * θ r.out.path, r.bill, .nil⟩
   have ht : tot m (l.map f) = tot (fun r => θ r.out.path * m (f r)) l := by

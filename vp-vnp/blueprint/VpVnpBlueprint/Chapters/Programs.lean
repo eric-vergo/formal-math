@@ -242,7 +242,9 @@ $`27(2C + 2)`. The content is in four layers, each with its own Lean objects.
    its initial state on the word of $`z` form a finite set, their weights sum to
    $`\mathrm{sum}(z)`, and each has at most $`3|z| + C\tau + 10` steps. It is proved by induction
    over the relation `Ev` (`Nc.Uni.evOK`, one case per construct), after a parsing phase that
-   builds the tree in the heap (`Nc.Uni.parse`). The table `θ` enters through its finite support:
+   builds the tree in the heap (`Nc.Uni.parse`). In each induction case,
+   `Nc.Uni.codeShape_of_decode` identifies the opcode and its operands. The parser and evaluator
+   both use `Nc.Uni.heapStep` to account for a step that loads a frame from a register. The table `θ` enters through its finite support:
    the type of modes of the machine is built from the prefixes of the names in the support
    (`Nc.Uni.Md`, `Nc.Uni.Nm`).
 3. *Tape programs as rational series* (`Nc/Tape`, `Nc/Sort`, `Nc/Uni/Prog.lean`). A tape program

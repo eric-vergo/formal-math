@@ -18,118 +18,34 @@ open Finset NS1
 
 variable {A : Type} [CommRing A] {θ : List Bool → A} {supp : Finset (List Bool)}
 
-section Inv
+/-- The opcode and operands present in a tree that decodes to a given formula. -/
+def CodeShape (c : Tree) : Fm → Prop
+  | .quote c0 => (c = .nil ∧ c0 = .nil) ∨ ∃ o, c = .cons o c0 ∧ o.len = 0
+  | .id => ∃ o a, c = .cons o a ∧ o.len = 1
+  | .hd a0 => ∃ o a, c = .cons o a ∧ o.len = 2 ∧ Fm.ofTree a = a0
+  | .tl a0 => ∃ o a, c = .cons o a ∧ o.len = 3 ∧ Fm.ofTree a = a0
+  | .cons a0 b0 => ∃ o a, c = .cons o a ∧ o.len = 4 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl = b0
+  | .ite a0 b0 c0 => ∃ o a, c = .cons o a ∧ o.len = 5 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl.hd = b0 ∧ Fm.ofTree a.tl.tl = c0
+  | .run a0 b0 => ∃ o a, c = .cons o a ∧ o.len = 6 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl = b0
+  | .guess => ∃ o a, c = .cons o a ∧ o.len = 7
+  | .fail => ∃ o a, c = .cons o a ∧ (o.len = 8 ∨ 11 ≤ o.len)
+  | .theta a0 => ∃ o a, c = .cons o a ∧ o.len = 9 ∧ Fm.ofTree a = a0
+  | .mul _ => ∃ o a, c = .cons o a ∧ o.len = 10
 
-theorem inv_quote {c c0 : Tree} (h : Fm.ofTree c = .quote c0) :
-    (c = .nil ∧ c0 = .nil) ∨ ∃ o, c = .cons o c0 ∧ o.len = 0 := by
+/-- Inspecting the opcode recovers the operands for every branch of the decoder. -/
+theorem codeShape_of_decode {c : Tree} {f : Fm} (h : Fm.ofTree c = f) : CodeShape c f := by
+  subst f
   cases c with
-  | nil => rw [Fm.ofTree] at h; injection h with h; exact Or.inl ⟨rfl, h.symm⟩
+  | nil => rw [Fm.ofTree]; exact Or.inl ⟨rfl, rfl⟩
   | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    injection h with h
-    subst h
-    exact Or.inr ⟨o, rfl, by assumption⟩
-
-theorem inv_id {c : Tree} (h : Fm.ofTree c = .id) : ∃ o a, c = .cons o a ∧ o.len = 1 := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    exact ⟨o, a, rfl, by assumption⟩
-
-theorem inv_hd {c : Tree} {a0 : Fm} (h : Fm.ofTree c = .hd a0) :
-    ∃ o a, c = .cons o a ∧ o.len = 2 ∧ Fm.ofTree a = a0 := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    injection h with h
-    exact ⟨o, a, rfl, by assumption, h⟩
-
-theorem inv_tl {c : Tree} {a0 : Fm} (h : Fm.ofTree c = .tl a0) :
-    ∃ o a, c = .cons o a ∧ o.len = 3 ∧ Fm.ofTree a = a0 := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    injection h with h
-    exact ⟨o, a, rfl, by assumption, h⟩
-
-theorem inv_cons {c : Tree} {a0 b0 : Fm} (h : Fm.ofTree c = .cons a0 b0) :
-    ∃ o a, c = .cons o a ∧ o.len = 4 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl = b0 := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    injection h with h h'
-    exact ⟨o, a, rfl, by assumption, h, h'⟩
-
-theorem inv_ite {c : Tree} {a0 b0 c0 : Fm} (h : Fm.ofTree c = .ite a0 b0 c0) :
-    ∃ o a, c = .cons o a ∧ o.len = 5 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl.hd = b0 ∧ Fm.ofTree a.tl.tl = c0 := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    injection h with h h' h''
-    exact ⟨o, a, rfl, by assumption, h, h', h''⟩
-
-theorem inv_run {c : Tree} {a0 b0 : Fm} (h : Fm.ofTree c = .run a0 b0) :
-    ∃ o a, c = .cons o a ∧ o.len = 6 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl = b0 := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    injection h with h h'
-    exact ⟨o, a, rfl, by assumption, h, h'⟩
-
-theorem inv_guess {c : Tree} (h : Fm.ofTree c = .guess) : ∃ o a, c = .cons o a ∧ o.len = 7 := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    exact ⟨o, a, rfl, by assumption⟩
-
-theorem inv_fail {c : Tree} (h : Fm.ofTree c = .fail) : ∃ o a, c = .cons o a ∧ (o.len = 8 ∨ 11 ≤ o.len) := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    refine ⟨o, a, rfl, ?_⟩
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    · left; assumption
-    · right
-      by_contra hc
-      push Not at hc
-      generalize o.len = k at *
-      interval_cases k <;> simp_all
-
-theorem inv_theta {c : Tree} {a0 : Fm} (h : Fm.ofTree c = .theta a0) :
-    ∃ o a, c = .cons o a ∧ o.len = 9 ∧ Fm.ofTree a = a0 := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    injection h with h
-    exact ⟨o, a, rfl, by assumption, h⟩
-
-theorem inv_mul {c : Tree} {a0 : Fm} (h : Fm.ofTree c = .mul a0) : ∃ o a, c = .cons o a ∧ o.len = 10 := by
-  cases c with
-  | nil => rw [Fm.ofTree] at h; cases h
-  | cons o a =>
-    rw [Fm.ofTree] at h
-    split at h <;> first | (exfalso; simp only [reduceCtorEq] at h; done) | skip
-    exact ⟨o, a, rfl, by assumption⟩
-
-end Inv
+    rw [Fm.ofTree]
+    split
+    · exact Or.inr ⟨o, rfl, by assumption⟩
+    all_goals refine ⟨o, a, rfl, ?_⟩
+    all_goals try simp_all
+    by_contra! hc
+    generalize o.len = k at *
+    interval_cases k <;> simp_all
 
 /-- The sum over the runs without named constants. -/
 def tot (m : Run A → A) (l : List (Run A)) : A := (l.map fun r => if r.bill = [] then r.th * m r else 0).sum
@@ -215,7 +131,7 @@ theorem EvOK.quote (c0 x : Tree) : EvOK θ supp (.quote c0) x [.det 1 c0] := by
     have : ((Run.det 1 c0 : Run A).cost : ℤ) = 1 := rfl
     rw [this] at hB
     linarith
-  rcases inv_quote hF with ⟨rfl, rfl⟩ | ⟨o, rfl, hl⟩
+  rcases codeShape_of_decode hF with ⟨rfl, rfl⟩ | ⟨o, rfl, hl⟩
   · have h0 : σ.regs 1 = 0 := hc
     have hrec : ((.N, ![σ.regs (laM σ.mode), 0, 0, 0]) : Rec Kd) ∈ σ.heap := by
       rw [hm]
@@ -244,7 +160,7 @@ theorem EvOK.id (x : Tree) : EvOK θ supp .id x [.det 1 x] := by
     have : ((Run.det 1 x : Run A).cost : ℤ) = 1 := rfl
     rw [this] at hB
     linarith
-  obtain ⟨o, a, rfl, hl⟩ := inv_id hF
+  obtain ⟨o, a, rfl, hl⟩ := codeShape_of_decode hF
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
   have hm1' : σ1.mode = .D 1 := by rw [hm1]; congr 1; exact Fin.ext hl
   refine dstep ok1 hm1' h11 .d1 rfl (by decide) rfl rfl ?_
@@ -257,7 +173,7 @@ theorem EvOK.fail (x : Tree) : EvOK θ supp .fail x [] := by
   intro σ hσ m Bd B h
   obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
   rw [tot_nil]
-  obtain ⟨o, a, rfl, hl | hl⟩ := inv_fail hF
+  obtain ⟨o, a, rfl, hl | hl⟩ := codeShape_of_decode hF
   · refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
     have hm1' : σ1.mode = .D 8 := by rw [hm1]; congr 1; exact Fin.ext hl
     have hrec : ((.N, ![σ1.regs (laM σ1.mode), 0, 0, 0]) : Rec Kd) ∈ σ1.heap := by
