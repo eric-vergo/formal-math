@@ -187,6 +187,29 @@ theorem sum_bet_le_YhN : ∑ j : Fin (J + 1), ∑ c, T.bet (lds R ch FL lhat n o
       _ = _ := by ring
   exact_mod_cast h1.trans (le_YhN ρ)
 
+/-- Bound the growth per tower level before raising it to the tower height. -/
+private theorem gain_base_pow {D p q : ℕ} {ρ : ℝ} (hDR : (1 : ℝ) ≤ D) (hρ : 0 < ρ)
+    (hpq : 2 * p ≤ q) (hgain : ρ ^ q * (D : ℝ) ^ p ≤ 1) :
+    (max 1 (√D * ρ) ^ 2) ^ q ≤ (D : ℝ) ^ (q - 2 * p) := by
+  have e1 : 1 ≤ (D : ℝ) ^ (q - 2 * p) := one_le_pow₀ hDR
+  rcases le_total (√D * ρ) 1 with hle | hle
+  · rw [max_eq_left hle]
+    simpa using e1
+  · rw [max_eq_right hle, mul_pow, Real.sq_sqrt (by linarith), mul_pow]
+    have e2 : (ρ ^ 2) ^ q * ((D : ℝ) ^ p) ^ 2 ≤ 1 := by
+      have : (ρ ^ 2) ^ q * ((D : ℝ) ^ p) ^ 2 = (ρ ^ q * (D : ℝ) ^ p) ^ 2 := by ring
+      rw [this]
+      exact pow_le_one₀ (by positivity) hgain
+    have e3 : (D : ℝ) ^ q = (D : ℝ) ^ (q - 2 * p) * ((D : ℝ) ^ p) ^ 2 := by
+      rw [← pow_mul, ← pow_add]
+      congr 1
+      omega
+    rw [e3]
+    calc (D : ℝ) ^ (q - 2 * p) * ((D : ℝ) ^ p) ^ 2 * (ρ ^ 2) ^ q =
+        (D : ℝ) ^ (q - 2 * p) * ((ρ ^ 2) ^ q * ((D : ℝ) ^ p) ^ 2) := by ring
+      _ ≤ (D : ℝ) ^ (q - 2 * p) * 1 := mul_le_mul_of_nonneg_left e2 (by positivity)
+      _ = _ := mul_one _
+
 omit hρ' in
 include hb hρ hbD in
 /-- **The gain of the tower.** -/
@@ -210,26 +233,7 @@ theorem bhat_pow_le (hh : 0 < h) (hX : 0 < Fintype.card (T.X J)) {p q : ℕ} (hp
   have hx0 : 0 < x := by linarith
   set M : ℝ := max 1 (√D * ρ) with hM
   have hM0 : 0 ≤ M := le_trans zero_le_one (le_max_left _ _)
-  -- the square of the base
-  have hMq : (M ^ 2) ^ q ≤ (D : ℝ) ^ (q - 2 * p) := by
-    have e1 : 1 ≤ (D : ℝ) ^ (q - 2 * p) := one_le_pow₀ hDR
-    rcases le_total (√D * ρ) 1 with hle | hle
-    · rw [hM, max_eq_left hle]
-      simpa using e1
-    · rw [hM, max_eq_right hle, mul_pow, Real.sq_sqrt (by linarith), mul_pow]
-      have e2 : (ρ ^ 2) ^ q * ((D : ℝ) ^ p) ^ 2 ≤ 1 := by
-        have : (ρ ^ 2) ^ q * ((D : ℝ) ^ p) ^ 2 = (ρ ^ q * (D : ℝ) ^ p) ^ 2 := by ring
-        rw [this]
-        exact pow_le_one₀ (by positivity) hgain
-      have e3 : (D : ℝ) ^ q = (D : ℝ) ^ (q - 2 * p) * ((D : ℝ) ^ p) ^ 2 := by
-        rw [← pow_mul, ← pow_add]
-        congr 1
-        omega
-      rw [e3]
-      calc (D : ℝ) ^ (q - 2 * p) * ((D : ℝ) ^ p) ^ 2 * (ρ ^ 2) ^ q =
-          (D : ℝ) ^ (q - 2 * p) * ((ρ ^ 2) ^ q * ((D : ℝ) ^ p) ^ 2) := by ring
-        _ ≤ (D : ℝ) ^ (q - 2 * p) * 1 := mul_le_mul_of_nonneg_left e2 (by positivity)
-        _ = _ := mul_one _
+  have hMq : (M ^ 2) ^ q ≤ (D : ℝ) ^ (q - 2 * p) := gain_base_pow hDR hρ hpq hgain
   have hsq : (bhat FL Uu AA lhat ρ ^ q * x ^ p) ^ 2 ≤ ((2 * (h : ℝ)) ^ q * kbar FL Uu AA lhat ^ q) ^ 2 := by
     have e1 : (bhat FL Uu AA lhat ρ ^ q * x ^ p) ^ 2 =
         (2 * h / x) ^ q * ((M ^ 2) ^ q) ^ J * (kbar FL Uu AA lhat ^ q) ^ 2 * (x ^ p) ^ 2 := by
