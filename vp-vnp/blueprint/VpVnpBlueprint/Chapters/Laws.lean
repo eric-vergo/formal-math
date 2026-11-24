@@ -937,6 +937,9 @@ holds plus $`\sum_r (1 + s_r) t_r` over the roles $`r` at $`p` is at most
 $$`\begin{aligned} &\bigl(4 + (2\,|\mathrm{Nr}|\, G_1 + 1 + S)\,|\mathrm{Di}|\bigr) \cdot 8 \cdot \Bigl(u_p + \sum_{q \text{ child of } p} u_q\Bigr) \\ &\quad + \bigl[p \text{ given}\bigr] (1 + 8m) N + 2\, \#\{\text{dead packets that } p \text{ holds}\}, \end{aligned}`
 where $`|\mathrm{Nr}|` is the number of edges of $`U_h`, $`|\mathrm{Di}|` the number of laws,
 $`S` a bound for the number of slots of a law, and $`m` the bound for the length of the routes.
+The relay estimate `Nc.Tow.NR_le` leaves the initial route contribution separate. It sums three
+bounds, one each for inner relays, middle relays and final relays. All three express the load
+at a node as a sum over the endpoints of incident edges.
 The term $`(1 + 8m)N` is the paper's $`\Lambda N`: $`m \le c\,(J+1)^7` by Proposition H.1(d), and
 $`J + 1 = O(\lg M)`. The field `copies_le` follows with the constant $`C`. Because Lean relays
 leave copies, the count differs in its details from the printed one, in which a relay “leaves no
