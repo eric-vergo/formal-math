@@ -215,7 +215,7 @@ theorem refl_x (j : Fin (n - 1)) : refl (x n j) = x n (Fin.rev j) := by
   apply mat_inj
   ext i k
   rw [refl_apply, mat_x, mat_x, Matrix.add_apply, Matrix.add_apply, Matrix.one_apply,
-    Matrix.one_apply, Matrix.single_apply, Matrix.single_apply]
+    Matrix.one_apply, Matrix.single_apply]
   have h1 : lo j = Fin.rev k ↔ hi (Fin.rev j) = k := by
     simp only [lo, hi, Fin.ext_iff, Fin.val_rev]
     have := j.2; have := k.2
