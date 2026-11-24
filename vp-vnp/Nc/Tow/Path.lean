@@ -141,15 +141,11 @@ theorem exists_edge (c c' γ : T.X 0) {s : ℕ} (hs : s < R.pl c c' γ) :
     ∃ e, (R.path c c' γ)[s]? = some e ∧ s(T.e0 e, T.e1 e) = s(R.pn c c' γ s, R.pn c c' γ (s + 1)) ∧
       R.pn c c' γ s ≠ R.pn c c' γ (s + 1) := by
   have hlt : s < (R.path c c' γ).length := lt_of_lt_of_le hs (R.pl_le c c' γ)
-  refine ⟨(R.path c c' γ)[s], List.getElem?_eq_getElem hlt, ?_, ?_⟩
-  · obtain ⟨h1, h2⟩ := Tower.walk_step (R.path_walk c c' γ) (List.getElem?_eq_getElem hlt)
-    unfold pn
-    rw [h2]
-    exact Tower.step_ends _ h1
-  · obtain ⟨h1, h2⟩ := Tower.walk_step (R.path_walk c c' γ) (List.getElem?_eq_getElem hlt)
-    unfold pn
-    rw [h2]
-    exact Tower.step_ne _ h1
+  obtain ⟨h1, h2⟩ := Tower.walk_step (R.path_walk c c' γ) (List.getElem?_eq_getElem hlt)
+  refine ⟨(R.path c c' γ)[s], List.getElem?_eq_getElem hlt, ?_⟩
+  unfold pn
+  rw [h2]
+  exact ⟨Tower.step_ends _ h1, Tower.step_ne _ h1⟩
 
 end Routes
 
