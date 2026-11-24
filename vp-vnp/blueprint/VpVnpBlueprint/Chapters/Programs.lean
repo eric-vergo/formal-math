@@ -638,7 +638,9 @@ statement. The two programs live in two libraries.
   as hypotheses the specification `GroupOK` of the evaluator, the statement of the universal
   automaton, the straight-line program `tab` of the plan and the sum formula of `PieceCut.value`,
   and concludes that a program `G` cuts, with explicit numbers for its size, its time and the sizes
-  of the scripts.
+  of the scripts. The identity `Nc.Dl.sum_steps18` enumerates the states that survive the
+  first eight phases. The full sum `Nc.Dl.sum_allSteps` applies this identity with the ninth
+  phase as its continuation. That phase chooses a packet value for each unit cut between pieces.
 
 *What was read.* The statement and the first part of the proof of `Paper.thm_onecut`, the
 statements of the two nodes below and of `Nc.Grp.exists_group`, the definitions of `GroupOK`,
