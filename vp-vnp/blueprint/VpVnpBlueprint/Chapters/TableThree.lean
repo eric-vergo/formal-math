@@ -85,12 +85,11 @@ row:
 
 The four exceptions named by the paper remain outside the five export closures. The fan argument uses the parallelogram identity of
 `Paper.lem_means_norm` directly, so the full existential statement of Lemma C.2 is
-also outside the five closures. Four other numbered statements have that status: Corollary E.2, Lemma E.3 and
-Theorems E.11 and K.7. Each specializes a result for families complete for grid sums to
-the permanent. The all-fields theorem uses the family versions directly for both polynomials,
-and the real permanent bound specializes the all-fields theorem. Lemmas N.2 and N.3 and
-Proposition N.4 enter only the approximate exports; Lemmas E.7 and K.3 and Proposition E.10
-enter only the exact exports. A dependency recorded here is
+also outside the five closures. Corollary E.2, Lemma E.3 and Theorems E.11 and K.7 specialize general grid-family results
+to the permanent. Those four statements lie outside the five closures. So do the exact-circuit
+lemmas E.7, K.3 and M.1 and Proposition E.10. The proof treats exact circuits as constant-series
+circuits and uses the coefficientwise bound for both families. Lemmas N.2 and N.3 and
+Proposition N.4 occur in all five closures. A dependency recorded here is
 one of Lean constants: `Solution.mainTheoremApprox` and `Solution.separationClosure` are the two
 conjuncts of one Lean theorem, `Paper.thm_approx`, and so depend on the same constants. And
 several of the theorems that Table 3 names second for a statement are used by none of the five;
@@ -388,7 +387,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 35
   * {InlineLean.name}`Paper.lem_few`
   * differs as the paper says
-  * yes: M S R
+  * no
   * {ref "chapter-flat"}[The flat case]. More general: whenever $`t` is covered by $`T_1, \ldots, T_J` (page 68). The Lean form does not ask that $`P` be nonempty.
 *
   * {bpref "lem_convex"}[Lemma E.8]
@@ -409,7 +408,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 36
   * {InlineLean.name}`Paper.prop_flat_rate`, {InlineLean.name}`Paper.prop_flat_rate_printed`
   * differs as the paper says
-  * yes: M S R
+  * no
   * {ref "chapter-flat"}[The flat case]. As for Lemma E.3. Its Lean proof uses the step `prop_flat_lower_sum` of the proof of Proposition E.5, not the proposition (page 70). The form for approximating circuits, `flat_rate_approximating`, “has 14 where Proposition E.10 has 16” (page 68).
 *
   * {bpref "thm_flat_rate"}[Theorem E.11]
@@ -628,7 +627,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 56
   * {InlineLean.name}`Paper.lem_circuit`, {InlineLean.name}`Paper.lem_circuit_perm`
   * differs as the paper says
-  * yes: M S R
+  * no
   * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. More general: for every family that is complete for grid sums and every $`H \ge 32` (page 68). `lem_circuit_phi` “states what is used of $`\Phi`, not that it equals the printed sum over words” (page 70). `lem_circuit_perm` is not used by the five theorems.
 *
   * {bpref "lem_postpone"}[Lemma K.4]
@@ -708,7 +707,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 60
   * {InlineLean.name}`Paper.lem_transfer`
   * differs as the paper says
-  * yes: M S R
+  * no
   * {ref "chapter-assembly"}[All fields and approximate computation]. More general: any algebraically closed field of characteristic $`p` in the place of $`\mathbb{K}` (page 68).
 *
   * {bpref "prop_hc_grid"}[Proposition M.2]
@@ -755,21 +754,21 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 62
   * {InlineLean.name}`Paper.lem_transfer_approx`
   * differs as the paper says
-  * yes: A C
+  * yes
   * {ref "chapter-assembly"}[All fields and approximate computation]. As for Lemma M.1.
 *
   * {bpref "lem_few_approx"}[Lemma N.3]
   * 62
   * {InlineLean.name}`Paper.lem_few_approx`
   * differs as the paper says
-  * yes: A C
+  * yes
   * {ref "chapter-flat"}[The flat case]. As for Lemma E.7.
 *
   * {bpref "prop_approx_acc"}[Proposition N.4]
   * 63
   * {InlineLean.name}`Paper.prop_approx_acc`, {InlineLean.name}`Paper.prop_approx_acc_setting`
   * differs as the paper says
-  * yes: A C
+  * yes
   * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. As for Proposition K.5; `prop_approx_acc_setting` is the instance in the contracting case (page 69). The printed proof defers to Lean (page 17).
 *
   * {bpref "thm_approx"}[Theorem N.5]
@@ -863,32 +862,32 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Paper.flat_rate_complete`
   * Theorem E.11 for every family that is complete for grid sums, with a threshold that depends on the factor only.
-  * M S R
+  * none
   * {bpref "flat_rate_complete"}[its node] in {ref "chapter-flat"}[The flat case]
 *
   * {InlineLean.name}`Paper.flat_rate_approximating`
   * Proposition E.10 for approximating circuits, in the form $`\ell k\sqrt{k}/14 \le \log s`.
-  * A C
+  * all five
   * {bpref "flat_rate_approx_complete"}[its node] in {ref "chapter-flat"}[The flat case]
 *
   * {InlineLean.name}`Paper.flat_rate_approx_complete`
   * Theorem E.11 for approximating circuits and every family that is complete for grid sums.
-  * A C
+  * all five
   * {bpref "flat_rate_approx_complete"}[its node] in {ref "chapter-flat"}[The flat case]
 *
   * {InlineLean.name}`Paper.contracting_complete`
   * The contracting bound for every family that is complete for grid sums.
-  * M S R
+  * none
   * {bpref "thm_contracting"}[its node] in {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
 *
   * {InlineLean.name}`Paper.contracting_approx_complete`
   * The same for approximating circuits.
-  * A C
+  * all five
   * {bpref "lem_circuit_approx"}[its node] in {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
 *
   * {InlineLean.name}`Paper.approx_rate_closed`
   * Both cases over one field, for circuits with constants in the Laurent polynomials and a family that is complete for grid sums.
-  * A C
+  * all five
   * {bpref "thm_approx"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Paper.lem_circuit_phi`
@@ -898,7 +897,7 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Paper.lem_circuit_approx`
   * The analogue of Lemma K.3 for approximating circuits.
-  * A C
+  * all five
   * {bpref "lem_circuit_approx"}[its node] in {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
 *
   * {InlineLean.name}`Paper.exists_laws`
@@ -928,12 +927,12 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Nc.Approximates.exists_laurentPolynomial`
   * An approximating circuit with $`s` gates gives one with $`s` gates whose constants are Laurent polynomials in $`\varepsilon`, over every field.
-  * A C
+  * all five
   * {ref "chapter-statement"}[The statement to trust], {ref "chapter-assembly"}[All fields and approximate computation]
 *
   * {InlineLean.name}`Nc.Approximates.of_laurentPolynomial`
   * The converse.
-  * A C
+  * all five
   * {ref "chapter-statement"}[The statement to trust], {ref "chapter-assembly"}[All fields and approximate computation]
 :::
 

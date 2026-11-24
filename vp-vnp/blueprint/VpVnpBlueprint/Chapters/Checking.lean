@@ -146,6 +146,13 @@ keep their names and statements. The script
 script adapted to this layout. The port baseline recorded no separate Linux run.
 The Project Stats page identifies the checkers used for this site build.
 
+For the cleaned proof at `b62c75f`, traversing the compiled proofs finds 63,231 distinct
+constants in the union of the five dependency closures. An exact bound and its specialization
+to the real permanent each use 63,120 constants. Exact separation uses 63,213, the approximate
+bound uses 63,199, and separation from the closure uses 63,203. These are counts from
+{repoFile "vp-vnp/scripts/InventoryKernel.lean"}[`InventoryKernel.lean`], which traverses
+Lean's environment. The separate export check below counts declarations in the export format.
+
 What the site does report is its own comparison, made from the compiled files when the site is
 generated. The page _Comparator_, at the end of the table of contents, lists the challenge; the
 challenge's page shows the challenge file and the solution file in full, the judged theorems with

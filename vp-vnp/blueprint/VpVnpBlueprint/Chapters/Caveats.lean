@@ -71,11 +71,10 @@ far (page 17), quoted in full:
 
 The four statements are {bpref "prop_universal"}[Proposition I.1],
 {bpref "thm_tree"}[Theorem H.2], {bpref "thm_onecut"}[Theorem J.3] and
-{bpref "prop_approx_acc"}[Proposition N.4]; their nodes quote the formalization notes. The
-dependencies of the Lean theorems in this build refine the last sentence of the quotation: all
-five theorems of `Solution` depend on the Lean theorems of the first three, and only the two
-on approximation (`Solution.mainTheoremApprox`, `Solution.separationClosure`) depend on that of
-Proposition N.4 ({ref "chapter-claim"}[What is claimed] says how this was read off).
+{bpref "prop_approx_acc"}[Proposition N.4]; their nodes quote the formalization notes. All five
+exports depend on all four Lean results. The coefficientwise bound uses Proposition N.4 in the
+contracting case, and the exact circuit bound follows by the constant-series embedding
+({ref "chapter-claim"}[What is claimed]).
 
 Three things follow for a reader.
 
@@ -190,9 +189,11 @@ Section Q.3 (page 66): “The theorems of `Solution` are proved through them, wi
 exceptions, which are not on that route: Theorem L.2, Corollary L.3, the qualitative bound in the
 flat case (Proposition E.5 and Theorem E.6) and the definitions.” The four named results have Lean proofs outside all five export closures.
 All five exports use the parallelogram identity for the specific mean norm directly, bypassing
-the existence statement of Lemma C.2. The cleanup also takes the general versions of Corollary E.2, Lemma E.3, Theorem E.11 and
-Theorem K.7 directly for each family. Their permanent specializations remain available to
-read beside the paper. {ref "chapter-table3"}[The paper's statements and their Lean names]
+the existence statement of Lemma C.2. The shared coefficientwise bound uses the grid-family versions for HC and the permanent.
+The permanent specializations E.2, E.3, E.11 and K.7 remain available to read beside the paper.
+The exact-circuit steps E.7, E.10, K.3 and M.1 also lie outside the five closures. All five
+exports use Lemmas N.2 and N.3 and Proposition N.4, including the exact endpoints via
+constant Laurent series. {ref "chapter-table3"}[The paper's statements and their Lean names]
 gives the route for every row. The Lean route
 also differs from the printed references at the places listed under “Routes of proof” (page 70);
 for example Theorem N.5 “does not cite Lemma K.3, Theorem K.7 and Theorem M.3”.
