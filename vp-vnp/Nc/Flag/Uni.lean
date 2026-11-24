@@ -124,10 +124,10 @@ def win : U n →* U h where
           have hba : b < a := (we_lt hp).1 hij
           rw [wi_mul_we, wi_mul_we, mat_lt A hba, Matrix.one_apply_ne hba.ne']
           simp
-        · push_neg at h2
+        · push Not at h2
           rw [wi_mul_not' hp _ h2, wi_mul_not' hp _ h2]
           simp
-      · push_neg at h1
+      · push Not at h1
         rw [wi_mul_not hp _ h1, wi_mul_not hp _ h1]
         simp)
     (by
@@ -138,7 +138,7 @@ def win : U n →* U h where
       · obtain ⟨a, rfl⟩ := h1
         rw [wi_mul_we, wi_mul_we, mat_diag, Matrix.one_apply_eq]
         simp
-      · push_neg at h1
+      · push Not at h1
         rw [wi_mul_not hp _ h1, wi_mul_not hp _ h1]
         simp)
   map_one' := mat_inj (by rw [mat_mk, mat_one, wm_one, mat_one])
