@@ -113,7 +113,7 @@ theorem det_coinc {R : Type*} [CommRing R] {μ : ℕ} (f g : Fin μ → ℕ) (hf
           rw [Finset.card_image_of_injective _ hf.injective, Finset.card_image_of_injective _ hg.injective])
         have h3 := congrArg (fun s : Finset ℕ => (s : Set ℕ)) h2
         simpa using h3
-      exact StrictMono.range_inj hf hg |>.1 hfin
+      exact StrictMono.range_inj_of_wellFoundedLT hf hg |>.1 hfin
     rw [Set.not_subset] at hr
     obtain ⟨_, ⟨i, rfl⟩, hi⟩ := hr
     refine det_eq_zero_of_row_eq_zero i fun j => ?_
