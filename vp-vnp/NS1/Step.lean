@@ -57,6 +57,9 @@ section App
 /-- Apply a fixed program. -/
 def app (p : Tree) (e : Fm) : Fm := .run (.quote p) e
 
+theorem size_app (p : Tree) (e : Fm) : (app p e).code.size = p.size + e.code.size + 17 := by
+  rw [app, size_run, size_quote]; ring
+
 theorem Ev.app {p x : Tree} {e : Fm} {le : List (Run A)} (he : Ev θ e x le)
     (h : ∀ s ∈ le, Hl θ (Fm.ofTree p) s.out) : Ev θ (app p e) x
       (le.flatMap fun s => (NS1.evl θ (Fm.ofTree p) s.out).map fun t => ((Run.det 1 p).seq s).seq t |>.tick t.out) := by

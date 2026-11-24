@@ -18,39 +18,6 @@ open _root_.NS1.Tree
 
 section Size
 
-theorem size_quote (c : Tree) : (Fm.quote c).code.size = c.size + 2 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_id : Fm.id.code.size = 5 := by
-  simp only [Fm.code, Tree.size, size_num]
-
-theorem size_hd (a : Fm) : (Fm.hd a).code.size = a.code.size + 6 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_tl (a : Fm) : (Fm.tl a).code.size = a.code.size + 8 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_cons (a b : Fm) : (Fm.cons a b).code.size = a.code.size + b.code.size + 11 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_ite (a b c : Fm) : (Fm.ite a b c).code.size = a.code.size + b.code.size + c.code.size + 14 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_run (a b : Fm) : (Fm.run a b).code.size = a.code.size + b.code.size + 15 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_guess : Fm.guess.code.size = 17 := by
-  simp only [Fm.code, Tree.size, size_num]
-
-theorem size_mul (a : Fm) : (Fm.mul a).code.size = a.code.size + 22 := by
-  simp only [Fm.code, Tree.size, size_num]; ring
-
-theorem size_app (p : Tree) (e : Fm) : (app p e).code.size = p.size + e.code.size + 17 := by
-  rw [app, size_run, size_quote]; ring
-
-theorem size_lett (e b : Fm) : (lett e b).code.size = b.code.size + e.code.size + 17 := by
-  rw [lett, size_run, size_quote]; ring
-
 theorem size_gwd (M : ℕ) : (gwd M).code.size = 50 * M + 3 := by
   induction M with
   | zero => simp [gwd, size_quote, Tree.size]

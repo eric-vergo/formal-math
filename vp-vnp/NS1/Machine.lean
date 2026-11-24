@@ -184,6 +184,35 @@ def ofTree : Tree → Fm
       simp only [Tree.size]
       omega
 
+/-- The opcode and operands present in a tree that decodes to a given formula. -/
+def CodeShape (c : Tree) : Fm → Prop
+  | .quote c0 => (c = .nil ∧ c0 = .nil) ∨ ∃ o, c = .cons o c0 ∧ o.len = 0
+  | .id => ∃ o a, c = .cons o a ∧ o.len = 1
+  | .hd a0 => ∃ o a, c = .cons o a ∧ o.len = 2 ∧ Fm.ofTree a = a0
+  | .tl a0 => ∃ o a, c = .cons o a ∧ o.len = 3 ∧ Fm.ofTree a = a0
+  | .cons a0 b0 => ∃ o a, c = .cons o a ∧ o.len = 4 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl = b0
+  | .ite a0 b0 c0 => ∃ o a, c = .cons o a ∧ o.len = 5 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl.hd = b0 ∧ Fm.ofTree a.tl.tl = c0
+  | .run a0 b0 => ∃ o a, c = .cons o a ∧ o.len = 6 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl = b0
+  | .guess => ∃ o a, c = .cons o a ∧ o.len = 7
+  | .fail => ∃ o a, c = .cons o a ∧ (o.len = 8 ∨ 11 ≤ o.len)
+  | .theta a0 => ∃ o a, c = .cons o a ∧ o.len = 9 ∧ Fm.ofTree a = a0
+  | .mul a0 => ∃ o a, c = .cons o a ∧ o.len = 10 ∧ Fm.ofTree a = a0
+
+/-- Inspecting the opcode recovers the operands for every branch of the decoder. -/
+theorem codeShape_of_decode {c : Tree} {f : Fm} (h : Fm.ofTree c = f) : CodeShape c f := by
+  subst f
+  cases c with
+  | nil => rw [Fm.ofTree]; exact Or.inl ⟨rfl, rfl⟩
+  | cons o a =>
+    rw [Fm.ofTree]
+    split
+    · exact Or.inr ⟨o, rfl, by assumption⟩
+    all_goals refine ⟨o, a, rfl, ?_⟩
+    all_goals simp_all
+    by_contra! hc
+    generalize o.len = k at *
+    interval_cases k <;> simp_all
+
 theorem ofTree_code (F : Fm) : ofTree F.code = F := by
   induction F with
   | quote c => rw [code, ofTree]; rfl
@@ -357,6 +386,41 @@ theorem Ev.run_det {a b : Fm} {x p d : Tree} {k j : ℕ} {l : List (Run A)} (ha 
 
 /-- `let`: apply `body` to the value of `e`. -/
 def lett (e body : Fm) : Fm := .run (.quote body.code) e
+
+theorem size_num (k : ℕ) : (num k).size = 2 * k + 1 := by
+  induction k with
+  | zero => rfl
+  | succ k ih => simp only [num, Tree.size, ih]; omega
+
+theorem size_quote (c : Tree) : (Fm.quote c).code.size = c.size + 2 := by
+  simp only [Fm.code, Tree.size, size_num]; ring
+
+theorem size_id : Fm.id.code.size = 5 := by
+  simp only [Fm.code, Tree.size, size_num]
+
+theorem size_hd (a : Fm) : (Fm.hd a).code.size = a.code.size + 6 := by
+  simp only [Fm.code, Tree.size, size_num]; ring
+
+theorem size_tl (a : Fm) : (Fm.tl a).code.size = a.code.size + 8 := by
+  simp only [Fm.code, Tree.size, size_num]; ring
+
+theorem size_cons (a b : Fm) : (Fm.cons a b).code.size = a.code.size + b.code.size + 11 := by
+  simp only [Fm.code, Tree.size, size_num]; ring
+
+theorem size_ite (a b c : Fm) : (Fm.ite a b c).code.size = a.code.size + b.code.size + c.code.size + 14 := by
+  simp only [Fm.code, Tree.size, size_num]; ring
+
+theorem size_run (a b : Fm) : (Fm.run a b).code.size = a.code.size + b.code.size + 15 := by
+  simp only [Fm.code, Tree.size, size_num]; ring
+
+theorem size_guess : Fm.guess.code.size = 17 := by
+  simp only [Fm.code, Tree.size, size_num]
+
+theorem size_mul (a : Fm) : (Fm.mul a).code.size = a.code.size + 22 := by
+  simp only [Fm.code, Tree.size, size_num]; ring
+
+theorem size_lett (e b : Fm) : (lett e b).code.size = b.code.size + e.code.size + 17 := by
+  rw [lett, size_run, size_quote]; ring
 
 theorem Ev.lett {e body : Fm} {x : Tree} {le : List (Run A)} (he : Ev θ e x le)
     (h : ∀ s ∈ le, Hl θ body s.out) : Ev θ (lett e body) x

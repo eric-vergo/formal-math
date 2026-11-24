@@ -18,35 +18,6 @@ open Finset NS1
 
 variable {A : Type} [CommRing A] {θ : List Bool → A} {supp : Finset (List Bool)}
 
-/-- The opcode and operands present in a tree that decodes to a given formula. -/
-def CodeShape (c : Tree) : Fm → Prop
-  | .quote c0 => (c = .nil ∧ c0 = .nil) ∨ ∃ o, c = .cons o c0 ∧ o.len = 0
-  | .id => ∃ o a, c = .cons o a ∧ o.len = 1
-  | .hd a0 => ∃ o a, c = .cons o a ∧ o.len = 2 ∧ Fm.ofTree a = a0
-  | .tl a0 => ∃ o a, c = .cons o a ∧ o.len = 3 ∧ Fm.ofTree a = a0
-  | .cons a0 b0 => ∃ o a, c = .cons o a ∧ o.len = 4 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl = b0
-  | .ite a0 b0 c0 => ∃ o a, c = .cons o a ∧ o.len = 5 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl.hd = b0 ∧ Fm.ofTree a.tl.tl = c0
-  | .run a0 b0 => ∃ o a, c = .cons o a ∧ o.len = 6 ∧ Fm.ofTree a.hd = a0 ∧ Fm.ofTree a.tl = b0
-  | .guess => ∃ o a, c = .cons o a ∧ o.len = 7
-  | .fail => ∃ o a, c = .cons o a ∧ (o.len = 8 ∨ 11 ≤ o.len)
-  | .theta a0 => ∃ o a, c = .cons o a ∧ o.len = 9 ∧ Fm.ofTree a = a0
-  | .mul _ => ∃ o a, c = .cons o a ∧ o.len = 10
-
-/-- Inspecting the opcode recovers the operands for every branch of the decoder. -/
-theorem codeShape_of_decode {c : Tree} {f : Fm} (h : Fm.ofTree c = f) : CodeShape c f := by
-  subst f
-  cases c with
-  | nil => rw [Fm.ofTree]; exact Or.inl ⟨rfl, rfl⟩
-  | cons o a =>
-    rw [Fm.ofTree]
-    split
-    · exact Or.inr ⟨o, rfl, by assumption⟩
-    all_goals refine ⟨o, a, rfl, ?_⟩
-    all_goals try simp_all
-    by_contra! hc
-    generalize o.len = k at *
-    interval_cases k <;> simp_all
-
 /-- The sum over the runs without named constants. -/
 def tot (m : Run A → A) (l : List (Run A)) : A := (l.map fun r => if r.bill = [] then r.th * m r else 0).sum
 
@@ -131,7 +102,7 @@ theorem EvOK.quote (c0 x : Tree) : EvOK θ supp (.quote c0) x [.det 1 c0] := by
     have : ((Run.det 1 c0 : Run A).cost : ℤ) = 1 := rfl
     rw [this] at hB
     linarith
-  rcases codeShape_of_decode hF with ⟨rfl, rfl⟩ | ⟨o, rfl, hl⟩
+  rcases Fm.codeShape_of_decode hF with ⟨rfl, rfl⟩ | ⟨o, rfl, hl⟩
   · have h0 : σ.regs 1 = 0 := hc
     have hrec : ((.N, ![σ.regs (laM σ.mode), 0, 0, 0]) : Rec Kd) ∈ σ.heap := by
       rw [hm]
@@ -160,7 +131,7 @@ theorem EvOK.id (x : Tree) : EvOK θ supp .id x [.det 1 x] := by
     have : ((Run.det 1 x : Run A).cost : ℤ) = 1 := rfl
     rw [this] at hB
     linarith
-  obtain ⟨o, a, rfl, hl⟩ := codeShape_of_decode hF
+  obtain ⟨o, a, rfl, hl⟩ := Fm.codeShape_of_decode hF
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
   have hm1' : σ1.mode = .D 1 := by rw [hm1]; congr 1; exact Fin.ext hl
   refine dstep ok1 hm1' h11 .d1 rfl (by decide) rfl rfl ?_
@@ -173,7 +144,7 @@ theorem EvOK.fail (x : Tree) : EvOK θ supp .fail x [] := by
   intro σ hσ m Bd B h
   obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
   rw [tot_nil]
-  obtain ⟨o, a, rfl, hl | hl⟩ := codeShape_of_decode hF
+  obtain ⟨o, a, rfl, hl | hl⟩ := Fm.codeShape_of_decode hF
   · refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
     have hm1' : σ1.mode = .D 8 := by rw [hm1]; congr 1; exact Fin.ext hl
     have hrec : ((.N, ![σ1.regs (laM σ1.mode), 0, 0, 0]) : Rec Kd) ∈ σ1.heap := by

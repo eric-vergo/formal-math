@@ -52,7 +52,7 @@ theorem EvOK.hd {a : Fm} {x : Tree} {l : List (Run A)} (ih : EvOK θ supp a x l)
     EvOK θ supp (.hd a) x (l.map fun r => r.tick r.out.hd) := by
   intro σ hσ m Bd B h
   obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
-  obtain ⟨o, a', rfl, hl, rfl⟩ := codeShape_of_decode hF
+  obtain ⟨o, a', rfl, hl, rfl⟩ := Fm.codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   rw [tot_map]
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
@@ -86,7 +86,7 @@ theorem EvOK.tl {a : Fm} {x : Tree} {l : List (Run A)} (ih : EvOK θ supp a x l)
     EvOK θ supp (.tl a) x (l.map fun r => r.tick r.out.tl) := by
   intro σ hσ m Bd B h
   obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
-  obtain ⟨o, a', rfl, hl, rfl⟩ := codeShape_of_decode hF
+  obtain ⟨o, a', rfl, hl, rfl⟩ := Fm.codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   rw [tot_map]
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
@@ -120,7 +120,7 @@ theorem EvOK.cons {a b : Fm} {x : Tree} {la lb : List (Run A)} (iha : EvOK θ su
     EvOK θ supp (.cons a b) x (la.flatMap fun r => lb.map fun s => (r.seq s).tick (.cons r.out s.out)) := by
   intro σ hσ m Bd B h
   obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
-  obtain ⟨o, a', rfl, hl, rfl, rfl⟩ := codeShape_of_decode hF
+  obtain ⟨o, a', rfl, hl, rfl, rfl⟩ := Fm.codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   rw [tot_seq m la (fun _ => lb) fun r s => .cons r.out s.out]
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
@@ -179,7 +179,7 @@ theorem EvOK.ite {a b c : Fm} {x : Tree} {la : List (Run A)} {L : Run A → List
     EvOK θ supp (.ite a b c) x (la.flatMap fun r => (L r).map fun s => (r.seq s).tick s.out) := by
   intro σ hσ m Bd B h
   obtain ⟨ok, hm, ⟨c', hc, hF⟩, hx⟩ := hσ
-  obtain ⟨o, a', rfl, hl, rfl, rfl, rfl⟩ := codeShape_of_decode hF
+  obtain ⟨o, a', rfl, hl, rfl, rfl, rfl⟩ := Fm.codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   rw [tot_seq m la L fun r s => s.out]
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)

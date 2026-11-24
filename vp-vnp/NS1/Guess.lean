@@ -419,11 +419,6 @@ end Formulas
 
 section Sizes
 
-theorem size_num (k : ℕ) : (num k).size = 2 * k + 1 := by
-  induction k with
-  | zero => rfl
-  | succ k ih => simp only [num, Tree.size, ih]; omega
-
 theorem size_gw (ν : ℕ → ℕ) (pre : List Bool) (b N : ℕ) (n j : ℕ) (h : ∀ i < j + n, ν (b + i) ≤ N) :
     (gw ν pre b j n).code.size ≤ n * (4 * (pre.length + N) + 100) + 4 := by
   induction n generalizing j with
