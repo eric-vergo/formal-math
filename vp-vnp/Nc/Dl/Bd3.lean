@@ -72,8 +72,6 @@ theorem cost_ifeq (k : Fin pS) (t : Tree) (a c : Tm) : (Tm.ifeq (C.nm (.slp k)) 
   have h1 := hnm (.slp k)
   have h2 := size_slp hst hnm hdc k
   simp only [Tm.cost]
-  have h3 : (if byPath C.nm st (C.nm (.slp k)) = .nil then 0 else 0) = 0 := by split_ifs <;> rfl
-  rw [h3]
   omega
 
 theorem cost_ifTm (k : Fin pS) (t : Tree) (a : Tm) : (ifTm (C.nm (.slp k)) t a).cost (byPath C.nm st) ≤
