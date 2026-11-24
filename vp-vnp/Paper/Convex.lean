@@ -33,57 +33,7 @@ section Steps
 /-! The steps of the proof of Lemma lem:convex: the new parties are placed at random by Proposition prop:extend, and
 Theorem thm:cn bounds how far they are from the midpoints. -/
 
-
-variable {K : Type} [Field K] {P Q : Type} [Fintype P] [DecidableEq P] [Fintype Q] [DecidableEq Q]
-
-/-- Let σ l, with weights θ l ≥ 0 of sum 1, map new parties Q to the
-parties P. A spectral point F over P has an extension F' to P ⊕ Q that is, at every tensor, at most the weighted geometric mean of
-the values of F at the tensors with the legs moved by σ l. It has the same distances on P and the same value at a given
-tensor C over P. -/
-theorem exists_mix_spec_keep (F : Spec K P) (θ : Fin 2 → ℝ) (hθ : ∀ l, 0 ≤ θ l)
-    (hθ1 : ∑ l, θ l = 1) (σ : Fin 2 → Q → P) (C : Ten K P) (hC : 0 < F.F C) :
-    ∃ F' : Spec K (P ⊕ Q), (∀ t, F'.F t ≤ ∏ l, F.F (Ten.push (Sum.elim id (σ l)) t) ^ θ l) ∧
-      (∀ p p', F'.e (Sum.inl p) (Sum.inl p') = F.e p p') ∧ F'.F (Ten.push Sum.inl C) = F.F C := by
-  classical
-  set W : Ten K P := Ten.prod fun e : P × P => Ten.wire K 2 e.1 e.2 with hW
-  obtain ⟨F', hle, hWC⟩ := prop_extend (K := K) (Sum.inl : P → P ⊕ Q)
-    (fun l => Sum.elim id (σ l)) (fun l i => rfl) θ hθ hθ1 F (W * C)
-  -- on tensors over P the extension is not larger
-  have hA (A : Ten K P) : F'.F (Ten.push Sum.inl A) ≤ F.F A :=
-    (hle _).trans (prop_extend_upper Sum.inl (fun l => Sum.elim id (σ l)) (fun l i => rfl)
-      θ hθ1 F A).le
-  have hW0 : 0 < F.F W := by
-    rw [hW, F.prod]
-    exact Finset.prod_pos fun e _ => by rw [F.wire_two]; positivity
-  rw [F'.congr (Ten.Equi.push_mul _ W C), F'.mul, F.mul] at hWC
-  have h1 := hA W
-  have h2 := hA C
-  have h3 : 0 ≤ F'.F (Ten.push Sum.inl W) := F'.nonneg _
-  have h4 : 0 ≤ F'.F (Ten.push Sum.inl C) := F'.nonneg _
-  have hC' : F'.F (Ten.push Sum.inl C) = F.F C := by
-    refine le_antisymm h2 (not_lt.1 fun hlt => ?_)
-    have : F'.F (Ten.push Sum.inl W) * F'.F (Ten.push Sum.inl C) < F.F W * F.F C :=
-      lt_of_le_of_lt (mul_le_mul_of_nonneg_right h1 h4) (mul_lt_mul_of_pos_left hlt hW0)
-    exact this.ne hWC
-  have hW' : F'.F (Ten.push Sum.inl W) = F.F W := by
-    rw [hC'] at hWC
-    exact mul_right_cancel₀ hC.ne' hWC
-  refine ⟨F', hle, ?_, hC'⟩
-  have hle' : ∀ p p', F'.e (Sum.inl p) (Sum.inl p') ≤ F.e p p' := by
-    intro p p'
-    have h := hA (Ten.wire K 2 p p')
-    rw [← F'.pull_F, (F'.pull _).wire_two, F'.pull_e, F.wire_two] at h
-    exact (Real.rpow_le_rpow_left_iff (by norm_num)).1 h
-  have hsum : ∑ e : P × P, F'.e (Sum.inl e.1) (Sum.inl e.2) = ∑ e : P × P, F.e e.1 e.2 := by
-    rw [← F'.pull_F, hW, (F'.pull _).prod, F.prod] at hW'
-    simp only [Spec.wire_two, Spec.pull_e] at hW'
-    rw [← Real.rpow_sum_of_pos (by norm_num), ← Real.rpow_sum_of_pos (by norm_num)] at hW'
-    have h2 := congrArg (Real.logb 2) hW'
-    rwa [Real.logb_rpow (by norm_num) (by norm_num), Real.logb_rpow (by norm_num) (by norm_num)]
-      at h2
-  intro p p'
-  exact (Finset.sum_eq_sum_iff_of_le (fun (e : P × P) _ => hle' e.1 e.2)).1 hsum (p, p')
-    (Finset.mem_univ _)
+variable {K : Type} [Field K]
 
 /-- Exponents: a power of two below the geometric mean of two powers of two. -/
 theorem le_mean_of_two_rpow_le {r s t : ℝ}
