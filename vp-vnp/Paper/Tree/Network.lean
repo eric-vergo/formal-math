@@ -30,43 +30,15 @@ def netValue {R : Type} [CommRing R] {AA ℓ : ℕ} {n : Fin AA → Fin AA → �
   ∑ w : NetUnit n → Fin ℓ → Bool, ∏ a, tab a fun u => w u.1
 
 /-- A law over A is a law over every A-algebra. -/
-noncomputable def lawMap {A R : Type} [CommRing A] [CommRing R] (f : A →+* R) (L : G.Law A) : G.Law R where
-  Ro := L.Ro
-  Sl := L.Sl
-  Cn := L.Cn
-  I := L.I
-  a := L.a
-  b := L.b
-  ab := L.ab
-  c := L.c
-  d := L.d
-  cd := L.cd
-  lam := L.lam
-  lab := L.lab
-  lab_inj := L.lab_inj
-  len := L.len
-  tab p i s y := f (L.tab p i s y)
-  law X := @laws_over_algebras A _ L R _ f.toAlgebra X
-  conn := L.conn
+noncomputable def lawMap {A R : Type} [CommRing A] [CommRing R] (f : A →+* R) (L : G.Law A) : G.Law R :=
+  { L with
+    tab p i s y := f (L.tab p i s y)
+    law X := @laws_over_algebras A _ L R _ f.toAlgebra X }
 
 /-- The laws at the vertices of a tower, over an A-algebra. -/
 noncomputable def flagMap {A R : Type} [CommRing A] [CommRing R] (f : A →+* R) {h b D J r : ℕ} {T : Tower h b D J r}
-    (FL : FlagLaws A T) : FlagLaws R T where
-  Di := FL.Di
-  L d := lawMap f (FL.L d)
-  ro := FL.ro
-  cn := FL.cn
-  ends := FL.ends
-  lam_pos := FL.lam_pos
-  nonempty := FL.nonempty
-  a₁ := FL.a₁
-  a₁_pos := FL.a₁_pos
-  C₁ := FL.C₁
-  C₁_nonneg := FL.C₁_nonneg
-  G₁ := FL.G₁
-  G₁_le := FL.G₁_le
-  L1 := FL.L1
-  L2 := FL.L2
+    (FL : FlagLaws A T) : FlagLaws R T :=
+  { FL with L := fun d => lawMap f (FL.L d) }
 
 theorem TCst_map {A R : Type} [CommRing A] [CommRing R] (f : A →+* R) {h b D J r : ℕ} {T : Tower h b D J r}
     {FL : FlagLaws A T} {laws : List (G.Law A)} {c p q : ℕ} {ρ : ℝ} (hC : TCst FL laws c ρ p q) :

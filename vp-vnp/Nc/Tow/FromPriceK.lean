@@ -21,32 +21,18 @@ variable {K : Type} [CommRing K]
 
 /-- A law with tables in a subring. -/
 noncomputable def restrictLaw (L : Law K) (A : Subring K)
-    (hA : ∀ p i x g, L.tab p i x g ∈ A) : Law A where
-  Ro := L.Ro
-  Sl := L.Sl
-  Cn := L.Cn
-  I := L.I
-  a := L.a
-  b := L.b
-  ab := L.ab
-  c := L.c
-  d := L.d
-  cd := L.cd
-  lam := L.lam
-  lab := L.lab
-  lab_inj := L.lab_inj
-  len := L.len
-  tab p i x g := ⟨L.tab p i x g, hA p i x g⟩
-  law X := by
-    apply Subtype.ext
-    have h := L.law X
-    have e : ((if ∀ e, X (L.a e) e = X (L.b e) e then (1 : A) else 0 : A) : K) =
-        if ∀ e, X (L.a e) e = X (L.b e) e then 1 else 0 := by
-      split_ifs <;> rfl
-    rw [e, h]
-    push_cast
-    rfl
-  conn := L.conn
+    (hA : ∀ p i x g, L.tab p i x g ∈ A) : Law A :=
+  { L with
+    tab p i x g := ⟨L.tab p i x g, hA p i x g⟩
+    law X := by
+      apply Subtype.ext
+      have h := L.law X
+      have e : ((if ∀ e, X (L.a e) e = X (L.b e) e then (1 : A) else 0 : A) : K) =
+          if ∀ e, X (L.a e) e = X (L.b e) e then 1 else 0 := by
+        split_ifs <;> rfl
+      rw [e, h]
+      push_cast
+      rfl }
 
 /-- The entries of a law. -/
 def entries (L : Law K) : Set K := {y | ∃ p i x g, L.tab p i x g = y}
