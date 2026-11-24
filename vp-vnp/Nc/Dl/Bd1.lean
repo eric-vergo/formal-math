@@ -15,12 +15,6 @@ namespace Nc.Dl
 
 open NS1 NS1.Tree Finset Nc.G Nc.Cut Codes
 
-section Reach
-
-variable {m mb : ℕ}
-
-end Reach
-
 variable {A : Type} [CommRing A] {S Q : Type} [Fintype S] [DecidableEq S] [Fintype Q] [DecidableEq Q]
   {K A' E U0 U1 ub mm D pS : ℕ} {M : Sys A (K + K + A') E} {P : G.Plan M U0 U1}
   {grp : NN K U0 → (M.N → Fin U1) → Fin (K + K + A') → Fin mm} (C : Codes S M U0 U1 D pS) {m mb : ℕ}

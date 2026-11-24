@@ -257,11 +257,4 @@ theorem totalDegree_mnExt (f : (ι → Bool) → F) {d : ℕ} (hd : ∀ b, f b �
 
 end Monomial
 
-section Main
-
-variable {F : Type} [Field F] {Γ S Q : Type} [Fintype Γ] [DecidableEq Γ] [Fintype S] [DecidableEq S]
-  [Fintype Q] [DecidableEq Q]
-
-end Main
-
 end Nc

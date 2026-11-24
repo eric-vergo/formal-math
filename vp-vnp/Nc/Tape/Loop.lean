@@ -33,22 +33,15 @@ theorem RatLe.word {Ω : Type*} [DecidableEq Ω] (w : List Ω) :
       | nil => simp [Series.mul, Series.letter, Series.word]
       | cons b o =>
         rw [Series.mul, List.length_cons, Finset.sum_range_succ', Finset.sum_range_succ']
-        have : ∀ k, Series.letter (F := F) a ((b :: o).take (k + 1 + 1)) *
-            Series.word w ((b :: o).drop (k + 1 + 1)) = if k + 1 ≤ o.length then 0 else
+        have htail : ∀ k ∈ range o.length,
             Series.letter (F := F) a ((b :: o).take (k + 1 + 1)) *
-            Series.word w ((b :: o).drop (k + 1 + 1)) := by
-          intro k
-          split_ifs with hk
-          · obtain ⟨c, o, rfl⟩ : ∃ c o', o = c :: o' := by
-              cases o with
-              | nil => simp at hk
-              | cons c o => exact ⟨c, o, rfl⟩
-            simp [Series.letter]
-          · rfl
-        rw [Finset.sum_congr rfl fun k _ => this k]
-        rw [Finset.sum_congr rfl (g := fun _ => (0 : F)) (fun k hk => by
-          rw [if_pos (by have := Finset.mem_range.1 hk; omega)])]
-        simp only [Finset.sum_const_zero, zero_add]
+              Series.word w ((b :: o).drop (k + 1 + 1)) = 0 := by
+          intro k hk
+          cases o with
+          | nil => simp at hk
+          | cons c o => simp [Series.letter]
+        rw [Finset.sum_eq_zero htail]
+        simp only [zero_add]
         by_cases hb : b = a
         · subst hb
           by_cases ho : o = w <;> simp [Series.letter, Series.word, ho]
@@ -83,9 +76,5 @@ theorem hat_body (wd : κ → List (Z × Γ)) (c : κ → F) (v : Z → List Γ)
   simp
 
 end Loop
-
-section Phases
-
-end Phases
 
 end Nc

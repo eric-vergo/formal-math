@@ -15,12 +15,6 @@ namespace Nc
 
 open Finset MvPolynomial
 
-section Degree
-
-variable {F : Type*} [Field F] {ι : Type*} [Fintype ι] [DecidableEq ι]
-
-end Degree
-
 section Count
 
 theorem card_ChN (S : Type) [Fintype S] (n : ℕ) : Fintype.card (Ch S (Fin n)) = 2 * Fintype.card S + n := by

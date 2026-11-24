@@ -17,19 +17,6 @@ namespace Nc.Cut
 
 open Finset
 
-section Codes
-
-variable {F : Type*} [CommRing F] {I : Type*} [Fintype I] {A B : I → Type*}
-  [∀ i, Fintype (A i)] [∀ i, Fintype (B i)] {Zg Zh : Type*} [Fintype Zg] [DecidableEq Zg] [Fintype Zh]
-  [DecidableEq Zh] (ca : (i : I) → A i → Zg) (cb : (i : I) → B i → Zh)
-
-variable {ca cb} (hca : Function.Injective fun p : Σ i, A i => ca p.1 p.2)
-  (hcb : Function.Injective fun p : Σ i, B i => cb p.1 p.2)
-
-include hca hcb
-
-end Codes
-
 section Strings
 
 variable {I : Type} {lam : ℕ} (lab : I → Fin lam → Bool)

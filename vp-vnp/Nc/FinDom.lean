@@ -119,11 +119,4 @@ theorem fdSum_elim {θ' : Type*} [Fintype θ'] (lits : θ → List ((ι ⊕ Σ d
   rw [Fintype.prod_sum_type, ← h g]
   rfl
 
-section Proj
-
-variable {F ι D θ : Type} [Field F] [Fintype ι] [DecidableEq ι] [Fintype D] [DecidableEq D] {E : D → Type}
-  [∀ d, Fintype (E d)] [∀ d, DecidableEq (E d)] [Fintype θ] {G : ∀ S, MvPolynomial (Fin S × Fin S) F} {κ : ℕ}
-
-end Proj
-
 end Nc
