@@ -273,7 +273,7 @@ compactness is in the product topology on functions `Y → Y → ℝ`.
 These closure properties are all that later chapters use of the definition, apart from the two
 ways of making new prices: {bpref "prop_random"}[] below, and the inequality for two crossing
 wires of the next chapter. Compactness is the source of the non-effective steps: it is used in
-{bpref "prop_random"}[] and, decisively, in the proof that one of the two cases holds
+{bpref "prop_random"}[] and in the proof that one of the two cases holds
 ({ref "chapter-dichotomy"}[The two cases]).
 
 # A.4. Upper functionals
@@ -333,10 +333,9 @@ $`p(t^n) = p(t)^n`), `Paper.prop_gauge_localize` (the function $`p_f`), and
 proof uses the infimum.
 :::
 
-The spectral point of Proposition A.5 is obtained from Zorn's lemma. No spectral point other than
-the trivial one, its relatives $`\phi^a`, and those produced by this proposition appears in the
-development; in particular no formula for a spectral point that realizes a given price is ever
-given.
+The spectral point of Proposition A.5 is obtained from Zorn's lemma, and the statements below
+that produce spectral points or prices (Theorem A.6 in its proof, Propositions A.7 and A.8) all
+rest on it. They assert existence and give no formula.
 
 # A.5. Duality
 

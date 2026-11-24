@@ -354,7 +354,8 @@ $`r(n) = n^2` summation variables read as an $`n \times n` table of bits, it is 
 test that the table is the table of a permutation, of the bit that puts the first vertex at the
 first place, and of $`\prod_i \sum_{(p,q)} [\text{place } i \text{ holds } p]\,[\text{place } i+1 \text{ holds } q]\, x_{p,q}`,
 the places taken cyclically. The exponent of VP is again $`a = 700`. The theorem holds for
-fields in every universe and is used by `Paper.cor_allclasses` (Corollary M.4).
+fields in every universe and is used by `Paper.cor_allclasses` (Corollary M.4) and by
+`Paper.thm_approx` (Theorem N.5).
 :::
 
 # What the rest of the proof takes from this chapter
