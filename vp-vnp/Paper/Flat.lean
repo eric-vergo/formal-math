@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 import Paper.Alternative
 import Paper.Grids
 import Nc.CaseI.Lower
+import Nc.Final.CClasses
 
 /-!
 # The paper, section "The flat case"
