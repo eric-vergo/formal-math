@@ -23,6 +23,11 @@ htmlSplit := .never
 number := false
 %%%
 
+The cleanup preserves the bytes of this specification and of the Comparator challenge and
+solution at the Lean 4.36 port baseline `9fd368ad`. The coefficient spelling described below
+belongs to that earlier port.
+
+
 The file {repoFile "vp-vnp/Statement.lean"}[`Statement.lean`] is 98 lines long, imports `Mathlib`
 and nothing else, and defines everything the results are stated with: circuits and their size, the
 two polynomials, the bound, approximation, families, VP, its closure, VNP, and four propositions.

@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), GPT-6.2 (OpenAI)
 -/
 import Verso
 import VersoManual
@@ -51,11 +51,11 @@ known. Nothing is claimed about Boolean circuits. {ref "chapter-claim"}[What is 
 all of this precisely.
 
 *What has been checked, and by what.* The formalization proves five Lean theorems, whose
-statements are fixed by one file of 98 lines that imports only Mathlib. In the build this site
-reports on, Lean's kernel accepted their proofs with no axiom beyond Lean's standard three, and
-by the README of the folder two further checkers that ship with the Lean toolchain, `con-leche`
-and `con-ron`, each accepted them again; the Project Stats page states, in the tool's words, the
-result of the replay made when the site was generated. No machine checks
+statements are fixed by one file of 98 lines that imports only Mathlib. The original paper reports the checks on Lean 4.33.1. At the Lean 4.36 port
+baseline (`9fd368ad`), two further checkers, `con-leche` and `con-ron`, accepted the export
+of the five proofs. Eric Vergo and GPT-6.2 (OpenAI) revised the proofs and blueprint on the
+fork, keeping the statement file and Comparator files byte for byte. The Project Stats page
+reports the checks performed for this site build. No machine checks
 that the 98 lines say what the paper claims, and no human mathematician has checked the proof,
 the statement file, the Lean development or this blueprint.
 

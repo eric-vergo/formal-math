@@ -243,7 +243,7 @@ The paper's checks (Section Q.1) are of the development on Lean 4.33.1. This sit
 port to Lean 4.36.0 and the corresponding Mathlib, made on a branch of a fork; it is not part of
 the upstream repository, and nothing on it has been reviewed there.
 {repoFile "vp-vnp/PORTING.md"}[`PORTING.md`] lists the changes: one spelling in four statements,
-and 28 repairs of proofs. Every verdict and mark of this site is about the port. The Comparator
+and 28 repairs of proofs. Those counts refer to the port at `9fd368ad`. The proof cleanup starts there. The Project Stats page identifies the checks performed on the site build. The Comparator
 run with the checker nanoda that the paper reports has not been repeated on this branch; the
 site's own comparison and its kernel replay with two other checkers are described in
 {ref "chapter-checking"}[How to check this yourself], with what they leave trusted.

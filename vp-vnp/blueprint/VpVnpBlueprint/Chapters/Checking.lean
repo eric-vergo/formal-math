@@ -29,8 +29,8 @@ that there is no command, only {ref "chapter-statement"}[The statement to trust]
 # Which build
 
 The paper's development uses Lean 4.33.1 and Mathlib at commit `0df444a360e` (Section 3, page 11,
-of {repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). This site is built from the branch `blueprint` of
-a fork of the repository, in which the development is ported to Lean 4.36.0 and Mathlib
+of {repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). This site follows a proof cleanup on a fork. Its baseline is the port at commit
+`9fd368ad`, which moved the development to Lean 4.36.0 and Mathlib
 `v4.36.0`, the versions the site's tools need. The files `lean-toolchain` and
 `lake-manifest.json` in the folder {repoFile "vp-vnp"}[`vp-vnp`] name the versions, and
 {repoFile "vp-vnp/PORTING.md"}[`PORTING.md`] lists every change the port made to a Lean file:
@@ -38,8 +38,17 @@ the spelling of a coefficient in four statements, and 28 repairs of proofs in 27
 reason for each. In its words: “No `sorry` was added, no axiom, no `native_decide`, and no
 `maxHeartbeats` was raised”.
 
-Every command below, and every report on this site, is about that build. The checks that the
-paper reports (Section Q.1, page 66) were made on the original one.
+The paper reports the checks of the original development in Section Q.1 (page 66).
+The baseline comparisons below use pinned revisions. To check that the cleanup preserves
+the statement file, the entire Comparator directory and the paper byte for byte, run from
+the project folder:
+
+```
+git diff --exit-code 9fd368ad HEAD -- Statement.lean Comparator paper.pdf
+```
+
+An empty diff with exit status zero establishes equality of the tracked files. The Project
+Stats page records the checks performed for the particular site build.
 
 # Building the proof and printing its axioms
 
@@ -81,11 +90,11 @@ the outputs just described.
 
 # Comparing the statements with upstream
 
-That this branch states what the upstream development states is checked from the texts. With a
+The original port compared its public statements with upstream from the texts. With a
 Git remote `upstream` for `anthropics/formal-math` fetched:
 
 ```
-python3 -I scripts/statement-diff.py upstream/vp-vnp HEAD
+python3 -I scripts/statement-diff.py 918c8e2 9fd368ad
 ```
 
 The script {repoFile "vp-vnp/scripts/statement-diff.py"}[`scripts/statement-diff.py`] compares,
@@ -159,7 +168,7 @@ a project or in something it depends on, and only a replay notices.” When it i
 generated, the Lean declarations of its nodes and the five judged theorems are exported together
 with every constant they depend on, in this project, in Mathlib and in Lean's own library, and
 the export is given to two checkers that ship with the Lean toolchain, `con-leche` and `con-ron`.
-The README of the folder reports one such run for the five theorems: “the toolchain's exporter
+The README records one such run for the five theorems of the pinned port baseline: “the toolchain's exporter
 `leanexport` wrote them with every constant they depend on (61,815 declarations), and the two
 checkers that ship with Lean 4.36.0, `con-leche --verified` and `con-ron --verified`, each
 accepted the export.”

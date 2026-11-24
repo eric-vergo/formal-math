@@ -85,3 +85,18 @@ including compiler-generated constants. Use those lists for per-export route fla
   declaration preserves elaboration. Tactic attributes and other implicit consumers require
   a rebuild. Blueprint-generated listings are derived from whatever source is present and
   therefore do not make a declaration a pruning root.
+
+## Checking the paper's concordance
+
+Run the row audit against the kernel output and the matching source checkout:
+
+```bash
+python3 vp-vnp/comparison/table-routes.py "$work/kernel.json" --root "$work/vp-vnp"
+```
+
+The tab-separated report names each printed row, each associated Lean constant, its defining
+source file, and its membership in the five export closures in the order M, S, A, C, R. The
+numbered and display rows use their first declaration for the route label. Definition rows
+keep their editorial label and report the computed membership of each name. The unnumbered
+table is checked as well. A missing declaration, missing source file, unexpected table format,
+or mismatch between a printed route label and the compiled membership fails the check.

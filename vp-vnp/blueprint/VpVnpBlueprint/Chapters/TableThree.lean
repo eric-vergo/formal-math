@@ -69,8 +69,10 @@ the numbered statements, and each of them is proved once. The theorems of `Solut
 through them, with these exceptions, which are not on that route: Theorem L.2, Corollary L.3, the
 qualitative bound in the flat case (Proposition E.5 and Theorem E.6) and the definitions.” For
 this revision the column was computed, in the build of this branch, from the Lean constants on
-which each of the five theorems depends (the closure that `#print axioms` traverses; the
-traversal is not part of the repository). An entry is about the Lean theorem named first in the
+which each of the five theorems depends using {repoFile "vp-vnp/scripts/InventoryKernel.lean"}[`InventoryKernel.lean`].
+{repoFile "vp-vnp/comparison/table-routes.py"}[`table-routes.py`] independently reads the
+compiled closures and checks the printed labels. Its output gives the module source file and
+individual export memberships for every named declaration, including definitions and secondary names. An entry is about the Lean theorem named first in the
 row:
 
 - _yes_: all five theorems depend on it;

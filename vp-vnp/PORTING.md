@@ -1,6 +1,8 @@
 # Changes for Lean 4.36.0 and Mathlib v4.36.0
 
-This branch builds the development with `leanprover/lean4:v4.36.0` and Mathlib at the tag `v4.36.0`
+This record compares the pinned port baseline `9fd368ad` with the upstream revision `918c8e2`. All counts, diffs and verification reports below describe those revisions. The proof cleanup is documented separately in [README.md](README.md).
+
+The port builds the development with `leanprover/lean4:v4.36.0` and Mathlib at the tag `v4.36.0`
 (`fc4f59e577feb1a4956671bc04ac18aaaf8cd842`); upstream `vp-vnp` uses Lean 4.33.1 and Mathlib
 `0df444a360eaa60ab8c11dca51a86af692955474`. This file lists every change to a Lean file that the new
 toolchain and Mathlib needed. The move of the Comparator files to Comparator/VpVnp/ (and with it the
@@ -36,7 +38,7 @@ every proof checks.
 
 Section 3 of the paper prints upstream's Statement.lean (Appendix Q says so). This branch's file differs
 from upstream's in the line of `Approximates` shown above and nowhere else
-(`git diff upstream/vp-vnp -- Statement.lean`).
+(`git diff 918c8e2 9fd368ad -- Statement.lean`).
 
 [scripts/statement-diff.py](scripts/statement-diff.py) checks this mechanically. It compares every
 declaration of Statement.lean, the Comparator challenge and solution, Paper.lean and Paper/ with upstream
@@ -44,7 +46,7 @@ declaration of Statement.lean, the Comparator challenge and solution, Paper.lean
 top-level commands of each file in order), and it marks a change as one of the coefficient's spelling only
 when rewriting upstream's `coeff A B` to `B.coeff A` gives this branch's text exactly:
 
-    python3 -I scripts/statement-diff.py upstream/vp-vnp HEAD
+    python3 -I scripts/statement-diff.py 918c8e2 9fd368ad
 
 ## Proof repairs
 

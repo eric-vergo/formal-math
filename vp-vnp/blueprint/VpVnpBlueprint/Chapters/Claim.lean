@@ -190,7 +190,7 @@ that the paper names for it, and the Lean proofs differ in what they depend on: 
 on the three statements of Appendix N that carry the approximate case (Lemmas N.2 and N.3 and
 Proposition N.4), and `Solution.mainTheoremApprox` and `Solution.separationClosure` do. (This
 was read off, for this revision, from the constants on which each of the five theorems depends,
-the closure that `#print axioms` traverses; the traversal is not part of the repository.)
+using the compiled dependency traversal in {repoFile "vp-vnp/scripts/InventoryKernel.lean"}[`InventoryKernel.lean`].)
 
 # The quantifiers, the constant and the threshold
 
@@ -283,12 +283,10 @@ Four things could be checked, and they have been checked to different degrees.
   five in the challenge file, which states the theorems without proof for the comparison, and
   `#print axioms` names `propext`, `Classical.choice` and `Quot.sound`, and no other axiom, for
   each of the five theorems.
-- Two further checkers, on this build. The README, quoted: “The five theorems were also checked
-  outside Lean's kernel: the toolchain's exporter `leanexport` wrote them with every constant they
-  depend on (61,815 declarations), and the two checkers that ship with Lean 4.36.0,
-  `con-leche --verified` and `con-ron --verified`, each accepted the export.” The site repeats a
-  replay of this kind whenever it is generated and states the result on its Project Stats page,
-  in the tool's own words, with what the replay leaves trusted.
+- At the port baseline `9fd368ad`, the five theorems and their dependencies occupied
+  61,815 declarations in a `leanexport` export. Both `con-leche --verified` and
+  `con-ron --verified` accepted that export. The Project Stats page reports the replay
+  performed for the site build a reader is viewing.
 - The upstream development, on Lean 4.33.1, by the paper's account (Section Q.1, page 66):
   “Comparator accepted them against `Challenge.lean`, rechecking the proofs with Lean's kernel and
   with the independently written checker nanoda.” That run is the paper's; it was not repeated on

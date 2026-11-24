@@ -6,9 +6,17 @@ The result was discovered by an internal research Claude model. This folder hold
 
 Research artifact. Not maintained and not accepting contributions.
 
-## This branch
+## Proof cleanup
 
-This is the branch `blueprint` of a fork of [anthropics/formal-math](https://github.com/anthropics/formal-math), made from its branch `vp-vnp`. It is not part of the upstream repository and nothing on it has been reviewed there; the cautions above apply to it unchanged. It differs from upstream `vp-vnp` in four points:
+Eric Vergo and GPT-6.2 (OpenAI) revised the Lean proofs and accompanying blueprint on this fork. The paper and its original attribution are preserved. The cleanup starts at the Lean 4.36 port, commit `9fd368ad`. It preserves the bytes of `Statement.lean`, the Comparator challenge, solution and configuration, and the original PDF. From this directory, check those files against the port with:
+
+    git diff --exit-code 9fd368ad HEAD -- Statement.lean Comparator paper.pdf
+
+The real permanent bound now specializes the all-fields theorem. The qualitative flat-case bound follows from the quantitative bound. The blueprint distinguishes these Lean proofs from the paper's original arguments. The [measurement guide](comparison/inventory-method.md) describes the compiled dependency traversal and source measurements.
+
+## Lean 4.36 port at `9fd368ad`
+
+The port was prepared on the branch `blueprint` of a fork of [anthropics/formal-math](https://github.com/anthropics/formal-math), made from its branch `vp-vnp`. It is not part of the upstream repository and nothing on it has been reviewed there; the cautions above apply to it unchanged. It differs from upstream `vp-vnp` in four points:
 
 - **Toolchain.** Lean `v4.36.0` and Mathlib at the tag `v4.36.0` (`fc4f59e577feb1a4956671bc04ac18aaaf8cd842`), with the revisions of its dependencies that Mathlib pins; upstream uses Lean 4.33.1 and Mathlib `0df444a360eaa60ab8c11dca51a86af692955474`.
 - **The spelling of the coefficient.** Mathlib no longer has `MvPolynomial.coeff`: the coefficient of the monomial `d` in `p`, which upstream writes `coeff d p`, is written `p.coeff d`. This changes one line of `Statement.Approximates` and three theorems of `Paper` (`def_approx`, `approx_rate_closed`, `lem_transfer_approx`), and nothing else in any statement. [scripts/StatementSpelling.lean](scripts/StatementSpelling.lean) proves that every function with the defining laws of the coefficient is `p.coeff d`; [PORTING.md](PORTING.md) gives the four statements before and after, and the argument. Statement.lean therefore differs from the file printed in Section 3 of the paper in that line.
@@ -26,11 +34,11 @@ To build and check, in this folder:
 
 To check the statements against upstream, with a Git remote `upstream` for anthropics/formal-math fetched:
 
-    python3 -I scripts/statement-diff.py upstream/vp-vnp HEAD
+    python3 -I scripts/statement-diff.py 918c8e2 9fd368ad
 
 It compares every declaration of Statement.lean, the challenge, the solution, Paper.lean and Paper/ (theorems up to `:=`, definitions and structures in full, comments removed) and reports 733 entries the same (declarations, and for each file its other top-level commands) and the four above as changed only in the spelling of the coefficient (exit status 2; 0 means no change, 1 any other change).
 
-The five theorems were also checked outside Lean's kernel: the toolchain's exporter `leanexport` wrote them with every constant they depend on (61,815 declarations), and the two checkers that ship with Lean 4.36.0, `con-leche --verified` and `con-ron --verified`, each accepted the export.
+At the port baseline `9fd368ad`, the five theorems were also checked outside Lean's kernel: the toolchain's exporter `leanexport` wrote them with every constant they depend on (61,815 declarations), and the two checkers that ship with Lean 4.36.0, `con-leche --verified` and `con-ron --verified`, each accepted the export.
 
 ## Paper
 
