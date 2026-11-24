@@ -94,10 +94,10 @@ theorem alv_good (ν : NM R FL (ch := ch)) (hp : GoodMv R ch FL lhat n o ν.1) :
   rcases ν with ⟨x | l, ν⟩
   · have h1 : o ⟨.inl x, ν⟩ = num R ch FL lhat n o (.inl x) := hp ν
     unfold alv
-    rw [alvN_inl, if_pos h1, h1]
+    rw [alvN_inl, ite_eq_left h1, h1]
   · have h1 : GoodL R ch FL o l (num R ch FL lhat n o (.inr l)) := hp.1
     unfold alv
-    rw [alvN_inr, if_pos h1]
+    rw [alvN_inr, ite_eq_left h1]
 
 end
 
@@ -140,7 +140,7 @@ theorem card_AsU (hr : 0 < r) (hb : 0 < b) (hh : 0 < h) (s : Σ j : Fin (J + 1),
     rw [← card_filter, filter_mem_eq_inter, univ_inter]
   rw [h1, sum_uid]
   have h2 : (∑ a, ∑ c', ∑ kk, if (Uid.init a c' kk : Un R FL Pl U0 U1) ∈ AsU R FL Pl lhat n o ⟨j, c⟩ then 1 else 0) = 0 :=
-    Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun c' _ => Finset.sum_eq_zero fun kk _ => if_neg mem_AsU_init
+    Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun c' _ => Finset.sum_eq_zero fun kk _ => ite_eq_right mem_AsU_init
   rw [h2, Nat.zero_add]
   refine le_trans ?_ (sum_child (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := nn n) (o := oo R FL Pl o) hr hb hh j.1
     (Nat.le_of_lt_succ j.2) c)
@@ -148,18 +148,18 @@ theorem card_AsU (hr : 0 < r) (hb : 0 < b) (hh : 0 < h) (s : Σ j : Fin (J + 1),
   refine Finset.sum_le_sum fun ν _ => ?_
   have hle : alv R ch FL lhat (nn n) (oo R FL Pl o) (eN R FL Pl ν) ≤ U1 := (alvN_le _ _).trans (o _).2.le
   by_cases hc : IsCh R ch FL (eN R FL Pl ν) ⟨j, c⟩
-  · refine le_trans ?_ (le_of_eq (if_pos hc).symm)
+  · refine le_trans ?_ (le_of_eq (ite_eq_left hc).symm)
     calc (∑ kk : Fin U1, if (Uid.new ν kk : Un R FL Pl U0 U1) ∈ AsU R FL Pl lhat n o ⟨j, c⟩ then 1 else 0) ≤
         ∑ kk : Fin U1, if kk.1 < alv R ch FL lhat (nn n) (oo R FL Pl o) (eN R FL Pl ν) then 1 else 0 := by
           refine Finset.sum_le_sum fun kk _ => ?_
           by_cases h3 : (Uid.new ν kk : Un R FL Pl U0 U1) ∈ AsU R FL Pl lhat n o ⟨j, c⟩
-          · rw [if_pos h3, if_pos (mem_AsU_new.1 h3).1]
-          · rw [if_neg h3]; exact Nat.zero_le _
+          · rw [ite_eq_left h3, ite_eq_left (mem_AsU_new.1 h3).1]
+          · rw [ite_eq_right h3]; exact Nat.zero_le _
       _ = ((univ : Finset (Fin U1)).filter fun kk => kk.1 < alv R ch FL lhat (nn n) (oo R FL Pl o) (eN R FL Pl ν)).card := by
           rw [card_filter]
       _ ≤ _ := (card_fin_lt' _ _ hle).le
   · refine le_trans (le_of_eq ?_) (Nat.zero_le _)
-    exact Finset.sum_eq_zero fun kk _ => if_neg fun hm => hc (mem_AsU_new.1 hm).2
+    exact Finset.sum_eq_zero fun kk _ => ite_eq_right fun hm => hc (mem_AsU_new.1 hm).2
 
 open Classical in
 /-- Dead units of good outcomes: the last unit of every channel. -/

@@ -94,8 +94,8 @@ theorem step_edge (h2 : 2 ≤ h) {j : ℕ} (k : Fin h) (c : XX h n j) :
       (gen h2 (edge h2 k c).1.1 : G h n) • (edge h2 k c).1.2 else (edge h2 k c).1.2 := rfl
   rw [hu, edge_type]
   rcases edge_end h2 k c with e | e
-  · rw [if_pos e, e]
-  · rw [if_neg, e]
+  · rw [ite_eq_left e, e]
+  · rw [ite_eq_right, e]
     rw [e]
     exact gen_smul_ne h2 k c
 

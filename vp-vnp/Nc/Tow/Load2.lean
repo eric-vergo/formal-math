@@ -55,11 +55,11 @@ theorem tgB_cases (a c : Fin AA) (k : ℕ) : (tgB T R ch a c k = .done) ∨
   have hle := (R.pl_le (ch a) (ch c) (gam T ch a k)).trans (R.length_path (ch a) (ch c) (gam T ch a k))
   unfold tgB
   by_cases hac : a = c
-  · rw [if_pos hac]; exact Or.inl rfl
-  · rw [if_neg hac]
+  · rw [ite_eq_left hac]; exact Or.inl rfl
+  · rw [ite_eq_right hac]
     by_cases hs : 0 < 2 * m ∧ 1 < R.pl (ch a) (ch c) (gam T ch a k)
-    · rw [dif_pos hs]; exact Or.inr (Or.inl ⟨hs.1, rfl⟩)
-    · rw [dif_neg hs]
+    · rw [dite_eq_left hs]; exact Or.inr (Or.inl ⟨hs.1, rfl⟩)
+    · rw [dite_eq_right hs]
       rcases edgeO_cases (m := m) (AA := AA) ((R.path (ch a) (ch c) (gam T ch a k))[0]?) with h1 | ⟨e, h1, h2⟩
       · exact Or.inl h1
       · exact Or.inr (Or.inr ⟨e, h1, h2, hac, fun hh => hs ⟨by omega, hh⟩⟩)
@@ -246,41 +246,41 @@ theorem nEnd_eq {j : ℕ} {i : Fin h} (n : T.Ed j → ℕ) (ω : T.V (j + 1) i) 
     intro c
     unfold Tower.be
     by_cases hc : T.πV (T.vx i c) = ω ∧ s(T.co i (T.host i (T.vx i c)), T.co i c) = q
-    · rw [if_pos hc]
+    · rw [ite_eq_left hc]
       refine Finset.sum_congr rfl fun e _ => ?_
       have hne := T.e_ne e
       by_cases h0 : T.e0 e = c
       · have h1 : ¬ T.e1 e = c := fun hh => hne (h0.trans hh.symm)
         subst h0
         by_cases ht : T.ty e = i
-        · rw [if_pos ⟨ht, Or.inl rfl⟩, if_pos rfl, if_pos ⟨ht, hc⟩, if_neg h1, Nat.add_zero]
-        · rw [if_neg fun hh => ht hh.1, if_pos rfl, if_neg fun hh => ht hh.1, if_neg h1, Nat.add_zero]
-      · rw [if_neg h0, Nat.zero_add]
+        · rw [ite_eq_left ⟨ht, Or.inl rfl⟩, ite_eq_left rfl, ite_eq_left ⟨ht, hc⟩, ite_eq_right h1, Nat.add_zero]
+        · rw [ite_eq_right fun hh => ht hh.1, ite_eq_left rfl, ite_eq_right fun hh => ht hh.1, ite_eq_right h1, Nat.add_zero]
+      · rw [ite_eq_right h0, Nat.zero_add]
         by_cases h1 : T.e1 e = c
         · subst h1
           by_cases ht : T.ty e = i
-          · rw [if_pos ⟨ht, Or.inr rfl⟩, if_pos rfl, if_pos ⟨ht, hc⟩]
-          · rw [if_neg fun hh => ht hh.1, if_pos rfl, if_neg fun hh => ht hh.1]
-        · rw [if_neg h1, if_neg]
+          · rw [ite_eq_left ⟨ht, Or.inr rfl⟩, ite_eq_left rfl, ite_eq_left ⟨ht, hc⟩]
+          · rw [ite_eq_right fun hh => ht hh.1, ite_eq_left rfl, ite_eq_right fun hh => ht hh.1]
+        · rw [ite_eq_right h1, ite_eq_right]
           rintro ⟨-, hh | hh⟩
           · exact h0 hh
           · exact h1 hh
-    · rw [if_neg hc]
+    · rw [ite_eq_right hc]
       symm
       refine Finset.sum_eq_zero fun e _ => ?_
       rw [Nat.add_eq_zero_iff]
       constructor
       · by_cases h0 : T.e0 e = c
         · subst h0
-          rw [if_pos rfl, if_neg fun hh => hc hh.2]
-        · rw [if_neg h0]
+          rw [ite_eq_left rfl, ite_eq_right fun hh => hc hh.2]
+        · rw [ite_eq_right h0]
       · by_cases h0 : T.e1 e = c
         · subst h0
-          rw [if_pos rfl, if_neg fun hh => hc hh.2]
-        · rw [if_neg h0]
+          rw [ite_eq_left rfl, ite_eq_right fun hh => hc hh.2]
+        · rw [ite_eq_right h0]
   rw [Finset.sum_congr rfl fun c _ => e2 c, Finset.sum_comm, ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun e _ => ?_
-  rw [Finset.sum_add_distrib, Finset.sum_ite_eq, Finset.sum_ite_eq, if_pos (mem_univ _), if_pos (mem_univ _)]
+  rw [Finset.sum_add_distrib, Finset.sum_ite_eq, Finset.sum_ite_eq, ite_eq_left (mem_univ _), ite_eq_left (mem_univ _)]
 
 section Mid
 
@@ -300,7 +300,7 @@ theorem num_mid0 (j : Fin J) (e : T.Ed j) (hx : okR T R ch (.mid j e 0)) :
     (¬ IsMin (load R ch FL lhat n o) j.castSucc (T.ty e) → num R ch FL lhat n o (.inl ⟨.mid j e 0, hx⟩) = 0) := by
   classical
   refine ⟨num_inl hr hb _, fun hn => ?_⟩
-  rw [num_eq hr hb, numF, if_neg]
+  rw [num_eq hr hb, numF, ite_eq_right]
   intro ha
   exact hn (ha rfl)
 
@@ -462,12 +462,12 @@ theorem seg_le (j : Fin J) (i : Fin h) (ω : T.V (j + 1) i) (q : Sym2 T.Fl) :
     · subst h5
       refine mem_union_left _ (mem_biUnion.2 ⟨e, mem_filter.2 ⟨mem_univ _, h1, h6⟩, ?_⟩)
       unfold segS
-      rw [dif_pos hx, h2]
+      rw [dite_eq_left hx, h2]
       exact mem_singleton_self _
     · subst h5
       refine mem_union_right _ (mem_biUnion.2 ⟨e, mem_filter.2 ⟨mem_univ _, h1, h6⟩, ?_⟩)
       unfold segS
-      rw [dif_pos hx, h2]
+      rw [dite_eq_left hx, h2]
       exact mem_singleton_self _
   · refine (sum_union_le _ _ _).trans (add_le_add ?_ ?_)
     · refine (sum_biUnion_le' _ _ _).trans ?_

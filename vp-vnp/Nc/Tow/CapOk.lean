@@ -32,7 +32,7 @@ theorem bhat_nonneg (ρ : ℝ) : 0 ≤ bhat FL Uu AA lhat ρ := by
 theorem lev_eq (L : Tg T m AA → ℕ) (j : Fin (J + 1)) : lev L j.1 = fun e => L (.edge j e) := by
   funext e
   unfold lev
-  rw [dif_pos j.2]
+  rw [dite_eq_left j.2]
 
 section
 

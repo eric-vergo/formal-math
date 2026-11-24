@@ -47,16 +47,16 @@ theorem edgeO_hold {c c' γ : T.X 0} {s : ℕ} (hs : s < R.pl c c' γ) :
 theorem hB_eq {a c : Fin AA} {k : ℕ} (hd : tgB T R ch a c k ≠ .done) : hB ch a c = hT R ch (tgB T R ch a c k) := by
   unfold tgB at hd ⊢
   by_cases hac : a = c
-  · rw [if_pos hac] at hd
+  · rw [ite_eq_left hac] at hd
     exact absurd rfl hd
-  · rw [if_neg hac] at hd ⊢
+  · rw [ite_eq_right hac] at hd ⊢
     have hne : ch a ≠ ch c := fun hh => hac (ch.injective hh)
     have hpos := R.pl_pos hne (gam T ch a k)
     have hle := (R.pl_le (ch a) (ch c) (gam T ch a k)).trans (R.length_path _ _ _)
     by_cases hs : 0 < 2 * m ∧ 1 < R.pl (ch a) (ch c) (gam T ch a k)
-    · rw [dif_pos hs]
+    · rw [dite_eq_left hs]
       rfl
-    · rw [dif_neg hs]
+    · rw [dite_eq_right hs]
       have h1 : R.pl (ch a) (ch c) (gam T ch a k) = 1 := by
         by_contra h1
         exact hs ⟨by omega, by omega⟩
@@ -94,14 +94,14 @@ theorem hN_eq (ν : NM R FL (ch := ch)) (hd : tgM R ch FL ν.1 ν.2 ≠ .done) :
     · obtain ⟨hac, hs⟩ := hx
       have hle := (R.pl_le (ch a) (ch c) γ).trans (R.length_path _ _ _)
       cases ν
-      · simp only [tgR, Bool.false_eq_true, if_false]
+      · simp only [tgR, Bool.false_eq_true, ite_false]
         rw [(edgeO_hold (ch := ch) (AA := AA) (m := m) (by omega)).2]
         rfl
-      · simp only [tgR, if_true]
+      · simp only [tgR, ite_true]
         by_cases hs2 : s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ
-        · rw [dif_pos hs2]
+        · rw [dite_eq_left hs2]
           rfl
-        · rw [dif_neg hs2, (edgeO_hold (ch := ch) (AA := AA) (m := m) hs).2]
+        · rw [dite_eq_right hs2, (edgeO_hold (ch := ch) (AA := AA) (m := m) hs).2]
           have h1 : R.pl (ch a) (ch c) γ = s.1 + 1 + 1 := by
             by_contra h1
             exact hs2 ⟨by omega, by omega⟩
@@ -111,7 +111,7 @@ theorem hN_eq (ν : NM R FL (ch := ch)) (hd : tgM R ch FL ν.1 ν.2 ≠ .done) :
           rfl
     · exact absurd rfl hd
     · cases ν
-      · simp only [Bool.false_eq_true, if_false]
+      · simp only [Bool.false_eq_true, ite_false]
         fin_cases s
         · exact absurd rfl hd
         · exact (seg_hold j.2 (T.ty e) (T.e0 e)).symm
@@ -121,13 +121,13 @@ theorem hN_eq (ν : NM R FL (ch := ch)) (hd : tgM R ch FL ν.1 ν.2 ≠ .done) :
           exact h2.symm
         · refine Eq.trans ?_ (seg_hold j.2 (T.ty e) (T.e1 e)).symm
           exact Sym2.eq_swap
-      · simp only [if_true]
+      · simp only [ite_true]
         fin_cases s
         · simp only [Fin.zero_eta, tgR, Matrix.cons_val_zero]
           by_cases hh : hst T (T.ty e) (T.e0 e) ≠ T.π (T.e0 e)
-          · rw [if_pos hh]
+          · rw [ite_eq_left hh]
             rfl
-          · rw [if_neg hh]
+          · rw [ite_eq_right hh]
             rw [not_not] at hh
             change s(nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)), nd T j j.2.le (T.e1 e)) =
               s(nd T (j + 1) j.2 (T.π (T.e0 e)), nd T j j.2.le (T.e1 e))
@@ -135,9 +135,9 @@ theorem hN_eq (ν : NM R FL (ch := ch)) (hd : tgM R ch FL ν.1 ν.2 ≠ .done) :
         · rfl
         · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val] at hd ⊢
           by_cases hh : T.π (T.e1 e) ≠ hst T (T.ty e) (T.e1 e)
-          · rw [if_pos hh]
+          · rw [ite_eq_left hh]
             rfl
-          · rw [if_neg hh] at hd
+          · rw [ite_eq_right hh] at hd
             exact absurd rfl hd
         · exact absurd rfl hd
     · exact absurd rfl hd

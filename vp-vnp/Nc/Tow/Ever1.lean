@@ -34,24 +34,24 @@ theorem sum_level (g : ∀ j : Fin J, T.X j → ℕ) (j0 : ℕ) (hj0 : j0 ≤ J)
     (∑ j : Fin J, ∑ x, if nd T j j.2.le x = nd T j0 hj0 c then g j x else 0) =
       if hlt : j0 < J then g ⟨j0, hlt⟩ c else 0 := by
   by_cases hlt : j0 < J
-  · rw [dif_pos hlt, Finset.sum_eq_single ⟨j0, hlt⟩, Finset.sum_eq_single c]
-    · rw [if_pos rfl]
+  · rw [dite_eq_left hlt, Finset.sum_eq_single ⟨j0, hlt⟩, Finset.sum_eq_single c]
+    · rw [ite_eq_left rfl]
     · intro x _ hx
-      rw [if_neg fun he => hx (nd_inj.1 he)]
+      rw [ite_eq_right fun he => hx (nd_inj.1 he)]
     · intro hn; exact absurd (mem_univ _) hn
     · intro j _ hj
-      refine Finset.sum_eq_zero fun x _ => if_neg ?_
+      refine Finset.sum_eq_zero fun x _ => ite_eq_right ?_
       exact nd_ne fun he => hj (Fin.ext he)
     · intro hn; exact absurd (mem_univ _) hn
-  · rw [dif_neg hlt]
-    refine Finset.sum_eq_zero fun j _ => Finset.sum_eq_zero fun x _ => if_neg ?_
+  · rw [dite_eq_right hlt]
+    refine Finset.sum_eq_zero fun j _ => Finset.sum_eq_zero fun x _ => ite_eq_right ?_
     exact nd_ne fun he : j.1 = j0 => hlt (he ▸ j.2)
 
 open Classical in
 /-- Sums over the nodes of the levels after the first one. -/
 theorem sum_level_zero (g : ∀ j : Fin J, T.X (j + 1) → ℕ) (c : T.X 0) :
     (∑ j : Fin J, ∑ x, if nd T (j + 1) j.2 x = nd T 0 (Nat.zero_le _) c then g j x else 0) = 0 := by
-  refine Finset.sum_eq_zero fun j _ => Finset.sum_eq_zero fun x _ => if_neg ?_
+  refine Finset.sum_eq_zero fun j _ => Finset.sum_eq_zero fun x _ => ite_eq_right ?_
   exact nd_ne (Nat.succ_ne_zero _)
 
 open Classical in
@@ -59,12 +59,12 @@ open Classical in
 theorem sum_level_succ (g : ∀ j : Fin J, T.X (j + 1) → ℕ) (k : ℕ) (hk : k + 1 ≤ J) (c : T.X (k + 1)) :
     (∑ j : Fin J, ∑ x, if nd T (j + 1) j.2 x = nd T (k + 1) hk c then g j x else 0) = g ⟨k, hk⟩ c := by
   rw [Finset.sum_eq_single ⟨k, hk⟩, Finset.sum_eq_single c]
-  · rw [if_pos rfl]
+  · rw [ite_eq_left rfl]
   · intro x _ hx
-    rw [if_neg fun he => hx (nd_inj.1 he)]
+    rw [ite_eq_right fun he => hx (nd_inj.1 he)]
   · intro hn; exact absurd (mem_univ _) hn
   · intro j _ hj
-    refine Finset.sum_eq_zero fun x _ => if_neg ?_
+    refine Finset.sum_eq_zero fun x _ => ite_eq_right ?_
     exact nd_ne fun he => hj (Fin.ext (Nat.succ_injective he))
   · intro hn; exact absurd (mem_univ _) hn
 
@@ -129,18 +129,18 @@ noncomputable abbrev ldL : ∀ j, T.Ed j → ℕ := lev (load R ch FL lhat n o)
 theorem lev_castSucc (j : Fin J) (e : T.Ed j) : load R ch FL lhat n o (.edge j.castSucc e) =
     ldL R ch FL lhat n o j e := by
   unfold ldL lev
-  rw [dif_pos (Nat.lt_succ_of_lt j.2)]
+  rw [dite_eq_left (Nat.lt_succ_of_lt j.2)]
   rfl
 
 theorem lev_succ (j : Fin J) (e : T.Ed (j + 1)) : load R ch FL lhat n o (.edge j.succ e) =
     ldL R ch FL lhat n o (j + 1) e := by
   unfold ldL lev
-  rw [dif_pos (Nat.succ_lt_succ j.2)]
+  rw [dite_eq_left (Nat.succ_lt_succ j.2)]
   rfl
 
 theorem lev_last (e : T.Ed J) : load R ch FL lhat n o (.edge (Fin.last J) e) = ldL R ch FL lhat n o J e := by
   unfold ldL lev
-  rw [dif_pos (Nat.lt_succ_self J)]
+  rw [dite_eq_left (Nat.lt_succ_self J)]
   rfl
 
 variable (hr : 0 < r) (hb : 0 < b)
@@ -153,7 +153,7 @@ theorem nR_inn (j : Fin J) (i : Fin h) (e : T.Ed j) : nR R ch FL lhat n o (.inn 
   split_ifs with hx h1 h1
   · refine (num_inl hr hb _).trans (le_of_eq ?_)
     exact lev_castSucc j e
-  · rw [num_eq hr hb, numF, if_neg]
+  · rw [num_eq hr hb, numF, ite_eq_right]
     intro ha
     exact h1 ((isMin_iff hh _ j.castSucc i).1 ha)
   · exact Nat.zero_le _

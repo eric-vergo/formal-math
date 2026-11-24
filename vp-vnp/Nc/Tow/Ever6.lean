@@ -64,8 +64,8 @@ theorem NR_onN (P : Nd T) : NR R ch FL lhat (nn n) (oo R FL Pl o) P ≤ isB ch P
       · unfold isB
         by_cases hc : ∃ a, ch a = c
         · obtain ⟨a, rfl⟩ := hc
-          rw [if_pos ⟨a, rfl⟩, if_pos ⟨a, rfl⟩, Nat.one_mul]
-        · rw [if_neg hc]
+          rw [ite_eq_left ⟨a, rfl⟩, ite_eq_left ⟨a, rfl⟩, Nat.one_mul]
+        · rw [ite_eq_right hc]
           exact Nat.zero_le _
       · change 7 * fb (LfO R ch FL Pl lhat n o) 0 c ≤ 8 * fb (LfO R ch FL Pl lhat n o) 0 c +
           3 * chF hh (LfO R ch FL Pl lhat n o) 0 c
@@ -115,7 +115,7 @@ theorem initN_le {ℓf : ℕ} (P : Nd T) (hP : ∀ a, P = nd T 0 (Nat.zero_le _)
       intro a ha
       rw [← Pl.pt_base] at ha
       exact hB ⟨a, (Pl.pt.injective ha).symm⟩
-    rw [if_neg (hne a), if_neg (hne c), Nat.add_zero]
+    rw [ite_eq_right (hne a), ite_eq_right (hne c), Nat.add_zero]
 
 end Ever
 

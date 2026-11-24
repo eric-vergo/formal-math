@@ -48,17 +48,17 @@ theorem pads_node {Sm : ℕ} (hSm : ∀ d, Fintype.card (FL.L d).Sl ≤ Sm) (P :
     rw [Finset.mul_sum]
     have h6 : nR R ch FL lhat (nn n) (oo R FL Pl o) x.1 = num R ch FL lhat (nn n) (oo R FL Pl o) (.inl x) := by
       unfold nR
-      rw [dif_pos x.2]
+      rw [dite_eq_left x.2]
     have h2 : ∀ (q : (relay F).Ro) (inst : Fintype ((relay F).SlAt q)), @Fintype.card _ inst ≤ 1 := fun q inst => by
       refine (Fintype.card_le_of_injective (Subtype.val : (relay F).SlAt q → Unit) Subtype.val_injective).trans ?_
       exact le_of_eq Fintype.card_unit
     rw [h6]
     refine Finset.sum_le_sum (ι := (relay F).Ro) fun q _ => ?_
     by_cases hq : partM R ch FL (.inl x) q = P
-    · rw [if_pos hq, if_pos (show tri T R ch x.1 q = P from hq)]
+    · rw [ite_eq_left hq, ite_eq_left (show tri T R ch x.1 q = P from hq)]
       refine Nat.mul_le_mul_right _ ?_
       exact Nat.add_le_add_left (h2 q _) 1
-    · rw [if_neg hq]
+    · rw [ite_eq_right hq]
       exact Nat.zero_le _
   · unfold NL
     rw [Finset.mul_sum]

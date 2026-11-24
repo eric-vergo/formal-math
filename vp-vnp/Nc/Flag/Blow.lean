@@ -42,7 +42,7 @@ theorem inc_mul_diag (e : μ × κ ↪ ι) (T : Finset (μ × κ)) :
       simp [this, h2]
   · have h1 : ∀ y, i ≠ e y := fun y h => hi ⟨y, h.symm⟩
     have h2 : ∀ y, e y ≠ i := fun y h => hi ⟨y, h⟩
-    simp only [h1, if_false, sum_const_zero, ite_self]
+    simp only [h1, ite_false, sum_const_zero, ite_self]
     split_ifs with h3 h4
     · obtain ⟨a, -, ha⟩ := h4
       exact absurd ha (h2 a)

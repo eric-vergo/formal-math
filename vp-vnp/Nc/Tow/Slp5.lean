@@ -107,7 +107,7 @@ theorem fb_stage (hS : SY inp Y p c H) (hm : ∀ τ, (fun x => L x τ) ∈ H) :
         unfold fb Tower.bet lev
         rw [Finset.sum_filter]
         refine Finset.sum_congr rfl fun e _ => ?_
-        rw [dif_pos q.1.2]
+        rw [dite_eq_left q.1.2]
       refine CY.congr ?_ fun x => (e x).symm
       refine CY.sum hA _ ((card_filter_le _ _).trans (hB.ed q.1)) (fun e _ => CY.base (hm _) hY) fun x => ?_
       rw [← e]

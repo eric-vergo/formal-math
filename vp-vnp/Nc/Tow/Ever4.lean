@@ -38,7 +38,7 @@ theorem card_fin_le (N c : ℕ) : ((univ : Finset (Fin N)).filter fun k => k.1 <
 theorem sum_fin_le (N c : ℕ) (p : Prop) [Decidable p] :
     (∑ k : Fin N, if p ∧ k.1 < c then 1 else 0) ≤ if p then c else 0 := by
   by_cases hp : p
-  · simp only [hp, true_and, if_true]
+  · simp only [hp, true_and, ite_true]
     rw [← card_filter]
     exact card_fin_le N c
   · simp [hp]
@@ -57,10 +57,10 @@ theorem held_le_chan (M : Sys F (A + A') E) (n : Fin A → Fin A → Fin (U0 + 1
     · rw [Fintype.sum_bool]
       rcases h3 with h3 | h3
       · have h5 : cparty M.np u false = p := h3.symm
-        rw [if_pos (⟨h5, h4⟩ : cparty M.np u false = p ∧ unum u < ucnt n o u)]
+        rw [ite_eq_left (⟨h5, h4⟩ : cparty M.np u false = p ∧ unum u < ucnt n o u)]
         exact Nat.le_add_left _ _
       · have h5 : cparty M.np u true = p := h3.symm
-        rw [if_pos (⟨h5, h4⟩ : cparty M.np u true = p ∧ unum u < ucnt n o u)]
+        rw [ite_eq_left (⟨h5, h4⟩ : cparty M.np u true = p ∧ unum u < ucnt n o u)]
         exact Nat.le_add_right _ _
     · exact Nat.zero_le _
   refine h1.trans ?_
@@ -162,7 +162,7 @@ theorem law_node (l : LMv T FL) (P : Nd T) : (∑ ν : (FL.L l.2.2.2).Cn, ∑ d 
       refine le_trans ?_ (Finset.single_le_sum (f := fun f : T.Fl =>
         if nd T (l.1 + 1) l.1.2 (atv l.1.2 l.2.1 l.2.2.1 f) = P then t else 0) (fun _ _ => Nat.zero_le _)
         (mem_univ (FL.ro l.2.2.2 ((FL.L l.2.2.2).cnEnd ν d))))
-      simp only [hP, if_true]
+      simp only [hP, ite_true]
       exact le_rfl
     · exact Nat.zero_le _
   calc _ ≤ ∑ _ν : (FL.L l.2.2.2).Cn, ∑ _d : Bool, FL.G₁ * S :=
@@ -219,9 +219,9 @@ theorem held_le (P : Nd T) : heldN R FL Pl n o (Pl.pt P) ≤ initN (A' := A') n 
         intro x
         have h6 : nR R ch FL lhat (nn n) (oo R FL Pl o) x.1 = num R ch FL lhat (nn n) (oo R FL Pl o) (.inl x) := by
           unfold nR
-          rw [dif_pos x.2]
+          rw [dite_eq_left x.2]
         rw [Fintype.sum_bool, Fintype.sum_bool, Fintype.sum_bool, Fin.sum_univ_three, h6]
-        simp only [hgR, if_true, Bool.false_eq_true, if_false]
+        simp only [hgR, ite_true, Bool.false_eq_true, ite_false]
         split_ifs <;> omega
       have h7 := sum_valid_relays_le (R := R) (FL := FL) (Pl := Pl) (lhat := lhat) (n := n) (o := o) P
       refine le_trans (Finset.sum_le_sum fun x _ => ?_) h7

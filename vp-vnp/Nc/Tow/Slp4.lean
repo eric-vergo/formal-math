@@ -29,8 +29,8 @@ theorem rkU_sum (u : Un R FL Pl U0 U1) : rkU R FL Pl lhat n o u =
   have h1 : ∀ v, ind (fun _ : Unit => AlU R FL Pl lhat n o v) () = if AlU R FL Pl lhat n o v then 1 else 0 := by
     intro v
     by_cases hv : AlU R FL Pl lhat n o v
-    · rw [if_pos hv, ind_true (P := fun _ : Unit => AlU R FL Pl lhat n o v) hv]
-    · rw [if_neg hv, ind_false (P := fun _ : Unit => AlU R FL Pl lhat n o v) hv]
+    · rw [ite_eq_left hv, ind_true (P := fun _ : Unit => AlU R FL Pl lhat n o v) hv]
+    · rw [ite_eq_right hv, ind_false (P := fun _ : Unit => AlU R FL Pl lhat n o v) hv]
   rw [Finset.sum_congr rfl fun v _ => h1 v, ← Finset.card_filter, Finset.filter_filter]
   unfold rkU rk
   congr 1
@@ -44,9 +44,9 @@ theorem mem_cons_inl (y : {x : RM T m AA // okR T R ch x}) (s : (kindM R ch FL (
   classical
   simp only [consM]
   by_cases ha : ActR (load R ch FL lhat (nn n) (oo R FL Pl o)) y.1
-  · rw [if_pos ha, mem_filter, mem_Al]
+  · rw [ite_eq_left ha, mem_filter, mem_Al]
     exact ⟨fun hu => ⟨ha, hu⟩, fun hu => hu.2⟩
-  · rw [if_neg ha]
+  · rw [ite_eq_right ha]
     exact ⟨fun hu => absurd hu (notMem_empty _), fun hu => absurd hu.1 ha⟩
 
 theorem mem_cons_inr (l : LMv T FL) (e : (FL.L l.2.2.2).Sl) (u : Un R FL Pl U0 U1) :
@@ -58,9 +58,9 @@ theorem mem_cons_inr (l : LMv T FL) (e : (FL.L l.2.2.2).Sl) (u : Un R FL Pl U0 U
   classical
   simp only [consM]
   by_cases ha : Pick FL (load R ch FL lhat (nn n) (oo R FL Pl o)) l
-  · rw [if_pos ha, mem_filter, mem_Al]
+  · rw [ite_eq_left ha, mem_filter, mem_Al]
     exact ⟨fun hu => ⟨ha, hu⟩, fun hu => hu.2⟩
-  · rw [if_neg ha]
+  · rw [ite_eq_right ha]
     exact ⟨fun hu => absurd hu (notMem_empty _), fun hu => absurd hu.1 ha⟩
 
 /-- The unit is made at some time. -/
@@ -271,8 +271,8 @@ theorem units_stage (hS : SY inp Y p c H) (ha : After (nX nI) (oX oI) lhat H) :
             if u ∈ consM R FL Pl lhat (nI x) (oI x) z then 1 else 0 := by
           intro u
           by_cases hu : u ∈ consM R FL Pl lhat (nI x) (oI x) z
-          · rw [if_pos hu, ind_true (P := fun x => u ∈ consM R FL Pl lhat (nI x) (oI x) z) hu]
-          · rw [if_neg hu, ind_false (P := fun x => u ∈ consM R FL Pl lhat (nI x) (oI x) z) hu]
+          · rw [ite_eq_left hu, ind_true (P := fun x => u ∈ consM R FL Pl lhat (nI x) (oI x) z) hu]
+          · rw [ite_eq_right hu, ind_false (P := fun x => u ∈ consM R FL Pl lhat (nI x) (oI x) z) hu]
         rw [Finset.sum_congr rfl fun u _ => h1 u, ← Finset.card_filter]
         congr 1
         ext u

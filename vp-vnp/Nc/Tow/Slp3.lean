@@ -142,19 +142,19 @@ theorem cy_numF (hm : ∀ τ, (fun x => L x τ) ∈ H) (hi : ∀ j i, ind (fun x
       (fun x => hA.lt_of_le ((hL x _).trans hB.w)) fun _ => hA.zero_lt).congr fun x => ?_
     unfold numF
     by_cases ha : ActR (L x) y.1
-    · rw [if_pos ha]
-      exact (if_pos ha).symm
-    · rw [if_neg ha]
-      exact (if_neg ha).symm
+    · rw [ite_eq_left ha]
+      exact (ite_eq_left ha).symm
+    · rw [ite_eq_right ha]
+      exact (ite_eq_right ha).symm
   · refine (CY.ite hA (PY.base (hp l) hY) (CY.base (ht l) hY) (CY.const 0 hA.zero_lt)
       (fun x => hA.lt_of_le (lt_of_lt_of_le (tmin_lt hb (fun τ => hL x τ) l) hB.tt).le) fun _ => hA.zero_lt).congr
       fun x => ?_
     unfold numF
     by_cases ha : Pick FL (L x) l
-    · rw [if_pos ha]
-      exact (if_pos ha).symm
-    · rw [if_neg ha]
-      exact (if_neg ha).symm
+    · rw [ite_eq_left ha]
+      exact (ite_eq_left ha).symm
+    · rw [ite_eq_right ha]
+      exact (ite_eq_right ha).symm
 
 /-- What is computed from loads. -/
 structure Chosen (L : Inp → Tg T m AA → ℕ) (R : Routes T m Uu) (ch : Fin AA ↪ T.X 0) (FL : FlagLaws F T)
@@ -220,9 +220,9 @@ theorem num_stage (hS : SY inp Y p c H) (hs : Stat nx ox lhat H) (t : ℕ) :
       (fun mv => by
         by_cases ht : timeM R ch FL mv = t
         · refine (CY.base (f2.numF mv) hY).congr fun x => ?_
-          rw [numS, if_pos ht]
+          rw [numS, ite_eq_left ht]
         · refine (CY.base (u2 (u1 (f0 mv))) hY).congr fun x => ?_
-          rw [numS, if_neg ht]) (by omega)
+          rw [numS, ite_eq_right ht]) (by omega)
     exact ⟨H3, s3.le hA (by omega), u0.trans (u1.trans (u2.trans u3)), f3⟩
 
 /-- What is known after the loop. -/

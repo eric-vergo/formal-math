@@ -54,7 +54,7 @@ theorem exists_transvections (A : SL2 h) : ∃ l : List (TransvectionStruct (Fin
 theorem th0_tSL (τ : TransvectionStruct (Fin h) (ZMod 2)) : (th0 0 (tSL τ) : G h n) = El τ.i τ.j τ.hij (cst (n + 1) τ.c) := by
   refine Subtype.ext ?_
   ext a b
-  have hw : ∀ a : Fin h, (wt 0 a : (R (n + 1))ˣ) = 1 := fun a => if_neg (Fin.not_lt_zero a)
+  have hw : ∀ a : Fin h, (wt 0 a : (R (n + 1))ˣ) = 1 := fun a => ite_eq_right (Fin.not_lt_zero a)
   rw [th0_val, shMat_apply, hw, hw, sub_zero, sub_zero, El_val]
   have e : (tSL τ).1 = transvection τ.i τ.j τ.c := rfl
   rw [e, transvection, transvection, Matrix.add_apply, Matrix.add_apply, map_add, Matrix.single_apply,

@@ -75,7 +75,7 @@ theorem done_hold {x : RM T m AA} (hx : okR T R ch x) {β : Bool} (hd : tgR T R 
     have hpar : ∀ c : T.X j.1, parN hh (lev (load R ch FL lhat n o)) j.1 c = nd T (j + 1) j.2 (hst T i c) := by
       intro c
       unfold parN
-      rw [dif_pos (by omega : j.1 + 1 ≤ J), hi]
+      rw [dite_eq_left (by omega : j.1 + 1 ≤ J), hi]
       rfl
     cases β
     · refine ⟨j.1, j.2.le, T.e0 e, rfl, ?_⟩
@@ -95,7 +95,7 @@ theorem done_hold {x : RM T m AA} (hx : okR T R ch x) {β : Bool} (hd : tgR T R 
     have hpar : ∀ c : T.X j.1, parN hh (lev (load R ch FL lhat n o)) j.1 c = nd T (j + 1) j.2 (hst T (T.ty e) c) := by
       intro c
       unfold parN
-      rw [dif_pos (by omega : j.1 + 1 ≤ J), hi]
+      rw [dite_eq_left (by omega : j.1 + 1 ≤ J), hi]
       rfl
     cases β
     · refine ⟨j.1, j.2.le, T.e0 e, rfl, ?_⟩
@@ -121,7 +121,7 @@ theorem done_hold {x : RM T m AA} (hx : okR T R ch x) {β : Bool} (hd : tgR T R 
   · have hpar : ∀ c : T.X J, parN hh (lev (load R ch FL lhat n o)) J c = none := by
       intro c
       unfold parN
-      rw [dif_neg (by omega)]
+      rw [dite_eq_right (by omega)]
     cases β
     · refine ⟨J, le_rfl, T.e0 e, rfl, ?_⟩
       rw [hpar]
@@ -237,11 +237,11 @@ theorem sum_child_lt (j : Fin J) (c : T.X j) : (∑ ν : NM R FL (ch := ch), if 
     intro ν
     by_cases h1 : IsCh R ch FL ν ⟨j.castSucc, c⟩
     swap
-    · rw [if_neg h1]; exact Nat.zero_le _
-    rw [if_pos h1]
+    · rw [ite_eq_right h1]; exact Nat.zero_le _
+    rw [ite_eq_left h1]
     by_cases h0 : alv R ch FL lhat n o ν = 0
     · rw [h0]; exact Nat.zero_le _
-    rw [if_pos]
+    rw [ite_eq_left]
     obtain ⟨x, β, hν, hd, hc⟩ := h1
     have hmem : ∀ e, OfEd j e x.1 → ν ∈ C e β := fun e he => mem_filter.2 ⟨mem_univ _, h0, x, hν, hd, he⟩
     have hex : ∃ e : T.Ed j, OfEd j e x.1 ∧ (if β then T.e1 e else T.e0 e) = c := by
@@ -274,12 +274,12 @@ theorem sum_child_lt (j : Fin J) (c : T.X j) : (∑ ν : NM R FL (ch := ch), if 
   have hne := T.e_ne e
   by_cases h0 : T.e0 e = c
   · have h1 : ¬ T.e1 e = c := fun hcon => hne (h0.trans hcon.symm)
-    rw [if_pos h0, if_neg h1, if_pos (Or.inl h0)]
+    rw [ite_eq_left h0, ite_eq_right h1, ite_eq_left (Or.inl h0)]
     exact sum_edge_end hr hb hh j e false
   · by_cases h1 : T.e1 e = c
-    · rw [if_neg h0, if_pos h1, if_pos (Or.inr h1), Nat.zero_add]
+    · rw [ite_eq_right h0, ite_eq_left h1, ite_eq_left (Or.inr h1), Nat.zero_add]
       exact sum_edge_end hr hb hh j e true
-    · rw [if_neg h0, if_neg h1]
+    · rw [ite_eq_right h0, ite_eq_right h1]
       exact Nat.zero_le _
 
 open Classical in
@@ -299,8 +299,8 @@ theorem sum_child_last (c : T.X J) : (∑ ν : NM R FL (ch := ch), if IsCh R ch 
     intro ν
     by_cases h1 : IsCh R ch FL ν ⟨Fin.last J, c⟩
     swap
-    · rw [if_neg h1]; exact Nat.zero_le _
-    rw [if_pos h1, if_pos]
+    · rw [ite_eq_right h1]; exact Nat.zero_le _
+    rw [ite_eq_left h1, ite_eq_left]
     obtain ⟨⟨x, hx⟩, β, hν, hd, hc⟩ := h1
     rcases x with ⟨a, c', γ, s⟩ | ⟨j', i, e⟩ | ⟨j', e, s⟩ | e
     · simp [chd] at hc
@@ -325,12 +325,12 @@ theorem sum_child_last (c : T.X J) : (∑ ν : NM R FL (ch := ch), if IsCh R ch 
   have hne := T.e_ne e
   by_cases h0 : T.e0 e = c
   · have h1 : ¬ T.e1 e = c := fun hcon => hne (h0.trans hcon.symm)
-    rw [if_pos h0, if_neg h1, if_pos (Or.inl h0)]
+    rw [ite_eq_left h0, ite_eq_right h1, ite_eq_left (Or.inl h0)]
     exact hC e false
   · by_cases h1 : T.e1 e = c
-    · rw [if_neg h0, if_pos h1, if_pos (Or.inr h1), Nat.zero_add]
+    · rw [ite_eq_right h0, ite_eq_left h1, ite_eq_left (Or.inr h1), Nat.zero_add]
       exact hC e true
-    · rw [if_neg h0, if_neg h1]
+    · rw [ite_eq_right h0, ite_eq_right h1]
       exact Nat.zero_le _
 
 open Classical in
@@ -342,7 +342,7 @@ theorem sum_child (j : ℕ) (hj : j ≤ J) (c : T.X j) : (∑ ν : NM R FL (ch :
       load R ch FL lhat n o (.edge ⟨j, Nat.lt_succ_of_le hj⟩ e) else 0 := by
     unfold fb Tower.bet lev
     refine Finset.sum_congr rfl fun e _ => ?_
-    rw [dif_pos (Nat.lt_succ_of_le hj)]
+    rw [dite_eq_left (Nat.lt_succ_of_le hj)]
   rw [e1]
   rcases hj.lt_or_eq with h1 | h1
   · exact sum_child_lt hr hb hh ⟨j, h1⟩ c

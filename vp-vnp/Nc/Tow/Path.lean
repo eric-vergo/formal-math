@@ -21,9 +21,9 @@ theorem step_ends (e : T.Ed j) {c : T.X j} (hc : T.e0 e = c ∨ T.e1 e = c) :
     s(T.e0 e, T.e1 e) = s(c, T.step e c) := by
   unfold step
   by_cases h0 : T.e0 e = c
-  · rw [if_pos h0, h0]
+  · rw [ite_eq_left h0, h0]
   · have h1 : T.e1 e = c := hc.resolve_left h0
-    rw [if_neg h0, h1, Sym2.eq_swap]
+    rw [ite_eq_right h0, h1, Sym2.eq_swap]
 
 theorem step_ne (e : T.Ed j) {c : T.X j} (hc : T.e0 e = c ∨ T.e1 e = c) : c ≠ T.step e c := by
   intro heq

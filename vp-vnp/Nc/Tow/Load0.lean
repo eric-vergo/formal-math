@@ -49,15 +49,15 @@ theorem bt_start (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) :
   classical
   unfold bt Bt
   by_cases hv : Valid lhat n
-  · rw [if_pos hv]
+  · rw [ite_eq_left hv]
     have h1 : ∀ a' c', ((range (n a' c')).filter fun k => tgB T R ch a' c' k = .nxt (.start a c γ s)).card ≤
         if a' = a ∧ c' = c then (if s.1 = 0 then ((range (n a c)).filter fun k => gam T ch a k = γ).card else 0) else 0 := by
       intro a' c'
       by_cases hac : a' = a ∧ c' = c
       · obtain ⟨rfl, rfl⟩ := hac
-        rw [if_pos ⟨rfl, rfl⟩]
+        rw [ite_eq_left ⟨rfl, rfl⟩]
         by_cases hs : s.1 = 0
-        · rw [if_pos hs]
+        · rw [ite_eq_left hs]
           refine card_le_card fun k hk => ?_
           obtain ⟨h2, h3⟩ := mem_filter.1 hk
           refine mem_filter.2 ⟨h2, ?_⟩
@@ -66,14 +66,14 @@ theorem bt_start (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) :
           · simp only [Tg.nxt.injEq, RM.start.injEq] at h3
             exact h3.2.2.1
           · simp at h3
-        · rw [if_neg hs, Nat.le_zero, card_eq_zero]
+        · rw [ite_eq_right hs, Nat.le_zero, card_eq_zero]
           refine filter_false_of_mem fun k _ h3 => ?_
           rcases tgB_cases (R := R) (ch := ch) a' c' k with h1 | ⟨hm, h1⟩ | ⟨e', -, h1, -⟩ <;> rw [h1] at h3
           · simp at h3
           · simp only [Tg.nxt.injEq, RM.start.injEq] at h3
             exact hs (congrArg Fin.val h3.2.2.2).symm
           · simp at h3
-      · rw [if_neg hac, Nat.le_zero, card_eq_zero]
+      · rw [ite_eq_right hac, Nat.le_zero, card_eq_zero]
         refine filter_false_of_mem fun k _ h3 => ?_
         rcases tgB_cases (R := R) (ch := ch) a' c' k with h1 | ⟨hm, h1⟩ | ⟨e', -, h1, -⟩ <;> rw [h1] at h3
         · simp at h3
@@ -82,14 +82,14 @@ theorem bt_start (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) :
         · simp at h3
     refine (Finset.sum_le_sum fun a' _ => Finset.sum_le_sum fun c' _ => h1 a' c').trans ?_
     rw [Finset.sum_eq_single a, Finset.sum_eq_single c]
-    · rw [if_pos ⟨rfl, rfl⟩, if_pos hv]
+    · rw [ite_eq_left ⟨rfl, rfl⟩, ite_eq_left hv]
     · intro c' _ hc'
-      rw [if_neg fun hh => hc' hh.2]
+      rw [ite_eq_right fun hh => hc' hh.2]
     · intro hn; exact absurd (mem_univ _) hn
     · intro a' _ ha'
-      exact Finset.sum_eq_zero fun c' _ => if_neg fun hh => ha' hh.1
+      exact Finset.sum_eq_zero fun c' _ => ite_eq_right fun hh => ha' hh.1
     · intro hn; exact absurd (mem_univ _) hn
-  · rw [if_neg hv]
+  · rw [ite_eq_right hv]
     exact Nat.zero_le _
 
 theorem tgR_start {x : RM T m AA} {ν : Bool} {a c : Fin AA} {γ : T.X 0} {s : Fin (2 * m)}
@@ -141,11 +141,11 @@ theorem num_start_le (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (hx : okR T R
     rw [load_def, Finset.sum_eq_zero]
     · exact (bt_start a c γ ⟨0, hs⟩).trans (by simp)
     · rintro ⟨⟨x, hx'⟩ | l, ν⟩ _
-      · rw [if_neg]
+      · rw [ite_eq_right]
         intro hν
         obtain ⟨-, s', -, h3⟩ := tgR_start (x := x) (ν := ν) hν
         simp at h3
-      · rw [if_neg]
+      · rw [ite_eq_right]
         intro hν
         simp [tgM] at hν
   | succ s ih =>
@@ -162,7 +162,7 @@ theorem num_start_le (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (hx : okR T R
     refine h1.trans ?_
     have hbt : bt R ch lhat n (.nxt (.start a c γ ⟨s + 1, hs⟩) : Tg T m AA) = 0 := by
       have := bt_start (R := R) (ch := ch) (lhat := lhat) (n := n) a c γ ⟨s + 1, hs⟩
-      rw [if_neg (by simp)] at this
+      rw [ite_eq_right (by simp)] at this
       omega
     refine (load_le_sum {(⟨.inl ⟨.start a c γ ⟨s, hs0⟩, hx0⟩, true⟩ : NM R FL (ch := ch))} hbt ?_).trans ?_
     · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
@@ -210,15 +210,15 @@ theorem steps_le {α : Type*} [DecidableEq α] (l : List α) (e : α) (L M : ℕ
     rw [Finset.sum_congr rfl h2, ← Finset.sum_filter]
     refine Finset.sum_le_sum_of_subset fun s hs => (mem_filter.1 hs).2
   · by_cases hc : l[L']? = some e
-    · rw [if_pos hc]
+    · rw [ite_eq_left hc]
       by_cases h0 : L' = 0
       · subst h0
         rw [Finset.sum_eq_zero]
         · simp [hc]
         · intro s _
-          rw [if_neg]
+          rw [ite_eq_right]
           omega
-      · rw [if_neg (by omega : ¬ (L' + 1 ≤ 1 ∧ l[0]? = some e)), add_zero]
+      · rw [ite_eq_right (by omega : ¬ (L' + 1 ≤ 1 ∧ l[0]? = some e)), add_zero]
         have h3 : ∀ s ∈ range M, (if s + 2 = L' + 1 ∧ l[s + 1]? = some e then 1 else 0) ≤ if s = L' - 1 then 1 else 0 := by
           intro s _
           split_ifs with h4 h5 h5
@@ -229,14 +229,14 @@ theorem steps_le {α : Type*} [DecidableEq α] (l : List α) (e : α) (L M : ℕ
         refine (Finset.sum_le_sum h3).trans ?_
         rw [Finset.sum_ite_eq']
         split_ifs <;> omega
-    · rw [if_neg hc, Nat.le_zero, Nat.add_eq_zero_iff]
+    · rw [ite_eq_right hc, Nat.le_zero, Nat.add_eq_zero_iff]
       constructor
-      · refine Finset.sum_eq_zero fun s _ => if_neg ?_
+      · refine Finset.sum_eq_zero fun s _ => ite_eq_right ?_
         rintro ⟨h4, h5⟩
         have : s + 1 = L' := by omega
         rw [this] at h5
         exact hc h5
-      · rw [if_neg]
+      · rw [ite_eq_right]
         rintro ⟨h4, h5⟩
         have : L' = 0 := by omega
         rw [this] at hc
@@ -256,7 +256,7 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
       Bt T ch lhat n a c γ * if R.pl (ch a) (ch c) γ ≤ 1 ∧ (R.path (ch a) (ch c) γ)[0]? = some e then 1 else 0 := by
     unfold bt
     by_cases hv : Valid lhat n
-    · rw [if_pos hv]
+    · rw [ite_eq_left hv]
       refine Finset.sum_le_sum fun a _ => Finset.sum_le_sum fun c _ => ?_
       by_cases hac : a = c
       · rw [card_eq_zero.2]
@@ -266,17 +266,17 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
           · rw [h1] at h3; simp at h3
           · rw [h1] at h3; simp at h3
           · exact h2 hac
-      · simp only [if_neg hac]
+      · simp only [ite_eq_right hac]
         rw [card_eq_sum_card_fiberwise (f := fun k => gam T ch a k) (t := univ) (fun _ _ => mem_coe.2 (mem_univ _))]
         refine Finset.sum_le_sum fun γ _ => ?_
         by_cases hc : R.pl (ch a) (ch c) γ ≤ 1 ∧ (R.path (ch a) (ch c) γ)[0]? = some e
-        · rw [if_pos hc, Nat.mul_one]
+        · rw [ite_eq_left hc, Nat.mul_one]
           unfold Bt
-          rw [if_pos hv]
+          rw [ite_eq_left hv]
           refine card_le_card fun k hk => ?_
           obtain ⟨h2, h3⟩ := mem_filter.1 hk
           exact mem_filter.2 ⟨(mem_filter.1 h2).1, h3⟩
-        · rw [if_neg hc, Nat.mul_zero, Nat.le_zero, card_eq_zero]
+        · rw [ite_eq_right hc, Nat.mul_zero, Nat.le_zero, card_eq_zero]
           refine filter_false_of_mem fun k hk h3 => hc ?_
           have h4 := (mem_filter.1 hk).2
           rcases tgB_cases (R := R) (ch := ch) a c k with h1 | ⟨hm, h1⟩ | ⟨e', h0, h1, h2, h5⟩ <;> rw [h1] at h4
@@ -286,7 +286,7 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
             subst h6
             rw [h3] at h0 h5
             exact ⟨by omega, h0⟩
-    · rw [if_neg hv]
+    · rw [ite_eq_right hv]
       exact Nat.zero_le _
   -- relays
   have h2 : (∑ ν : NM R FL (ch := ch), if tgM R ch FL ν.1 ν.2 = .edge 0 e then alv R ch FL lhat n o ν else 0) ≤
@@ -321,7 +321,7 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
                 have h6 : e'' = e := eq_of_heq (Tg.edge.inj he).2
                 rw [h6]
             cases ν
-            · rw [if_pos ⟨hx, rfl, hedge _ hν⟩]
+            · rw [ite_eq_left ⟨hx, rfl, hedge _ hν⟩]
               exact hB.trans (Nat.le_add_right _ _)
             · simp only [tgR] at hν
               split_ifs at hν with hs
@@ -330,7 +330,7 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
                 have h6 := (R.pl_le (ch a) (ch c) γ).trans (R.length_path _ _ _)
                 by_contra h7
                 exact hs ⟨by omega, by omega⟩
-              rw [if_pos (⟨hx, rfl, h4, hedge _ hν⟩ : ∃ hx : okR T R ch (.start a c γ s),
+              rw [ite_eq_left (⟨hx, rfl, h4, hedge _ hν⟩ : ∃ hx : okR T R ch (.start a c γ s),
                 (⟨.inl ⟨.start a c γ s, _⟩, true⟩ : NM R FL (ch := ch)) = ⟨.inl ⟨.start a c γ s, hx⟩, true⟩ ∧ s.1 + 2 = R.pl (ch a) (ch c) γ ∧
                 (R.path (ch a) (ch c) γ)[s.1 + 1]? = some e)]
               exact hB.trans (Nat.le_add_left _ _)
@@ -368,23 +368,23 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
           if okR T R ch (.start a c γ s) ∧ P then v else 0 := by
       intro d P _ v
       by_cases hc : okR T R ch (.start a c γ s) ∧ P
-      · rw [if_pos hc, Finset.sum_eq_single (⟨.inl ⟨.start a c γ s, hc.1⟩, d⟩ : NM R FL (ch := ch))]
-        · rw [if_pos ⟨hc.1, rfl, hc.2⟩]
+      · rw [ite_eq_left hc, Finset.sum_eq_single (⟨.inl ⟨.start a c γ s, hc.1⟩, d⟩ : NM R FL (ch := ch))]
+        · rw [ite_eq_left ⟨hc.1, rfl, hc.2⟩]
         · intro ν _ hν
-          rw [if_neg]
+          rw [ite_eq_right]
           rintro ⟨hx', h3, -⟩
           exact hν h3
         · intro hn; exact absurd (mem_univ _) hn
       · rw [Finset.sum_eq_zero]
         · exact Nat.zero_le _
         · intro ν _
-          rw [if_neg]
+          rw [ite_eq_right]
           rintro ⟨hx, -, h1⟩
           exact hc ⟨hx, h1⟩
     refine (add_le_add (sgl false _ _) (sgl true _ _)).trans ?_
     by_cases hac : a = c
-    · rw [if_pos hac, if_neg (fun hh => hh.1.1 hac), if_neg (fun hh => hh.1.1 hac)]
-    · rw [if_neg hac, Nat.mul_add]
+    · rw [ite_eq_left hac, ite_eq_right (fun hh => hh.1.1 hac), ite_eq_right (fun hh => hh.1.1 hac)]
+    · rw [ite_eq_right hac, Nat.mul_add]
       refine add_le_add ?_ ?_
       · split_ifs with h4 h5 h5
         · rw [Nat.mul_one]
@@ -402,7 +402,7 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
   refine Finset.sum_le_sum fun a _ => Finset.sum_le_sum fun c _ => Finset.sum_le_sum fun γ _ => ?_
   by_cases hac : a = c
   · simp [hac]
-  · simp only [if_neg hac]
+  · simp only [ite_eq_right hac]
     rw [← Finset.mul_sum, ← Nat.mul_add]
     refine Nat.mul_le_mul_left _ ?_
     have hne : ch a ≠ ch c := fun hh => hac (ch.injective hh)
@@ -421,7 +421,7 @@ theorem batch_le (e : T.Ed 0) : (∑ a, ∑ c, ∑ γ, if a = c then 0 else
   · refine le_trans (le_of_eq ?_) (Nat.zero_le _)
     refine Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun c _ => Finset.sum_eq_zero fun γ _ => ?_
     unfold Bt
-    rw [if_neg hv]
+    rw [ite_eq_right hv]
     simp
   -- split the paths
   set cn : Fin AA → T.X 0 → ℕ := fun a γ => (R.rt (ch a) γ).count e with hcn
@@ -456,7 +456,7 @@ theorem batch_le (e : T.Ed 0) : (∑ a, ∑ c, ∑ γ, if a = c then 0 else
     refine Finset.sum_congr rfl fun c _ => ?_
     by_cases hac : a = c
     · simp [hac]
-    · rw [if_neg hac, if_neg (Ne.symm hac)]
+    · rw [ite_eq_right hac, ite_eq_right (Ne.symm hac)]
   rw [e3]
   have hB : ∀ a γ, (∑ c, if c = a then 0 else Bt T ch lhat n a c γ + Bt T ch lhat n c a γ) ≤
       lhat / Fintype.card (T.X 0) + 2 * AA := by

@@ -49,7 +49,7 @@ theorem isMin_iff (L : Tg T m AA → ℕ) (j : Fin (J + 1)) (i : Fin h) : IsMin 
     funext i
     unfold sqs lev
     refine Finset.sum_congr rfl fun e _ => ?_
-    rw [dif_pos j.2]
+    rw [dite_eq_left j.2]
   unfold imin
   rw [e1]
   constructor

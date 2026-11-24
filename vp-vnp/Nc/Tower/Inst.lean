@@ -168,14 +168,14 @@ theorem edge_end {j : ℕ} (h2 : 2 ≤ h) (k : Fin h) (c : XX h n j) :
 
 theorem edge_self {j : ℕ} (h2 : 2 ≤ h) (e : EE h n h2 j) : edge h2 e.1.1 e.1.2 = e := by
   unfold edge
-  rw [dif_pos e.2]
+  rw [dite_eq_left e.2]
 
 theorem edge_gen {j : ℕ} (h2 : 2 ≤ h) (k : Fin h) (c : XX h n j) : edge h2 k ((gen h2 k : G h n) • c) = edge h2 k c := by
   unfold edge
   by_cases hc : FQ h2 k (evX c)
-  · rw [dif_pos hc, dif_neg (fun e => (FQ_gen h2 k c).1 e hc)]
+  · rw [dite_eq_left hc, dite_eq_right (fun e => (FQ_gen h2 k c).1 e hc)]
     exact Subtype.ext (Prod.ext rfl (gen_gen h2 k c))
-  · rw [dif_neg hc, dif_pos ((FQ_gen h2 k c).2 hc)]
+  · rw [dite_eq_right hc, dite_eq_left ((FQ_gen h2 k c).2 hc)]
 
 /-- The edges of one type are half of the chambers. -/
 theorem card_edges (h2 : 2 ≤ h) (j : ℕ) (i : Fin h) :
@@ -197,7 +197,7 @@ theorem card_edges (h2 : 2 ≤ h) (j : ℕ) (i : Fin h) :
     · intro c hc
       rw [mem_filter] at hc
       unfold edge
-      rw [dif_pos hc.2]
+      rw [dite_eq_left hc.2]
   have h3 : (univ.filter fun c : XX h n j => FQ h2 i (evX c)).card =
       (univ.filter fun c : XX h n j => ¬ FQ h2 i (evX c)).card := by
     refine Finset.card_bij' (fun c _ => (gen h2 i : G h n) • c) (fun c _ => (gen h2 i : G h n) • c) ?_ ?_ ?_ ?_
@@ -266,16 +266,16 @@ theorem npair_eq {l : Fin (h - 1)} {u u' : U h} (e : npair l u = npair l u') : u
 
 theorem npair_self (ν : NN h) : npair ν.1.1 ν.1.2 = ν := by
   unfold npair
-  rw [dif_pos ν.2]
+  rw [dite_eq_left ν.2]
 
 theorem npair_x (l : Fin (h - 1)) (u : U h) : npair l (x h l * u) = npair l u := by
   unfold npair
   by_cases hu : FU l u
-  · rw [dif_pos hu, dif_neg (fun e => (FU_iff l u).1 e hu)]
+  · rw [dite_eq_left hu, dite_eq_right (fun e => (FU_iff l u).1 e hu)]
     refine Subtype.ext (Prod.ext rfl ?_)
     simp only
     rw [← mul_assoc, x_mul_self, one_mul]
-  · rw [dif_neg hu, dif_pos ((FU_iff l u).2 hu)]
+  · rw [dite_eq_right hu, dite_eq_left ((FU_iff l u).2 hu)]
 
 /-- The index of a type seen from the type i. -/
 noncomputable def idx (i k : Fin h) (hk : k ≠ i) : Fin (h - 1) := (exists_sh hk).choose

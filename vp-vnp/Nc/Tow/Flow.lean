@@ -179,7 +179,7 @@ theorem numS_zero_of_le {τ : ℕ} {mv : Mv T R ch FL} (h : τ ≤ timeM R ch FL
   induction τ with
   | zero => rfl
   | succ τ ih =>
-    rw [numS, if_neg (by omega)]
+    rw [numS, ite_eq_right (by omega)]
     exact ih (by omega)
 
 theorem numS_stable {τ : ℕ} {mv : Mv T R ch FL} (h : timeM R ch FL mv < τ) :
@@ -190,8 +190,8 @@ theorem numS_stable {τ : ℕ} {mv : Mv T R ch FL} (h : timeM R ch FL mv < τ) :
   | succ τ ih =>
     rw [numS]
     by_cases h1 : timeM R ch FL mv = τ
-    · rw [if_pos h1, h1]
-    · rw [if_neg h1]
+    · rw [ite_eq_left h1, h1]
+    · rw [ite_eq_right h1]
       exact ih (by omega)
 
 theorem numS_eq (τ : ℕ) (mv : Mv T R ch FL) :
@@ -261,7 +261,7 @@ theorem ld_numS (hr : 0 < r) (hb : 0 < b) {τ : Tg T m AA} {t : ℕ} (h : tgTime
   split_ifs with hν
   · have := tg_time ν
     rw [hν] at this
-    rw [numS_eq, if_pos (by omega)]
+    rw [numS_eq, ite_eq_left (by omega)]
   · rfl
 
 theorem inp_time (x : RM T m AA) : tgTime (inpR T x) ≤ timeR T x := by
@@ -295,7 +295,7 @@ theorem tmin_congr {L L' : Tg T m AA → ℕ} {l : LMv T FL}
   unfold tmin
   congr 1
   ext s
-  simp only [Set.mem_setOf_eq]
+  simp only [Set.mem_ofPred_eq]
   exact exists_congr fun d => fits_congr (l := withD FL l d) hL s
 
 theorem pick_congr {L L' : Tg T m AA → ℕ} {l : LMv T FL}

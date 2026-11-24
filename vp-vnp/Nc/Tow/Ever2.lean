@@ -33,7 +33,7 @@ theorem sum_alv_le {κ : Type*} [DecidableEq κ] (τ : Tg T m AA) (s : Finset κ
       ∑ ν ∈ s.image f, if tgM R ch FL ν.1 ν.2 = τ then alv R ch FL lhat n o ν else 0 := by
         refine Finset.sum_congr rfl fun ν hν => ?_
         obtain ⟨x, hx, rfl⟩ := mem_image.1 hν
-        rw [if_pos (hτ x hx)]
+        rw [ite_eq_left (hτ x hx)]
     _ ≤ _ := Finset.sum_le_sum_of_subset (subset_univ _)
 
 section
@@ -47,7 +47,7 @@ theorem alv_relay (x : {x : RM T m AA // okR T R ch x}) (ν : Bool) :
   unfold alv
   have h1 : alvN R ch FL o ⟨.inl x, ν⟩ (num R ch FL lhat n o (.inl x)) =
       if o ⟨.inl x, ν⟩ = num R ch FL lhat n o (.inl x) then num R ch FL lhat n o (.inl x) else 0 := rfl
-  rw [h1, if_pos (hgR x ν)]
+  rw [h1, ite_eq_left (hgR x ν)]
 
 theorem ok_mid2 (j : Fin J) (e : T.Ed j) : okR T R ch (.mid j e 2) :=
   ⟨fun hh => absurd hh (by decide), fun hh => absurd hh (by decide)⟩
@@ -57,7 +57,7 @@ include hr hb
 theorem nR_mid3 (j : Fin J) (e : T.Ed j) : nR R ch FL lhat n o (.mid j e 3) ≤ nR R ch FL lhat n o (.mid j e 2) := by
   classical
   unfold nR
-  rw [dif_pos (ok_mid2 j e)]
+  rw [dite_eq_left (ok_mid2 j e)]
   split_ifs with hx
   · refine (num_inl hr hb _).trans ?_
     refine (load_le_sum {(⟨.inl ⟨.mid j e 2, ok_mid2 j e⟩, true⟩ : NM R FL (ch := ch))} (bt_mid j e 3) ?_).trans ?_
@@ -82,10 +82,10 @@ include hgR
 theorem nR_mid1 (j : Fin J) (e : T.Ed j) : nR R ch FL lhat n o (.mid j e 1) ≤ nR R ch FL lhat n o (.mid j e 2) := by
   classical
   unfold nR
-  rw [dif_pos (ok_mid2 j e)]
+  rw [dite_eq_left (ok_mid2 j e)]
   split_ifs with hx
   · have h1 : num R ch FL lhat n o (.inl ⟨.mid j e 2, ok_mid2 j e⟩) = load R ch FL lhat n o (.nxt (.mid j e 2)) := by
-      rw [num_eq hr hb, numF, if_pos]
+      rw [num_eq hr hb, numF, ite_eq_left]
       · rfl
       · intro hh
         exact absurd hh (by decide)
@@ -110,7 +110,7 @@ theorem sum_mid2 (j : Fin J) (c : T.X (j + 1)) :
     have h2 : nR R ch FL lhat n o (.mid j e 2) = alv R ch FL lhat n o
         (⟨.inl ⟨.mid j e 2, ok_mid2 j e⟩, false⟩ : NM R FL (ch := ch)) := by
       unfold nR
-      rw [dif_pos (ok_mid2 j e)]
+      rw [dite_eq_left (ok_mid2 j e)]
       exact (alv_relay hgR ⟨.mid j e 2, ok_mid2 j e⟩ false).symm
     rw [h2]
     have hne := π_ne j.2 e
@@ -122,11 +122,11 @@ theorem sum_mid2 (j : Fin J) (c : T.X (j + 1)) :
       rw [h5, h5, h3]
     by_cases h0 : T.π (T.e0 e) = c
     · have h5 : ¬ T.π (T.e1 e) = c := fun hc => hne (h0.trans hc.symm)
-      rw [if_pos h0, if_neg h5, if_pos (h4.2 (Or.inl h0)), Nat.add_zero]
-    · rw [if_neg h0, Nat.zero_add]
+      rw [ite_eq_left h0, ite_eq_right h5, ite_eq_left (h4.2 (Or.inl h0)), Nat.add_zero]
+    · rw [ite_eq_right h0, Nat.zero_add]
       by_cases h5 : T.π (T.e1 e) = c
-      · rw [if_pos h5, if_pos (h4.2 (Or.inr h5))]
-      · rw [if_neg h5, if_neg]
+      · rw [ite_eq_left h5, ite_eq_left (h4.2 (Or.inr h5))]
+      · rw [ite_eq_right h5, ite_eq_right]
         rw [h4]
         rintro (hc | hc)
         · exact h0 hc

@@ -47,12 +47,12 @@ theorem X_apply (p q : GLM (Fin m)) (S : Finset (Fin m)) (a b : Fin m) :
   rw [X, Matrix.mul_apply, ← Finset.sum_filter_add_sum_filter_not univ (· ∈ S), Finset.filter_mem_eq_inter,
     Finset.univ_inter, Finset.sum_eq_zero (s := univ.filter fun i => i ∉ S), add_zero]
   · refine Finset.sum_congr rfl fun i hi => ?_
-    rw [dg, Matrix.mul_diagonal, if_pos hi, mul_one]
+    rw [dg, Matrix.mul_diagonal, ite_eq_left hi, mul_one]
   · intro i hi
-    rw [dg, Matrix.mul_diagonal, if_neg (Finset.mem_filter.1 hi).2, mul_zero, zero_mul]
+    rw [dg, Matrix.mul_diagonal, ite_eq_right (Finset.mem_filter.1 hi).2, mul_zero, zero_mul]
 
 theorem linearIndependent_col (p : GLM (Fin m)) : LinearIndependent F2 (p : Mt m).col :=
-  Matrix.linearIndependent_cols_iff_isUnit.2 p.isUnit
+  Matrix.linearIndependent_col_iff_isUnit.2 p.isUnit
 
 /-- The column space of p·dg(S)·q is spanned by the columns of p in S. -/
 theorem colSpace_X (p q : GLM (Fin m)) (S : Finset (Fin m)) :
@@ -68,7 +68,7 @@ theorem colSpace_X (p q : GLM (Fin m)) (S : Finset (Fin m)) :
     have h : (p : Mt m).col i = ∑ b, ((q⁻¹ : GLM (Fin m)) : Mt m) b i • (X p q S).col b := by
       ext a
       have h1 : (X p q S * ((q⁻¹ : GLM (Fin m)) : Mt m)) a i = (p : Mt m) a i := by
-        rw [X, Units.mul_inv_cancel_right, dg, Matrix.mul_diagonal, if_pos (Finset.mem_coe.1 hi), mul_one]
+        rw [X, Units.mul_inv_cancel_right, dg, Matrix.mul_diagonal, ite_eq_left (Finset.mem_coe.1 hi), mul_one]
       rw [Matrix.mul_apply] at h1
       simp only [Matrix.col, Matrix.transpose_apply, Finset.sum_apply, Pi.smul_apply, smul_eq_mul]
       rw [← h1]
@@ -121,7 +121,7 @@ theorem exists_glm_col {α : Type} (v : α → Fin m → F2) (hv : LinearIndepen
     rw [Module.Basis.reindex_apply, h1]
     exact Module.Basis.extend_apply_self hs _
   have hA : IsUnit (Matrix.of fun i j => c j i : Mt m) :=
-    Matrix.linearIndependent_cols_iff_isUnit.1 c.linearIndependent
+    Matrix.linearIndependent_col_iff_isUnit.1 c.linearIndependent
   exact ⟨hA.unit, fun k => hc k⟩
 
 /-- Linearly independent vectors are rows, at given places, of an invertible matrix. -/

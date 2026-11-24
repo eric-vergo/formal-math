@@ -106,7 +106,7 @@ theorem load_eq (τ : Tg T m AA) : load R ch FL lhat (nn n) (oo R FL Pl o) τ =
   congr 1
   · unfold bt
     by_cases hv : Valid lhat (nn n)
-    · rw [if_pos hv]
+    · rw [ite_eq_left hv]
       refine Finset.sum_congr rfl fun a _ => Finset.sum_congr rfl fun c _ => ?_
       rw [← card_filter]
       refine card_bij' (fun k hk => ⟨k, ?_⟩) (fun k _ => k.1) ?_ ?_ ?_ ?_
@@ -122,9 +122,9 @@ theorem load_eq (τ : Tg T m AA) : load R ch FL lhat (nn n) (oo R FL Pl o) τ =
         exact mem_filter.2 ⟨mem_range.2 h1.2, h2⟩
       · intro k _; rfl
       · intro k _; rfl
-    · rw [if_neg hv]
+    · rw [ite_eq_right hv]
       symm
-      refine Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun c _ => Finset.sum_eq_zero fun k _ => if_neg ?_
+      refine Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun c _ => Finset.sum_eq_zero fun k _ => ite_eq_right ?_
       rintro ⟨⟨h1, -⟩, -⟩
       exact hv h1
   · rw [← Equiv.sum_comp (eN R FL Pl) fun ν : NM R FL (ch := ch) => if tgM R ch FL ν.1 ν.2 = τ then
@@ -134,7 +134,7 @@ theorem load_eq (τ : Tg T m AA) : load R ch FL lhat (nn n) (oo R FL Pl o) τ =
       refine (alvN_le _ _).trans ?_
       exact (o _).2.le
     by_cases hν : tgM R ch FL (eN R FL Pl ν).1 (eN R FL Pl ν).2 = τ
-    · rw [if_pos hν]
+    · rw [ite_eq_left hν]
       have e2 : (∑ k : Fin U1, if AlU R FL Pl lhat n o (.new ν k) ∧ tgU R FL Pl (.new ν k : Un R FL Pl U0 U1) = τ
           then 1 else 0) = ((univ : Finset (Fin U1)).filter fun k => k.1 <
             alv R ch FL lhat (nn n) (oo R FL Pl o) (eN R FL Pl ν)).card := by
@@ -144,9 +144,9 @@ theorem load_eq (τ : Tg T m AA) : load R ch FL lhat (nn n) (oo R FL Pl o) τ =
         exact ⟨fun hh => hh.1, fun hh => ⟨hh, hν⟩⟩
       rw [e2, card_fin_lt' _ _ hle]
       rfl
-    · rw [if_neg hν]
+    · rw [ite_eq_right hν]
       symm
-      refine Finset.sum_eq_zero fun k _ => if_neg ?_
+      refine Finset.sum_eq_zero fun k _ => ite_eq_right ?_
       rintro ⟨-, h2⟩
       exact hν h2
 

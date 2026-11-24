@@ -108,7 +108,7 @@ theorem sum_be_sq (hj : j ≤ J) : ∑ c, (T.be i n c : ℝ) ^ 2 ≤
       if T.ty e = i then 2 * (n e : ℝ) ^ 2 else 0 := by
     intro e
     by_cases ht : T.ty e = i
-    · rw [if_pos ht]
+    · rw [ite_eq_left ht]
       have h3 : ∀ c, (if T.ty e = i ∧ (T.e0 e = c ∨ T.e1 e = c) then (n e : ℝ) ^ 2 else 0) =
           (if T.e0 e = c then (n e : ℝ) ^ 2 else 0) + if T.e1 e = c then (n e : ℝ) ^ 2 else 0 := by
         intro c
@@ -120,8 +120,8 @@ theorem sum_be_sq (hj : j ≤ J) : ∑ c, (T.be i n c : ℝ) ^ 2 ≤
       rw [Finset.sum_congr rfl fun c _ => h3 c, Finset.sum_add_distrib]
       simp
       ring
-    · rw [if_neg ht]
-      exact Finset.sum_eq_zero fun c _ => if_neg fun hh => ht hh.1
+    · rw [ite_eq_right ht]
+      exact Finset.sum_eq_zero fun c _ => ite_eq_right fun hh => ht hh.1
   rw [Finset.sum_congr rfl fun e _ => h2 e, Finset.sum_filter, Finset.mul_sum, Finset.mul_sum]
   refine le_of_eq (Finset.sum_congr rfl fun e _ => ?_)
   split_ifs <;> ring

@@ -202,7 +202,7 @@ theorem wt_sub_one (h2 : 2 ≤ h) {i k : Fin h} (hk : k ≠ i) :
       have h2' := Fin.lt_def.1 hlt
       have := i.2
       omega
-    rw [wt, wt, if_neg hl, if_pos hi0, tt, if_pos rfl, inv_inv, Units.val_one, one_mul, tu_val]
+    rw [wt, wt, ite_eq_right hl, ite_eq_left hi0, tt, ite_eq_left rfl, inv_inv, Units.val_one, one_mul, tu_val]
   · have h1 : (k - 1).1 = k.1 - 1 := by
       have hk0 : 0 < k.1 := Nat.pos_of_ne_zero fun e => h0 (Fin.ext e)
       have h3 : (1 : Fin h) ≤ k := by
@@ -214,11 +214,11 @@ theorem wt_sub_one (h2 : 2 ≤ h) {i k : Fin h} (hk : k ≠ i) :
     have h2' : k - 1 < i ↔ k < i := by
       rw [Fin.lt_def, Fin.lt_def, h1]
       omega
-    rw [wt, wt, tt, if_neg h0]
+    rw [wt, wt, tt, ite_eq_right h0]
     by_cases hlt : k < i
-    · rw [if_pos (h2'.2 hlt), if_pos hlt]
+    · rw [ite_eq_left (h2'.2 hlt), ite_eq_left hlt]
       exact Units.mul_inv _
-    · rw [if_neg (fun e => hlt (h2'.1 e)), if_neg hlt]
+    · rw [ite_eq_right (fun e => hlt (h2'.1 e)), ite_eq_right hlt]
       simp
 
 /-- The simple root elements of the i-th unitriangular subgroup are generators. -/
@@ -235,7 +235,7 @@ theorem th_x (h2 : 2 ≤ h) (i : Fin h) (l : Fin (h - 1)) : (th i (x h l) : G h 
       rintro ⟨e1, e2⟩
       have : lo l + i = hi l + i := e1.trans e2.symm
       exact lo_ne_hi l (add_right_cancel this)
-    rw [Matrix.single_apply, Matrix.single_apply, if_neg h1, if_neg h3]
+    rw [Matrix.single_apply, Matrix.single_apply, ite_eq_right h1, ite_eq_right h3]
     simp
   · have h4 : a - i ≠ b - i := fun e => hab (sub_left_injective e)
     rw [Matrix.one_apply_ne h4, Matrix.one_apply_ne hab, zero_add, zero_add]
@@ -249,7 +249,7 @@ theorem th_x (h2 : 2 ≤ h) (i : Fin h) (l : Fin (h - 1)) : (th i (x h l) : G h 
     · have h3 : ¬ (lo l + i = a ∧ sh i l = b) := by
         rintro ⟨e1, e2⟩
         exact h1 ⟨by rw [← e1, add_sub_cancel_right], by rw [← e2, sh, add_sub_cancel_right]⟩
-      rw [Matrix.single_apply, Matrix.single_apply, if_neg h1, if_neg h3]
+      rw [Matrix.single_apply, Matrix.single_apply, ite_eq_right h1, ite_eq_right h3]
       simp
 
 end Nc.Tower

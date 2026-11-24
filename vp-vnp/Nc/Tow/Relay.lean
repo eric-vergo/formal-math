@@ -53,7 +53,7 @@ def relay : Law F where
         fun g => if g false 0 = X 0 () ∧ g true 0 = X 0 () ∧ X 0 () = X 2 () then 1 else 0 := by
       funext g
       rw [Fin.prod_univ_three]
-      simp only [relTab, Fin.isValue, dite_true, if_true, one_ne_zero, dite_false, reduceDIte]
+      simp only [relTab, Fin.isValue, dite_true, ite_true, one_ne_zero, dite_false, reduceDIte]
       have h20 : ¬ (2 : Fin 3) = 0 := by decide
       have h21 : ¬ (2 : Fin 3) = 1 := by decide
       simp only [h20, h21, dite_false]
@@ -66,10 +66,10 @@ def relay : Law F where
       ∑ g : ∀ _ : Bool, Fin 1 → Bool, if g false 0 = X 0 () ∧ g true 0 = X 0 () ∧ X 0 () = X 2 () then (1 : F) else 0 from
         congrArg (fun f => ∑ g, f g) e]
     by_cases h : X 0 () = X 2 ()
-    · rw [if_pos fun _ => h, Finset.sum_eq_single fun _ _ => X 0 ()]
+    · rw [ite_eq_left fun _ => h, Finset.sum_eq_single fun _ _ => X 0 ()]
       · simp [h]
       · intro g _ hg
-        rw [if_neg]
+        rw [ite_eq_right]
         rintro ⟨h1, h2, -⟩
         apply hg
         funext ν k
@@ -79,9 +79,9 @@ def relay : Law F where
         · exact h1
         · exact h2
       · intro hn; exact absurd (mem_univ _) hn
-    · rw [if_neg fun hh => h (hh ()), Finset.sum_eq_zero]
+    · rw [ite_eq_right fun hh => h (hh ()), Finset.sum_eq_zero]
       intro g _
-      rw [if_neg fun hh => h hh.2.2]
+      rw [ite_eq_right fun hh => h hh.2.2]
   conn _ _ _ _ := rfl
 
 end Relay

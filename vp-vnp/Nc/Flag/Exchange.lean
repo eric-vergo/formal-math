@@ -296,6 +296,6 @@ theorem X_singleton (p q : GLM (Fin m)) (i : Fin m) : X p q {i} = vecMulVec ((p 
 theorem col_ne_zero (p : GLM (Fin m)) (i : Fin m) : (p : Mt m).col i ≠ 0 := (linearIndependent_col p).ne_zero i
 
 theorem row_ne_zero (q : GLM (Fin m)) (i : Fin m) : (q : Mt m).row i ≠ 0 :=
-  (Matrix.linearIndependent_rows_iff_isUnit.2 q.isUnit).ne_zero i
+  (Matrix.linearIndependent_row_iff_isUnit.2 q.isUnit).ne_zero i
 
 end Nc.Flag

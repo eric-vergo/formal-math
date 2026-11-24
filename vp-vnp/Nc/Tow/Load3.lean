@@ -138,7 +138,7 @@ theorem num_inr_zero {l : LMv T FL} (hl : ¬ IsMin (load R ch FL lhat n o) l.1.c
   · have h1 : tmin FL (load R ch FL lhat n o) l = 0 := tmin_zero fun q => seg_zero hr hb hl _ q
     have := num_inr_le (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) hr hb l
     omega
-  · rw [num_eq hr hb, numF, if_neg hl]
+  · rw [num_eq hr hb, numF, ite_eq_right hl]
 
 theorem alv_inr_zero {l : LMv T FL} (hl : ¬ IsMin (load R ch FL lhat n o) l.1.castSucc l.2.1 ∨
     ¬ Pick FL (load R ch FL lhat n o) l) (ν : (kindM R ch FL (.inr l)).Cn) :
@@ -190,12 +190,12 @@ theorem alive_sq (l : LMv T FL) : r * b * ∑ ν : (FL.L l.2.2.2).Cn, (alv R ch 
   by_cases hg : GoodL R ch FL o l t
   · have h1 : ∀ ν : (FL.L l.2.2.2).Cn, alv R ch FL lhat n o (⟨.inr l, ν⟩ : NM R FL (ch := ch)) = o ⟨.inr l, ν⟩ := by
       intro ν
-      rw [alv_inr, ← ht, if_pos hg]
+      rw [alv_inr, ← ht, ite_eq_left hg]
     rw [Finset.sum_congr rfl fun ν _ => by rw [h1 ν]]
     exact hg
   · have h1 : ∀ ν : (FL.L l.2.2.2).Cn, alv R ch FL lhat n o (⟨.inr l, ν⟩ : NM R FL (ch := ch)) ≤ t := by
       intro ν
-      rw [alv_inr, ← ht, if_neg hg]
+      rw [alv_inr, ← ht, ite_eq_right hg]
       exact min_le_right _ _
     obtain ⟨i0⟩ := FL.nonempty l.2.2.2
     have h2 := FL.L2 l.2.2.2 i0

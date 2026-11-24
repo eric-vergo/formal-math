@@ -169,7 +169,7 @@ theorem WL.el_t (h3 : 3 ≤ h) (i j : Fin h) (hij : i ≠ j) :
   have hL0 := zero_ne_last (h := h) h2
   have c1 : WL h2 (El (last h) 0 hL0 (t (n + 1)) : G h n) 1 := by
     have h6 := WL.gen (n := n) (h2 := h2) 0
-    rw [gen_eq_El, tt, if_pos rfl] at h6
+    rw [gen_eq_El, tt, ite_eq_left rfl] at h6
     have h7 : (El (0 - 1) 0 (sub_one_ne h2 0) (t (n + 1)) : G h n) = El (last h) 0 hL0 (t (n + 1)) := by
       refine Subtype.ext ?_
       rw [El_val, El_val, zero_sub_one h2]

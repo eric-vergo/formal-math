@@ -152,18 +152,18 @@ theorem sum_layer (A : Matrix (Fin h) (Fin h) (ZMod 2)) (hA : A.trace = 0) :
     simp only [Matrix.smul_apply, smul_eq_mul, Prod.mk.injEq]
     by_cases hij : i = j
     · subst hij
-      rw [if_pos rfl, if_pos rfl, Matrix.add_apply, Matrix.single_apply, Matrix.single_apply, mul_add]
+      rw [ite_eq_left rfl, ite_eq_left rfl, Matrix.add_apply, Matrix.single_apply, Matrix.single_apply, mul_add]
       congr 1
       · split_ifs <;> simp
       · split_ifs <;> simp
-    · rw [if_neg hij, if_neg hij, Matrix.single_apply, add_zero]
+    · rw [ite_eq_right hij, ite_eq_right hij, Matrix.single_apply, add_zero]
       split_ifs <;> simp
-  rw [Finset.sum_congr rfl fun p _ => h1 p, Finset.sum_add_distrib, Finset.sum_ite_eq' univ (a, b), if_pos (mem_univ _)]
+  rw [Finset.sum_congr rfl fun p _ => h1 p, Finset.sum_add_distrib, Finset.sum_ite_eq' univ (a, b), ite_eq_left (mem_univ _)]
   have h3 : (∑ p : Fin h × Fin h, if p.1 = p.2 then (if 0 = a ∧ 0 = b then A p.1 p.2 else 0) else 0) = 0 := by
     rw [Fintype.sum_prod_type]
     by_cases hab : 0 = a ∧ 0 = b
     · obtain ⟨rfl, rfl⟩ := hab
-      simp only [and_self, if_true, Finset.sum_ite_eq, mem_univ]
+      simp only [and_self, ite_true, Finset.sum_ite_eq, mem_univ]
       exact hA
     · simp [hab]
   rw [h3, add_zero]
