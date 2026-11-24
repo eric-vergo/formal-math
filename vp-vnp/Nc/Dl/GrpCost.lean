@@ -48,7 +48,8 @@ theorem bval_reverse (w : List Bool) : Grp.bval w.reverse = KT.val w := by
   | nil => rfl
   | cons b w ih =>
     rw [List.reverse_cons, bval_append, ih, KT.val]
-    cases b <;> simp <;> omega
+    cases b <;> simp
+    omega
 
 theorem exists_bits (n : ℕ) {L : ℕ} (h : n < 2 ^ L) : (bitsN L n).length = L ∧ KT.val (bitsN L n) = n ∧
     (bitsN L n).reverse.length = L ∧ Grp.bval (bitsN L n).reverse = n :=
