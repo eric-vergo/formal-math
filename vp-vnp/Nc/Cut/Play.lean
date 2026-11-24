@@ -63,11 +63,28 @@ theorem sum_contents_union (h0 h1 : U → A) (e : W) (Seen New : Finset U) (hd :
     (∑ y ∈ Contents h0 h1 e (Seen ∪ New), if Agree h0 h1 New y then f y else 0) =
       ∑ y ∈ Contents h0 h1 e Seen, ∑ z ∈ Common e New, f (ext h0 h1 New y z) := by
   rw [← Finset.sum_filter, ← Finset.sum_product']
+  let splitContents (y : A → U → W) :=
+    (fun a id => if id ∈ New then e else y a id, fun id => if id ∈ New then y (h0 id) id else e)
+  have restore (y) (hy : y ∈ (Contents h0 h1 e (Seen ∪ New)).filter (Agree h0 h1 New)) :
+      ext h0 h1 New (splitContents y).1 (splitContents y).2 = y := by
+    dsimp only [splitContents]
+    simp only [Contents, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union] at hy
+    funext a id
+    by_cases h : id ∈ New
+    · by_cases ha : Holds h0 h1 a id
+      · rw [ext_self h ha]
+        simp only [h, ite_true]
+        rcases ha with rfl | rfl
+        · rfl
+        · exact hy.2 id h
+      · simp only [ext, h, ha, and_false, ite_false, ite_true]
+        exact (hy.1 a id fun hh => ha hh.2).symm
+    · simp [ext, h]
   refine Finset.sum_bij'
-    (i := fun y _ => (fun a id => if id ∈ New then e else y a id, fun id => if id ∈ New then y (h0 id) id else e))
+    (i := fun y _ => splitContents y)
     (j := fun p _ => ext h0 h1 New p.1 p.2) ?_ ?_ ?_ ?_ ?_
   · intro y hy
-    simp only [Contents, Common, Finset.mem_filter, Finset.mem_product, Finset.mem_univ, true_and,
+    simp only [splitContents, Contents, Common, Finset.mem_filter, Finset.mem_product, Finset.mem_univ, true_and,
       Finset.mem_union] at hy ⊢
     refine ⟨fun a id hn => ?_, fun id hn => by simp [hn]⟩
     by_cases h : id ∈ New
@@ -85,21 +102,10 @@ theorem sum_contents_union (h0 h1 : U → A) (e : W) (Seen New : Finset U) (hd :
       simp only [ext, h1, ite_false]
       exact hp.1 a id fun h => hn ⟨Or.inl h.1, h.2⟩
     · rw [ext_self hid (Or.inl rfl), ext_self hid (Or.inr rfl)]
-  · intro y hy
-    simp only [Contents, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union] at hy
-    funext a id
-    by_cases h : id ∈ New
-    · by_cases ha : Holds h0 h1 a id
-      · rw [ext_self h ha]
-        simp only [h, ite_true]
-        rcases ha with rfl | rfl
-        · rfl
-        · exact hy.2 id h
-      · simp only [ext, h, ha, and_false, ite_false, ite_true]
-        exact (hy.1 a id fun hh => ha hh.2).symm
-    · simp [ext, h]
+  · exact restore
   · rintro ⟨y, z⟩ hp
     simp only [Contents, Common, Finset.mem_filter, Finset.mem_product, Finset.mem_univ, true_and] at hp
+    dsimp only [splitContents]
     ext1
     · funext a id
       by_cases h : id ∈ New
@@ -112,19 +118,6 @@ theorem sum_contents_union (h0 h1 : U → A) (e : W) (Seen New : Finset U) (hd :
         exact ext_self h (Or.inl rfl)
       · simp only [h, ite_false]
         exact (hp.2 id h).symm
-  · intro y hy
-    simp only [Contents, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union] at hy
-    congr 1
-    funext a id
-    by_cases h : id ∈ New
-    · by_cases ha : Holds h0 h1 a id
-      · rw [ext_self h ha]
-        simp only [h, ite_true]
-        rcases ha with rfl | rfl
-        · rfl
-        · exact (hy.2 id h).symm
-      · simp only [ext, h, ha, and_false, ite_false, ite_true]
-        exact hy.1 a id fun hh => ha hh.2
-    · simp [ext, h]
+  · exact fun y hy => congrArg f (restore y hy).symm
 
 end Nc
