@@ -21,7 +21,8 @@ number := false
 A reader need not take any report on this site on trust: everything a machine can check here can
 be checked again with the commands of this chapter. They establish, in this order, that the
 development compiles; that the five theorems rest on no axiom beyond Lean's standard three; that
-the statements of this branch are those of the upstream development up to one spelling; that the
+the cleanup preserves the port’s specification and challenge, whose public statements differed
+from upstream by the spelling of one coefficient; that the
 solution proves the statements of the challenge; and that checkers other than Lean's kernel
 accept the proofs. None of them establishes that the statements mean what the paper claims. For
 that there is no command, only {ref "chapter-statement"}[The statement to trust].
@@ -85,8 +86,7 @@ nothing when its proofs check. It is the machine-checked part of the argument th
 respelled line of `Statement.lean` means what the printed line means
 ({ref "statement-spelling"}[The one line this build spells differently]).
 
-For the writing of this chapter the last two commands were run on the build of this branch, with
-the outputs just described.
+The port baseline recorded these outputs. The same commands check the reader’s build.
 
 # Comparing the statements with upstream
 
@@ -143,9 +143,8 @@ On this branch the three files lie in {repoFile "vp-vnp/Comparator/VpVnp"}[`Comp
 the layout the site's tools require; the two Lean files are unchanged, and the judged theorems
 keep their names and statements. The script
 {repoFile "vp-vnp/scripts/comparator-check.sh"}[`scripts/comparator-check.sh`] is upstream's
-script adapted to this layout. The README of this branch says of it: “Linux only; not run on this
-branch”. So for this branch the Comparator run with nanoda is a check a reader can make, not one
-this site reports.
+script adapted to this layout. The port baseline recorded no separate Linux run.
+The Project Stats page identifies the checkers used for this site build.
 
 What the site does report is its own comparison, made from the compiled files when the site is
 generated. The page _Comparator_, at the end of the table of contents, lists the challenge; the
