@@ -32,8 +32,8 @@ def GrpTimeOK (A : Type) [CommRing A] {Γ S Q : Type} [Fintype Γ] [DecidableEq 
     (∀ y, Fintype.card (M.kind y).Cn ≤ X) →
     (univ.filter fun p : Fin (K + K) => grp (Fin.castAdd A' p) = g).card ≤ ιb → ιb ≤ X →
     (∀ p : Fin (K + K), grp (Fin.castAdd A' p) = g → ∑ b, ((n p b).val + (n b p).val) ≤ lh) →
-    evG (fun _ _ => grp) n o g + pdG P (fun _ _ => grp) n o g ≤ ev →
-    grpT bT bub (Grp.script qn cb P q x ρ n o grp g key dkey tg b) ≤
+    Grp.evG n o grp g + Grp.pdG P n o grp g ≤ ev →
+    Grp.grpTime bT bub (Grp.script qn cb P q x ρ n o grp g key dkey tg b) ≤
       2 * (Lc + 1) * (Grp.bval bT + Grp.bval bub + 2) + ιb * Grp.bval bT +
       1000 * (ev + ιb * lh) * (Grp.bval bub + Lc + 1) + X ^ 4 * 1000 * (Lc + 1)
 
@@ -88,7 +88,7 @@ theorem card_nm {K E pS : ℕ} {S N Id : Type} [Fintype S] [Fintype N] [Fintype 
   have a2 : (K + K) * (K + K) ≤ X * X := Nat.mul_le_mul (by omega) (by omega)
   have a3 : X ≤ X * X := Nat.le_mul_of_pos_left _ hX
   have a4 : Fintype.card (Option (Fin E)) = E + 1 := by rw [Fintype.card_option, Fintype.card_fin]
-  simp only [Nm.proxyType, Fintype.card_sum, Fintype.card_sigma, Finset.sum_const, Finset.card_univ,
+  simp only [Fintype.card_sum, Fintype.card_sigma, Finset.sum_const, Finset.card_univ,
     smul_eq_mul, Fintype.card_fin, Fintype.card_unit, Fintype.card_bool, a4]
   omega
 
@@ -104,15 +104,6 @@ theorem grpTimeOK (cb : Option Γ → Fin c → Bool) (qn : Q → ℕ) : GrpTime
   classical
   intro K A' E U0 U1 cap mm M P hP q x ρ n o grp g key dkey tg bT bub b Lc X ιb lh ev hx hk hd hbT hbub hS hK hR hId hSl hCn hι
     hιX hlh hev
-  have e1 : Grp.evG n o grp g = evG (fun _ _ => grp) n o g := by
-    unfold Grp.evG evG
-    refine Finset.sum_congr ?_ fun p _ => ?_
-    · ext p; simp
-    · first | rfl | congr 1
-  have e2 : Grp.pdG P n o grp g = pdG P (fun _ _ => grp) n o g := by
-    unfold Grp.pdG pdG
-    refine Finset.sum_congr ?_ fun p _ => rfl
-    ext p; simp
   have hbase : (Grp.baseList (A' := A') grp g).length ≤ ιb := by
     refine le_trans (le_of_eq ?_) hι
     unfold Grp.baseList
@@ -121,13 +112,13 @@ theorem grpTimeOK (cb : Option Γ → Fin c → Bool) (qn : Q → ℕ) : GrpTime
     ext p
     simp
   have h := Grp.script_time_le (qn := qn) (cb := cb) (q := q) (x := x) (ρ := ρ) (n := n) (o := o) (grp := grp) (g := g)
-    (key := key) (dkey := dkey) (tg := tg) (Lc := Lc) (X := X) (ιb := ιb) (lh := lh) (ev := evG (fun _ _ => grp) n o g)
-    (pd := pdG P (fun _ _ => grp) n o g) (bT := bT) (bub := bub) rfl rfl hbT hbub hP hx hk hd hS (by omega) hR
+    (key := key) (dkey := dkey) (tg := tg) (Lc := Lc) (X := X) (ιb := ιb) (lh := lh) (ev := Grp.evG n o grp g)
+    (pd := Grp.pdG P n o grp g) (bT := bT) (bub := bub) rfl rfl hbT hbub hP hx hk hd hS (by omega) hR
     (fun r => (Fintype.card_subtype_le _).trans (hSl _)) (fun r => (Fintype.card_subtype_le _).trans (hCn _)) hbase hιX hlh
-    e1.le e2.le b
+    le_rfl le_rfl b
   have hX1 : 1 ≤ X := by omega
   have h3 : X ^ 3 ≤ X ^ 4 := Nat.pow_le_pow_right hX1 (by norm_num)
-  have h4 : (evG (fun _ _ => grp) n o g + pdG P (fun _ _ => grp) n o g + ιb * lh) * (1000 * (Grp.bval bub + Lc + 1)) ≤
+  have h4 : (Grp.evG n o grp g + Grp.pdG P n o grp g + ιb * lh) * (1000 * (Grp.bval bub + Lc + 1)) ≤
       1000 * (ev + ιb * lh) * (Grp.bval bub + Lc + 1) := by
     calc _ ≤ (ev + ιb * lh) * (1000 * (Grp.bval bub + Lc + 1)) := Nat.mul_le_mul_right _ (Nat.add_le_add_right hev _)
       _ = _ := by ring
@@ -135,7 +126,7 @@ theorem grpTimeOK (cb : Option Γ → Fin c → Bool) (qn : Q → ℕ) : GrpTime
     calc 1000 * X ^ 3 ≤ 1000 * X ^ 4 := Nat.mul_le_mul_left _ h3
       _ = X ^ 4 * 1000 * 1 := by ring
       _ ≤ X ^ 4 * 1000 * (Lc + 1) := Nat.mul_le_mul_left _ (by omega)
-  unfold grpT
+  unfold Grp.grpTime
   omega
 
 end Time

@@ -6,8 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 import Nc.Dl.Does
 import Nc.Dl.SizeDeal
 import Nc.Dl.SizeScript
-import Nc.Dl.Cost
-import Nc.Grp.GroupProg
+import Nc.Plus.Interface
+import Nc.Grp.GroupThm
 
 /-!
 # One cut, with numbers
@@ -18,34 +18,6 @@ set_option linter.unusedSectionVars false
 namespace Nc.Dl
 
 open NS1 NS1.Tree Finset Nc.G Nc.Cut Codes
-
-/-- The time of GROUP at a script. -/
-def grpT (bT bub : List Bool) (l : List Grp.Ins) : ℕ :=
-  (bT.length + 1) * (Grp.bval bT + 1) + (bub.length + 1) * (Grp.bval bub + 1) +
-    (l.map (Grp.insCost (Grp.bval bT) (Grp.bval bub))).sum + l.length
-
-/-- **What GROUP does** (the conclusion of `Nc.Grp.exists_group`). -/
-def GroupOK {A : Type} [CommRing A] (θ : List Bool → A) {Γ S Q : Type} [Fintype Γ] [DecidableEq Γ] [Fintype S]
-    [DecidableEq S] [Fintype Q] [DecidableEq Q] {c : ℕ} (mu : Letter S Unit Γ → Matrix Q Q A)
-    (cb : Option Γ → Fin c → Bool) (kinds : List (Σ L : G.Law A, L.Ro)) (qn : Q → ℕ) (GROUP : Fm) (κ : ℕ) : Prop :=
-  ∀ {A' K E U0 U1 cap : ℕ} {Gr : Type} [DecidableEq Gr] [Fintype Gr]
-    {M : Sys A (K + K + A') E} (P : G.Plan M U0 U1) (q : Fin (K + 1) → Q) (x : Fin K → List Γ)
-    (ρ : Option S → Fin (K + K) → RowData (K + K)) (n : Fin (K + K) → Fin (K + K) → Fin (U0 + 1))
-    (o : M.N → Fin U1) (grp : Fin (K + K + A') → Gr) (g : Gr) (key : Grp.Cell M U0 U1 → List Bool)
-    (dkey : Fin (K + K) × Fin U0 → List Bool) (tg : M.R → ℕ) (bT bub : List Bool)
-    (b : G.Uid (K + K) U0 M.N U1 → UW (Grp.bval bub)),
-    Function.Injective (Sum.elim key dkey) → 0 < Grp.bval bub → P.Ok cap → (∀ κ, (x κ).length ≤ Grp.bval bT) →
-    (∀ s p, (ρ s p).1 = false → (ρ s p).2.1 ≤ (ρ s p).2.2) → (∀ r, kinds[tg r]? = some ⟨M.kind r.1, r.2⟩) →
-    Plain θ (κ * grpT bT bub (Grp.script qn cb P q x ρ n o grp g key dkey tg b))
-      (.cons GROUP.code (Grp.scriptT bT bub (Grp.script qn cb P q x ρ n o grp g key dkey tg b))) ∧
-    pv θ (.cons GROUP.code (Grp.scriptT bT bub (Grp.script qn cb P q x ρ n o grp g key dkey tg b))) =
-      G.grpVal mu (Grp.bval bT) cb P q x ρ n o grp g b ∧
-    (evl θ GROUP (Grp.scriptT bT bub (Grp.script qn cb P q x ρ n o grp g key dkey tg b)) ≠ [] →
-      (∀ p, grp (Fin.castAdd A' p) = g → ∑ b, ((n p b : ℕ) + n b p) ≤
-        2 * ((Grp.bval bT + (K + K) * (Fintype.card S + 1)) * c / Grp.bval bub + (K + K))) ∧
-      ∀ r : M.R, grp (M.rp r) = g → ∃ ι : Fin (P.num n o r.1 * Grp.bval bub) → (M.kind r.1).I,
-        ∀ ν : (M.kind r.1).CnAt r.2,
-          (o ⟨r.1, ν.1⟩ : ℕ) = (∑ k, ((M.kind r.1).lam + (M.kind r.1).len (ι k) ν.1)) / Grp.bval bub)
 
 /-- The number of all names, digits, keys. -/
 structure CodesLe {A : Type} [CommRing A] {S : Type} [Fintype S] {K A' E U0 U1 D pS : ℕ} {M : Sys A (K + K + A') E}
@@ -110,7 +82,7 @@ open Classical in
 size and time: G cuts, with numbers. -/
 theorem _root_.Paper.thm_onecut_program {i e : Q} {b0 b1 : Γ} {τ s cap bd ιb X Lc tB : ℕ} {tg : M.R → ℕ} {bT bub nub nl : List Bool}
     -- the automaton and GROUP
-    (hK : 0 < K) [Nonempty Q] (hGR : GroupOK θ mu cb kinds qn GROUP κ)
+    (hK : 0 < K) [Nonempty Q] (hGR : Grp.GroupOK θ mu cb kinds qn GROUP κ)
     (hU : ∀ z, z.size ≤ s → Plain θ τ z → runVal mu i e (K * Grp.bval bT) (fun _ => wordG b0 b1 z) = pv θ z)
     (hkind : ∀ r, kinds[tg r]? = some ⟨M.kind r.1, r.2⟩)
     -- the plan, the formula and the bounds of the pieces
@@ -145,7 +117,7 @@ theorem _root_.Paper.thm_onecut_program {i e : Q} {b0 b1 : Γ} {τ s cap bd ιb 
     (htB : ∀ (q : Fin (K + 1) → Q) (x : Fin K → List Γ) (ρ : Option S → Fin (K + K) → RowData (K + K)) (n : NN K U0)
       (o : M.N → Fin U1) (b : G.Uid (K + K) U0 M.N U1 → UW (Grp.bval bub)) (g : Fin mm), (∀ κ, (x κ).length ≤ Grp.bval bT) →
       tab.valid n → (∀ x, P.good n o x) →
-      grpT bT bub (Grp.script qn cb P q x ρ n o (grp n o) g C.key C.dkey tg b) ≤ tB) :
+      Grp.grpTime bT bub (Grp.script qn cb P q x ρ n o (grp n o) g C.key C.dkey tg b) ≤ tB) :
     ∃ G : Tree, G.size ≤ (dealC + 3000) * (X * Lc) ^ 4 ∧ CutD θ τ s (κ * tB)
       (X + 1 + (200 * X ^ 3 * Lc + ιb * ℓ * (4 * c + 2) + bd * (4 * Grp.bval bub))) mm
       (dealB Lc X K mm (Grp.bval bub) (mm * bd) (4 * (X * X) + 10 * X) s) G := by

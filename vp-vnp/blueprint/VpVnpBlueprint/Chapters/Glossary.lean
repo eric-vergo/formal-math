@@ -453,7 +453,7 @@ From “Notation and conventions” (pages 17–18).
 *
   * evaluator
   * the program of Theorem J.3 that evaluates a piece ({bpref "thm_onecut_evaluator"}[the node])
-  * its specification: {InlineLean.name}`Nc.Dl.GroupOK`
+  * its specification: {InlineLean.name}`Nc.Grp.GroupOK`
 *
   * the conclusion of the cutting theorem
   * {bpref "thm_cut"}[Theorem J.4]; a hypothesis of Proposition K.5, Theorem K.6 and Proposition N.4 in Lean

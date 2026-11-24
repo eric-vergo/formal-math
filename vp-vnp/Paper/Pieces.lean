@@ -6,7 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 import Paper.Tree
 import Paper.Runnet
 import Paper.HeavyProg
-import Nc.Dl.Cost
+import Nc.Dl.Tab
+import Nc.Plus.Interface
 import Nc.G.Exact
 
 /-!
@@ -197,7 +198,7 @@ structure PieceCut (kinds : List (Σ L : G.Law A, L.Ro)) (mu : Nc.Letter S Unit 
     ((plan.cur n o E).filter (Nc.Plus.OneIn (hold0 sys.np) (hold1 sys.np) (grp n o) g)).card * ub * v ^ 300 ≤
       K * T * lg v ^ C
   all_le : ∀ n o, (∀ p, ∑ b, ((n p b).val + (n b p).val) ≤ load) → (∀ x, plan.good n o x) → ∀ g,
-    (evG grp n o g + pdG plan grp n o g) * ub * k ≤ K * T * lg v ^ C
+    (Grp.evG n o (grp n o) g + Grp.pdG plan n o (grp n o) g) * ub * k ≤ K * T * lg v ^ C
   steps_le : D ≤ v ^ C ∧ steps ≤ v ^ C ∧ K + K + A' ≤ v ^ C ∧ E ≤ v ^ C ∧ U0 ≤ v ^ C ∧ U1 ≤ v ^ C
   value : ∀ (i e : Q) (u : Unit → List Γ) (ℓ : ℕ), ℓ ≤ T → (u ()).length ≤ K * ℓ →
     Nc.runVal mu i e (K * T) u = ∑ q : Fin (K + 1) → Q, if q 0 = i ∧ q (Fin.last K) = e then
@@ -339,16 +340,16 @@ theorem piece_cut (g : Fin (pieceNum TT k)) :
 open Classical in
 /-- "Units used up and zeros in slots change this by a constant factor only": the bits in all. -/
 theorem piece_all (hk' : k ≤ 4 * M) (g : Fin (pieceNum TT k)) :
-    (evG (fun n o => pieceFin TT k n o) n o g + pdG TT.plan (fun n o => pieceFin TT k n o) n o g) * k ≤
+    (Grp.evG n o (pieceFin TT k n o) g + Grp.pdG TT.plan n o (pieceFin TT k n o) g) * k ≤
       C * (4 * yhat N M C) + 4 * M * (lg M ^ C * N) + 2 * C * M ^ C * k := by
   set S := univ.filter fun p => pieceFin TT k n o p = g with hS
-  have h1 : evG (fun n o => pieceFin TT k n o) n o g + pdG TT.plan (fun n o => pieceFin TT k n o) n o g =
+  have h1 : Grp.evG n o (pieceFin TT k n o) g + Grp.pdG TT.plan n o (pieceFin TT k n o) g =
       ∑ p ∈ S, (((Plan.seenAt n o TT.E).filter (Holds (hold0 TT.sys.np) (hold1 TT.sys.np) p)).card +
         ∑ r ∈ univ.filter (fun r : TT.sys.R => TT.sys.rp r = p),
           (1 + Fintype.card ((TT.sys.kind r.1).SlAt r.2)) * TT.plan.num n o r.1) := by
     rw [Finset.sum_add_distrib]
     congr 1
-    unfold pdG
+    unfold Grp.pdG
     rw [← Finset.sum_fiberwise_of_maps_to (g := TT.sys.rp) (t := S)
       (fun r hr => mem_filter.2 ⟨mem_univ _, (mem_filter.1 hr).2⟩)]
     refine Finset.sum_congr rfl fun p hp => Finset.sum_congr ?_ fun _ _ => rfl

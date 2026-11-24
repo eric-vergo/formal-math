@@ -73,14 +73,6 @@ variable (qn : Q → ℕ) (cb : Option Γ → Fin c → Bool) {M : Sys F (K + K 
   (n : Fin (K + K) → Fin (K + K) → Fin (U0 + 1)) (o : M.N → Fin U1) (grp : Fin (K + K + A') → Gr) (g : Gr)
   (key : Cell M U0 U1 → List Bool) (dkey : Fin (K + K) × Fin U0 → List Bool) (tg : M.R → ℕ)
 
-/-- The number of copies of units that the parties of the group ever hold. -/
-def evG : ℕ := ∑ p ∈ univ.filter (fun p => grp p = g),
-  ((Plan.seenAt n o E : Finset (G.Uid (K + K) U0 M.N U1)).filter (Holds (G.hold0 M.np) (G.hold1 M.np) p)).card
-
-/-- The number of units of zeros and of counts. -/
-def pdG : ℕ := ∑ r ∈ univ.filter (fun r : M.R => grp (M.rp r) = g),
-  (1 + Fintype.card ((M.kind r.1).SlAt r.2)) * P.num n o r.1
-
 /-- The number of units of a base party at the beginning. -/
 def inN (p : Fin (K + K)) : ℕ := ∑ b, ((n p b).1 + (n b p).1)
 

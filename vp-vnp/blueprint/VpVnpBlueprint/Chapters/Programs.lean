@@ -478,9 +478,9 @@ with $`h \geq 3` and the condition (G.1), $`1 + 8C_1 \leq h/4`, over any commuta
   at most $`CK`), `cut_le` and `all_le`. In `cut_le` the number of packets that are current after
   the last move and have exactly one of their two holders in the piece (`Nc.Plus.OneIn`), times
   `ub`, times $`v^{300}`, is at most $`KT(\lg v)^C`. In `all_le` the sum `evG + pdG`, times `ub`,
-  times $`k`, is at most $`KT(\lg v)^C`, where `Nc.Dl.evG` adds, over the nodes of the piece, the
+  times $`k`, is at most $`KT(\lg v)^C`, where `Nc.Grp.evG` adds, over the nodes of the piece, the
   number of packets that exist for the given numbers and outcomes and are held by the node
-  (copies, used up or not), and `Nc.Dl.pdG` adds, over the roles that the moves give to nodes of
+  (copies, used up or not), and `Nc.Grp.pdG` adds, over the roles that the moves give to nodes of
   the piece, the number $`t` of the move times one plus the number of slots of its law at the
   role. All three are stated for numbers within `load` and good outcomes.
 - Third clause: the fields `tab`, `tab_valid`, `digits` and `steps_le`. The field `tab` is a
@@ -511,7 +511,7 @@ no theorem restates this as the value of a network as defined in Section H.” T
 value `grpVal` of a piece.
 
 The fields were read as listed, and so were the definitions `Nc.Plus.OneIn`, `Nc.cutUnits`,
-`Nc.Dl.evG`, `Nc.Dl.pdG`, `Nc.groupVal` and `Nc.G.grpVal` on which the glosses of `cut_le`,
+`Nc.Grp.evG`, `Nc.Grp.pdG`, `Nc.groupVal` and `Nc.G.grpVal` on which the glosses of `cut_le`,
 `all_le` and `value` rest; `G.Plan` and `Sys` are read in
 {bpref "law_move"}[the definition of a move]. The structure `SlpTab` of the field `tab` was read
 only as far as its first fields (the steps `IsSlpStep` and the functions that say which packets
@@ -616,14 +616,14 @@ statement. The two programs live in two libraries.
 - *The evaluator* is the program `GROUP` of `Nc/Grp` (28 files; the Lean word for a piece is
   *group*). `Nc.Grp.exists_group` gives, for a fixed automaton, a fixed code of symbols and a fixed
   finite list of roles of laws, one program `GROUP` and a step cost `κ`. Its specification is the
-  predicate `Nc.Dl.GroupOK`: for every plan, every choice `q`, `ρ`, `n`, `o`, every assignment `grp`
+  predicate `Nc.Grp.GroupOK`: for every plan, every choice `q`, `ρ`, `n`, `o`, every assignment `grp`
   of nodes to pieces, every piece `g`, every injective naming of packets by bit strings and every
   content `b` of packets, the instance (code of `GROUP`, script of `g`) is plain within `κ` times an
-  explicit cost `grpT` of the script, and its sum is `grpVal … g b`, the value of the piece that
+  explicit cost `Nc.Grp.grpTime` of the script, and its sum is `grpVal … g b`, the value of the piece that
   occurs in `PieceCut.value`. A third clause says that if `GROUP` has an accepting run at all, then
   the numbers of packets at the nodes of the piece obey the bound of Lemma I.2 and the outcomes at
   its roles are the outcomes of some choice of indices; this is how the bounds on packets needed for
-  the time are obtained from one contributing choice. `Nc.Dl.GrpTimeOK` bounds `grpT` by the numbers
+  the time are obtained from one contributing choice. `Nc.Dl.GrpTimeOK` bounds `Nc.Grp.grpTime` by the numbers
   of blocks, packets and names of the piece. The script is a tree built by `Nc.Grp.script` and
   `Nc.Grp.scriptT` (`Nc/Grp/Script.lean`). Inside, `GROUP` is assembled from the program of a base
   node (a block or a part: simulate the automaton or take the part of the input, cut what is
@@ -642,7 +642,7 @@ statement. The two programs live in two libraries.
 
 *What was read.* The statement and the first part of the proof of `Paper.thm_onecut`, the
 statements of the two nodes below and of `Nc.Grp.exists_group`, the definitions of `GroupOK`,
-`GrpTimeOK` and `grpT`, and the module headers of `Nc/Grp`, `Nc/Dl` and `Nc/Cut`. Not read: the
+`GrpTimeOK` and `Nc.Grp.grpTime`, and the module headers of `Nc/Grp`, `Nc/Dl` and `Nc/Cut`. Not read: the
 programs themselves and the proofs about them (about 11,700 lines in `Nc/Grp` and `Nc/Dl`). What
 is said above about the three clauses of `GroupOK` is a reading of that definition. What is said
 about the internal structure of `GROUP` and of the dealing program (the last sentence of the
@@ -652,7 +652,7 @@ against the definitions of the programs and is the least checked passage of this
 the evaluator” among the steps that exist only under names of the underlying library.
 :::
 
-:::lemma_ "thm_onecut_evaluator" (lean := "Paper.thm_onecut_evaluator, Nc.Dl.GroupOK, Nc.Dl.GrpTimeOK") (parent := "part-contracting")
+:::lemma_ "thm_onecut_evaluator" (lean := "Paper.thm_onecut_evaluator, Nc.Grp.GroupOK, Nc.Dl.GrpTimeOK") (parent := "part-contracting")
 *An unnumbered step of the proof of Theorem J.3* (the evaluator; page 54), quoted: “Hence the sum
 of the instance (evaluator, script) is the value of the piece. All its loops have lengths that
 stand in the script, so all its runs halt”.

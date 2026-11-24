@@ -100,6 +100,10 @@ def insCost (T ub : ℕ) : Ins → ℕ
   | .one k w => k.length + w.length + ub + 1
   | .role _ tt slots keys => tt * (ub + 1) + putCost ub slots + putCost ub keys + 1
 
+/-- The time of GROUP at a script. -/
+def grpTime (bT bub : List Bool) (l : List Ins) : ℕ :=
+  (bT.length + 1) * (bval bT + 1) + (bub.length + 1) * (bval bub + 1) + (l.map (insCost (bval bT) (bval bub))).sum + l.length
+
 /-- All contents are lists of at most `ub` bits. -/
 def TOk (ub : ℕ) (t : Tree) : Prop := ∀ k, ∃ w : List Bool, tget k t = ofBits w ∧ w.length ≤ ub
 

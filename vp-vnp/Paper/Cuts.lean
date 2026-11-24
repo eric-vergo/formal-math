@@ -72,7 +72,7 @@ evaluator and its step cost, GroupOK says halting, value and cost, GrpTimeOK bou
 theorem thm_onecut_evaluator {θ : List Bool → A} (hθ : Generates θ) {Γ S Q : Type} [Fintype Γ] [DecidableEq Γ]
     [Fintype S] [DecidableEq S] [Fintype Q] [DecidableEq Q] (mu : Nc.Letter S Unit Γ → Matrix Q Q A) {c : ℕ}
     (cb : Option Γ → Fin c → Bool) (kinds : List (Σ L : Nc.G.Law A, L.Ro)) :
-    ∃ (GROUP : Fm) (κ : ℕ), Nc.Dl.GroupOK θ mu cb kinds (fun z => (Nc.Grp.qn Q z : ℕ)) GROUP κ ∧
+    ∃ (GROUP : Fm) (κ : ℕ), Nc.Grp.GroupOK θ mu cb kinds (fun z => (Nc.Grp.qn Q z : ℕ)) GROUP κ ∧
       Nc.Dl.GrpTimeOK (S := S) A cb (fun z => (Nc.Grp.qn Q z : ℕ)) := by
   classical
   obtain ⟨GROUP, κ, hG⟩ := Nc.Grp.exists_group (θ := θ) mu cb kinds (fun z q q' => hθ.2 _) (fun z _ i y h => hθ.2 _)
@@ -197,11 +197,7 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
       _ ≤ τ * (l * l ^ 4) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_right _ (by omega))
       _ = τ * l ^ 5 := by ring
   obtain ⟨T, hT⟩ : ∃ T, T = tU / K + 1 := ⟨_, rfl⟩
-  have hKTge : tU ≤ K * T := by
-    have h1 := Nat.div_add_mod tU K
-    have h2 := Nat.mod_lt tU hK0
-    rw [hT, Nat.mul_add, Nat.mul_one]
-    omega
+  have hKTge : tU ≤ K * T := hT ▸ (Nat.lt_mul_div_succ tU hK0).le
   have hKT : K * T ≤ τ * m := by
     calc K * T = K * (tU / K) + K := by rw [hT]; ring
       _ ≤ tU + τ := Nat.add_le_add (Nat.mul_div_le _ _) (hKX.trans hXτ)
@@ -226,11 +222,7 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
   have hℓT : ℓ ≤ T := by
     rw [hℓ, hT]
     exact Nat.add_le_add_right (Nat.div_le_div_right (hsτ.trans hτtU)) 1
-  have hsK : s ≤ K * ℓ := by
-    have h1 := Nat.div_add_mod s K
-    have h2 := Nat.mod_lt s hK0
-    rw [hℓ, Nat.mul_add, Nat.mul_one]
-    omega
+  have hsK : s ≤ K * ℓ := hℓ ▸ (Nat.lt_mul_div_succ s hK0).le
   -- numbers below X
   obtain ⟨hD, hst, hA', hE, hU0, hU1⟩ := pc.steps_le
   have hCX : v ^ Cp + 1 ≤ X := by
@@ -379,7 +371,7 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
     rw [hbd, Nat.le_div_iff_mul_le (Nat.mul_pos pc.ub_pos (vpos 300)), ← Nat.mul_assoc, hL]
     exact pc.cut_le n o ((pc.tab_valid n).1 hn) hg g
   have hevle : ∀ n o, pc.tab.valid n → (∀ x, pc.plan.good n o x) → ∀ g,
-      Nc.Dl.evG pc.grp n o g + Nc.Dl.pdG pc.plan pc.grp n o g ≤ ev := fun n o hn hg g => by
+      Nc.Grp.evG n o (pc.grp n o) g + Nc.Grp.pdG pc.plan n o (pc.grp n o) g ≤ ev := fun n o hn hg g => by
     rw [hev, Nat.le_div_iff_mul_le hubk, ← Nat.mul_assoc, hL]
     exact pc.all_le n o ((pc.tab_valid n).1 hn) hg g
   have hbase : ∀ n o, pc.tab.valid n → (∀ x, pc.plan.good n o x) → ∀ g,
@@ -395,7 +387,7 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
   obtain ⟨ci, hci⟩ : ∃ ci : Fin (Cp + 1), ci.1 = pc.c := ⟨⟨pc.c, Nat.lt_succ_of_le pc.c_le⟩, rfl⟩
   obtain ⟨cb, hcb⟩ : ∃ cb : Option Γ → Fin ci.1 → Bool, cb = fun z j => pc.cb z (Fin.cast hci j) := ⟨_, rfl⟩
   obtain ⟨GROUP, κ', hG, hGtime, hsize⟩ : ∃ (GROUP : Fm) (κ' : ℕ),
-      Nc.Dl.GroupOK θ mu pc.cb kinds (fun z => (Nc.Grp.qn Q z : ℕ)) GROUP κ' ∧
+      Nc.Grp.GroupOK θ mu pc.cb kinds (fun z => (Nc.Grp.qn Q z : ℕ)) GROUP κ' ∧
       Nc.Dl.GrpTimeOK (S := S) A pc.cb (fun z => (Nc.Grp.qn Q z : ℕ)) ∧ GROUP.code.size + κ' ≤ Zg := by
     obtain ⟨cn, hcn⟩ := ci
     simp only at hci
