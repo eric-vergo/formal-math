@@ -429,15 +429,9 @@ theorem prop_flat_lower_lengths {k : ℕ} (hk : 1 ≤ k) (A : Finset (Fin k)) (h
         ring
       · rw [inner_neg_right, real_inner_smul_right, inner_uvec, norm_neg, hnorm]
         ring
-  have h5 : ∑ a : Fin k, ∑ b : Fin k, (if a = b then (0 : ℝ) else 1 / 2 + η ^ 2) =
-      k * (k - 1) * (1 / 2 + η ^ 2) := by
-    have row (a : Fin k) := sum_ite_card ({a} : Finset (Fin k)) 0 (1 / 2 + η ^ 2)
-    simp only [Finset.mem_singleton, Finset.card_singleton, Nat.cast_one, mul_zero, zero_add] at row
-    rw [Finset.sum_comm]
-    simp only [row, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_assoc]
   refine (Finset.sum_le_sum fun a _ => Finset.sum_le_sum fun b _ => hterm a b).trans ?_
   simp only [Finset.sum_sub_distrib]
-  rw [h5]
+  rw [sum_off_diagonal]
   have h8 : ∑ a, ∑ b, z * (√2)⁻¹ * (sg A a * (vvec A a - vvec A b)) = z * (√2)⁻¹ * (2 * qnum A) := by
     rw [← sum_sg, Finset.mul_sum]
     exact Finset.sum_congr rfl fun a _ => by rw [Finset.mul_sum]

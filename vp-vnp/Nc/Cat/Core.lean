@@ -35,32 +35,6 @@ theorem cn (x v z : X) :
     dist z (mid x v) ^ 2 ≤ (dist z x ^ 2 + dist z v ^ 2) / 2 - dist x v ^ 2 / 4 :=
   Classical.choose_spec (CN.exists_mid x v) z
 
-theorem dist_mid_left (x v : X) : dist x (mid x v) = dist x v / 2 := by
-  have h1 := cn x v x
-  have h2 := cn x v v
-  have h3 := dist_triangle x (mid x v) v
-  rw [dist_self] at h1 h2
-  rw [dist_comm v x] at h2
-  rw [dist_comm (mid x v) v] at h3
-  have ha : dist x (mid x v) ≤ dist x v / 2 := by
-    apply abs_le_of_sq_le_sq' _ (by positivity) |>.2
-    nlinarith
-  have hb : dist v (mid x v) ≤ dist x v / 2 := by
-    apply abs_le_of_sq_le_sq' _ (by positivity) |>.2
-    nlinarith
-  linarith
-
-theorem dist_mid_right (x v : X) : dist (mid x v) v = dist x v / 2 := by
-  have h2 := cn x v v
-  have h3 := dist_triangle x (mid x v) v
-  rw [dist_mid_left] at h3
-  rw [dist_self, dist_comm v x] at h2
-  rw [dist_comm (mid x v) v] at h3 ⊢
-  have hb : dist v (mid x v) ≤ dist x v / 2 := by
-    apply abs_le_of_sq_le_sq' _ (by positivity) |>.2
-    nlinarith
-  linarith
-
 end min
 
 /-! ### Barycentres -/
@@ -139,6 +113,17 @@ theorem IsPt.dist_right {x v b : X} {t : ℝ} (h0 : 0 ≤ t) (h1 : t ≤ 1) (h :
     dist b v = (1 - t) * dist x v := by
   have := h.symm.dist_left (by linarith) (by linarith)
   rw [dist_comm b v, this, dist_comm v x]
+
+/-- A CN midpoint is the point at fraction one half. -/
+private theorem isPt_mid [CN X] (x v : X) : IsPt x v (1 / 2) (mid x v) := by
+  intro z
+  linarith [cn x v z]
+
+theorem dist_mid_left [CN X] (x v : X) : dist x (mid x v) = dist x v / 2 := by
+  linarith [(isPt_mid x v).dist_left (by norm_num) (by norm_num)]
+
+theorem dist_mid_right [CN X] (x v : X) : dist (mid x v) v = dist x v / 2 := by
+  linarith [(isPt_mid x v).dist_right (by norm_num) (by norm_num)]
 
 /-- A point with the distances of the point at fraction `t` is the point at fraction `t`. -/
 theorem IsPt.eq_of_dist {x v b b' : X} {t : ℝ} (h : IsPt x v t b)

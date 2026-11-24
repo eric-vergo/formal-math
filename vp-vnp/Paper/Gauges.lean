@@ -176,18 +176,8 @@ theorem prop_gauge_radius (h : IsPre D p) : IsPre D (fun t => sInf (rad p t)) :=
         _ ≤ (C * a ^ m) * (C' * b ^ m) :=
           mul_le_mul (hC m) (hC' m) (h.nonneg _) (by positivity)
         _ = _ := by ring
-    have hs := h0 s
-    have ht := h0 t
-    refine le_of_forall_pos_le_add fun δ hδ => ?_
-    set A := sInf (rad p s) with hA
-    set B := sInf (rad p t) with hB
-    obtain ⟨ε, hε, hε1, hε2⟩ : ∃ ε : ℝ, 0 < ε ∧ ε ≤ 1 ∧ ε * (A + B + 1) ≤ δ := by
-      refine ⟨min 1 (δ / (A + B + 1)), by positivity, min_le_left _ _, ?_⟩
-      calc min 1 (δ / (A + B + 1)) * (A + B + 1) ≤ δ / (A + B + 1) * (A + B + 1) := by
-            gcongr; exact min_le_right _ _
-        _ = δ := by field_simp
-    have := key (A + ε) (h.mem_rad_of_lt (by linarith)) (B + ε) (h.mem_rad_of_lt (by linarith))
-    nlinarith
+    exact le_sInf_mul_sInf ⟨_, h.mem_rad s one_pos⟩ ⟨_, h.mem_rad t one_pos⟩
+      (fun _ ha => ha.1.le) (fun _ hb => hb.1.le) key
 
 /-- Proof of Proposition prop:gauge: r ≤ p. -/
 theorem prop_gauge_radius_le (h : IsPre D p) (t : M) : sInf (rad p t) ≤ p t :=

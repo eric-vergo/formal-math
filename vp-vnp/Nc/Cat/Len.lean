@@ -80,25 +80,16 @@ theorem Len.exists_homog {N : ℤ × ℤ → ℝ} (hN : Len N) :
     rw [smul_add, ← add_div]
     exact div_le_div_of_nonneg_right (hN.add _ _) (Nat.cast_nonneg _)
   · intro X V Y U n n' k k' τ hτ
-    have hl : Tendsto (fun S : ℕ => 2 * ((N (S • (X - V)) / S) ^ 2 + (N (S • (Y - U)) / S) ^ 2))
-        atTop (𝓝 (2 * (N' (X - V) ^ 2 + N' (Y - U) ^ 2))) :=
-      (((hT _).pow 2).add ((hT _).pow 2)).const_mul 2
-    have hr : Tendsto (fun S : ℕ =>
-        N (S • (X - V)) / S * (N (S • (X - n)) / S + N (S • (V - n')) / S
-          + N (S • (X - k)) / S + N (S • (V - k')) / S)
-        + N (S • (Y - U)) / S * (N (S • (Y - n)) / S + N (S • (U - n')) / S
-          + N (S • (U - k)) / S + N (S • (Y - k')) / S)
-        + τ * ((N (S • (X - V)) / S) ^ 2 + (N (S • (Y - U)) / S) ^ 2)
-        + ((N (S • (n - n')) / S) ^ 2 + (N (S • (k - k')) / S) ^ 2) / (2 * τ)) atTop
-        (𝓝 (N' (X - V) * (N' (X - n) + N' (V - n') + N' (X - k) + N' (V - k'))
-          + N' (Y - U) * (N' (Y - n) + N' (U - n') + N' (U - k) + N' (Y - k'))
-          + τ * (N' (X - V) ^ 2 + N' (Y - U) ^ 2)
-          + (N' (n - n') ^ 2 + N' (k - k') ^ 2) / (2 * τ))) :=
-      (((((hT _).mul ((((hT _).add (hT _)).add (hT _)).add (hT _)))).add
-        ((hT _).mul ((((hT _).add (hT _)).add (hT _)).add (hT _)))).add
-        ((((hT _).pow 2).add ((hT _).pow 2)).const_mul τ)).add
-        ((((hT _).pow 2).add ((hT _).pow 2)).div_const _)
-    refine le_of_tendsto_of_tendsto' hl hr fun S => ?_
+    -- The quadratic inequality defines a closed set of length functions.
+    let good : Set (ℤ × ℤ → ℝ) := {g |
+      2 * (g (X - V) ^ 2 + g (Y - U) ^ 2) ≤
+        g (X - V) * (g (X - n) + g (V - n') + g (X - k) + g (V - k'))
+        + g (Y - U) * (g (Y - n) + g (U - n') + g (U - k) + g (Y - k'))
+        + τ * (g (X - V) ^ 2 + g (Y - U) ^ 2) + (g (n - n') ^ 2 + g (k - k') ^ 2) / (2 * τ)}
+    have hclosed : IsClosed good := isClosed_le (by fun_prop) (by fun_prop)
+    apply hclosed.mem_of_tendsto (tendsto_pi_nhds.2 hT)
+    filter_upwards with S
+    dsimp [good]
     have h := hN.q (S • X) (S • V) (S • Y) (S • U) (S • n) (S • n') (S • k) (S • k') τ hτ
     simp only [← smul_sub] at h
     rcases Nat.eq_zero_or_pos S with rfl | hS

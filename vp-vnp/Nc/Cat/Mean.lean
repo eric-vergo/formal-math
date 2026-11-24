@@ -216,40 +216,19 @@ theorem mean_shift_one' {f : Fn} (hf : Bd f) :
 
 theorem mean_shift_left {f : Fn} (hf : Bd f) (a : ℤ) :
     mean (fun n b i k => f n b (i + a) k) = mean f := by
-  induction a using Int.induction_on with
-  | zero => simp
-  | succ a ih =>
-    rw [← ih, ← mean_shift_one (f := fun n b i k => f n b (i + a) k) (by simpa using hf.shift a 0)]
-    congr 1
-    funext n b i k
-    congr 1
-    ring
-  | pred a ih =>
-    rw [← ih, ← mean_shift_one (f := fun n b i k => f n b (i + (-a - 1)) k)
-      (by simpa using hf.shift (-a - 1) 0)]
-    congr 1
-    funext n b i k
-    congr 1
-    ring
+  have h : Function.Periodic (fun t : ℤ => mean (fun n b i k => f n b (i + t) k)) 1 := by
+    intro t
+    simpa only [add_assoc, add_comm (1 : ℤ) t] using
+      mean_shift_one (f := fun n b i k => f n b (i + t) k) (by simpa using hf.shift t 0)
+  simpa using h.int_mul_eq a
 
 theorem mean_shift_right {f : Fn} (hf : Bd f) (a : ℤ) :
     mean (fun n b i k => f n b i (k + a)) = mean f := by
-  induction a using Int.induction_on with
-  | zero => simp
-  | succ a ih =>
-    rw [← ih, ← mean_shift_one' (f := fun n b i k => f n b i (k + a))
-      (by simpa using hf.shift 0 a)]
-    congr 1
-    funext n b i k
-    congr 1
-    ring
-  | pred a ih =>
-    rw [← ih, ← mean_shift_one' (f := fun n b i k => f n b i (k + (-a - 1)))
-      (by simpa using hf.shift 0 (-a - 1))]
-    congr 1
-    funext n b i k
-    congr 1
-    ring
+  have h : Function.Periodic (fun t : ℤ => mean (fun n b i k => f n b i (k + t))) 1 := by
+    intro t
+    simpa only [add_assoc, add_comm (1 : ℤ) t] using
+      mean_shift_one' (f := fun n b i k => f n b i (k + t)) (by simpa using hf.shift 0 t)
+  simpa using h.int_mul_eq a
 
 theorem mean_shift {f : Fn} (hf : Bd f) (a c : ℤ) :
     mean (fun n b i k => f n b (i + a) (k + c)) = mean f := by

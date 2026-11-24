@@ -46,23 +46,18 @@ theorem sum_pairs (G : Fin k → Fin k → ℝ) :
   · rw [if_neg (not_lt.2 h.ge), if_neg (not_lt.2 h.le), if_pos h, add_zero]
   · rw [if_neg (not_lt.2 h.le), if_pos h, if_neg h.ne', zero_add]
 
+/-- Sum a constant over the ordered pairs of distinct nodes. -/
+theorem sum_off_diagonal (c : ℝ) :
+    (∑ a : Fin k, ∑ b : Fin k, if a = b then 0 else c) = k * (k - 1) * c := by
+  have row (a : Fin k) := sum_ite_card ({a} : Finset (Fin k)) 0 c
+  simp only [Finset.mem_singleton, Finset.card_singleton, Nat.cast_one, mul_zero, zero_add] at row
+  rw [Finset.sum_comm]
+  simp only [row, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, mul_assoc]
+
 theorem sum_pairs_one : ∑ _e : Pr k, (1 : ℝ) = k * (k - 1) / 2 := by
-  have h := sum_pairs (k := k) fun _ _ => 1 / 2
-  have h1 : ∀ e : Pr k, ((1 : ℝ) / 2 + 1 / 2) = 1 := fun _ => by norm_num
-  rw [Finset.sum_congr rfl fun e _ => h1 e] at h
-  rw [h]
-  have h2 : ∀ a : Fin k, ∑ b : Fin k, (if a = b then (0 : ℝ) else 1 / 2) = (k - 1) / 2 := by
-    intro a
-    have h3 : ∀ b : Fin k, (if a = b then (0 : ℝ) else 1 / 2) = 1 / 2 - if a = b then 1 / 2 else 0 := by
-      intro b
-      split_ifs <;> ring
-    simp only [h3]
-    rw [Finset.sum_sub_distrib, Finset.sum_ite_eq, if_pos (Finset.mem_univ _), Finset.sum_const,
-      Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    ring
-  simp only [h2]
-  rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-  ring
+  have h := sum_pairs (k := k) fun _ _ => (1 : ℝ) / 2
+  rw [sum_off_diagonal] at h
+  convert h using 1 <;> norm_num [div_eq_mul_inv]
 
 /-- The numbers of the lower bound. -/
 theorem lower_numbers {k ℓ c N δ S1 S2 S3 lg : ℝ} (hk1 : 1 ≤ k) (hℓ0 : 0 ≤ ℓ) (hc : 0 ≤ c)

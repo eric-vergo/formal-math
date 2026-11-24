@@ -34,11 +34,4 @@ noncomputable def mlExtC (c : F) (f : (ι → Bool) → F) : MvPolynomial ι F :
 
 end Wide
 
-section Proj
-
-variable {F ι α θ : Type} [Field F] [Fintype ι] [DecidableEq ι] [Fintype α] [DecidableEq α] [Fintype θ]
-  [DecidableEq θ] {G : ∀ S, MvPolynomial (Fin S × Fin S) F} {κ : ℕ}
-
-end Proj
-
 end Nc
