@@ -434,15 +434,15 @@ theorem fanLen_nonneg (F : IsFan K w x m z D T n d) (b : Bool) (i : ℤ) : 0 ≤
 theorem fanLen_le (F : IsFan K w x m z D T n d) (hn : 0 < n) (b : Bool) (i : ℤ) : fanLen d z n b i ≤ D + w z m :=
   F.z_γ_le hn b _ (cl_le _ _)
 
-theorem fanLen_step (F : IsFan K w x m z D T n d) (hn : 0 < n) (b : Bool) (i : ℤ) :
-    |(n : ℝ) ^ 2 * (fanLen d z n b (i + 1) - fanLen d z n b i)| ≤ D := by
-  have h1 := F.γ_le hn b (cl (n ^ 2) i) (cl (n ^ 2) (i + 1)) (cl_le _ _) (cl_le _ _)
-  have h2 : |((cl (n ^ 2) i : ℕ) : ℝ) - (cl (n ^ 2) (i + 1) : ℕ)| * D ≤ D := by
-    calc _ ≤ 1 * D := mul_le_mul_of_nonneg_right (cl_succ _ i) (F.D_nonneg hn)
-      _ = D := one_mul D
-  have h3 := F.price.triangle (FanPts.old z) (γ b (cl (n ^ 2) i)) (γ b (cl (n ^ 2) (i + 1)))
-  have h4 := F.price.triangle (FanPts.old z) (γ b (cl (n ^ 2) (i + 1))) (γ b (cl (n ^ 2) i))
-  rw [F.price.symm (γ b (cl (n ^ 2) (i + 1))) (γ b (cl (n ^ 2) i))] at h4
+theorem fanLen_step (F : IsFan K w x m z D T n d) (hn : 0 < n) (b : Bool) (i : ℤ) (S : ℕ) :
+    |(n : ℝ) ^ 2 * (fanLen d z n b (i + S) - fanLen d z n b i)| ≤ S * D := by
+  have h1 := F.γ_le hn b (cl (n ^ 2) i) (cl (n ^ 2) (i + S)) (cl_le _ _) (cl_le _ _)
+  have h2 : |((cl (n ^ 2) i : ℕ) : ℝ) - (cl (n ^ 2) (i + S) : ℕ)| * D ≤ S * D := by
+    apply mul_le_mul_of_nonneg_right _ (F.D_nonneg hn)
+    simpa using cl_sub (n ^ 2) i (i + S)
+  have h3 := F.price.triangle (FanPts.old z) (γ b (cl (n ^ 2) i)) (γ b (cl (n ^ 2) (i + S)))
+  have h4 := F.price.triangle (FanPts.old z) (γ b (cl (n ^ 2) (i + S))) (γ b (cl (n ^ 2) i))
+  rw [F.price.symm (γ b (cl (n ^ 2) (i + S))) (γ b (cl (n ^ 2) i))] at h4
   have h5 : (0 : ℝ) ≤ (n : ℝ) ^ 2 := by positivity
   unfold fanLen
   rw [abs_le]
@@ -561,12 +561,12 @@ theorem fanP_sub_le (hd : ∀ n, IsFan K w x m z D T (max n 1) (d n)) (n : ℕ) 
       (hd n).fanPot_sub_le b P P'
     rwa [max_eq_left hn] at this
 
-theorem fanL_step (hd : ∀ n, IsFan K w x m z D T (max n 1) (d n)) (n : ℕ) (b : Bool) (i : ℤ) :
-    |(n : ℝ) ^ 2 * (fanL d z n b (i + 1) - fanL d z n b i)| ≤ D := by
+theorem fanL_step (hd : ∀ n, IsFan K w x m z D T (max n 1) (d n)) (n : ℕ) (b : Bool) (i : ℤ) (S : ℕ) :
+    |(n : ℝ) ^ 2 * (fanL d z n b (i + S) - fanL d z n b i)| ≤ S * D := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
-  · simpa using fan_D_nonneg hd
-  · have : |((max n 1 : ℕ) : ℝ) ^ 2 * (fanL d z n b (i + 1) - fanL d z n b i)| ≤ D :=
-      (hd n).fanLen_step (max_one_pos n) b i
+  · simpa using mul_nonneg (Nat.cast_nonneg (α := ℝ) S) (fan_D_nonneg hd)
+  · have : |((max n 1 : ℕ) : ℝ) ^ 2 * (fanL d z n b (i + S) - fanL d z n b i)| ≤ S * D :=
+      (hd n).fanLen_step (max_one_pos n) b i S
     rwa [max_eq_left hn] at this
 
 theorem fanL_nonneg (hd : ∀ n, IsFan K w x m z D T (max n 1) (d n)) (n : ℕ) (b : Bool) (i : ℤ) :
@@ -760,26 +760,10 @@ theorem thm_cn_iv_bound (hd : ∀ n, IsFan K w x m z D T (max n 1) (d n)) (n : �
     |(n : ℝ) ^ 2 * (fanL d z n b (i + S) ^ 2 - fanL d z n b i ^ 2)| ≤ 2 * (D + w z m) * (S * D) := by
   have hD0 := fan_D_nonneg hd
   have hB0 := fan_w_nonneg hd z m
-  have hLs : ∀ S : ℕ, |(n : ℝ) ^ 2 * (fanL d z n b (i + S) - fanL d z n b i)| ≤ S * D := by
-    intro S
-    induction S with
-    | zero => simp
-    | succ S ih =>
-      have h1 := fanL_step hd n b (i + S)
-      have e : (n : ℝ) ^ 2 * (fanL d z n b (i + (S + 1 : ℕ)) - fanL d z n b i) =
-          n ^ 2 * (fanL d z n b (i + S + 1) - fanL d z n b (i + S))
-            + n ^ 2 * (fanL d z n b (i + S) - fanL d z n b i) := by
-        push_cast
-        rw [← add_assoc]
-        ring
-      rw [e]
-      refine (abs_add_le _ _).trans ?_
-      push_cast
-      linarith
   have e : (n : ℝ) ^ 2 * (fanL d z n b (i + S) ^ 2 - fanL d z n b i ^ 2) =
       (fanL d z n b (i + S) + fanL d z n b i) * (n ^ 2 * (fanL d z n b (i + S) - fanL d z n b i)) := by ring
   rw [e, abs_mul]
-  apply mul_le_mul _ (hLs S) (abs_nonneg _) (by positivity)
+  apply mul_le_mul _ (fanL_step hd n b i S) (abs_nonneg _) (by positivity)
   rw [abs_of_nonneg (add_nonneg (fanL_nonneg hd n b _) (fanL_nonneg hd n b _))]
   linarith [fanL_le hd n b (i + S), fanL_le hd n b i]
 
