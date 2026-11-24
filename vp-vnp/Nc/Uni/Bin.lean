@@ -116,24 +116,13 @@ theorem cut_unique {u u' : List Bool} {k k' : ℕ}
   have h1 := congrArg List.reverse h
   simp only [List.reverse_append, List.reverse_cons, List.reverse_replicate, List.append_assoc,
     List.singleton_append] at h1
-  have key : ∀ (k k' : ℕ) (a b : List Bool), List.replicate k true ++ false :: a = List.replicate k' true ++ false :: b →
-      k = k' ∧ a = b := by
-    intro k
-    induction k with
-    | zero =>
-      intro k' a b e
-      cases k' with
-      | zero => simpa using e
-      | succ k' => simp [List.replicate_succ] at e
-    | succ k ih =>
-      intro k' a b e
-      cases k' with
-      | zero => simp [List.replicate_succ] at e
-      | succ k' =>
-        simp only [List.replicate_succ, List.cons_append, List.cons.injEq, true_and] at e
-        obtain ⟨h2, h3⟩ := ih k' a b e
-        exact ⟨by rw [h2], h3⟩
-  obtain ⟨h2, h3⟩ := key k k' _ _ h1
-  exact ⟨List.reverse_injective h3, h2⟩
+  have runLength (n : ℕ) (v : List Bool) :
+      ((List.replicate n true ++ false :: v).takeWhile id).length = n := by
+    rw [List.takeWhile_append_of_pos (by simp_all)]
+    simp [List.takeWhile]
+  have hk : k = k' := by
+    simpa only [runLength] using congrArg (fun w => (w.takeWhile id).length) h1
+  subst k'
+  exact ⟨List.append_cancel_right h, rfl⟩
 
 end Nc.Uni
