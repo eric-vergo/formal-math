@@ -27,8 +27,8 @@ number := false
 %%%
 
 This chapter follows Appendix F of the paper (pages 37–41;
-{repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]) and opens the contracting case. It establishes one
-statement that the rest of the proof uses, Theorem F.6: in every price on the group $`U_h` of upper
+{repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]) and opens the contracting case. It leads to the one
+statement that the rest of the proof uses, {bpref "thm_poincare"}[Theorem F.6]: in every price on the group $`U_h` of upper
 unitriangular $`h \times h` matrices over $`\mathbb{F}_2`, the mean squared distance of two random
 elements is at most $`C_0` times the sum, over the $`h-1` generators, of the mean squared distance
 of two neighbours in the Cayley graph, with a constant $`C_0` that does not depend on $`h`. The
@@ -36,11 +36,11 @@ paper, page 37: “Only Theorem F.6 is used later.” In {ref "chapter-laws"}[th
 independence of $`h` allows $`h` to be chosen large against $`C_0`, which is what makes rerouting
 along edges of the Cayley graph gain a constant factor at every stage of a tower.
 
-The hypothesis of the contracting case (Definition D.1, {ref "chapter-dichotomy"}[The two cases])
-enters only through the notion of a contracting length function of Section F.1. From there on the
-argument is metric geometry in complete CAT(0) spaces, for which
-{ref "chapter-curvature"}[Two crossing wires and nonpositive curvature] provides Proposition C.3
-and Lemma C.4. The paper counts this appendix among those whose printed proofs “are meant to be
+The hypothesis of the contracting case ({bpref "def_cases"}[Definition D.1],
+{ref "chapter-dichotomy"}[The two cases]) enters only through the notion of a contracting length
+function of Section F.1. From there on the argument is metric geometry in complete CAT(0) spaces,
+for which {ref "chapter-curvature"}[Two crossing wires and nonpositive curvature] provides
+{bpref "prop_space"}[Proposition C.3] and {bpref "lem_toolkit"}[Lemma C.4]. The paper counts this appendix among those whose printed proofs “are meant to be
 complete, if terse” (page 17). The Lean statements differ from the printed ones in three ways,
 which Section Q.3 (page 68) lists and which are stated at each item below: Lemmas F.1 and F.2 are
 proved under weaker hypotheses; Lemma F.3 is stated for explicit numbers $`\vartheta_n` that are
@@ -203,7 +203,7 @@ power, and passes to $`n` through the quotient map; this is the closed form `kap
 
 The setting of this section (page 39), quoted: “Let $`U_h` act by isometries on a CAT(0) space
 $`Z`, and suppose that for every $`z \in Z` the length function $`g \mapsto |z, gz|` on $`U_h`
-contracts.” In Lean the space is a metric space of the class `Cat.CN` of
+contracts.” In Lean the space is a metric space of the class {bpref "CN"}[`Cat.CN`] of
 {ref "chapter-curvature"}[the chapter on curvature]: a complete metric space in which every two
 points have a midpoint that satisfies the inequality of Bruhat and Tits.
 
@@ -377,8 +377,9 @@ Only Theorem F.6, as the predicate `Paper.PoincareBound K u C₀`: the pair $`(u
 once, and the inequality is then available on $`U_h` for every multiple $`h \ge 2u` of $`u`.
 {ref "chapter-laws"}[Rerouting laws and tree networks] rewrites it as an inequality between a sum
 over all pairs of elements of $`U_h` and a sum over the edges of the Cayley graph, with an integer
-constant $`C_0' \ge 2C_0 + 1`, chooses $`h` in terms of $`C_0'`, and turns the inequality, by the
-duality theorem (Theorem A.6, {ref "chapter-spectral"}[Tensors, spectral points and prices]), into
-identities between tensors. Section F.4 of the paper (page 41) relates the theorem to spectral
+constant $`C_0' \ge 2C_0 + 1` ({bpref "thm_laws_poincare"}[the form over pairs and edges]),
+chooses $`h` in terms of $`C_0'`, and turns the inequality, by the duality theorem
+({bpref "thm_duality"}[Theorem A.6], {ref "chapter-spectral"}[Tensors, spectral points and prices]),
+into identities between tensors ({bpref "thm_laws"}[Theorem G.2]). Section F.4 of the paper (page 41) relates the theorem to spectral
 gaps of walks on unitriangular matrices, to proofs of property (T) and to Poincaré constants for
 nonlinear targets.

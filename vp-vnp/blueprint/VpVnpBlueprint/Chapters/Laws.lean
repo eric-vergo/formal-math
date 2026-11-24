@@ -25,12 +25,14 @@ number := false
 %%%
 
 This chapter follows Appendices G (pages 41–43) and H (pages 43–48) of the paper
-({repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). It establishes two things in the contracting case.
-Theorem G.2 turns the Poincaré inequality of {ref "chapter-poincare"}[the previous chapter] into
+({repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). It has two results, both in the contracting case.
+{bpref "thm_laws"}[Theorem G.2] turns the Poincaré inequality ({bpref "thm_poincare"}[Theorem F.6]
+of {ref "chapter-poincare"}[the previous chapter]) into
 finitely many identities between tensors, the _rerouting laws_: each writes a product of wires
 between arbitrary pairs of elements of $`U_h` as a sum of tensor networks whose wires run along
-edges of the Cayley graph, at a cost that a constant $`C_1` independent of $`h` controls. Theorem
-H.2 applies these laws repeatedly, along a tower of finite groups (Proposition H.1), to an
+edges of the Cayley graph, at a cost that a constant $`C_1` independent of $`h` controls.
+{bpref "thm_tree"}[Theorem H.2] applies these laws repeatedly, along a tower of finite groups
+({bpref "prop_tower"}[Proposition H.1]), to an
 arbitrary tensor network on $`M` nodes, and writes its value as a sum of values of networks whose
 nodes form a tree of small depth in which a node holds fewer packets, by a factor $`M^{\gamma}`,
 than the network holds in all. {ref "chapter-programs"}[Programs, automata and cutting] takes the
@@ -239,9 +241,10 @@ $$`\sum_e \sigma_{x,e}\, |e| \;\le\; \max_{\beta \in \mathcal{B}} \sum_{\text{ed
 
 _Duality._ For a load $`\sigma` let $`\mathsf{W}^\sigma = \prod_e \langle 2 \rangle_e^{\sigma_e}`,
 a tensor on the set of parties $`U_h`. For a spectral point $`\varphi` on $`U_h`,
-$`\varphi(\mathsf{W}^\sigma) = 2^{\sum_e \sigma_e d_\varphi(e)}` by Lemma A.2, and $`d_\varphi` is
-a price. Hence $`\varphi(\mathsf{W}^{\sigma_x}) \le \max_{\beta} \varphi(\mathsf{W}^\beta)`, the
-hypothesis of the duality theorem (Theorem A.6,
+$`\varphi(\mathsf{W}^\sigma) = 2^{\sum_e \sigma_e d_\varphi(e)}` by
+{bpref "lem_exponents"}[Lemma A.2], and $`d_\varphi` is a price. Hence
+$`\varphi(\mathsf{W}^{\sigma_x}) \le \max_{\beta} \varphi(\mathsf{W}^\beta)`, the hypothesis of the
+duality theorem ({bpref "thm_duality"}[Theorem A.6],
 {ref "chapter-spectral"}[Tensors, spectral points and prices]). For every $`\varepsilon > 0` and
 every large $`q` it covers $`\mathsf{W}^{q\sigma_x}` by at most $`2^{\varepsilon q}` tensors
 $`\mathsf{W}^{\beta'}` in which $`\beta'` is a sum of $`q` elements of $`\mathcal{B}`; one $`q`
@@ -259,7 +262,8 @@ factor $`4` in $`C_1 = 4C_0'` is spent. Clause (a): for $`\|n\| \le a_1 t` and $
 vector $`x = n/(a_1 t)` has $`\|x\| \le 1` and $`n \le t\, q\sigma_x`.
 
 _In Lean._ The steps are `Paper.thm_laws_loads` (the inequality between loads),
-`Paper.thm_laws_cover` (duality, giving the cover “as an identity between functions of bits”),
+`Paper.thm_laws_cover` (duality, giving the cover as an identity between functions of bits,
+`BitId`),
 `Paper.thm_laws_over_field` (the laws over `K` for one $`h`), and `Paper.thm_laws_ring` (the
 subring). Section Q.3 (page 70): “The proof of Theorem G.2, for example, uses all loads of bounded
 norm where the text uses the rounded ones”. The theorem depends on Theorem F.6 only through
@@ -640,7 +644,8 @@ and (e), the dead packets are a set of names that are not all stated to be prese
 bound on what a node ever holds may count absent ones. The end packets of relays count as dead,
 and in networks without these packets they would count among the absent ones.”
 
-*Clause (c).* `value`, for every network `tab` on the given nodes with the numbers `n`:
+*Clause (c).* `value`, for all numbers `n` with at most `N` packets at every given node and
+every network `tab` on the given nodes with these numbers:
 $$`\mathtt{netValue\ tab} \;=\; \sum_{o \text{ good}} \; \sum_{w} \; \prod_{p} \mathrm{val}_p(w).`
 Here $`o` runs over the outcomes for which all moves are good, $`w` assigns a content, present or
 absent, to every packet name and is absent outside the
@@ -653,9 +658,12 @@ the node tensors `role` of the moves at $`p`. This is the first sentence of (c),
 used-up packets inside $`\mathrm{val}_p`. Section Q.3 (page 69): “The value of a tree is written
 as a sum, over the contents of named packets, present or absent, of products of the values of its
 nodes, and no theorem restates this as the value of a network as defined in Section H.” To this
-blueprint's reading of `role` and `startTab`, a term of the inner sum in which a current packet is
-absent at a node that holds it vanishes, because both definitions test presence; this was not
-checked beyond reading the two definitions. `kinds`: the law of a move `x` is in the list `laws`
+blueprint's reading, a term of the inner sum in which a packet that exists for `(n, o)` is absent
+in the copy of a node that holds it vanishes: `startTab` is $`0` unless every given packet at the
+node is present, and `role` requires, through `Nc.G.ChOk` and `Nc.unitsOf`, that the node's copies
+of the packets `new ν k` on its channels are exactly the $`o_\nu + 1` packets of the string, all
+present, and is $`0` unless the packets given at its slots are present. This is read from these
+four definitions; no theorem of the development states it. `kinds`: the law of a move `x` is in the list `laws`
 if `isLaw x`, and is the law `relay` otherwise. `law_stage`: the nodes of a law move have positive
 stage; with `stage_given` this is “At stage $`0` these are tests only”. `layers_le`: for every
 node $`p`, the numbers `num` of the law moves in which $`p` has a role add up to at most the
@@ -821,7 +829,9 @@ Given the numbers `N mv` of the moves before time $`\tau`, `alvN` is the number 
 of a channel: for a relay with the number $`t`, $`t` if the outcome is $`t` and $`0` otherwise;
 for a law move, the outcome $`o_\nu` if the outcome is good for $`t` and $`\min(o_\nu, t)`
 otherwise. (So of the $`o_\nu + 1` packets of a channel the last is never alive: it is the end
-packet.) `ld N τ` is the number of alive packets with the target `τ`, the _load_. From the loads,
+packet.) The given packets are all alive if every given node has at most `N` packets to and from
+other nodes (`Nc.Tow.Valid`), and none of them is alive otherwise. `ld N τ` is the number of alive
+packets with the target `τ`, the _load_. From the loads,
 `numF` gives the number of a move at time $`\tau`: for a relay, the load of its input target if
 the relay is active, and $`0` otherwise, where `inn j i e` is active if $`i` is the first type
 with the least sum of squares of loads at stage $`j` (`IsMin`), and `mid j e 0` if the type of
@@ -988,8 +998,8 @@ functions that define the tower plan, and the fields `between_le`, `up_node`, `u
 
 {ref "chapter-programs"}[Programs, automata and cutting] keeps the ring $`A` and the laws as the
 standing hypothesis {bpref "exists_laws"}[`VLaws`] and applies {bpref "thm_tree"}[Theorem H.2]
-to the networks that Lemma I.2 attaches to a tape automaton. Proposition J.2 uses the tree to cut
-a computation into pieces, and its last claim, the paper says (page 52), “rests on Theorem H.2(d)
+to the networks that {bpref "lem_runnet"}[Lemma I.2] attaches to a tape automaton.
+{bpref "prop_pieces"}[Proposition J.2] uses the tree to cut a computation into pieces, and its last claim, the paper says (page 52), “rests on Theorem H.2(d)
 and (e), whose printed proofs only describe the program in question”. The Lean file of that
 proposition, {repoFile "vp-vnp/Paper/Pieces.lean"}[`Paper/Pieces.lean`], refers to the fields of
 `ThinTrees` by name, among them `value`, the tree of clause (a), `edge`, `node_le`, `up_node`,

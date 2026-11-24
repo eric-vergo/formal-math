@@ -6,6 +6,7 @@ Authors: Eric Vergo, Claude (Anthropic)
 import VersoManual
 import VersoBlueprint
 import VpVnpBlueprint.Generated.Part
+import VpVnpBlueprint.Chapters.Laws
 import Paper.Universal
 import Paper.UniversalSteps
 import Paper.Runnet
@@ -30,15 +31,17 @@ number := false
 This chapter follows Appendices I (pages 48–51) and J (pages 51–55) of the paper
 ({repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). It fixes the model of computation of the contracting
 case, a weighted nondeterministic program on binary trees whose *sum* over accepting runs is an
-element of the ring $`A` of {ref "chapter-laws"}[Rerouting laws and tree networks], and it proves the
-one statement that the diagonal argument of
-{ref "chapter-accelerators"}[Accelerators and the diagonal argument] takes from the geometry:
-a sum over runs of $`\tau` steps is a sum, over the runs of a fast program, of products of sums over
-runs of $`v^H` steps on short inputs (Theorem J.4). The route is: a program is simulated by a
-tape automaton with quasi-linear loss (Proposition I.1); a run of a tape automaton cut into time
-blocks is a tensor network (Lemma I.2); the tree decomposition of the previous chapter cuts the
-network into pieces (Proposition J.2); a program writes the pieces down as instances again
-(Theorem J.3); and the cut is repeated (Theorem J.4).
+element of the ring $`A` of {bpref "thm_laws"}[Theorem G.2]
+({ref "chapter-laws"}[Rerouting laws and tree networks]), and it leads to the one statement that
+the diagonal argument of {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
+takes from the geometry: a sum over runs of $`\tau` steps is a sum, over the runs of a fast
+program, of products of sums over runs of $`v^H` steps on short inputs
+({bpref "thm_cut"}[Theorem J.4]). The route is: a program is simulated by a tape automaton with
+quasi-linear loss ({bpref "prop_universal"}[Proposition I.1]); a run of a tape automaton cut into
+time blocks is a tensor network ({bpref "lem_runnet"}[Lemma I.2]); the tree decomposition of the
+previous chapter ({bpref "thm_tree"}[Theorem H.2]) cuts the network into pieces
+({bpref "prop_pieces"}[Proposition J.2]); a program writes the pieces down as instances again
+({bpref "thm_onecut"}[Theorem J.3]); and the cut is repeated (Theorem J.4).
 
 The paper says (page 17): “The proofs of Proposition I.1, Theorem H.2(d), (e), Theorem J.3 and
 Proposition N.4 describe machines and programs and account for their sizes and running times. That
@@ -111,15 +114,16 @@ order. Its eleven rules are the eleven constructs. Three points of the rules mat
   yields; the rule for `ite` requires `Ev` of the branch chosen by each accepting run of the
   condition; the rule for `run` requires `Ev` of the program `Fm.ofTree r.out` on `s.out` for every
   pair of accepting runs `r`, `s` of its two parts. A program with a run that does not halt has no
-  list at all. This is the paper's inductive definition, and it is why a statement such as
-  “all runs halt on every short instance, plain or not” (Definitions J.1 and K.1) has content.
+  list at all. This is the paper's inductive definition, and it is why the requirement that all
+  runs halt on every short instance, plain or not (Definitions J.1 and K.1), has content.
 - Weights and names. `theta a` multiplies the weight by `θ w`, where `w` is the output of `a` read
   as a list of bits (`Tree.path`) and `θ : List Bool → A` is the table of named generators;
   `mul a` appends that list of bits to the tally and changes no weight. Nothing in the semantics
   refers to a ring of constants beyond $`A`: what a name in the tally stands for is decided by
   whoever evaluates the run (Definition K.1).
 
-`Hl θ F x` is “some list exists”, and `evl θ F x` is that list (the empty list if there is none);
+`Hl θ F x` says that such a list exists, and `evl θ F x` is that list (the empty list if there is
+none);
 the list is unique (`NS1.Ev.unique`).
 :::
 
@@ -218,8 +222,9 @@ $`27(2C + 2)`. The content is in four layers, each with its own Lean objects.
    runs from a state. `Mach.GV` is the weaker, global condition that a sequence of steps threads
    modes, registers, fresh addresses and the input correctly and that every loaded record occurs
    *somewhere* in the initial heap or among the records allocated by the sequence, earlier or
-   later. `Nc.Uni.Mach.gv_iff` proves that for a heap that is closed (all addresses at most the
-   last one, every address present, registers in range) the two conditions agree. This is the
+   later. `Nc.Uni.Mach.gv_iff` proves that for a state that is closed (`Mach.Closed`: the address
+   and the fields of every record and the contents of the registers are at most the last address,
+   and every address up to the last one occurs) the two conditions agree. This is the
    paper's sentence “By induction on time all addresses in registers are below the free one, so a
    load refers to the only allocation at its address, which is earlier.”
 2. *The universal machine* (`Nc.Uni.UM`, files `Nc/Uni/Rules.lean`, `EvalU.lean`, `EvThm*.lean`,
@@ -240,10 +245,10 @@ $`27(2C + 2)`. The content is in four layers, each with its own Lean objects.
    (`Nc.IsRuns`). `Nc.Uni.mt_X` characterises the structured runs whose two sides agree on every
    tape, and `Paper.prop_universal_automaton` (below) concludes that the value of the program is
    the sum of the weights of the sequences satisfying `Mach.GV`, with a bound on the total length
-   of what is written. The sorting argument is `Nc/Sort/Radix.lean`: after one stable pass for
-   every letter of the key, records with equal keys are neighbours in their original order, so
-   “every lookup has the key of an earlier entry of the table” is equivalent to a test of
-   neighbours.
+   of what is written. The sorting argument is `Nc/Sort/Radix.lean`. Its theorem
+   `Nc.Sort.chk_table` states: for a list of table entries followed by a list of lookups, after
+   one pass for every letter of the key the test that every lookup has the same key as the record
+   before it (`chk`) succeeds if and only if the key of every lookup is the key of a table entry.
 4. *From a series to an automaton* (`Nc.exists_run_val`, file `Nc/Tape/ProgRun.lean`). A series of
    dimension at most $`n` is the value of a tape automaton with at most $`n + 3` states that emits
    the letters of the program and then idles: if all contributing tape contents have total length
@@ -251,8 +256,9 @@ $`27(2C + 2)`. The content is in four layers, each with its own Lean objects.
    value of the series.
 
 *What was read.* The statements named above, the definitions of `Mach`, `State`, `Fire`, `Seq`,
-`GV`, `Closed`, `RatLe`, `IsRuns`, `Nc.val`, `Nc.Bdd`, and the proofs of `Paper.prop_universal` and
-`Paper.prop_universal_series`. Not read: the rules of the universal machine one by one, the proofs
+`GV`, `Closed`, `RatLe`, `IsRuns`, `Nc.val`, `Nc.Bdd`, the statement of `Nc.Sort.chk_table`, and
+the proofs of `Paper.prop_universal`, `Paper.prop_universal_series` and
+`Paper.prop_universal_automaton`. Not read: the rules of the universal machine one by one, the proofs
 of `evOK` and `gv_iff`, the specification of the sorting loop (`Nc/Uni/SortU.lean`, `SpecU.lean`,
 `SpecU2.lean`, `CmpU.lean`), and the proof of `mt_X`. Section Q.3 (page 70) lists “the sorting pass,
 the tape encoding and the time count of Proposition I.1” among the steps that “exist only under
@@ -458,10 +464,14 @@ with $`h \geq 3` and the condition (G.1), $`1 + 8C_1 \leq h/4`, over any commuta
   `g : Fin num` of their values `grpVal … g b`. The number of pieces is bounded by the field
   `num_le`: $`\mathtt{num} \leq k (\lg v)^C`.
 - Second clause: the fields `blocks_le` (the number of blocks and parts in a piece, times $`k`, is
-  at most $`CK`), `cut_le` (the number of cut packets at a piece, times `ub`, times $`v^{300}`, is
-  at most $`KT(\lg v)^C`) and `all_le` (a count `evG + pdG` of all packets of a piece, times `ub`,
-  times $`k`, is at most $`KT(\lg v)^C`). All three are stated for numbers within `load` and good
-  outcomes.
+  at most $`CK`), `cut_le` and `all_le`. In `cut_le` the number of packets that are current after
+  the last move and have exactly one of their two holders in the piece (`Nc.Plus.OneIn`), times
+  `ub`, times $`v^{300}`, is at most $`KT(\lg v)^C`. In `all_le` the sum `evG + pdG`, times `ub`,
+  times $`k`, is at most $`KT(\lg v)^C`, where `Nc.Dl.evG` adds, over the nodes of the piece, the
+  number of packets that exist for the given numbers and outcomes and are held by the node
+  (copies, used up or not), and `Nc.Dl.pdG` adds, over the roles that the moves give to nodes of
+  the piece, the number $`t` of the move times one plus the number of slots of its law at the
+  role. All three are stated for numbers within `load` and good outcomes.
 - Third clause: the fields `tab`, `tab_valid`, `digits` and `steps_le`. The field `tab` is a
   straight-line program with `steps` steps on numbers below `D` that computes the plan and the
   pieces; `steps_le` bounds `D`, `steps`, the number of nodes, of moves and the bounds `U0`, `U1`
@@ -489,14 +499,18 @@ over the contents of named packets, present or absent, of products of the values
 no theorem restates this as the value of a network as defined in Section H.” The same holds for the
 value `grpVal` of a piece.
 
-The fields were read as listed. The definitions behind them (`G.Plan`, `Sys`, `SlpTab`, `grpVal`,
-`evG`, `pdG`) were not opened beyond their statements, so the glosses “number of cut packets” and
-“all packets of a piece” for the left sides of `cut_le` and `all_le` follow the names and the
-paper's sentence, not a reading of those definitions.
+The fields were read as listed, and so were the definitions `Nc.Plus.OneIn`, `Nc.cutUnits`,
+`Nc.Dl.evG`, `Nc.Dl.pdG`, `Nc.groupVal` and `Nc.G.grpVal` on which the glosses of `cut_le`,
+`all_le` and `value` rest; `G.Plan` and `Sys` are read in
+{bpref "law_move"}[the definition of a move]. The structure `SlpTab` of the field `tab` was read
+only as far as its first fields (the steps `IsSlpStep` and the functions that say which packets
+are current and which are cut).
 
 `Paper.prop_pieces_identity` is the step that regroups one network of Lemma I.2, through the tree
-decomposition `ThinTrees` of Theorem H.2, into the sum over good outcomes and contents of cut
-packets of products of values of pieces, for an arbitrary assignment `grp` of nodes to pieces.
+decomposition {bpref "thin_trees"}[`ThinTrees`] of {bpref "thm_tree"}[Theorem H.2], into the sum
+over good outcomes and contents of cut packets of products of values of pieces, for an arbitrary
+assignment `grp` of nodes to pieces. Its proof uses the field `value` of `ThinTrees` and the
+regrouping identity `Nc.posVal_groups`.
 :::
 
 :::proof "prop_pieces"
@@ -608,11 +622,14 @@ statement. The two programs live in two libraries.
   of the scripts.
 
 *What was read.* The statement and the first part of the proof of `Paper.thm_onecut`, the
-statements of the two nodes below, the definition of `GroupOK`, and the module headers of `Nc/Grp`,
-`Nc/Dl` and `Nc/Cut`. Not read: the programs themselves and the proofs about them (about 11,700
-lines in `Nc/Grp` and `Nc/Dl`). The description of the internal structure of `GROUP` and of the
-dealing program above is taken from the organisation of the files and their names, and is the
-least checked passage of this chapter. Section Q.3 (page 70) names “the semantics of scripts inside
+statements of the two nodes below and of `Nc.Grp.exists_group`, the definitions of `GroupOK`,
+`GrpTimeOK` and `grpT`, and the module headers of `Nc/Grp`, `Nc/Dl` and `Nc/Cut`. Not read: the
+programs themselves and the proofs about them (about 11,700 lines in `Nc/Grp` and `Nc/Dl`). What
+is said above about the three clauses of `GroupOK` is a reading of that definition. What is said
+about the internal structure of `GROUP` and of the dealing program (the last sentence of the
+first item, and the first sentence of the second) is taken from the names of the files and from
+their header comments, which the paper calls informal (Section Q.3, page 70); it was not checked
+against the definitions of the programs and is the least checked passage of this chapter. Section Q.3 (page 70) names “the semantics of scripts inside
 the evaluator” among the steps that exist only under names of the underlying library.
 :::
 
@@ -680,7 +697,7 @@ compose”. All the powers of $`\Lambda` that arise are below $`v` if $`C_{\math
 `NS1.compC` (`NS1/Compose.lean`): run `G`, then fold over the list of pieces, running `G'` on each
 and appending the results; that the sum formulas compose is `NS1.wsum_foldW_pvs` and the theorems
 after it. The induction on the numbers of steps, sizes and pieces is `NS1/OneCut.lean`, which takes
-“one cut by any factor $`k \leq v^{64}`” as a hypothesis. `Paper.thm_cut` takes $`H = 16h` with
+one cut by any factor $`k \leq v^{64}` as a hypothesis (`NS1.OneCutAt`). `Paper.thm_cut` takes $`H = 16h` with
 $`h = a_0 + 217`. The statements of `compC` and of `thm_cut` were read; the induction of
 `NS1/OneCut.lean` was not.
 :::
@@ -692,9 +709,11 @@ needs.”
 # What the next chapter takes from this one
 
 {ref "chapter-accelerators"}[Accelerators and the diagonal argument] uses of Appendices F to J
-exactly the property `NS1.CutHyp θ (16 * h) C₀ v₀` with $`h \geq 17`, for a commutative ring $`A`
-with a table `θ` of named elements, together with the program model of Section I.1 and, in
-Lemma K.3, the universal automaton of Proposition I.1. Section Q.3 (page 69): “Proposition K.5,
+the property `NS1.CutHyp θ (16 * h) C₀ v₀` with $`h \geq 17` ({bpref "thm_cut"}[Theorem J.4]), for
+a commutative ring $`A` with a table `θ` of named elements, together with the program model of
+Section I.1, in {bpref "lem_circuit"}[Lemma K.3] the universal automaton of
+{bpref "prop_universal"}[Proposition I.1], and in {bpref "thm_noacc"}[Theorem K.6] that $`A` is
+finitely generated as a ring. Section Q.3 (page 69): “Proposition K.5,
 Theorem K.6 and Proposition N.4 do not assume the contracting case. They take the conclusion of
 Theorem J.4 as a hypothesis (`CutHyp`), for a commutative ring $`A`, which has to be finitely
 generated only in Theorem K.6 and Proposition N.4, and $`H = 16h` with $`h \geq 17`”. The geometry

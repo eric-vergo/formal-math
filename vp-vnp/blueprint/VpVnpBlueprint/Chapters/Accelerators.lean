@@ -7,6 +7,7 @@ import VersoManual
 import VersoBlueprint
 import VpVnpBlueprint.Generated.Part
 import VpVnpBlueprint.Chapters.Programs
+import VpVnpBlueprint.Chapters.Completeness
 import Paper.Scales
 import Paper.ApproxScales
 
@@ -26,22 +27,24 @@ number := false
 %%%
 
 This chapter follows Appendix K (pages 55–59) and Section N.3 (pages 63–64) of the paper
-({repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). It proves the lower bound of the contracting case
-(Theorem K.7): a circuit of size $`2^{c(\log m)^2/\log\log m}` for $`\mathrm{PERM}_m`, or for any
-family that is complete for grid sums, would give a program, an *accelerator*, that evaluates the
-sums over runs of all short plain instances of $`v^H` steps in $`v^{H-16}` steps (Lemma K.3), and
-no such program of moderate size exists (Theorem K.6). The second statement is a diagonal argument
-whose only input from the rest of the proof is the cutting theorem of
-{ref "chapter-programs"}[Programs, automata and cutting], in the form `NS1.CutHyp`. Section N.3
-repeats the argument for programs that are correct up to multiples of $`\varepsilon`
-(Proposition N.4), which is what approximating circuits give.
+({repoFile "vp-vnp/paper.pdf"}[`paper.pdf`]). Its subject is the lower bound of the contracting
+case ({bpref "thm_contracting"}[Theorem K.7]): a circuit of size
+$`2^{c(\log m)^2/\log\log m}` for $`\mathrm{PERM}_m`, or for any family that is complete for grid
+sums, would give a program, an *accelerator*, that evaluates the sums over runs of all short plain
+instances of $`v^H` steps in $`v^{H-16}` steps ({bpref "lem_circuit"}[Lemma K.3]), and no such
+program of moderate size exists ({bpref "thm_noacc"}[Theorem K.6]). The second statement is a
+diagonal argument. It takes two things from the rest of the proof: the cutting theorem
+({bpref "thm_cut"}[Theorem J.4] of {ref "chapter-programs"}[Programs, automata and cutting]), in
+the form `NS1.CutHyp`, and that the ring $`A` is finitely generated. Section N.3 repeats the
+argument for programs that are correct up to multiples of $`\varepsilon`
+({bpref "prop_approx_acc"}[Proposition N.4]), which is what approximating circuits give.
 
 The paper lists Proposition N.4 among the four statements whose printed proofs “describe machines
 and programs and account for their sizes and running times” and can be verified “only in the Lean
 development” (page 17). Of the other statements of this chapter it claims neither that the printed
-proofs are complete nor that they are not (its list of proofs “meant to be complete, if terse”,
-page 17, ends with Section G and the deduction of Theorem L.1); several of them are stated “to the
-level of exponents”. The Lean statements beside the nodes are what is proved. Paragraphs marked
+proofs are complete nor that they are not: its list of proofs “meant to be complete, if terse”
+(page 17) is Sections A to G, Appendix O and the deduction of Theorem L.1. The Lean statements
+beside the nodes are what is proved. Paragraphs marked
 *Reading (gloss)* describe the Lean objects and proofs; *they are this blueprint's readings, and no
 tool has checked them against the Lean code.*
 
@@ -53,68 +56,99 @@ and put $`h_0 = H/16`.”
 
 # The shape of the argument
 
-*Reading (gloss).* The following is this blueprint's outline of the diagonalization, with the
-places where each step is proved. It is meant to answer, for a reader who knows indirect
-diagonalization, who diagonalizes against whom and why the resource accounting closes.
+*Reading (gloss).* This section is this blueprint's outline of the diagonalization, written for a
+reader who knows indirect diagonalization and wants to see who diagonalizes against whom, with
+what resources, and why the accounting closes. Each step names the Lean statement that carries
+it. The outline is a reading of those statements and of the proofs of `Paper.thm_noacc` and
+`Paper.thm_noacc_diagonal`, which were read in full; no tool has checked the outline.
 
-- *The quantity.* For a tree $`z`, read as (program, argument), $`\mathrm{sum}(z) \in A` is the sum
-  of the weights of the accepting runs: a weighted count of accepting computations, with weights
-  that are products of finitely many named elements of $`A`. The instance is $`\tau`-plain if all
-  runs halt, and the accepting ones within $`\tau` steps and without naming constants.
-- *The adversary.* An accelerator at scale $`v` is a pair of a program $`D` and a trie of constants
-  $`\xi_1, \xi_2, \ldots` from an arbitrary commutative $`A`-algebra $`R`. On every short instance
-  ($`|z| \leq v^{H-32}`) all its runs halt within $`v^{H-16}` steps; on short instances that are
-  $`v^H`-plain its value is $`\mathrm{sum}(z)`. The constants are non-uniform advice of an unusual
-  kind: the program never computes with them. A run only records, in its tally, which powers
-  $`\xi_l^{2^i}` it wants as factors, and the value of $`D` is defined from outside as the sum over
-  accepting runs of the weight times these factors. So the advice may be arbitrary ring elements,
-  and the size of the advice is the number of constants, not their bit length.
-- *The diagonal program.* $`\mathsf{P}`, on an argument $`x`, guesses a bit; on one branch it
-  accepts with weight 1, on the other it applies $`D` to an instance that stands for “$`x` on
-  $`x`”. Run on its own code, its value $`V` satisfies $`V = 1 + V`.
+*In brief.* The object diagonalized against is not a circuit but an accelerator: one program
+$`D` with a table of constants that, at one scale $`v`, has the sums of all short instances of
+$`v^H` steps as its values within $`v^{H-16}` steps. The diagonalizing machine is a program
+$`\mathsf{P}` of the same model that contains $`D` and is run on its own code; its value $`V` is
+$`1` plus what $`D` reports about $`\mathsf{P}` on $`\mathsf{P}`, so that $`V = 1 + V` in a nonzero
+ring. The resources are the four exponents of Table 2: time $`v^H` for the computations that are
+summed, time $`v^{H-16}` for $`D`, inputs of size $`v^{H-32}`, and one more factor $`v` for
+$`\mathsf{P}`. Three things stand in the way, and each has its own lemma: $`\mathsf{P}` names
+constants, and $`D` is correct only on instances that name none (Lemma K.4); naming the constants
+of Lemma K.4 needs powers that $`D` may not name (reduction to a finite field); and the $`D` that
+a circuit gives is larger than its own inputs (Proposition K.5, which rests on the cutting
+theorem). The steps:
+
+- *The quantity* (`NS1.pv`, `NS1.Plain`; {bpref "def_plain"}[the definition in Section I.1]). For a
+  tree $`z`, read as (program, argument), $`\mathrm{sum}(z) \in A` is the sum of the weights of the
+  accepting runs: a weighted count of accepting computations, with weights that are products of
+  finitely many named elements of $`A`. The instance is $`\tau`-plain if all runs halt, and the
+  accepting ones within $`\tau` steps and without naming constants.
+- *The adversary* (`NS1.IsAccT`, `NS1.HasAcc`; {bpref "def_acc"}[Definition K.1]). An accelerator at
+  scale $`v` is a program $`D` with a trie of constants $`\xi_1, \xi_2, \ldots` from an arbitrary
+  commutative $`A`-algebra $`R`. On every short instance ($`|z| \leq v^{H-32}`) all its runs halt,
+  the accepting ones within $`v^{H-16}` steps; on short instances that are $`v^H`-plain its value
+  is $`\mathrm{sum}(z)`. The constants are non-uniform advice with which the program never
+  computes. A run only records, in its tally, which powers $`\xi_l^{2^i}` it wants as factors, and
+  the value of $`D` is defined from outside as the sum over accepting runs of the weight times
+  these factors (`NS1.val`). So the advice may consist of arbitrary ring elements, and its size is
+  the number of nodes of the trie, not a bit length.
+- *The diagonal program* (`NS1.diagF`, `NS1.diagF_ev`). $`\mathsf{P}`, on an argument $`x`, guesses
+  a bit. On one branch it accepts with weight 1. On the other it guesses an exponent vector $`e`,
+  names the product $`\lambda^e` of constants, and applies $`D` to the instance $`z_e` of the next
+  step for “$`x` on $`x`”. `diagF_ev` states: if $`D` halts on all these instances, then
+  all runs of $`\mathsf{P}` on $`x` halt and the value of $`\mathsf{P}` on $`x` is
+  $`1 + \sum_e \lambda^e \cdot (\text{value of } D \text{ on } z_e)`. The diagonal is
+  $`x = \mathsf{P}`.
 - *First obstacle: the instance “$`\mathsf{P}` on $`\mathsf{P}`” is not plain,* because
   $`\mathsf{P}` contains $`D`, whose runs name constants, and $`D` is only correct on plain
-  instances. Lemma K.4 (postponing) removes the names: the value of any program $`p` on an argument
-  is $`\sum_e \lambda^e \,\mathrm{sum}(z_e)`, a sum over exponent vectors $`e` with one entry below
-  $`2^J` for each named power, where $`z_e` is a plain instance that runs $`p` under an interpreter
-  with counters and accepts exactly the runs whose tally is $`e`. The sum over $`e` has
-  exponentially many terms, but a nondeterministic program produces it by guessing $`e` and naming
-  $`\lambda^e`, at the cost of writing $`e` down.
+  instances. {bpref "lem_postpone"}[Lemma K.4] (`Paper.lem_postpone`) removes the names: the value
+  of any program $`p` on an argument is $`\sum_e \lambda^e \,\mathrm{sum}(z_e)`, a sum over exponent
+  vectors $`e` with one entry below $`2^J` for each named power, where $`z_e` is a plain instance
+  that runs $`p` under an interpreter with counters and accepts exactly the runs whose tally is
+  $`e`. The sum over $`e` has exponentially many terms, but a nondeterministic program produces it
+  by guessing $`e` and naming $`\lambda^e`, at the cost of writing $`e` down.
 - *Second obstacle: naming $`\lambda^e` needs higher powers.* If the tally of $`p` uses the powers
   $`\xi_l^{2^i}`, $`i < B`, then $`\lambda^e` is a product of powers $`\xi_l^{2^{i+j}}` with
   $`j < J`: the exponent bound grows from $`B` to $`B + J`. For a program that is to be fed to
-  itself the set of names must be closed under this. Over a finite ring it is:
-  $`c^{2^j} = c^{2^{r(j)}}` for some $`r(j)` below a bound $`m_E` that depends only on the ring.
-  Hence the reduction of the constants modulo a maximal ideal of the ring they generate, a finite
-  field because $`A` is finitely generated. This is the only use of finite generation of $`A`.
-- *Third obstacle: sizes.* The accelerator that a circuit with $`v^a` gates gives has size
-  $`v^{C(a+1)}`, more than the length $`v^{H-32}` of the inputs on which it is correct. In the
-  paper's words (page 55): “A circuit for $`\mathrm{PERM}_m` with $`m^C` gates is advice that is
-  longer than the running times at its own scale, so we cannot diagonalize against it there.”
-  Proposition K.5 carries the two properties to the scale $`v' = v^\alpha` *with the same
+  itself the set of names must be closed under this. Over a finite ring it is
+  (`Paper.thm_noacc_periodic`): $`c^{2^j} = c^{2^{r(j)}}` for some $`r(j)` below a bound $`m_E`
+  that depends only on the ring. Hence the reduction of the constants modulo a maximal ideal of
+  the ring they generate over $`A`, which gives a finite field because $`A` is finitely generated
+  as a ring (`Paper.thm_noacc_finite_field`). This is the only place where the proof of
+  Theorem K.6 uses that hypothesis.
+- *Third obstacle: sizes.* The accelerator that a circuit with $`v^a` gates gives
+  (`Paper.lem_circuit`) has size $`v^{C(a+1)}`, in general more than the size $`v^{H-32}` of the
+  inputs on which it is correct. In the paper's words (page 55): “A circuit for
+  $`\mathrm{PERM}_m` with $`m^C` gates is advice that is longer than the running times at its own
+  scale, so we cannot diagonalize against it there.” {bpref "prop_next"}[Proposition K.5]
+  (`Paper.prop_next`) carries the two properties to the scale $`v' = v^\alpha` *with the same
   constants*: the universal program is sped up in rounds, each of which postpones the constants,
   cuts the resulting plain instance into pieces of $`v^H` steps by Theorem J.4 and runs $`D` on the
   pieces. At the scale $`v'` the program has size at most $`v'^{4h_0} = v'^{H/4}` and the trie is
-  unchanged, so both fit into a short instance of that scale.
+  unchanged. Repeating the step (`Paper.thm_noacc_all_scales`) gives arbitrarily large scales $`u`
+  at which the trie has at most $`u` nodes and the program size at most $`u^{4h}`
+  (`Paper.AllScales`), so that $`\mathsf{P}` and an exponent vector fit into a short instance.
 - *The accounting at the diagonal* (`Paper.thm_noacc_diagonal`). At a scale $`v` with
   $`|D| \leq v^{4h}`, at most $`v` nodes in the trie, and all logarithmic quantities (height of the
   trie, exponent bound, $`m_E`, $`J` with $`2^J > v^{H-15}`) bounded by $`X` with
   $`1000X^3 \leq v`: the program $`\mathsf{P}` has size at most $`v^{4h+1}`; every instance $`z_e`
-  for $`\mathsf{P}` on $`\mathsf{P}` has size at most $`v^{H-32}`, so $`D` halts on it within
-  $`v^{H-16}` steps whether or not it is plain; hence all runs of $`\mathsf{P}` on $`\mathsf{P}`
-  halt, the accepting ones within $`v^{H-15}` steps; hence, by Lemma K.4 with $`T = v^{H-15}`, every
-  $`z_e` is plain within $`v \cdot v^{H-15} \leq v^H` steps; hence $`D` is correct on every
-  $`z_e`. The four exponents $`H - 32 < H - 16 < H - 15 < H` are the whole budget.
+  for $`\mathsf{P}` on $`\mathsf{P}` has size at most $`v^{H-32}`, so all runs of $`D` on it halt,
+  the accepting ones within $`v^{H-16}` steps, whether or not it is plain; hence all runs of
+  $`\mathsf{P}` on $`\mathsf{P}` halt, the accepting ones within $`v^{H-15}` steps; hence, by
+  Lemma K.4 with $`T = v^{H-15}`, every $`z_e` is plain within $`v \cdot v^{H-15} \leq v^H` steps;
+  hence $`D` is correct on every $`z_e`. So the value $`V` of $`\mathsf{P}` on $`\mathsf{P}` is
+  $`\sum_e \lambda^e\,\mathrm{sum}(z_e)` by Lemma K.4 and
+  $`1 + \sum_e \lambda^e\,\mathrm{sum}(z_e)` by `diagF_ev` and the correctness of $`D`. The four
+  exponents $`H - 32 < H - 16 < H - 15 < H` are the whole budget.
 - *Why the construction is not circular.* That $`z_e` is plain presupposes that $`\mathsf{P}`
   halts on $`\mathsf{P}`, which presupposes that $`D` halts on $`z_e`. The definition of an
-  accelerator therefore demands halting within the time bound on *every* short instance, and
-  correctness only on plain ones; the cutting programs of Definition J.1 are total for the same
-  reason.
-- *From the diagonal to circuits.* With $`v \approx m^{1/B_0}` and a circuit of size $`v^a`, the
+  accelerator therefore demands halting, with the time bound for accepting runs, on *every* short
+  instance (the field `run` of `IsAccT`), and correctness only on plain ones (the field `val`);
+  the cutting programs of {bpref "def_cut"}[Definition J.1] are total for the same reason.
+- *From the diagonal to circuits* (`Paper.exists_scale`, `Paper.contracting_complete`,
+  `Paper.quasi_of_exponents`). With $`v \approx m^{1/B_0}` and a circuit of size $`v^a`, the
   argument needs $`(\lg v)^{C(a+1)} \leq v`, that is $`a = O(\log m/\log\log m)`, which gives the
-  bound $`2^{c(\log m)^2/\log\log m}` (Theorem K.7). The circuit is opened once, in Lemma K.2,
-  which evaluates the part of degree at most $`d` of the polynomial of a circuit with $`L` gates at
-  a 0/1 point in about $`d \cdot \mathrm{polylog}(L)` steps by guessing a parse tree and naming one
+  bound $`2^{c(\log m)^2/\log\log m}` ({bpref "thm_contracting"}[Theorem K.7]). The circuit is
+  opened once, in {bpref "lem_lowdeg"}[Lemma K.2], which evaluates the part of degree at most $`d`
+  of the polynomial of a circuit with $`L` gates at the indicator assignment of the word of $`z`
+  in about $`(d + |z|)\,\mathrm{polylog}(L)` steps by guessing a parse tree and naming one
   constant for each of its nodes.
 
 The paper's own remark on the argument (page 59): “This is an indirect diagonalization in the
@@ -230,7 +264,8 @@ $`R` with at most $`v^a` gates, then $`R` has an accelerator of size $`v^{C(a+1)
 
 Section Q.3 (page 68): “Lemma K.3 is proved for every family that is complete for grid sums
 (Appendix M) and for every $`H \geq 32`.” `Paper.lem_circuit` is that general form, for a family
-`G` with `Nc.GridComplete F G κ` (see {ref "chapter-completeness"}[Completeness gadgets]);
+`G` with `Nc.GridComplete F G κ` ({bpref "GridComplete"}[the definition] in
+{ref "chapter-completeness"}[Completeness gadgets]);
 `Paper.lem_circuit_perm` is the printed statement, the instance $`\kappa = 3` for the permanent.
 Both need only that `θ` has finite support, through Proposition I.1, and no cutting hypothesis. In
 the Lean proof $`B_0 = 9(H + 2) + 1` and $`C = H + 35`.
@@ -355,7 +390,7 @@ uses up } e\,]\,\lambda^e` is `NS1.sum_budg`, and `NS1.bill_le` gives that a run
 constant a step. The statements were read; the interpreter was not.
 :::
 
-:::proposition "prop_next" (lean := "Paper.prop_next, Paper.scales_setting") (parent := "part-contracting")
+:::proposition "prop_next" (lean := "Paper.prop_next") (parent := "part-contracting")
 *Proposition K.5 of the paper* (transfer to the next scale; pages 57–58), quoted: “Let $`v` be
 large, let $`\alpha \geq 5` be an integer, and suppose that $`(\lg v)^{C\alpha} \leq v`, where $`C`
 is a suitable constant that depends on the fixed power below. Let $`D` be a program with the two
@@ -391,7 +426,7 @@ on $`z`, cuts it to scale $`v` by the program of Theorem J.4, with $`2\alpha` fo
 runs $`D` on every piece.” The instance $`z_{e'}` is plain within $`\tau' = Xv^{f+8}` steps up to a
 constant factor and has size at most $`\tau'/v^{48}`; Theorem J.4 gives at most $`\tau'v^2/v^H`
 pieces, each taking $`v^{H-16}` steps under $`D`, and listing them takes $`\tau'/v^{24}` steps;
-“altogether this is less than $`v^f`”. After at most $`3\alpha` rounds the time is at most
+“Altogether this is less than $`v^f`”. After at most $`3\alpha` rounds the time is at most
 $`v'^{H-17}` and the exponent bound at most $`B + 3\alpha J \leq B + 51h_0\alpha^2\lg v`. “A new
 program only writes $`z_{e'}` down, and the cutting program and $`D` halt on all short instances,
 plain or not, by the first condition of Definition J.1 and property (i) of Definition K.1. Thus the
@@ -420,8 +455,9 @@ $`T = \tau`; $`s` is at least the size bound of Lemma K.4 for arguments of size 
 conclusion: `stepF D G p g` has the two properties at scale $`v` (`IsAccT`), with the same trie,
 exponent bound $`\max(B + J, B')`, and time
 $$`(8J + 10)\,Q_B + t_G + (u^{H-16} + 30)\,L + 30,`
-where $`Q_B` is the number of nodes of `K.expand B`, $`t_G` bounds the cost of `G`
-($`t_G u^{24} \leq \tau'`) and $`L` the number of pieces ($`L u^H \leq \tau' u^2`). The value
+where $`Q_B` is the number of nodes of `K.expand B`, $`t_G` is any number that is at least every
+$`k` with $`k u^{24} \leq \tau'` (it bounds the cost of `G`) and $`L` any number that is at least
+every $`k` with $`k u^H \leq \tau' u^2` (it bounds the number of pieces). The value
 identity in its proof is the chain: value of `stepF` $`= \sum_e \lambda^e \sum_{\text{runs of } G}
 \mathrm{weight} \prod_y (\text{value of } D \text{ on } y)` (`NS1.stepF_ev`) $`= \sum_e \lambda^e
 \sum_{\text{runs of } G} \mathrm{weight} \prod_y \mathrm{sum}(y)` (property (ii) of `D`, the pieces
@@ -439,7 +475,7 @@ were read in full.
 
 # K.4. Nonexistence of accelerators
 
-:::theorem "thm_noacc" (lean := "Paper.thm_noacc") (parent := "part-contracting")
+:::theorem "thm_noacc" (lean := "Paper.thm_noacc, Paper.scales_setting") (parent := "part-contracting")
 *Theorem K.6 of the paper* (nonexistence of small accelerators; page 58), quoted: “There are $`C`
 and $`v_1` such that for all integers $`a \geq 0` and $`v \geq v_1` with $`(\lg v)^{Ca} \leq v` no
 nonzero commutative $`A`-algebra has an accelerator of size $`v^a` at scale $`v`.”
@@ -447,7 +483,11 @@ nonzero commutative $`A`-algebra has an accelerator of size $`v^a` at scale $`v`
 The Lean statement is for any commutative ring `A` that is finitely generated as a ring
 (`Algebra.FiniteType ℤ A`), a table `θ`, $`h \geq 17` and the hypothesis `CutHyp θ (16 * h) C₀ v₀`;
 “nonzero” is `Nontrivial R`, and the algebras `R` are in the lowest universe. See the quotation
-from Section Q.3 under Proposition K.5.
+from Section Q.3 under {bpref "prop_next"}[Proposition K.5]. `Paper.scales_setting`, shown with
+this node, is the instance that the quotation names: in the contracting case, the ring $`A`, the
+table `θ` and $`H = 16h` of `Paper.exists_setting` ({bpref "thm_cut"}[Theorem J.4]) together with
+the conclusions of Proposition K.5 and of this theorem for them. The proof of
+{bpref "thm_contracting"}[Theorem K.7] takes the theorem in this form.
 :::
 
 :::proof "thm_noacc"
@@ -467,9 +507,9 @@ $`\mathsf{P}` contains the table of $`r(j)` for $`j < B' + J`, and on an argumen
 bit. For one value of the bit it accepts with weight 1, and for the other it guesses an exponent
 vector $`e` for $`\lambda`, multiplies by $`\lambda^e` by naming, and runs $`D` on the instance
 $`z_e` that Lemma K.4 provides for the program $`x` on the argument $`x`.” For
-$`x = \mathsf{P}` every $`z_e` is short, so $`D` halts on it within $`v^{H-16}` steps, all runs of
-$`\mathsf{P}` on $`\mathsf{P}` halt within $`v^{H-15}` steps, the $`z_e` are $`v^H`-plain by Lemma
-K.4, and the value $`V` of $`\mathsf{P}` on $`\mathsf{P}` satisfies
+$`x = \mathsf{P}` every $`z_e` is short, so $`D` halts on it, accepting within $`v^{H-16}` steps,
+all runs of $`\mathsf{P}` on $`\mathsf{P}` halt, the accepting ones within $`v^{H-15}` steps, the
+$`z_e` are $`v^H`-plain by Lemma K.4, and the value $`V` of $`\mathsf{P}` on $`\mathsf{P}` satisfies
 $$`V = 1 + \sum_e \lambda^e \,\mathrm{sum}(z_e) = 1 + V,`
 “which is impossible in the field $`E`”.
 
@@ -574,10 +614,13 @@ $`C'` we have $`(\lg v)^{C'(a+1)} \leq v` if $`c` is small enough and $`m` is la
 Lemma K.3 gives an accelerator of size $`v^{C(a+1)}` at scale $`v` over $`\Bbbk`, which is a
 nonzero $`A`-algebra, and this contradicts Theorem K.6 with $`C(a + 1)` in place of $`a`.”
 
-In Lean the choice of the scale is `Paper.exists_scale`: for large $`M` with
-$`(\lg M)^{Ca} \leq M` there is $`v` with $`v^{B_0} \leq M \leq v^{2B_0}`, so that
-$`M^a \leq v^{2B_0a}`, and $`(\lg v)^{E(2B_0a+1)} \leq v`. The ring $`A` is a subring of `K`, so
-`K` is an $`A`-algebra and is nonzero.
+In Lean the choice of the scale is `Paper.exists_scale`: for given $`B_0 > 0`, $`E` and $`n`
+there are $`C` and $`M_1` such that for $`M \geq M_1` and every $`a` with $`(\lg M)^{Ca} \leq M`
+there is $`v \geq n` with $`v^{B_0} \leq M`, $`M^a \leq v^{2B_0a}` and
+$`(\lg v)^{E(2B_0a+1)} \leq v`. `Paper.contracting_complete` applies {bpref "lem_circuit"}[Lemma K.3]
+with $`2B_0a` for $`a` and {bpref "thm_noacc"}[Theorem K.6], in the form `Paper.scales_setting`,
+with $`C_1(2B_0a + 1)` for $`a`, where $`C_1` is the constant of Lemma K.3. The ring $`A` is a
+subring of `K`, so `K` is an $`A`-algebra and is nonzero.
 :::
 
 # N.3. Approximate accelerators in the contracting case
@@ -716,5 +759,7 @@ circuit computes: the argument uses no bound on the degree of the output of the 
 lowest universe with `Contracting K`: `Paper.thm_contracting` (the permanent, $`2 \neq 0`) and
 `Paper.contracting_complete` (any family complete for grid sums, used for the Hamiltonian cycle
 polynomial), and their analogue `Paper.contracting_approx_complete` for approximating circuits. The
-constant $`c` of these bounds depends on the field through the laws and the cutting theorem. The
-next chapter shows that this does not affect the constant of the main theorems.
+statements give no value for the constant $`c` of these bounds; it comes out of the laws and the
+cutting theorem for the field `K`. In {bpref "thm_allfields"}[Theorem M.3] the bound is weakened,
+for large $`m`, to that of the flat case, so that this constant does not enter the constant of
+the main theorems.
