@@ -93,6 +93,21 @@ private theorem tele (y : A) (u v : ℕ → A) (R : ℕ) (h : ∀ r, v (r + 1) =
     rw [Finset.sum_range_succ, ih, h]
     ring
 
+/-- The off-diagonal boundary of the orthogonality relation telescopes in either index. -/
+private theorem orth_boundary (y : A) (R j : ℕ) :
+    y ^ R ∣ (1 - y) * ∑ r ∈ Finset.range R, y ^ r * mB y r (j + 1) := by
+  have := tele y (fun r => mB y r (j + 1) + mB y r j) (fun r => mB y r (j + 1) + y * mB y r j) R
+    (fun r => by rw [mB_succ]; ring)
+  refine ⟨-(mB y R (j + 1) + y * mB y R j), ?_⟩
+  simp only [mB_zero] at this
+  rw [Finset.mul_sum]
+  have e : ∑ r ∈ Finset.range R, (1 - y) * (y ^ r * mB y r (j + 1)) =
+      ∑ r ∈ Finset.range R, y ^ r * (mB y r (j + 1) + y * mB y r j
+        - y * (mB y r (j + 1) + mB y r j)) :=
+    Finset.sum_congr rfl fun r _ => by ring
+  rw [e, this]
+  ring
+
 /-- **Paper: display eq:orth.** "(1−y) ∑_{r<R} y^r B(r,i) B(r,j) ≡ [i=j] y^i (mod y^R)." Here y is any element of any
 commutative ring; the paper's case is the variable y of ℤ[y]. -/
 theorem eq_orth (y : A) (R i j : ℕ) :
@@ -109,31 +124,11 @@ theorem eq_orth (y : A) (R i j : ℕ) :
       rw [← Finset.sum_mul] at this
       linear_combination this
     | succ j =>
-      have := tele y (fun r => mB y r (j + 1) + mB y r j) (fun r => mB y r (j + 1) + y * mB y r j) R
-        (fun r => by rw [mB_succ]; ring)
-      refine ⟨-(mB y R (j + 1) + y * mB y R j), ?_⟩
-      simp only [mB_zero_right, one_mul, (Nat.succ_ne_zero j).symm, if_false, mB_zero] at this ⊢
-      rw [Finset.mul_sum]
-      have e : ∑ r ∈ Finset.range R, (1 - y) * (y ^ r * mB y r (j + 1)) =
-          ∑ r ∈ Finset.range R, y ^ r * (mB y r (j + 1) + y * mB y r j
-            - y * (mB y r (j + 1) + mB y r j)) :=
-        Finset.sum_congr rfl fun r _ => by ring
-      rw [e, this]
-      ring
+      simpa only [mB_zero_right, one_mul, (Nat.succ_ne_zero j).symm, if_false, sub_zero] using orth_boundary y R j
   | succ i ih =>
     cases j with
     | zero =>
-      have := tele y (fun r => mB y r (i + 1) + mB y r i) (fun r => mB y r (i + 1) + y * mB y r i) R
-        (fun r => by rw [mB_succ]; ring)
-      refine ⟨-(mB y R (i + 1) + y * mB y R i), ?_⟩
-      simp only [mB_zero_right, mul_one, Nat.succ_ne_zero i, if_false, mB_zero] at this ⊢
-      rw [Finset.mul_sum]
-      have e : ∑ r ∈ Finset.range R, (1 - y) * (y ^ r * mB y r (i + 1)) =
-          ∑ r ∈ Finset.range R, y ^ r * (mB y r (i + 1) + y * mB y r i
-            - y * (mB y r (i + 1) + mB y r i)) :=
-        Finset.sum_congr rfl fun r _ => by ring
-      rw [e, this]
-      ring
+      simpa only [mB_zero_right, mul_one, Nat.succ_ne_zero i, if_false, sub_zero] using orth_boundary y R i
     | succ j =>
       have := tele y
         (fun r => (mB y r (i + 1) + mB y r i) * (mB y r (j + 1) + mB y r j))
