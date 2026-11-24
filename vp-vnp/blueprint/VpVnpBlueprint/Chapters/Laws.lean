@@ -38,26 +38,27 @@ network to be a computation and cuts it along such a tree.
 
 How to read the chapter. Appendix G is among the appendices whose printed proofs, the paper says,
 “are meant to be complete, if terse” (page 17). Appendix H is not uniform. The paper, page 17,
-quoted: “The proofs of Proposition I.1, Theorem H.2(d), (e), Theorem J.3 and Proposition N.4 describe machines and
-programs and account for their sizes and running times. That these do exactly what is claimed can
-be verified only in the Lean development, and each of these four statements is followed by a
-formalization note that says so. Consequently the contracting case, and with it every main result,
-rests on Lean at these points.” For Theorem H.2(d) and (e) this chapter therefore describes, from
-the Lean code, what the construction is and how the Lean proof is organised (the section
-{ref "laws-lean-construction"}[The Lean construction behind Theorem H.2]). About Proposition H.1
-and parts (a) to (c) of Theorem H.2 the sentence quoted from page 17 says nothing: they are
+quoted: “The proofs of Proposition I.1, Theorem H.2(d), (e), Theorem J.3 and Proposition N.4
+describe machines and programs and account for their sizes and running times. That these do exactly
+what is claimed can be verified only in the Lean development, and each of these four statements is
+followed by a formalization note that says so. Consequently the contracting case, and with it every
+main result, rests on Lean at these points.” For Theorem H.2(d) and (e) this chapter therefore
+describes, from the Lean code, what the construction is and how the Lean proof is organised (the
+section {ref "laws-lean-construction"}[The Lean construction behind Theorem H.2]). About Proposition
+H.1 and parts (a) to (c) of Theorem H.2 the sentence quoted from page 17 says nothing: they are
 neither among the proofs meant to be complete nor among those flagged. For them this chapter gives
 what the printed proof gives and what the Lean statement gives, and makes no claim about the
 completeness of the printed argument.
 
 The Lean statements of this chapter differ from the printed ones in several ways, and all the
-differences recorded here are listed by the paper in Section Q.3 (pages 68–70). Definition G.1 is
-a Lean structure, `Nc.G.Law`; the clauses of Theorem H.2 are the fields of a Lean structure, `Paper.ThinTrees`; Proposition H.1(d) is stated with the exponent $`7` that
-Lean proves, where the printed argument gives $`3`; and Theorem H.2 takes the laws as a hypothesis.
-The Lean development says _unit_ for a packet, _table_ for a node tensor, _near pair_ for an edge
-of the Cayley graph of $`U_h`, _chamber_ for an element of a set $`V_j` of the tower and _vertex_
-of type $`i` for a coset of type $`i` (Section Q.3, pages 66 and 68, for the first three; the last
-two are the words of the Lean files).
+differences recorded here are listed by the paper in Section Q.3 (pages 68–70). Definition G.1 is a
+Lean structure, `Nc.G.Law`; the clauses of Theorem H.2 are the fields of a Lean structure,
+`Paper.ThinTrees`; Proposition H.1(d) is stated with the exponent $`7` that Lean proves, where the
+printed argument gives $`3`; and Theorem H.2 takes the laws as a hypothesis. The Lean development
+says _unit_ for a packet, _table_ for a node tensor, _near pair_ for an edge of the Cayley graph of
+$`U_h`, _chamber_ for an element of a set $`V_j` of the tower and _vertex_ of type $`i` for a coset
+of type $`i` (Section Q.3, pages 66 and 68, for the first three; the last two are the words of the
+Lean files).
 
 # G.1. Edges, loads and the choice of $`h`
 
@@ -390,8 +391,8 @@ these data, with those of the proposition, are assembled into a term `Nc.Tower.t
 structure `Nc.Tow.Tower`, whose field `host` is $`\chi \mapsto \hat\chi`; the Lean proof of Theorem
 H.2 is written for an arbitrary term of that structure, with routes on its bottom level, and uses
 the groups of this section only through this term and through the words of part (d)
-({bpref "tree_towers"}[the towers of the proof]). Section Q.3 (page 70): “Theorem H.2 uses parts (a) and (b) of Proposition H.1 through the
-named theorems that also prove the proposition.”
+({bpref "tree_towers"}[the towers of the proof]). Section Q.3 (page 70): “Theorem H.2 uses parts
+(a) and (b) of Proposition H.1 through the named theorems that also prove the proposition.”
 
 # H.2. Packets, networks and the two moves
 
