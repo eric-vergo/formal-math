@@ -56,7 +56,7 @@ At the port baseline `9fd368ad`, the five theorems were also checked outside Lea
 
 The build prints sorry warnings from Challenge.lean only, which states the theorems without proofs for the fuller check. The last command should name no axiom other than propext, Classical.choice and Quot.sound.
 
-The fuller check is the one this repository's CI runs, bash ../.github/scripts/comparator-check.sh (Linux): Comparator compares the statements with Challenge.lean and re-checks the proofs with a second, independently written kernel, nanoda.
+For the original upstream development, Appendix Q.1 reports a Linux Comparator run with the independent kernel nanoda. The fork's [Linux script](scripts/comparator-check.sh) uses the port's directory layout. The blueprint's Project Stats page gives the checks performed for its own build.
 
 ## License
 

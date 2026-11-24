@@ -289,8 +289,8 @@ Four things could be checked, and they have been checked to different degrees.
   performed for the site build a reader is viewing.
 - The upstream development, on Lean 4.33.1, by the paper's account (Section Q.1, page 66):
   “Comparator accepted them against `Challenge.lean`, rechecking the proofs with Lean's kernel and
-  with the independently written checker nanoda.” That run is the paper's; it was not repeated on
-  this branch, whose README says of the corresponding script “not run on this branch”.
+  with the independently written checker nanoda.” That run belongs to the original build. The fork provides a Linux script for the
+  same comparison in its directory layout.
 
 *That the Lean statements say what the paper claims.* No machine checks this, and no human has.
 The README, quoted: “Lean checks the proofs, but no machine checks that this file says what is

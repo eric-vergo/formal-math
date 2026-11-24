@@ -62,7 +62,7 @@ lake env lean scripts/StatementSpelling.lean
 ```
 
 The first command fetches Mathlib's compiled files; the second compiles the development with
-Lean's kernel checking every proof. The README of the folder, on what to expect: “`lake build`
+Lean's kernel checking every proof. The port baseline README described its build as follows: “`lake build`
 prints the five sorry warnings of Comparator/VpVnp/Challenge.lean and, besides them, deprecation
 and linter warnings from the new toolchain and Mathlib”. The five warnings are the five theorems
 of the challenge file, which states them without proof on purpose; a `sorry` warning from any
@@ -137,9 +137,7 @@ exactly the tool compares is defined by the tool, not by this chapter.
 
 The paper's account of the upstream run (Section Q.1, page 66): “Comparator accepted them against
 `Challenge.lean`, rechecking the proofs with Lean's kernel and with the independently written
-checker nanoda.” The README, in the part it shares with upstream, quoted: “The fuller check is the one this repository's CI
-runs, bash ../.github/scripts/comparator-check.sh (Linux): Comparator compares the statements with
-Challenge.lean and re-checks the proofs with a second, independently written kernel, nanoda.”
+checker nanoda.” 
 
 On this branch the three files lie in {repoFile "vp-vnp/Comparator/VpVnp"}[`Comparator/VpVnp`],
 the layout the site's tools require; the two Lean files are unchanged, and the judged theorems
