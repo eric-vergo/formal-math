@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 import Nc.Cut.Codes
 import Nc.Cut.Groups
-import Nc.Cut.StartB
+import Nc.Cut.StartA
 
 /-!
 # Exactness of a whole cut

@@ -370,7 +370,7 @@ direction, and packets from a node to itself are allowed; and the network is set
 with `A'` further nodes and further packet names (`N`, `U1`, `np`), which are the nodes and packets
 that the moves of Theorem H.2 will add. Only consecutive parts of `ℓ` symbols (`Nc.Cut.parts`) are
 stated. The definitions of `posVal` and `tabInit` were opened; the proof (`Nc.G.start`, files
-`Nc/Cut/StartA.lean`, `StartB.lean`, `Rows.lean`, `Refine.lean`) was not.
+`Nc/Cut/StartA.lean`, `Rows.lean`, `Refine.lean`) was not.
 :::
 
 :::proof "lem_runnet"

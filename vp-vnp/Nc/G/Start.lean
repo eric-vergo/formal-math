@@ -128,7 +128,7 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
         if ∀ p, InitOk ub cb (fun s => ρ s p) n p (y (Fin.castAdd A' p)) (R p) (C p) then
           ∏ p, partyW mu T q x p (R p) (C p) else 0 := fun ρ n y =>
     prod_tabInit q x ρ n fun p => y (Fin.castAdd A' p)
-  simp only [hpos, hprod, ite_sum, ite_ite_zero]
+  simp only [hpos, hprod, Finset.ite_sum_zero, ← ite_and]
   -- one sum over all data
   let Cnd : (Option S → Fin (K + K) → RowData (K + K)) × (Fin (K + K) → Fin (K + K) → Fin (U0 + 1)) ×
       (Fin (K + K + A') → Uid (K + K) U0 N U1 → UW ub) × (Fin (K + K) → Option S → Fin (K + K) → List Γ) ×
