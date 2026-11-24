@@ -26,25 +26,13 @@ theorem step_num {X Y d L δ : ℝ} (hX : 0 ≤ X) (hY : 0 ≤ Y) (hL : 1 ≤ L)
     have h5 : L * ((1 - δ / L) * X ^ 2) = L * X ^ 2 - δ * X ^ 2 := by field_simp
     rw [h5] at h4
     linarith
-  have hYX : Y ≤ X := by
-    refine (abs_le_of_sq_le_sq' (show Y ^ 2 ≤ X ^ 2 from ?_) hX).2
-    have : 0 ≤ δ * X ^ 2 := by positivity
-    have h6 : 0 ≤ X ^ 2 - Y ^ 2 := by
-      by_contra h7
-      push Not at h7
-      have := mul_neg_of_pos_of_neg hL0 h7
-      linarith
-    linarith
+  have hd : d ^ 2 ≤ X ^ 2 - Y ^ 2 := (le_mul_of_one_le_left (sq_nonneg _) hL).trans h2
+  have hYX : Y ≤ X := (abs_le_of_sq_le_sq' (by linarith [sq_nonneg d]) hX).2
   have hs : 0 < √δ := Real.sqrt_pos.2 hδ
   rcases hX.eq_or_lt with rfl | hX0
   · have hY0 : Y = 0 := le_antisymm hYX hY
     subst hY0
-    have : d ^ 2 ≤ 0 := by
-      by_contra h6
-      push Not at h6
-      have := mul_pos hL0 h6
-      linarith
-    have : d = 0 := pow_eq_zero_iff two_ne_zero |>.1 (le_antisymm this (sq_nonneg _))
+    have : d = 0 := by nlinarith
     rw [this]
     simp
   · have h4 : δ * X ^ 2 * (L * d ^ 2) ≤ L * (4 * X ^ 2 * (X - Y) ^ 2) := by
