@@ -63,15 +63,8 @@ theorem lay_single (i j : Fin h) (hij : i ≠ j) (htr : (Matrix.single i j (1 : 
   · rw [map_one, mul_one]
   · rw [map_zero, mul_zero]
 
-theorem trace_single_ne (i j : Fin h) (hij : i ≠ j) : (Matrix.single i j (1 : ZMod 2)).trace = 0 := by
-  rw [Matrix.trace]
-  refine Finset.sum_eq_zero fun a _ => ?_
-  rw [Matrix.diag_apply, Matrix.single_apply, if_neg]
-  rintro ⟨rfl, rfl⟩
-  exact hij rfl
-
 theorem PL.single (h3 : 3 ≤ h) (i j : Fin h) (hij : i ≠ j) : PL h2 n (Matrix.single i j 1) (bQ h n) :=
-  ⟨trace_single_ne i j hij, by rw [lay_single i j hij]; exact WL.el_layer h3 i j hij⟩
+  ⟨Matrix.trace_single_eq_of_ne i j 1 hij, by rw [lay_single i j hij]; exact WL.el_layer h3 i j hij⟩
 
 theorem trace_diag (i : Fin h) : (Matrix.single i i (1 : ZMod 2) + Matrix.single 0 0 1).trace = 0 := by
   rw [trace_add, Matrix.trace_single_eq_same, Matrix.trace_single_eq_same]

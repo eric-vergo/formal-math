@@ -52,23 +52,21 @@ theorem lay_mul (A B : Matrix (Fin h) (Fin h) (ZMod 2)) (hA : A.trace = 0) (hB :
     lay (n := n) A hA * lay B hB = lay (A + B) (by rw [trace_add, hA, hB, add_zero]) :=
   Subtype.ext (layMat_mul A B)
 
+private theorem eq_zero_of_layer_coeff {n : ℕ} {x : ZMod 2}
+    (hx : s (n + 2) ^ (n + 1) * cst (n + 2) x = 0) : x = 0 := by
+  fin_cases x
+  · rfl
+  · change s (n + 2) ^ (n + 1) * cst (n + 2) 1 = 0 at hx
+    rw [map_one, mul_one] at hx
+    exact (s_pow_ne (by omega) hx).elim
+
 theorem layMat_injective : Function.Injective (layMat (h := h) n) := by
   intro A B e
   ext a b
   have h1 := congrFun (congrFun e a) b
   simp only [layMat, Matrix.add_apply, Matrix.smul_apply, Matrix.map_apply, smul_eq_mul] at h1
   have h2 := add_left_cancel h1
-  have key : ∀ x : ZMod 2, s (n + 2) ^ (n + 1) * cst (n + 2) x = 0 → x = 0 := by
-    intro x hx
-    fin_cases x
-    · rfl
-    · exfalso
-      have : cst (n + 2) 1 = 1 := map_one _
-      change s (n + 2) ^ (n + 1) * cst (n + 2) 1 = 0 at hx
-      rw [this, mul_one] at hx
-      exact s_pow_ne (by omega) hx
-  have h3 := key (A a b - B a b) (by rw [map_sub, mul_sub, h2, sub_self])
-  exact sub_eq_zero.1 h3
+  exact sub_eq_zero.1 (eq_zero_of_layer_coeff (n := n) (by rw [map_sub, mul_sub, h2, sub_self]))
 
 theorem red_s_pow (n : ℕ) : red (n + 1) (s (n + 2) ^ (n + 1)) = 0 := by
   rw [map_pow, red_s]
@@ -112,14 +110,7 @@ theorem exists_lay {g : G h (n + 1)} (hg : redG g = 1) : ∃ A hA, g = lay A hA 
     have h3 : cst (n + 2) (Matrix.of A).trace * s (n + 2) ^ (n + 1) = 0 := by
       have := congrArg (fun x => x - 1) h2
       simpa using this
-    by_contra hne
-    have h4 : (Matrix.of A).trace = 1 := by
-      generalize (Matrix.of A).trace = x at hne
-      fin_cases x
-      · exact absurd rfl hne
-      · rfl
-    rw [h4, map_one, one_mul] at h3
-    exact s_pow_ne (by omega) h3
+    exact eq_zero_of_layer_coeff (n := n) (by rwa [mul_comm])
   exact ⟨Matrix.of A, htr, Subtype.ext e⟩
 
 /-- The reduction is onto. -/
@@ -194,6 +185,12 @@ theorem card_G_succ : Nat.card (G h (n + 1)) = Nat.card (G h n) * 2 ^ (h ^ 2 - 1
   rw [card_ker_redG, Subgroup.index_ker, MonoidHom.range_eq_top.2 redG_surjective, Subgroup.card_top] at h1
   rw [← h1, mul_comm]
 
+theorem evG_surjective : Function.Surjective (evG : G h n →* SL2 h) := by
+  intro A
+  refine ⟨th0 0 A, Subtype.ext ?_⟩
+  ext a b
+  rw [evG_th0, sub_zero, sub_zero]
+
 theorem evG_bijective_zero : Function.Bijective (evG : G h 0 →* SL2 h) := by
   constructor
   · intro g g' e
@@ -202,16 +199,7 @@ theorem evG_bijective_zero : Function.Bijective (evG : G h 0 →* SL2 h) := by
     rw [eq_cst_ev (g.1 a b), eq_cst_ev (g'.1 a b)]
     congr 1
     exact congrFun (congrFun (congrArg Subtype.val e) a) b
-  · intro A
-    refine ⟨th0 0 A, Subtype.ext ?_⟩
-    ext a b
-    rw [evG_th0, sub_zero, sub_zero]
-
-theorem evG_surjective : Function.Surjective (evG : G h n →* SL2 h) := by
-  intro A
-  refine ⟨th0 0 A, Subtype.ext ?_⟩
-  ext a b
-  rw [evG_th0, sub_zero, sub_zero]
+  · exact evG_surjective
 
 /-- The order of the group. -/
 theorem card_G (h n : ℕ) [NeZero h] : Nat.card (G h n) = Nat.card (SL2 h) * 2 ^ ((h ^ 2 - 1) * n) := by
