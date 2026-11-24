@@ -1,6 +1,6 @@
 {
-  "challenge_module": "Challenge",
-  "solution_module": "Solution",
+  "challenge_module": "Comparator.VpVnp.Challenge",
+  "solution_module": "Comparator.VpVnp.Solution",
   "theorem_names": [
     "Solution.mainTheorem",
     "Solution.mainTheoremApprox",
@@ -13,6 +13,5 @@
     "propext",
     "Quot.sound",
     "Classical.choice"
-  ],
-  "enable_nanoda": true
+  ]
 }
