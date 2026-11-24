@@ -215,6 +215,14 @@ theorem fire_iff {σ : St supp} (hσ : OKs σ) {κ : Kd} {p q s : ℕ}
     rw [this]
     exact hrec
 
+private theorem not_sp_of_mode {mode : Md (Nm supp)} {κ : Kd} {r : Ru supp}
+    (hm : mode ≠ .P) (hd : ¬ (mode = .D 7 ∧ κ = .N))
+    (hs : (rule θ supp r).src = mode) (hk : (rule θ supp r).lk = κ) : ¬ Sp r := by
+  rintro (rfl | rfl | ⟨b, rfl⟩)
+  · exact hm hs.symm
+  · exact hm hs.symm
+  · cases b <;> exact hd ⟨hs.symm, hk.symm⟩
+
 /-- A step that is forced. -/
 theorem sumTo_rule {σ : St supp} (hσ : OKs σ) {κ : Kd} {p q s : ℕ}
     (hrec : (κ, ![σ.regs (laM σ.mode), p, q, s]) ∈ σ.heap) (r : Ru supp) (hr : nextR supp σ.mode κ = some r)
@@ -224,23 +232,16 @@ theorem sumTo_rule {σ : St supp} (hσ : OKs σ) {κ : Kd} {p q s : ℕ}
   have hz : σ.mode ≠ (UM θ supp).mh := by
     rw [← hs]
     exact src_ne r
-  have hsp : ∀ r' : Ru supp, (rule θ supp r').src = σ.mode → (rule θ supp r').lk = κ → ¬ Sp r' := by
-    rintro r' h1 h2 (rfl | rfl | ⟨b, rfl⟩)
-    · exact hm h1.symm
-    · exact hm h1.symm
-    · cases b
-      · exact hd ⟨h1.symm, h2.symm⟩
-      · exact hd ⟨h1.symm, h2.symm⟩
   refine Mach.SumTo.one hz (r, envOf σ p q s) (fun st' => ?_) h
   rw [fire_iff hσ hrec]
   constructor
   · rintro ⟨h1, h2, -, h4⟩
-    have h5 := nextR_of (θ := θ) st'.1 (hsp _ h1 h2)
+    have h5 := nextR_of (θ := θ) st'.1 (not_sp_of_mode hm hd h1 h2)
     rw [h1, h2, hr] at h5
     exact Prod.ext (Option.some_injective _ h5).symm h4
   · rintro rfl
     refine ⟨hs, hk, ?_, rfl⟩
-    rw [rd_of r (hsp r hs hk)]
+    rw [rd_of r (not_sp_of_mode hm hd hs hk)]
     exact List.nil_prefix
 
 /-- No rule applies. -/
@@ -251,15 +252,7 @@ theorem sumTo_stuck {σ : St supp} (hσ : OKs σ) {κ : Kd} {p q s : ℕ}
   refine Mach.SumTo.none hz (fun st hf => ?_) B
   rw [fire_iff hσ hrec] at hf
   obtain ⟨h1, h2, -, -⟩ := hf
-  have hsp : ¬ Sp st.1 := by
-    rintro (h | h | ⟨b, h⟩)
-    · rw [h] at h1; exact hm h1.symm
-    · rw [h] at h1; exact hm h1.symm
-    · rw [h] at h1 h2
-      cases b
-      · exact hd ⟨h1.symm, h2.symm⟩
-      · exact hd ⟨h1.symm, h2.symm⟩
-  have h5 := nextR_of (θ := θ) st.1 hsp
+  have h5 := nextR_of (θ := θ) st.1 (not_sp_of_mode hm hd h1 h2)
   rw [h1, h2, hr] at h5
   exact absurd h5 (by simp)
 
