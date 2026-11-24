@@ -325,7 +325,10 @@ In Lean: `Paper.lem_means_Q` and `Paper.lem_means_Q_norm` are (B.2) for $`\nu` a
 `Paper.lem_means_parallelogram_le` is the inequality before the last step. Lean applies
 it a second time to the sum and difference of the two vectors. Their sum is twice the
 first vector and their difference twice the second. Homogeneity of the mean norm then
-gives the reverse inequality for the original pair.
+gives the reverse inequality for the original pair. The fan proof calls this identity for
+`Paper.meanNorm` directly as `Paper.lem_means_norm`. The statement `Paper.lem_means`
+packages it with the existence of the limit and its infimum characterization. All five
+exports use the identity; none requires this existential package.
 :::
 
 ## C.3. Proof of Theorem C.1

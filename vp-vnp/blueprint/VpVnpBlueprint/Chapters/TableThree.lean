@@ -83,8 +83,9 @@ row:
 - _definition_: the row is a definition, whose Lean theorem restates a Lean definition (the
   paper counts these as not on the route).
 
-The four exceptions named by the paper remain outside the five export closures. Four more
-numbered statements have that status in the cleaned proof: Corollary E.2, Lemma E.3 and
+The four exceptions named by the paper remain outside the five export closures. The fan argument uses the parallelogram identity of
+`Paper.lem_means_norm` directly, so the full existential statement of Lemma C.2 is
+also outside the five closures. Four other numbered statements have that status: Corollary E.2, Lemma E.3 and
 Theorems E.11 and K.7. Each specializes a result for families complete for grid sums to
 the permanent. The all-fields theorem uses the family versions directly for both polynomials,
 and the real permanent bound specializes the all-fields theorem. Lemmas N.2 and N.3 and
@@ -286,8 +287,8 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 26
   * {InlineLean.name}`Paper.lem_means`
   * differs as the paper says
-  * yes
-  * {ref "chapter-curvature"}[Two crossing wires and nonpositive curvature]. One fixed free ultrafilter, prices counted from $`n = 0`; the Lean form also asserts that the limit defining $`N` exists and equals the infimum (page 69).
+  * no
+  * {ref "chapter-curvature"}[Two crossing wires and nonpositive curvature]. One fixed free ultrafilter, prices counted from $`n = 0`; the Lean form also asserts that the limit defining $`N` exists and equals the infimum (page 69). All five exports use `Paper.lem_means_norm` for the specified mean norm.
 *
   * {bpref "prop_space"}[Proposition C.3]
   * 28
