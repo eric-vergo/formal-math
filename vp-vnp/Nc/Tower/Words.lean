@@ -79,26 +79,29 @@ theorem WL.comm {i j k : Fin h} {hik : i ≠ k} {hkj : k ≠ j} (hij : i ≠ j) 
 
 theorem gen_eq_El (k : Fin h) : (gen h2 k : G h n) = El (k - 1) k (sub_one_ne h2 k) (tt n k) := rfl
 
+private theorem WL.adjacent (i j : Fin h) (hij : i ≠ j) (hd : i.val + 1 = j.val) :
+    WL h2 (El i j hij 1 : G h n) 1 := by
+  have hj : j ≠ 0 := by
+    intro e
+    rw [e] at hd
+    simp at hd
+  have h1 : j - 1 = i := by
+    refine Fin.ext ?_
+    have h3 : (1 : Fin h) ≤ j := by
+      rw [Fin.le_def, Fin.val_one', Nat.mod_eq_of_lt (show 1 < h by omega)]
+      omega
+    rw [Fin.sub_val_of_le h3, Fin.val_one', Nat.mod_eq_of_lt (show 1 < h by omega)]
+    omega
+  have h3 := WL.gen (n := n) (h2 := h2) j
+  rw [gen_eq_El, tt, if_neg hj] at h3
+  subst h1
+  exact h3
+
 /-- Constant elementary matrices above the diagonal. -/
 theorem WL.upper (d : ℕ) (i j : Fin h) (hij : i ≠ j) (hd : i.1 + (d + 1) = j.1) :
     WL h2 (El i j hij 1 : G h n) (4 ^ d) := by
   induction d generalizing j with
-  | zero =>
-    have hj : j ≠ 0 := by
-      intro e
-      rw [e] at hd
-      simp at hd
-    have h1 : j - 1 = i := by
-      refine Fin.ext ?_
-      have h3 : (1 : Fin h) ≤ j := by
-        rw [Fin.le_def, Fin.val_one', Nat.mod_eq_of_lt (show 1 < h by omega)]
-        omega
-      rw [Fin.sub_val_of_le h3, Fin.val_one', Nat.mod_eq_of_lt (show 1 < h by omega)]
-      omega
-    have h3 := WL.gen (n := n) (h2 := h2) j
-    rw [gen_eq_El, tt, if_neg hj] at h3
-    subst h1
-    exact h3
+  | zero => exact WL.adjacent i j hij (by omega)
   | succ d ih =>
     let k : Fin h := ⟨j.1 - 1, by omega⟩
     have hk : k.1 = j.1 - 1 := rfl
@@ -111,23 +114,7 @@ theorem WL.upper (d : ℕ) (i j : Fin h) (hij : i ≠ j) (hd : i.1 + (d + 1) = j
       have := congrArg Fin.val e
       omega
     have h1 := ih k hik (by omega)
-    have h3 : WL h2 (El k j hkj 1 : G h n) 1 := by
-      have hj : j ≠ 0 := by
-        intro e
-        rw [e] at hd
-        simp at hd
-      have h4 : j - 1 = k := by
-        refine Fin.ext ?_
-        have h5 : (1 : Fin h) ≤ j := by
-          rw [Fin.le_def, Fin.val_one', Nat.mod_eq_of_lt (show 1 < h by omega)]
-          omega
-        rw [Fin.sub_val_of_le h5, Fin.val_one', Nat.mod_eq_of_lt (show 1 < h by omega)]
-      have h6 := WL.gen (n := n) (h2 := h2) j
-      rw [gen_eq_El, tt, if_neg hj] at h6
-      have h7 : (El (j - 1) j (sub_one_ne h2 j) 1 : G h n) = El k j hkj 1 := by
-        refine Subtype.ext ?_
-        rw [El_val, El_val, h4]
-      rwa [h7] at h6
+    have h3 := WL.adjacent (n := n) (h2 := h2) k j hkj (by omega)
     have h4 := h1.comm hij h3
     rw [one_mul] at h4
     refine h4.mono ?_
