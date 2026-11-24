@@ -175,16 +175,20 @@ def exposition(inventory):
                 len(inventory["proof_candidates_with_no_source_usages"])}
 
 
-def benchmark_rows(directory, revisions):
+def benchmark_rows(source, revisions):
     main_stage = {"clean": "proof", "warm": "proof", "foundation": "edited", "branch": "edited", "chapter": "edited"}
     conditions = None
+    archive = load(source) if source.is_file() else None
     for scenario, stage in main_stage.items():
         for side, revision in zip(("before", "after"), revisions, strict=True):
             stages = []
             for trial in range(1, 4):
-                path = directory / side / f"{scenario}-{trial}.jsonl"
-                with path.open() as stream:
-                    metadata, *records = map(json.loads, stream)
+                path = f"{side}/{scenario}-{trial}.jsonl"
+                if archive is None:
+                    with (source / path).open() as stream:
+                        metadata, *records = map(json.loads, stream)
+                else:
+                    metadata, *records = archive[path]
                 expected = (revision, scenario, trial)
                 identity = (metadata["revision"], metadata["scenario"], metadata["trial"])
                 if identity != expected or any(r.get("exit_code", 0) for r in records):
@@ -204,11 +208,57 @@ def benchmark_rows(directory, revisions):
                    ", ".join(str(len(r["built_modules"])) for r in stages)]
 
 
+def verification(archive, revisions):
+    def stages(side, name, revision):
+        metadata, *rows = archive[f"{side}/{name}.jsonl"]
+        if metadata["revision"] != revision or any(r.get("exit_code", 0) for r in rows):
+            raise ValueError(f"invalid {side} {name} result")
+        return {r["stage"]: r for r in rows if "stage" in r}
+
+    sides = ("before", "after")
+    replays = [stages(side, "replay", rev) for side, rev in zip(sides, revisions, strict=True)]
+    print("### Fresh replay of the five judged roots\n")
+    print("Each checker's stage is an executed command. The counts are the checkers' reported declaration totals.\n")
+    table(["Revision", "Export records", "Export bytes", "Export wall (s)", "con-leche accepted", "con-leche wall (s)",
+           "con-ron accepted", "con-ron wall (s)"], [
+        [side, f"{result['export_records']:,}", f"{result['export_bytes']:,}", f"{runs['five-root-export']['wall_seconds']:.3f}",
+         *(value for name in ("con-leche", "con-ron") for value in (
+            f"{result['checkers'][name]['accepted_declarations']:,}", f"{runs[name]['wall_seconds']:.3f}"))]
+        for side, runs in zip(sides, replays, strict=True) for result in [runs["five-root-results"]]
+    ])
+
+    checked = [stages(side, "verify", rev) for side, rev in zip(sides, revisions, strict=True)]
+    sites = [runs["site-artifacts"] for runs in checked]
+    for stage, label in (("proof-build", "Proof build warning lines"),
+                         ("blueprint-build-and-replay", "Blueprint build warning lines")):
+        paired(label, *(runs[stage]["warnings"] for runs in checked))
+
+    artifacts = {"site_files": "Site files", "site_bytes": "Site bytes", "html_pages": "HTML pages",
+                 "olean_files": "Project `.olean` files after site build", "proved_verdicts": "Proved challenge verdicts"}
+    paired("Rendered artifacts", *({**{label: site[key] for key, label in artifacts.items()},
+           **{f"`{path}` bytes": info["bytes"] for path, info in site["artifacts"].items()}} for site in sites))
+    print("### Rendered Project Stats\n")
+    for group, label in (("rendered_size", "Size tile"), ("rendered_progress", "Coverage statement"),
+                         ("replay_coverage_details", "Replay caption")):
+        before, after = (site.get(group, {}) for site in sites)
+        if before or after:
+            table([label, "Before", "After"], [[key, before.get(key, "—"), after.get(key, "—")]
+                                                for key in dict.fromkeys([*before, *after])])
+    for side, site in zip(sides, sites, strict=True):
+        messages = site.get("replay_messages", [])
+        if messages:
+            print(f"{side.capitalize()} site replay\n")
+            for message in messages:
+                print(f"- {message}")
+            print()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("before", "after"):
         parser.add_argument(f"--{name}", type=Path, required=True)
     parser.add_argument("--timings", type=Path)
+    parser.add_argument("--verification", type=Path, help="archive from capture-results.py with both verification runs")
     args = parser.parse_args()
     before, after = load(args.before), load(args.after)
     inventories = [before, after]
@@ -282,6 +332,8 @@ def main():
         table(["Scenario", "Revision", "Wall trials (s)", "Wall median (range), s", "CPU median (s)",
                "OS peak RSS median (GiB)", "Project modules rebuilt per trial"],
               benchmark_rows(args.timings, [inv["revision"] for inv in inventories]))
+    if args.verification:
+        verification(load(args.verification), [inv["revision"] for inv in inventories])
 
 
 if __name__ == "__main__":
