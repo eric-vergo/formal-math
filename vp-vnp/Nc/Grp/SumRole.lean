@@ -24,10 +24,6 @@ theorem chS_cons (L : G.Law A) (p : L.Ro) {B : ℕ} (z : Bk L p) (f : Fin B → 
   rw [List.ofFn_succ, List.flatten_cons]
   rfl
 
-theorem headD_getD (w : List Bool) : w.headD false = w.getD 0 false := by cases w <;> rfl
-
-theorem tail_getD (w : List Bool) (k : ℕ) : w.tail.getD k false = w.getD (k + 1) false := by cases w <;> simp
-
 theorem sumL_role_gen (L : G.Law A) (p : L.Ro) (htab : ∀ i x g, ∃ e : WE, e.val θ = L.tab p i x g) (B : ℕ)
     (ins : Fin (slList L p).length → List Bool) (out : Fin (cnList L p).length → List Bool)
     (G : TSt 1 (slList L p).length (cnList L p).length Bool → A) :
@@ -55,14 +51,8 @@ theorem sumL_role_gen (L : G.Law A) (p : L.Ro) (htab : ∀ i x g, ∃ e : WE, e.
     have e1 : (Fin.consEquiv fun _ : Fin (B + 1) => Bk L p) (z, f) = Fin.cons z f := rfl
     rw [e1, Fin.prod_univ_succ, ← mul_assoc]
     congr 1
-    · congr 1
-      · show L.tab p z.1 (fun e => (ins (slIdx L p e)).headD false) z.2 =
-          L.tab p z.1 (fun e => (ins (slIdx L p e)).getD 0 false) z.2
-        simp only [headD_getD]
-      · refine Finset.prod_congr rfl fun k _ => ?_
-        show L.tab p (f k).1 (fun e => (ins (slIdx L p e)).tail.getD k false) (f k).2 =
-          L.tab p (f k).1 (fun e => (ins (slIdx L p e)).getD (k + 1) false) (f k).2
-        simp only [tail_getD]
+    · simp only [List.headD_eq_getD, List.getD_eq_getElem?_getD, List.getElem?_tail]
+      rfl
     · congr 1
       refine Prod.ext rfl (Prod.ext ?_ ?_)
       · funext i
