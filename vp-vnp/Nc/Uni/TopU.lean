@@ -39,11 +39,7 @@ theorem pstep {σ : St supp} (hσ : OKs σ) (hm : σ.mode = .PR) {κ : Kd} {p q 
 theorem bstep {σ : St supp} (hσ : OKs σ) (hm : σ.mode = .P) (b : Bool) {rest : List Bool} (hi : σ.inp = b :: rest) {S : A}
     {B : ℤ} (h : Mach.SumTo (UM θ supp) (nx θ σ (.inl (if b then .pr1 else .pr0)) 0 0 0) S (B - 1)) :
     Mach.SumTo (UM θ supp) σ S B := by
-  have hrec : ((.N, ![σ.regs (laM σ.mode), 0, 0, 0]) : Rec Kd) ∈ σ.heap := by
-    rw [hm]
-    change ((.N, ![σ.regs 0, 0, 0, 0]) : Rec Kd) ∈ σ.heap
-    rw [hσ.r0]
-    exact hσ.nil
+  have hrec := hσ.nil_load hm hσ.r0
   have hz : σ.mode ≠ (UM θ supp).mh := by
     rw [hm]
     change Md.P ≠ .Z

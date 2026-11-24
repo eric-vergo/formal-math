@@ -145,11 +145,7 @@ theorem EvOK.guess (x : Tree) : EvOK θ supp .guess x [.det 1 .nil, .det 1 Tree.
   obtain ⟨o, a, rfl, hl⟩ := Fm.codeShape_of_decode hF
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
   have hm1' : σ1.mode = .D 7 := by rw [hm1]; congr 1; exact Fin.ext hl
-  have hrec : ((.N, ![σ1.regs (laM σ1.mode), 0, 0, 0]) : Rec Kd) ∈ σ1.heap := by
-    rw [hm1']
-    change ((.N, ![σ1.regs 1, 0, 0, 0]) : Rec Kd) ∈ σ1.heap
-    rw [h11]
-    exact ok1.nil
+  have hrec := ok1.nil_load hm1' h11
   have hz : σ1.mode ≠ (UM θ supp).mh := by
     rw [hm1']
     change Md.D 7 ≠ .Z
@@ -201,11 +197,7 @@ theorem EvOK.mul {a : Fm} {x : Tree} {l : List (Run A)} :
   obtain ⟨o, a', rfl, hl, -⟩ := Fm.codeShape_of_decode hF
   refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
   have hm1' : σ1.mode = .D 10 := by rw [hm1]; congr 1; exact Fin.ext hl
-  have hrec : ((.N, ![σ1.regs (laM σ1.mode), 0, 0, 0]) : Rec Kd) ∈ σ1.heap := by
-    rw [hm1']
-    change ((.N, ![σ1.regs 1, 0, 0, 0]) : Rec Kd) ∈ σ1.heap
-    rw [h11]
-    exact ok1.nil
+  have hrec := ok1.nil_load hm1' h11
   exact sumTo_stuck ok1 hrec (by rw [hm1']; rfl) (by rw [hm1']; simp) (by
       rw [hm1']
       rintro ⟨h, -⟩

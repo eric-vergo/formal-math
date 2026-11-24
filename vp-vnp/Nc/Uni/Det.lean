@@ -126,6 +126,12 @@ structure OKs (σ : St supp) : Prop where
   fn : ∀ c ∈ σ.heap, ∀ c' ∈ σ.heap, c.2 0 = c'.2 0 → c = c'
   r0 : σ.regs 0 = 0
 
+/-- A rule loading address zero sees the distinguished nil record. -/
+theorem OKs.nil_load {σ : St supp} (hσ : OKs σ) {md : Md (Nm supp)} (hm : σ.mode = md)
+    (h0 : σ.regs (laM md) = 0) : ((.N, ![σ.regs (laM σ.mode), 0, 0, 0]) : Rec Kd) ∈ σ.heap := by
+  rw [hm, h0]
+  exact hσ.nil
+
 /-- The values of the variables. -/
 def envOf (σ : St supp) (p q s : ℕ) : Fin 9 → ℕ :=
   ![σ.regs 0, σ.regs 1, σ.regs 2, σ.regs 3, σ.regs 4, p, q, s, σ.n + 1]

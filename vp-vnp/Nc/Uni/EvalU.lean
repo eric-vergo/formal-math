@@ -202,11 +202,7 @@ theorem readName (hθ : ∀ q, q ∉ supp → θ q = 0) {S : A} {B : ℤ} (w : T
   | nil =>
     intro p σ hσ hm hr hk
     have h0 : σ.regs 1 = 0 := hr
-    have hrec' : ((.N, ![σ.regs (laM σ.mode), 0, 0, 0]) : Rec Kd) ∈ σ.heap := by
-      rw [hm]
-      change ((.N, ![σ.regs 1, 0, 0, 0]) : Rec Kd) ∈ σ.heap
-      rw [h0]
-      exact hσ.nil
+    have hrec' := hσ.nil_load hm h0
     have h2 := hk (nx θ σ (.inr (.inr (.inl p))) 0 0 0) 0 (hσ.nx _ _ _ _) rfl hσ.r0 rfl (heap_nx σ _ _ _ _) rfl rfl
     have h3 := sumTo_rule hσ hrec' (.inr (.inr (.inl p))) (by rw [hm]; rfl) (by rw [hm]; simp) (by rw [hm]; simp)
       (by rw [hm]; rfl) rfl h2

@@ -82,11 +82,7 @@ theorem dstep {σ : St supp} (hσ : OKs σ) {c : Fin 11} (hm : σ.mode = .D c) (
     (hr : nextR supp (.D c) .N = some (.inl r)) (hc : c ≠ 7) (hs : (ruleA r : RD A (Nm supp)).src = .D c)
     (hk : (ruleA r : RD A (Nm supp)).lk = .N) {S : A} {B : ℤ}
     (h : Mach.SumTo (UM θ supp) (nx θ σ (.inl r) 0 0 0) S (B - 1)) : Mach.SumTo (UM θ supp) σ S B := by
-  have hrec : ((.N, ![σ.regs (laM σ.mode), 0, 0, 0]) : Rec Kd) ∈ σ.heap := by
-    rw [hm]
-    change ((.N, ![σ.regs 1, 0, 0, 0]) : Rec Kd) ∈ σ.heap
-    rw [h1]
-    exact hσ.nil
+  have hrec := hσ.nil_load hm h1
   have h2 := sumTo_ruleA hσ hrec r (by rw [hm]; exact hr) (by rw [hm]; simp) (by rw [hm]; simp [hc]) (by rw [hm]; exact hs)
     hk h
   exact h2.mono (by omega)
@@ -104,11 +100,7 @@ theorem EvOK.quote (c0 x : Tree) : EvOK θ supp (.quote c0) x [.det 1 c0] := by
     linarith
   rcases Fm.codeShape_of_decode hF with ⟨rfl, rfl⟩ | ⟨o, rfl, hl⟩
   · have h0 : σ.regs 1 = 0 := hc
-    have hrec : ((.N, ![σ.regs (laM σ.mode), 0, 0, 0]) : Rec Kd) ∈ σ.heap := by
-      rw [hm]
-      change ((.N, ![σ.regs 1, 0, 0, 0]) : Rec Kd) ∈ σ.heap
-      rw [h0]
-      exact ok.nil
+    have hrec := ok.nil_load hm h0
     have h2 := hk (nx θ σ (.inl .en) 0 0 0) 0 (ok.nx _ _ _ _) rfl h0 rfl (heap_nx σ _ _ _ _)
       (inpA σ _ (by simp) (by simp) _ _ _) rfl
     exact (sumTo_ruleA ok hrec .en (by rw [hm]; rfl) (by rw [hm]; simp) (by rw [hm]; simp) (by rw [hm]; rfl) rfl h2).mono
@@ -147,11 +139,7 @@ theorem EvOK.fail (x : Tree) : EvOK θ supp .fail x [] := by
   obtain ⟨o, a, rfl, hl | hl⟩ := Fm.codeShape_of_decode hF
   · refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
     have hm1' : σ1.mode = .D 8 := by rw [hm1]; congr 1; exact Fin.ext hl
-    have hrec : ((.N, ![σ1.regs (laM σ1.mode), 0, 0, 0]) : Rec Kd) ∈ σ1.heap := by
-      rw [hm1']
-      change ((.N, ![σ1.regs 1, 0, 0, 0]) : Rec Kd) ∈ σ1.heap
-      rw [h11]
-      exact ok1.nil
+    have hrec := ok1.nil_load hm1' h11
     exact sumTo_stuck ok1 hrec (by rw [hm1']; rfl) (by rw [hm1']; simp) (by
       rw [hm1']
       rintro ⟨h, -⟩
