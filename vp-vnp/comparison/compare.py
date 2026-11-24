@@ -225,6 +225,19 @@ def benchmark_rows(source, revisions):
                    ", ".join(str(len(r["built_modules"])) for r in stages)]
 
 
+
+def module_benchmarks(archive):
+    modules = ("Paper.Pieces", "Nc.Dl.Cut", "Nc.Flag.Act", "Nc.Tow.Slp2", "Nc.Tow.Slp3", "Nc.Tow.Slp4", "Paper.Cuts")
+    for module in modules:
+        for side in ("before", "after"):
+            readings = []
+            for trial in range(1, 4):
+                proof = next(row for row in archive[f"{side}/clean-{trial}.jsonl"] if row.get("stage") == "proof")
+                readings.append(proof.get("module_elapsed_seconds", {}).get(module))
+            yield [f"`{module}`", side,
+                   ", ".join(f"{reading:g}" if reading is not None else "—" for reading in readings),
+                   f"{statistics.median(readings):g}" if all(reading is not None for reading in readings) else "—"]
+
 def verification(archive, revisions):
     def stages(side, name, revision):
         metadata, *rows = archive[f"{side}/{name}.jsonl"]
@@ -360,6 +373,12 @@ def main():
         table(["Scenario", "Revision", "Wall trials (s)", "Wall median (range), s", "CPU median (s)",
                "OS peak RSS median (GiB)", "Project modules rebuilt per trial"],
               benchmark_rows(args.timings, [inv["revision"] for inv in inventories]))
+        if args.timings.is_file():
+            print("### Selected module job timings from the clean builds\n")
+            print("The values are Lake’s reported elapsed job times, with its rounding and shared CPU load. "
+                  "The whole-build timings above measure elapsed time for the project.\n")
+            table(["Module", "Revision", "Lake elapsed trials (s)", "Median (s)"],
+                  module_benchmarks(load(args.timings)))
     if args.verification:
         verification(load(args.verification), [inv["revision"] for inv in inventories])
 

@@ -24,8 +24,17 @@ def record_file(path):
         if row.get("log_sha256", sha) != sha:
             raise ValueError(f"log digest mismatch: {log}")
         row["log_sha256"] = sha
+        clean_proof = records[0]["scenario"] == "clean" and row["stage"] == "proof"
+        if clean_proof or "warnings" not in row:
+            log_text = log.read_text(errors="replace")
         if "warnings" not in row:
-            row["warnings"] = warning_counts(log.read_text(errors="replace"))
+            row["warnings"] = warning_counts(log_text)
+        if clean_proof:
+            module_names = set(row["built_modules"])
+            row["module_elapsed_seconds"] = {
+                name: float(seconds) for name, seconds in re.findall(
+                    r"\[\d+/\d+\] Built (\S+) \(([\d.]+)s\)", log_text) if name in module_names
+            }
     return records
 
 
