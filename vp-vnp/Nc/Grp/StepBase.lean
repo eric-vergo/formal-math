@@ -24,10 +24,6 @@ variable {Γ S Q : Type} [Fintype Γ] [DecidableEq Γ] [Fintype S] [DecidableEq 
   {o : M.N → Fin U1} {grp : Fin (K + K + A') → Gr} {g : Gr}
   {key : Cell M U0 U1 → List Bool} {dkey : Fin (K + K) × Fin U0 → List Bool}
 
-theorem ofBits_injective : Function.Injective ofBits := by
-  intro v w h
-  rw [← path_ofBits v, h, path_ofBits]
-
 variable (θ mu cb kinds T key) in
 /-- The instructions do what the step does. -/
 def StepOK (I : List Ins) (s : WStep A (Cell M U0 U1) (UW ub)) : Prop :=

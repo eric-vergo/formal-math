@@ -255,7 +255,7 @@ theorem foldB_doesT {step : Fm} {encE : ε → Tree} {enc : β → Tree} {f : ε
         (8 + d x + 2 + 8) := by
       refine (e2.replace ?_).mono (by omega)
       simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.map_cons, List.map_nil, one_mul, mul_one,
-        List.map_map, flatMap_single]
+        List.map_map, ← List.map_eq_flatMap]
       rfl
     -- apply the program to the new state
     have hR : ∀ b ∈ f x s, Does θ (Fm.ofTree (foldB step).code)

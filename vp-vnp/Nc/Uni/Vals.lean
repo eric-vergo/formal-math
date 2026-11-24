@@ -15,6 +15,8 @@ set_option linter.unusedSimpArgs false
 
 namespace Nc.Uni
 
+private theorem flatMap_nil {α β : Type*} (l : List α) : (l.flatMap fun _ => ([] : List β)) = [] := by simp
+
 open Finset
 
 variable {A : Type} [CommRing A] {M K : Type} [Fintype M] [DecidableEq M] [Fintype K] [DecidableEq K] (P : Mach A M K)
@@ -87,7 +89,7 @@ theorem emX_md_true (x : XP P) : emX P x (tp .md true) = (x.2.2.1.map (fun s => 
   have h3 : emU x.2.2.2.2.2 (tp .md true) = [] := emU_other _ (by simp) (by simp) (by simp) (by simp)
   unfold emX
   rw [h1, h3]
-  simp [h2, emSt, emEd, emAp, on, flatMap_single', List.map_map, Function.comp_def]
+  simp [h2, emSt, emEd, emAp, on, ← List.map_eq_flatMap, List.map_map, Function.comp_def]
 
 theorem emX_md_false (x : XP P) : emX P x (tp .md false) = (P.m0 :: x.2.2.1.map fun s => P.dst s.1).map .md := by
   have h1 : ∀ l, (emIn P.m0 P.kN l (tp .md false) : List (Sy M K)) = [.md P.m0] := by
@@ -97,7 +99,7 @@ theorem emX_md_false (x : XP P) : emX P x (tp .md false) = (P.m0 :: x.2.2.1.map 
   have h3 : emU x.2.2.2.2.2 (tp .md false) = [] := emU_other _ (by simp) (by simp) (by simp) (by simp)
   unfold emX
   rw [h1, h3]
-  simp [h2, emSt, emEd, emAp, on, flatMap_single', List.map_map, Function.comp_def]
+  simp [h2, emSt, emEd, emAp, on, ← List.map_eq_flatMap, List.map_map, Function.comp_def]
 
 theorem emX_cp_true (x : XP P) : emX P x (tp .cp true) = bws (x.2.1.map cn ++ [true :: x.2.2.2.1.2]) := by
   have h1 : ∀ l, (emIn P.m0 P.kN l (tp .cp true) : List (Sy M K)) = [] := by
@@ -147,7 +149,7 @@ theorem emX_lk_true (x : XP P) : emX P x (tp .lk true) = x.2.2.2.2.1 := by
   have h3 : emU x.2.2.2.2.2 (tp .lk true) = [] := emU_other _ (by simp) (by simp) (by simp) (by simp)
   unfold emX
   rw [h1, h3]
-  simp [h2, emSt, emEd, emAp, on, flatMap_nil']
+  simp [h2, emSt, emEd, emAp, on, flatMap_nil]
 
 theorem emX_lk_false (x : XP P) : emX P x (tp .lk false) = encW ((lks x).map fun c => (true, oc c)) := by
   have h1 : ∀ l, (emIn P.m0 P.kN l (tp .lk false) : List (Sy M K)) = [] := by
@@ -166,7 +168,7 @@ theorem emX_ls_true (x : XP P) : emX P x lsT = emU x.2.2.2.2.2 lsT := by
     intro r; simp [emCt, on]
   unfold emX
   rw [h1]
-  simp [h2, emSt, emEd, emAp, on, flatMap_nil']
+  simp [h2, emSt, emEd, emAp, on, flatMap_nil]
 
 theorem emX_ls_false (x : XP P) :
     emX P x lsF = encW ((dfs x).map fun c => (false, oc c)) ++ (x.2.2.2.2.1 ++ .bar :: emU x.2.2.2.2.2 lsF) := by
@@ -186,7 +188,7 @@ theorem emX_bk (x : XP P) (b : Bl K) (s : Bool) : emX P x (tp (.bk b) s) = emU x
     intro r; simp [emCt, on]
   unfold emX
   rw [h1]
-  simp [h2, emSt, emEd, emAp, on, flatMap_nil']
+  simp [h2, emSt, emEd, emAp, on, flatMap_nil]
 
 theorem emX_cm (x : XP P) (k s : Bool) : emX P x (tp (.cm k) s) = emU x.2.2.2.2.2 (tp (.cm k) s) := by
   have h1 : ∀ l, (emIn P.m0 P.kN l (tp (.cm k) s) : List (Sy M K)) = [] := by
@@ -195,7 +197,7 @@ theorem emX_cm (x : XP P) (k s : Bool) : emX P x (tp (.cm k) s) = emU x.2.2.2.2.
     intro r; simp [emCt, on]
   unfold emX
   rw [h1]
-  simp [h2, emSt, emEd, emAp, on, flatMap_nil']
+  simp [h2, emSt, emEd, emAp, on, flatMap_nil]
 
 theorem emX_inp (x : XP P) : emX P x (.inp ()) = (x.2.2.1.flatMap fun s => (P.rd s.1).toList).map .bit := by
   have h1 : ∀ l, (emIn P.m0 P.kN l (.inp ()) : List (Sy M K)) = [] := by

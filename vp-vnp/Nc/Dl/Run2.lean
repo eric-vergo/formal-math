@@ -102,13 +102,6 @@ section Bits
 /-- A content from a bit list. -/
 def wOf (ub : ℕ) (u : List Bool) : UW ub := some fun j => u.reverse.getD j false
 
-theorem length_allBits {n : ℕ} {u : List Bool} (h : u ∈ allBits n) : u.length = n := by
-  induction n generalizing u with
-  | zero => simp [allBits] at h; simp [h]
-  | succ n ih =>
-    simp only [allBits, List.mem_append, List.mem_map] at h
-    rcases h with ⟨v, hv, rfl⟩ | ⟨v, hv, rfl⟩ <;> simp [ih hv]
-
 theorem mem_allBits {n : ℕ} {u : List Bool} (h : u.length = n) : u ∈ allBits n := by
   induction n generalizing u with
   | zero => simp [allBits, List.eq_nil_of_length_eq_zero h]
@@ -164,7 +157,7 @@ theorem nodup_optsB (c : Bool) : (optsB ub c).Nodup := by
   · simp
   · simp only [if_true]
     refine List.Nodup.map_on (fun u hu u' hu' h => ?_) (nodup_allBits ub)
-    exact wOf_inj (length_allBits hu) (length_allBits hu') h
+    exact wOf_inj (length_of_mem_allBits hu) (length_of_mem_allBits hu') h
 
 theorem mem_optsB {c : Bool} {w : UW ub} : w ∈ optsB ub c ↔ (w ≠ none ↔ c = true) := by
   unfold optsB
@@ -240,7 +233,7 @@ theorem phase9 {st : NmT S M U0 U1 pS → Tree} {cut : G.Uid (K + K) U0 M.N U1 �
     · simp only [if_true, List.map_map]
       rw [if_neg (by simp [bit, one])]
       refine List.map_congr_left fun u hu => ?_
-      have h1 := uwBits_wOf (length_allBits hu)
+      have h1 := uwBits_wOf (length_of_mem_allBits hu)
       simp only [Function.comp_apply, wOf, ov9]
       rw [wOf] at h1
       simp only [uwBits] at h1

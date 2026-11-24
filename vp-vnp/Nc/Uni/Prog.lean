@@ -186,33 +186,26 @@ def st2 : Zc K → List (Sy M K)
   | .tp .ls s => if s then [] else [.mark, .dot]
   | _ => []
 
-theorem flatMap_single' {α β : Type*} (l : List α) (f : α → β) : (l.flatMap fun a => [f a]) = l.map f := by
-  induction l with
-  | nil => rfl
-  | cons a l ih => rw [List.flatMap_cons, ih]; rfl
-
-theorem flatMap_nil' {α β : Type*} (l : List α) : (l.flatMap fun _ => ([] : List β)) = [] := by simp
-
 theorem emSt_eq (x : P.Rl × List (Fin 9 → Bool)) (z : Zc K) :
     st0 P x.1 z ++ (x.2.flatMap (fun v => st1 P x.1 v z) ++ st2 z) = emSt P x z := by
   obtain ⟨r, w⟩ := x
   match z with
   | .tp (.rg i) s =>
-    simp only [st0, st1, st2, emSt, flatMap_single', rgw, bw, List.nil_append, cw]
+    simp only [st0, st1, st2, emSt, ← List.map_eq_flatMap, rgw, bw, List.nil_append, cw]
     cases s <;> simp [List.map_map, Function.comp_def]
   | .tp .md s => simp [st0, st1, st2, emSt]
   | .tp .cp s => simp [st0, st1, st2, emSt]
   | .tp .fr s =>
     cases s
     · simp [st0, st1, st2, emSt]
-    · simp [st0, st1, st2, emSt, flatMap_single', bw, cw, List.map_map, Function.comp_def]
+    · simp [st0, st1, st2, emSt, ← List.map_eq_flatMap, bw, cw, List.map_map, Function.comp_def]
   | .tp .lk s =>
     cases s
-    · simp [st0, st1, st2, emSt, flatMap_single', rec'_eq, ldc, List.map_map, Function.comp_def]
+    · simp [st0, st1, st2, emSt, ← List.map_eq_flatMap, rec'_eq, ldc, List.map_map, Function.comp_def]
     · simp [st0, st1, st2, emSt]
   | .tp .ls s =>
     cases s
-    · simp [st0, st1, st2, emSt, flatMap_single', rec'_eq, alc, List.map_map, Function.comp_def]
+    · simp [st0, st1, st2, emSt, ← List.map_eq_flatMap, rec'_eq, alc, List.map_map, Function.comp_def]
     · simp [st0, st1, st2, emSt]
   | .tp (.bk b) s => simp [st0, st1, st2, emSt]
   | .tp (.cm k) s => simp [st0, st1, st2, emSt]
@@ -268,7 +261,7 @@ theorem runs_ed (mh : M) : Runs ((∑ v : Fin 5 → Bool, (2 * ∑ z, (ed1 v z :
     | .tp (.rg i) s =>
       cases s
       · simp [ed1, emEd, on, mem_rgs]
-      · simp [ed1, emEd, on, mem_rgs, flatMap_single', bw, List.map_map, Function.comp_def]
+      · simp [ed1, emEd, on, mem_rgs, ← List.map_eq_flatMap, bw, List.map_map, Function.comp_def]
     | .tp .md s => cases s <;> simp [ed1, emEd, on, mem_rgs]
     | .tp .cp s => cases s <;> simp [ed1, emEd, on, mem_rgs, bw]
     | .tp .fr s => simp [ed1, emEd, on, mem_rgs]

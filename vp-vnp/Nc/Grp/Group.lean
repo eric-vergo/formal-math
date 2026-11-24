@@ -135,7 +135,7 @@ theorem sumL_script [Fintype Gr] (hkey : Function.Injective (Sum.elim key dkey))
     rfl
   have hI : script (fun z => (qn Q z : ℕ)) cb P q x ρ n o grp g key dkey tg b = l.flatMap I ++ endIns P n o grp g key b := by
     simp only [l, I, List.flatMap_append, List.flatMap_map, script, Sum.elim_inl, Sum.elim_inr]
-    rw [flatMap_single]
+    rw [← List.map_eq_flatMap]
   rw [hI, ← hl]
   refine sumL_steps (key := key) l I s ?_ _ _ ?_ _ _ rep_nil
   · intro i hi

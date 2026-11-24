@@ -147,7 +147,7 @@ theorem segStepF_does (sep : List Bool) (c : ℕ) (hsep : sep.length ≤ c) (it 
     refine ((Does.ite_true (Gives.id x).hd.hd hne e7).replace ?_).mono ?_
     · congr 1
       rw [bindL_pure _ (fun out => out)]
-      simp [segOne, flatMap_single]
+      simp [segOne, ← List.map_eq_flatMap]
     · simp only [List.length_cons]
       nlinarith
 

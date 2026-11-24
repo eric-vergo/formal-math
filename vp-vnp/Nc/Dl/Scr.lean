@@ -195,7 +195,7 @@ theorem expand_slotTm {d1 : Tree} (hd1 : ∀ d : Fin D, C.dt d = d1 ↔ d.1 = 1)
     rw [hd1, tab.hcons]
     split_ifs with hc <;> simp [hc]
   simp only [e]
-  rw [flatMap_if, flatMap_single, G.Plan.ids, ← List.map_reverse, ← List.filter_reverse, List.map_map]
+  rw [flatMap_if, ← List.map_eq_flatMap, G.Plan.ids, ← List.map_reverse, ← List.filter_reverse, List.map_map]
   rfl
 
 theorem expand_roleTm {d1 : Tree} (hd1 : ∀ d : Fin D, C.dt d = d1 ↔ d.1 = 1) (r : M.R) :
@@ -299,7 +299,7 @@ theorem expand_scriptTm {d1 : Tree} {gt : Fin mm → Tree} (hd1 : ∀ d : Fin D,
         refine if_congr (hg _) ?_ rfl
         simp [expand_roleTm h hd1]
       simp only [e]
-      rw [flatMap_if, flatMap_single, Grp.roleList, List.map_map]
+      rw [flatMap_if, ← List.map_eq_flatMap, Grp.roleList, List.map_map]
       rfl
   · simp only [expand_endTm h hd1 hgt hb]
     rw [Grp.endIns]
