@@ -114,26 +114,10 @@ theorem len_q (X V Y U m m' k k' : ℤ × ℤ) (τ : ℝ) (hτ : 0 < τ) :
     rw [one_div, inv_mul_eq_div]
     simp only [pow_two] at h
     linarith
-  have e1 : mean ((2 : ℝ) • (df W X V * df W X V + df W Y U * df W Y U)) =
-      2 * (len W (X - V) ^ 2 + len W (Y - U) ^ 2) := by
-    rw [mean_smul, mean_add, ← nm_sq (hb _ _), ← nm_sq (hb _ _), H.nm_df, H.nm_df]
-    all_goals with_reducible repeat' first | exact hb _ _ | apply Bd.smul | apply Bd.add | apply Bd.mul
-  rw [e1] at key
-  have e2 : mean (df W X V * df W X m + df W X V * df W V m' + df W X V * df W X k
-        + df W X V * df W V k' + (df W Y U * df W Y m + df W Y U * df W U m'
-        + df W Y U * df W U k + df W Y U * df W Y k')
-        + τ • (df W X V * df W X V + df W Y U * df W Y U)
-        + (1 / (2 * τ)) • (df W m m' * df W m m' + df W k k' * df W k k')) =
-      mean (df W X V * df W X m) + mean (df W X V * df W V m') + mean (df W X V * df W X k)
-        + mean (df W X V * df W V k') + (mean (df W Y U * df W Y m) + mean (df W Y U * df W U m')
-        + mean (df W Y U * df W U k) + mean (df W Y U * df W Y k'))
-        + τ * (len W (X - V) ^ 2 + len W (Y - U) ^ 2)
-        + 1 / (2 * τ) * (len W (m - m') ^ 2 + len W (k - k') ^ 2) := by
-    rw [mean_add, mean_add, mean_add, mean_add, mean_add, mean_add, mean_add, mean_add,
-      mean_add, mean_smul, mean_smul, mean_add, mean_add, ← nm_sq (hb _ _), ← nm_sq (hb _ _),
-      ← nm_sq (hb _ _), ← nm_sq (hb _ _), H.nm_df, H.nm_df, H.nm_df, H.nm_df]
-    all_goals with_reducible repeat' first | exact hb _ _ | apply Bd.smul | apply Bd.add | apply Bd.mul
-  rw [e2] at key
+  have mean_sq (u v : ℤ × ℤ) : mean (df W u v * df W u v) = len W (u - v) ^ 2 := by
+    rw [← nm_sq (hb _ _), H.nm_df]
+  simp (disch := with_reducible repeat' first | exact hb _ _ | apply Bd.smul | apply Bd.add | apply Bd.mul)
+    only [mean_add, mean_smul, mean_sq] at key
   have cs : ∀ a b c d : ℤ × ℤ, mean (df W a b * df W c d) ≤ len W (a - b) * len W (c - d) := by
     intro a b c d
     rw [← H.nm_df, ← H.nm_df]
