@@ -438,25 +438,17 @@ theorem prop_flat_lower_lengths {k : ℕ} (hk : 1 ≤ k) (A : Finset (Fin k)) (h
   rw [h8]
   -- the saving
   have h9 : k / 9 ≤ z * (√2)⁻¹ * (2 * qnum A) := by
-    have e1 : z * (√2)⁻¹ * (2 * qnum A) = η * √(2 * qnum A) := by
-      have hq : qnum A = √(qnum A) * √(qnum A) := (Real.mul_self_sqrt hQ0.le).symm
-      have ht : (2 : ℝ) = √2 * √2 := (Real.mul_self_sqrt (by norm_num)).symm
-      rw [Real.sqrt_mul (by norm_num), hz]
-      have h2' : √2 ≠ 0 := by positivity
-      have hq' : √(qnum A) ≠ 0 := by positivity
-      field_simp
-      nlinarith [Real.sq_sqrt hQ0.le, Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)]
-    rw [e1]
-    have e2 : 2 / 3 * k * √k ≤ √(2 * qnum A) := by
-      refine Real.le_sqrt_of_sq_le ?_
-      rw [mul_pow, mul_pow, Real.sq_sqrt hk0.le]
-      nlinarith
-    calc (k : ℝ) / 9 = η * (2 / 3 * k * √k) := by
-          rw [hη]
-          have : √(k : ℝ) ≠ 0 := by positivity
-          field_simp
-          norm_num
-      _ ≤ _ := mul_le_mul_of_nonneg_left e2 hη0.le
+    apply (sq_le_sq₀ (by positivity) (by positivity)).1
+    calc
+      ((k : ℝ) / 9) ^ 2 = 2 * η ^ 2 * (2 / 9 * k ^ 3) := by
+        rw [hηsq]
+        field_simp
+        ring
+      _ ≤ 2 * η ^ 2 * qnum A := mul_le_mul_of_nonneg_left hQ (by positivity)
+      _ = (z * (√2)⁻¹ * (2 * qnum A)) ^ 2 := by
+        simp only [hz, mul_pow, div_pow, inv_pow, Real.sq_sqrt hQ0.le,
+          Real.sq_sqrt (show 0 ≤ (2 : ℝ) by norm_num)]
+        field_simp [hQ0.ne']
   have h10 : (k : ℝ) * (k - 1) * η ^ 2 ≤ k / 36 := by
     rw [hηsq]
     have : (k : ℝ) * (k - 1) * (1 / (36 * k)) = (k - 1) / 36 := by field_simp
