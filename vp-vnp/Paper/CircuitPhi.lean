@@ -76,7 +76,7 @@ theorem lem_circuit_value (mu : Letter S (Fin n) Γ → Matrix Q Q F) (i e : Q) 
     · convert h1 <;> rfl
     · refine Eq.trans ?_ h2
       refine Finset.prod_congr rfl fun r _ => ?_
-      by_cases hr : ∀ l ∈ hLits i e r, Sum.elim (code N u) (hot g) l.1 = l.2 <;> simp [rLits, rWt, hr]
+      simp [rLits, rWt]
   have hr : runVal mu i e t u = ∑ y : (Fin t → Letter S (Fin n) Γ) × (Fin (t + 1) → Q),
       if Matched (List.ofFn y.1) u ∧ y.2 0 = i ∧ y.2 (Fin.last t) = e then
         ∏ τ, mu (y.1 τ) (y.2 (Fin.castSucc τ)) (y.2 (Fin.succ τ)) else 0 := by
