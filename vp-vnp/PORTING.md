@@ -2,8 +2,9 @@
 
 This branch builds the development with `leanprover/lean4:v4.36.0` and Mathlib at the tag `v4.36.0`
 (`fc4f59e577feb1a4956671bc04ac18aaaf8cd842`); upstream `vp-vnp` uses Lean 4.33.1 and Mathlib
-`0df444a360eaa60ab8c11dca51a86af692955474`. This file lists every change to a Lean file that the move
-needed.
+`0df444a360eaa60ab8c11dca51a86af692955474`. This file lists every change to a Lean file that the new
+toolchain and Mathlib needed. The move of the Comparator files to Comparator/VpVnp/ (and with it the
+import in scripts/PrintAxioms.lean) is described in the README; scripts/StatementSpelling.lean is new.
 
 ## Statements whose spelling changed
 

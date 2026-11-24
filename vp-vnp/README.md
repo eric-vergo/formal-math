@@ -28,7 +28,7 @@ To check the statements against upstream, with a Git remote `upstream` for anthr
 
     python3 -I scripts/statement-diff.py upstream/vp-vnp HEAD
 
-It compares every declaration of Statement.lean, the challenge, the solution, Paper.lean and Paper/ (theorems up to `:=`, definitions and structures in full, comments removed) and reports 733 entries the same and the four above as changed only in the spelling of the coefficient (exit status 2; 0 means no change, 1 any other change).
+It compares every declaration of Statement.lean, the challenge, the solution, Paper.lean and Paper/ (theorems up to `:=`, definitions and structures in full, comments removed) and reports 733 entries the same (declarations, and for each file its other top-level commands) and the four above as changed only in the spelling of the coefficient (exit status 2; 0 means no change, 1 any other change).
 
 The five theorems were also checked outside Lean's kernel: the toolchain's exporter `leanexport` wrote them with every constant they depend on (61,815 declarations), and the two checkers that ship with Lean 4.36.0, `con-leche --verified` and `con-ron --verified`, each accepted the export.
 
