@@ -350,6 +350,22 @@ theorem contracting_approx_rate {K : Type} [Field K] (hK : Contracting K)
   exact quasi_of_exponents (P := fun m s => Approximates (G m) s)
     (fun _ _ _ hst ⟨Q, hQ, hQf⟩ => ⟨Q, Computes.mono hQ hst, hQf⟩) h
 
+open NS1 in
+/-- The contracting case for a family that is complete for grid sums. -/
+theorem contracting_complete {K : Type} [Field K] (hK : Contracting K)
+    {G : ∀ S, MvPolynomial (Fin S × Fin S) K} {κ : ℕ} (hG : Nc.GridComplete K G κ) :
+    ∃ C M₁ : ℕ, ∀ M ≥ M₁, ∀ a : ℕ, lg M ^ (C * a) ≤ M → ¬ Nc.Computes (G M) (M ^ a) := by
+  obtain ⟨C, M₁, h⟩ := contracting_approx_complete hK hG
+  exact ⟨C, M₁, fun M hM a ha hc => h M hM a ha (approximates_of_computes hc)⟩
+
+/-- **Paper: Theorem thm:contracting.** "In the contracting case there are c > 0 and m₀ such that for m ≥ m₀ every
+circuit over k for PERM_m has more than 2^(c(log m)²/log log m) gates." -/
+theorem thm_contracting {K : Type} [Field K] (hK : Contracting K) (h2 : (2 : K) ≠ 0) :
+    ∃ c : ℝ, 0 < c ∧ ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Nc.Computes (Nc.genPerm K m) s →
+      (2 : ℝ) ^ (c * Real.logb 2 m ^ 2 / Real.logb 2 (Real.logb 2 m)) < s := by
+  obtain ⟨c, hc, m₀, h⟩ := contracting_approx_rate hK (gridComplete_perm h2)
+  exact ⟨c, hc, m₀, fun m hm s hs => h m hm s (approximates_of_computes hs)⟩
+
 /-- Both cases over KK, for circuits with constants in KK[ε,ε⁻¹]. -/
 theorem approx_rate_closed {K : Type} [Field K] {G : ∀ S, MvPolynomial (Fin S × Fin S) K} {κ : ℕ}
     (hG : GridComplete K G κ) :
