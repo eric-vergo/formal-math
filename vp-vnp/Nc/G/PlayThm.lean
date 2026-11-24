@@ -123,14 +123,18 @@ theorem cur_congr (hP : P.Ok cap) {x : ℕ} (h : ∀ ν : M.N, ν.1.1 < x → o 
   exact and_congr_right fun _ => forall_congr' fun z => imp_congr_right fun hz => by
     rw [cons_congr hP h z hz.le]
 
+/-- At a move, the prefix fixes its layer count and its incoming units. -/
+private theorem roleAt_eq_of_prefix (hP : P.Ok cap) {x : Fin E}
+    (h : ∀ ν : M.N, ν.1.1 < x.1 → o ν = o' ν) (p : (M.kind x).Ro) (y : Uid A U0 M.N U1 → UW ub) :
+    roleAt P n o' ⟨x, p⟩ y = role M x p (P.num n o x) (fun e => P.ids n o ⟨x, e.1⟩) o' y := by
+  have ids (e : (M.kind x).SlAt p) : P.ids n o ⟨x, e.1⟩ = P.ids n o' ⟨x, e.1⟩ :=
+    Plan.ids_congr (cons_congr hP h ⟨x, e.1⟩ le_rfl)
+  rw [roleAt, num_congr hP h x le_rfl, funext ids]
+
 theorem roleAt_congr_o (hP : P.Ok cap) {x : Fin E} (h : ∀ ν : M.N, ν.1.1 < x.1 → o ν = o' ν)
     (ho : ∀ ν, o ⟨x, ν⟩ = o' ⟨x, ν⟩) (p : (M.kind x).Ro) (y : Uid A U0 M.N U1 → UW ub) :
     roleAt P n o ⟨x, p⟩ y = roleAt P n o' ⟨x, p⟩ y := by
-  unfold roleAt
-  have e1 : P.num n o x = P.num n o' x := num_congr hP h x le_rfl
-  have e2 : (fun e : (M.kind x).SlAt p => P.ids n o ⟨x, e.1⟩) = fun e => P.ids n o' ⟨x, e.1⟩ :=
-    funext fun e => Plan.ids_congr (cons_congr hP h ⟨x, e.1⟩ le_rfl)
-  simp only [e1, e2]
+  rw [roleAt_eq_of_prefix hP h p y]
   exact role_congr ho (fun _ _ _ => rfl) fun _ _ => rfl
 
 /-- The joint weight before move `x`. -/
@@ -341,6 +345,147 @@ theorem upd_eq_self (o : M.N → Fin U1) (x : Fin E) : upd M o x (fun ν => o �
     rw [upd_self]
   · rw [upd_ne _ _ h]
 
+/-- Full outcome assignments representing a prefix. Unplayed moves carry the default outcome. -/
+private noncomputable def outcomePrefixes (M : Sys F (A + A') E) (d : Fin U1) (t : ℕ) :
+    Finset (M.N → Fin U1) := by
+  classical
+  exact univ.filter fun o => ∀ ν : M.N, t ≤ ν.1.1 → o ν = d
+
+open Classical in
+/-- Extending a prefix by one move amounts to freely choosing the outcomes of that move.
+The inverse reads the local outcomes and resets that move to the default. -/
+private theorem sum_outcomePrefixes_succ {B : Type*} [AddCommMonoid B] (d : Fin U1) (x : Fin E)
+    (f : (M.N → Fin U1) → B) :
+    (∑ o ∈ outcomePrefixes M d x.val, ∑ oo : (M.kind x).Cn → Fin U1, f (upd M o x oo)) =
+      ∑ o ∈ outcomePrefixes M d (x.val + 1), f o := by
+  rw [← Finset.sum_product']
+  refine Finset.sum_bij' (i := fun q _ => upd M q.1 x q.2)
+    (j := fun o _ => (upd M o x fun _ => d, fun ν => o ⟨x, ν⟩)) ?_ ?_ ?_ ?_ ?_
+  · rintro ⟨o, oo⟩ h
+    simp only [outcomePrefixes, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and, and_true] at h ⊢
+    intro ν hν
+    rw [upd_ne]
+    · exact h ν (Nat.le_of_succ_le hν)
+    · rintro h'
+      rw [h'] at hν
+      exact absurd hν (Nat.not_succ_le_self x.val)
+  · intro o h
+    simp only [outcomePrefixes, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and, and_true] at h ⊢
+    intro ν hν
+    obtain ⟨x', ν⟩ := ν
+    by_cases e : x' = x
+    · subst e
+      rw [upd_self]
+    · rw [upd_ne _ _ e]
+      exact h _ (lt_of_le_of_ne hν fun h => e (Fin.ext h.symm))
+  · rintro ⟨o, oo⟩ h
+    simp only [outcomePrefixes, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and, and_true] at h
+    ext1
+    · simp only [upd_upd]
+      have : (fun _ : (M.kind x).Cn => d) = fun ν => o ⟨x, ν⟩ := funext fun ν => (h ⟨x, ν⟩ le_rfl).symm
+      rw [this, upd_eq_self]
+    · funext ν
+      exact upd_self _ _ _ ν
+  · intro o _
+    simp only [upd_upd]
+    exact upd_eq_self o x
+  · rintro ⟨o, oo⟩ _
+    rfl
+
+/-- Causality preserves the goodness of all preceding moves when a new outcome is chosen.
+Thus the extended prefix is good precisely when its prefix and its last move are good. -/
+private theorem good_upd_succ {P : Plan M U0 U1} {cap : ℕ} (hP : P.Ok cap) (n : Fin A → Fin A → Fin (U0 + 1)) (o : M.N → Fin U1)
+    (x : Fin E) (oo : (M.kind x).Cn → Fin U1) :
+    (∀ z : Fin E, z.val < x.val + 1 → P.good n (upd M o x oo) z) ↔
+      (∀ z : Fin E, z.val < x.val → P.good n o z) ∧ P.good n (upd M o x oo) x := by
+  have earlier (z : Fin E) (hz : z.val < x.val) : P.good n (upd M o x oo) z ↔ P.good n o z :=
+    hP.causal'' n _ o z fun ν hν => upd_ne _ _ (ne_of_lt (lt_of_le_of_lt hν hz))
+  constructor
+  · intro h
+    exact ⟨fun z hz => (earlier z hz).1 (h z (Nat.lt_succ_of_lt hz)), h x (Nat.lt_succ_self _)⟩
+  · rintro ⟨h, hx⟩ z hz
+    rcases Nat.lt_succ_iff_lt_or_eq.1 hz with hz | hz
+    · exact (earlier z hz).2 (h z hz)
+    · exact (Fin.ext hz : z = x).symm ▸ hx
+
+/-- The position value after a good prefix, with bad prefixes assigned weight zero. -/
+private noncomputable def prefixValue (P : Plan M U0 U1) (n : Fin A → Fin A → Fin (U0 + 1))
+    (init : Fin (A + A') → (Uid A U0 M.N U1 → UW ub) → F) (t : ℕ) (o : M.N → Fin U1) : F := by
+  classical
+  exact if ∀ z : Fin E, z.val < t → P.good n o z then
+    posVal (hold0 M.np) (hold1 M.np) none (Plan.seenAt n o t) (P.cur n o t) (tabUpTo P n o init t)
+  else 0
+
+open Classical in
+/-- A prefix's weight is the sum of the weights of its one-move extensions. -/
+private theorem prefixValue_eq_sum {P : Plan M U0 U1} {cap : ℕ} (hP : P.Ok cap) (hub : 0 < ub)
+    (hgood : ∀ n o x, P.Poss n o ub x → P.good n o x) {m : Fin E → ℕ}
+    (hm : ∀ x, (M.kind x).Le (m x)) (hU1 : ∀ x, cap * (m x + (M.kind x).lam) + 1 ≤ U1)
+    (n : Fin A → Fin A → Fin (U0 + 1)) (init : Fin (A + A') → (Uid A U0 M.N U1 → UW ub) → F)
+    (hloc : ∀ a y y', (∀ b c k, y (.init b c k) = y' (.init b c k)) → init a y = init a y')
+    (hinit : ∀ a y, init a y ≠ 0 → ∀ id ∈ seen0 (N := M.N) (U1 := U1) n,
+      Holds (hold0 M.np) (hold1 M.np) a id → y id ≠ none) (x : Fin E) (o : M.N → Fin U1) :
+    prefixValue P n init x.val o =
+      ∑ oo : (M.kind x).Cn → Fin U1, prefixValue P n init (x.val + 1) (upd M o x oo) := by
+  unfold prefixValue
+  by_cases hall : ∀ z : Fin E, z.1 < x.val → P.good n o z
+  swap
+  · rw [ite_eq_right hall]
+    symm
+    refine Finset.sum_eq_zero fun oo _ => ite_eq_right fun h => hall ((good_upd_succ hP n o x oo).1 h).1
+  rw [ite_eq_left hall]
+  rw [posVal_move' (hold0 M.np) (hold1 M.np) none (Plan.seenAt n o x.val) (P.cur n o x.val)
+    (outSet P n o x) (fun id h => ?_)
+    (fun id h => (Plan.mem_cur.1 h).1) (fun oo : (M.kind x).Cn → Fin U1 => newUnits M x (upd M o x oo))
+    (fun oo => ?_) (tabUpTo P n o init x.val) (fun oo y z => ?_)
+    (fun oo y => if P.good n (upd M o x oo) x then
+      ∏ p, role M x p (P.num n o x) (fun e => P.ids n o ⟨x, e.1⟩) (upd M o x oo)
+      (y (M.part x p)) else 0) (fun y hy h0 => ?_)]
+  · refine Finset.sum_congr rfl fun oo _ => ?_
+    by_cases hgo : P.good n (upd M o x oo) x
+    swap
+    · rw [ite_eq_right fun h => hgo ((good_upd_succ hP n o x oo).1 h).2]
+      simp only [hgo, ite_false, mul_zero, posVal, ite_self, Finset.sum_const_zero]
+    rw [ite_eq_left ((good_upd_succ hP n o x oo).2 ⟨hall, hgo⟩)]
+    simp only [hgo, ite_true]
+    set o' := upd M o x oo with ho'
+    have hlt : ∀ ν : M.N, ν.1.1 < x.1 → o ν = o' ν := by
+      exact fun ν hν => (upd_ne _ _ (ne_of_lt hν)).symm
+    have f1 : Plan.seenAt n o' (x.val + 1) = Plan.seenAt n o x.val ∪ newUnits M x o' := by
+      rw [seenAt_succ x, seenAt_congr hlt]
+    have f0 : outSet P n o x = outSet P n o' x := by
+      unfold outSet
+      congr 1
+      funext e
+      exact cons_congr hP hlt ⟨x, e⟩ le_rfl
+    have f2 : P.cur n o' (x.val + 1) = (P.cur n o x.val \ outSet P n o x) ∪ newUnits M x o' := by
+      rw [cur_succ hP x, ← cur_congr hP hlt, f0]
+    have f3 : tabUpTo P n o' init (x.val + 1) = fun y => tabUpTo P n o init x.val y *
+        ∏ p, role M x p (P.num n o x) (fun e => P.ids n o ⟨x, e.1⟩) o' (y (M.part x p)) := by
+      funext y
+      rw [tabUpTo_succ, ← tabUpTo_congr_o hP hlt]
+      congr 1
+      exact Finset.prod_congr rfl fun p _ => roleAt_eq_of_prefix hP hlt p _
+    rw [f1, f2, f3]
+  · obtain ⟨e, he⟩ := mem_outSet.1 h
+    exact hP.sub n o ⟨x, e⟩ he
+  · rw [Finset.disjoint_left]
+    intro id h1 h2
+    cases id with
+    | init a b k => exact init_not_mem_newUnits h2
+    | new ν k =>
+      have a1 := (new_mem_newUnits.1 h2).1
+      have a2 := (Plan.new_mem_seenAt.1 h1).1
+      rw [a1] at a2
+      exact lt_irrefl _ a2
+  · refine tabUpTo_congr hP hloc (fun a b c k => ?_) fun a ν k hν => ?_
+    · exact ext_of_not init_not_mem_newUnits
+    · refine ext_of_not fun h => ?_
+      have a1 := (new_mem_newUnits.1 h).1
+      rw [a1] at hν
+      exact lt_irrefl _ hν
+  · exact Paper.thm_tree_move hP hub hgood hm hU1 x hy fun a id hid ha => tabUpTo_ne_none hinit h0 hid ha
+
 open Classical in
 /-- **Paper: Units.** "Every possible outcome is good ...; so the sum may be restricted to good outcomes": a whole plan
 of moves keeps the value. -/
@@ -356,22 +501,19 @@ theorem _root_.Paper.thm_tree_moves {P : Plan M U0 U1} {cap : ℕ} (hP : P.Ok ca
         posVal (hold0 M.np) (hold1 M.np) none (Plan.seenAt n o E) (P.cur n o E) fun y =>
           ∏ a, partyTab P n o (init a) a (y a) else 0 := by
   let d : Fin U1 := ⟨0, hU⟩
-  let pre : ℕ → Finset (M.N → Fin U1) := fun x => univ.filter fun o => ∀ ν : M.N, x ≤ ν.1.1 → o ν = d
   have claim : ∀ x, x ≤ E → posVal (hold0 M.np) (hold1 M.np) (none : UW ub) (seen0 n) (seen0 n)
-      (fun y => ∏ a, init a (y a)) = ∑ o ∈ pre x, if ∀ x' : Fin E, x'.1 < x → P.good n o x' then
-        posVal (hold0 M.np) (hold1 M.np) none
-        (Plan.seenAt n o x) (P.cur n o x) (tabUpTo P n o init x) else 0 := by
+      (fun y => ∏ a, init a (y a)) = ∑ o ∈ outcomePrefixes M d x, prefixValue P n init x o := by
     intro x
     induction x with
     | zero =>
       intro _
-      have e1 : pre 0 = {fun _ => d} := by
+      have e1 : outcomePrefixes M d 0 = {fun _ => d} := by
         ext o
-        simp only [pre, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
+        simp only [outcomePrefixes, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton]
         constructor
         · exact fun h => funext fun ν => h ν (Nat.zero_le _)
         · rintro rfl ν _; rfl
-      rw [e1, Finset.sum_singleton]
+      rw [e1, Finset.sum_singleton, prefixValue]
       have e2 : (Plan.seenAt n (fun _ : M.N => d) 0 : Finset (Uid A U0 M.N U1)) = seen0 n := by
         ext id; simp [Plan.mem_seenAt]
       have e3 : P.cur n (fun _ : M.N => d) 0 = seen0 n := by
@@ -384,135 +526,16 @@ theorem _root_.Paper.thm_tree_moves {P : Plan M U0 U1} {cap : ℕ} (hP : P.Ok ca
       intro hx
       rw [ih (Nat.le_of_succ_le hx)]
       let xE : Fin E := ⟨x, hx⟩
-      have step : ∀ o ∈ pre x, (if ∀ x' : Fin E, x'.1 < x → P.good n o x' then
-          posVal (hold0 M.np) (hold1 M.np) none (Plan.seenAt n o x) (P.cur n o x)
-          (tabUpTo P n o init x) else 0) = ∑ oo : (M.kind xE).Cn → Fin U1,
-          if ∀ x' : Fin E, x'.1 < x + 1 → P.good n (upd M o xE oo) x' then posVal (hold0 M.np) (hold1 M.np) none
-          (Plan.seenAt n (upd M o xE oo) (x + 1)) (P.cur n (upd M o xE oo) (x + 1))
-          (tabUpTo P n (upd M o xE oo) init (x + 1)) else 0 := by
-        intro o _
-        have hgx : ∀ (oo : (M.kind xE).Cn → Fin U1), (∀ x' : Fin E, x'.1 < x + 1 → P.good n (upd M o xE oo) x') ↔
-            (∀ x' : Fin E, x'.1 < x → P.good n o x') ∧ P.good n (upd M o xE oo) xE := by
-          intro oo
-          have hc : ∀ x' : Fin E, x'.1 < x → (P.good n (upd M o xE oo) x' ↔ P.good n o x') := fun x' hx' =>
-            hP.causal'' n _ o x' fun ν hν => upd_ne _ _ (by
-              rintro h
-              rw [h] at hν
-              have : x ≤ x'.1 := hν
-              omega)
-          constructor
-          · intro h
-            exact ⟨fun x' hx' => (hc x' hx').1 (h x' (Nat.lt_succ_of_lt hx')), h xE (Nat.lt_succ_self _)⟩
-          · rintro ⟨h1, h2⟩ x' hx'
-            rcases Nat.lt_succ_iff_lt_or_eq.1 hx' with h3 | h3
-            · exact (hc x' h3).2 (h1 x' h3)
-            · have : x' = xE := Fin.ext h3
-              rw [this]
-              exact h2
-        by_cases hall : ∀ x' : Fin E, x'.1 < x → P.good n o x'
-        swap
-        · rw [ite_eq_right hall]
-          symm
-          refine Finset.sum_eq_zero fun oo _ => ite_eq_right fun h => hall ((hgx oo).1 h).1
-        rw [ite_eq_left hall]
-        rw [posVal_move' (hold0 M.np) (hold1 M.np) none (Plan.seenAt n o x) (P.cur n o x)
-          (outSet P n o xE) (fun id h => ?_)
-          (fun id h => (Plan.mem_cur.1 h).1) (fun oo : (M.kind xE).Cn → Fin U1 => newUnits M xE (upd M o xE oo))
-          (fun oo => ?_) (tabUpTo P n o init x) (fun oo y z => ?_)
-          (fun oo y => if P.good n (upd M o xE oo) xE then
-            ∏ p, role M xE p (P.num n o xE) (fun e => P.ids n o ⟨xE, e.1⟩) (upd M o xE oo)
-            (y (M.part xE p)) else 0) (fun y hy h0 => ?_)]
-        · refine Finset.sum_congr rfl fun oo _ => ?_
-          by_cases hgo : P.good n (upd M o xE oo) xE
-          swap
-          · rw [ite_eq_right fun h => hgo ((hgx oo).1 h).2]
-            simp only [hgo, ite_false, mul_zero, posVal, ite_self, Finset.sum_const_zero]
-          rw [ite_eq_left ((hgx oo).2 ⟨hall, hgo⟩)]
-          simp only [hgo, ite_true]
-          set o' := upd M o xE oo with ho'
-          have hlt : ∀ ν : M.N, ν.1.1 < xE.1 → o ν = o' ν := by
-            intro ν hν
-            rw [ho', upd_ne]
-            rintro h
-            rw [h] at hν
-            exact lt_irrefl _ hν
-          have f1 : Plan.seenAt n o' (x + 1) = Plan.seenAt n o x ∪ newUnits M xE o' := by
-            rw [show x + 1 = xE.1 + 1 from rfl, seenAt_succ xE, seenAt_congr hlt]
-          have f0 : outSet P n o xE = outSet P n o' xE := by
-            unfold outSet
-            congr 1
-            funext e
-            exact cons_congr hP hlt ⟨xE, e⟩ le_rfl
-          have f2 : P.cur n o' (x + 1) = (P.cur n o x \ outSet P n o xE) ∪ newUnits M xE o' := by
-            rw [show x + 1 = xE.1 + 1 from rfl, cur_succ hP xE, ← cur_congr hP hlt, f0]
-          have f3 : tabUpTo P n o' init (x + 1) = fun y => tabUpTo P n o init x y *
-              ∏ p, role M xE p (P.num n o xE) (fun e => P.ids n o ⟨xE, e.1⟩) o' (y (M.part xE p)) := by
-            funext y
-            rw [show x + 1 = xE.1 + 1 from rfl, tabUpTo_succ, ← tabUpTo_congr_o hP hlt]
-            congr 1
-            refine Finset.prod_congr rfl fun p _ => ?_
-            have e1 : P.num n o xE = P.num n o' xE := num_congr hP hlt xE le_rfl
-            have e2 : (fun e : (M.kind xE).SlAt p => P.ids n o ⟨xE, e.1⟩) = fun e => P.ids n o' ⟨xE, e.1⟩ :=
-              funext fun e => Plan.ids_congr (cons_congr hP hlt ⟨xE, e.1⟩ le_rfl)
-            rw [roleAt, e1, e2]
-          rw [f1, f2, f3]
-        · obtain ⟨e, he⟩ := mem_outSet.1 h
-          exact hP.sub n o ⟨xE, e⟩ he
-        · rw [Finset.disjoint_left]
-          intro id h1 h2
-          cases id with
-          | init a b k => exact init_not_mem_newUnits h2
-          | new ν k =>
-            have a1 := (new_mem_newUnits.1 h2).1
-            have a2 := (Plan.new_mem_seenAt.1 h1).1
-            rw [a1] at a2
-            exact lt_irrefl _ a2
-        · refine tabUpTo_congr hP hloc (fun a b c k => ?_) fun a ν k hν => ?_
-          · exact ext_of_not init_not_mem_newUnits
-          · refine ext_of_not fun h => ?_
-            have a1 := (new_mem_newUnits.1 h).1
-            rw [a1] at hν
-            exact lt_irrefl _ hν
-        · exact Paper.thm_tree_move hP hub hgood hm hU1 xE hy fun a id hid ha => tabUpTo_ne_none hinit h0 hid ha
-      rw [Finset.sum_congr rfl step, ← Finset.sum_product']
-      refine Finset.sum_bij' (i := fun q _ => upd M q.1 xE q.2)
-        (j := fun o _ => (upd M o xE fun _ => d, fun ν => o ⟨xE, ν⟩)) ?_ ?_ ?_ ?_ ?_
-      · rintro ⟨o, oo⟩ h
-        simp only [pre, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and, and_true] at h ⊢
-        intro ν hν
-        rw [upd_ne]
-        · exact h ν (Nat.le_of_succ_le hν)
-        · rintro h'
-          rw [h'] at hν
-          exact absurd hν (Nat.not_succ_le_self x)
-      · intro o h
-        simp only [pre, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and, and_true] at h ⊢
-        intro ν hν
-        obtain ⟨x', ν⟩ := ν
-        by_cases e : x' = xE
-        · subst e
-          rw [upd_self]
-        · rw [upd_ne _ _ e]
-          exact h _ (lt_of_le_of_ne hν fun h => e (Fin.ext h.symm))
-      · rintro ⟨o, oo⟩ h
-        simp only [pre, Finset.mem_product, Finset.mem_filter, Finset.mem_univ, true_and, and_true] at h
-        ext1
-        · simp only [upd_upd]
-          have : (fun _ : (M.kind xE).Cn => d) = fun ν => o ⟨xE, ν⟩ := funext fun ν => (h ⟨xE, ν⟩ le_rfl).symm
-          rw [this, upd_eq_self]
-        · funext ν
-          exact upd_self _ _ _ ν
-      · intro o _
-        simp only [upd_upd]
-        exact upd_eq_self o xE
-      · rintro ⟨o, oo⟩ _
-        rfl
+      exact (Finset.sum_congr rfl fun o _ =>
+        prefixValue_eq_sum hP hub hgood hm hU1 n init hloc hinit xE o).trans
+        (sum_outcomePrefixes_succ d xE (prefixValue P n init (x + 1)))
   rw [claim E le_rfl]
-  have e1 : pre E = univ := by
+  have e1 : outcomePrefixes M d E = univ := by
     ext o
-    simp only [pre, Finset.mem_filter, Finset.mem_univ, true_and, iff_true]
+    simp only [outcomePrefixes, Finset.mem_filter, Finset.mem_univ, true_and, iff_true]
     exact fun ν hν => absurd ν.1.2 (not_lt.2 hν)
   rw [e1]
+  unfold prefixValue
   refine Finset.sum_congr rfl fun o _ => if_congr ⟨fun h x => h x x.2, fun h x _ => h x⟩ ?_ rfl
   congr 1
   funext y

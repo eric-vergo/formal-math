@@ -30,6 +30,25 @@ def InitOk (ub : ℕ) {c : ℕ} (cb : Option Γ → Fin c → Bool) {A : ℕ} (�
     (∀ b, ucount ub (strOf cb fun s => C s b) = n b p ∧
       ∀ k : Fin U0, y (.init b p k) = unitsOf ub (strOf cb fun s => C s b) k)
 
+/-- The two parties reconstruct the same segment on an edge. Agreement gives equality of
+each transmitted unit, and the common count makes all later units absent. -/
+private theorem segments_eq_of_agree (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
+    {np : N → Bool → Fin (K + K + A')} {n : Fin (K + K) → Fin (K + K) → Fin (U0 + 1)}
+    {y : Fin (K + K + A') → Uid (K + K) U0 N U1 → UW ub} (hag : Agree (hold0 np) (hold1 np) (seen0 n) y)
+    {a b : Fin (K + K)} {R C : Option S → List Γ}
+    (hr : ucount ub (strOf cb R) = (n a b).val ∧
+      ∀ k : Fin U0, y (Fin.castAdd A' a) (.init a b k) = unitsOf ub (strOf cb R) k)
+    (hc' : ucount ub (strOf cb C) = (n a b).val ∧
+      ∀ k : Fin U0, y (Fin.castAdd A' b) (.init a b k) = unitsOf ub (strOf cb C) k) : R = C := by
+  apply strOf_inj hcb hc
+  apply unitsOf_inj hub
+  intro k
+  by_cases hk : k < (n a b).1
+  · have hkU : k < U0 := lt_of_lt_of_le hk (Nat.le_of_lt_succ (n a b).2)
+    rw [← hr.2 ⟨k, hkU⟩, ← hc'.2 ⟨k, hkU⟩]
+    exact hag (.init a b ⟨k, hkU⟩) (init_mem_seen0.2 hk)
+  · rw [unitsOf_eq_none.2 (hr.1.trans_le (not_lt.1 hk)), unitsOf_eq_none.2 (hc'.1.trans_le (not_lt.1 hk))]
+
 open Classical in
 theorem tabInit_eq (q : Fin (K + 1) → Q) (x : Fin K → List Γ) (ρ : Option S → RowData (K + K))
     (n : Fin (K + K) → Fin (K + K) → ℕ) (p : Fin (K + K)) (y : Uid (K + K) U0 N U1 → UW ub) :
@@ -109,8 +128,24 @@ private theorem posVal_sum_univ {A U W : Type*} [Fintype A] [DecidableEq A] [Fin
   rw [Finset.univ_inter]
   exact Finset.sum_congr rfl fun _ _ => (ite_and ..).symm
 
+/-- Every transmitted string fits in the available initial units on the support of the segment sum. -/
+private theorem ucount_le_of_segW_ne_zero
+    (hU : (T + (Fintype.card S + 1)) * c / ub + 1 ≤ U0)
+    {q : Fin (K + 1) → Q} {x : Fin K → List Γ} (hx : ∀ κ, (x κ).length ≤ T)
+    {X : Option S → Fin (K + K) → Fin (K + K) → List Γ} (h : segW mu T q x X ≠ 0)
+    (a b : Fin (K + K)) : ucount ub (strOf cb fun s => X s a b) ≤ U0 := by
+  classical
+  refine le_trans ?_ hU
+  rw [ucount, length_strOf]
+  refine Nat.add_le_add_right (Nat.div_le_div_right (Nat.mul_le_mul_right _ (Nat.add_le_add_right ?_ _))) _
+  have ha : partyW mu T q x a (fun s b => X s a b) (fun s b => X s b a) ≠ 0 := fun h0 =>
+    h (Finset.prod_eq_zero (Finset.mem_univ a) h0)
+  exact (Finset.sum_le_sum fun s _ => length_le_cat (X s a) b).trans (partyW_sum_le hx ha)
+
 open Classical in
-/-- **Units.** -/
+/-- **Units.** Nonzero initial configurations are in weight-preserving bijection with nonzero
+staircase segment matrices. The two copies of each edge determine its segment, and a segment
+matrix determines its rows, its unit counts and the contents at both endpoints. -/
 theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
     (hU : (T + (Fintype.card S + 1)) * c / ub + 1 ≤ U0) (np : N → Bool → Fin (K + K + A'))
     (q : Fin (K + 1) → Q) {x : Fin K → List Γ} (hx : ∀ κ, (x κ).length ≤ T) :
@@ -124,26 +159,15 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
   -- one sum over all data
   let Cnd : (Option S → Fin (K + K) → RowData (K + K)) × (Fin (K + K) → Fin (K + K) → Fin (U0 + 1)) ×
       (Fin (K + K + A') → Uid (K + K) U0 N U1 → UW ub) × (Fin (K + K) → Option S → Fin (K + K) → List Γ) ×
-      (Fin (K + K) → Option S → Fin (K + K) → List Γ) → Prop := fun ω =>
-    ValidRows ω.1 ∧ (ω.2.2.1 ∈ Contents (hold0 np) (hold1 np) none (seen0 ω.2.1) ∧
-      Agree (hold0 np) (hold1 np) (seen0 ω.2.1) ω.2.2.1) ∧
-      ∀ p, InitOk ub cb (fun s => ω.1 s p) (fun a b => (ω.2.1 a b).1) p (ω.2.2.1 (Fin.castAdd A' p)) (ω.2.2.2.1 p) (ω.2.2.2.2 p)
-  have big : (∑ ω ∈ (univ ×ˢ (univ ×ˢ (univ ×ˢ (sides Γ S K T ×ˢ sides Γ S K T))) :
-      Finset ((Option S → Fin (K + K) → RowData (K + K)) × (Fin (K + K) → Fin (K + K) → Fin (U0 + 1)) ×
-      (Fin (K + K + A') → Uid (K + K) U0 N U1 → UW ub) × (Fin (K + K) → Option S → Fin (K + K) → List Γ) ×
-      (Fin (K + K) → Option S → Fin (K + K) → List Γ))),
-      if Cnd ω then ∏ p, partyW mu T q x p (ω.2.2.2.1 p) (ω.2.2.2.2 p) else 0) =
-      ∑ ρ : Option S → Fin (K + K) → RowData (K + K), ∑ n : Fin (K + K) → Fin (K + K) → Fin (U0 + 1),
-        ∑ y : Fin (K + K + A') → Uid (K + K) U0 N U1 → UW ub, ∑ R ∈ sides Γ S K T, ∑ C ∈ sides Γ S K T,
-        if ValidRows ρ ∧ (y ∈ Contents (hold0 np) (hold1 np) none (seen0 n) ∧
-          Agree (hold0 np) (hold1 np) (seen0 n) y) ∧ ∀ p, InitOk ub cb (fun s => ρ s p)
-          (fun a b => (n a b).1) p (y (Fin.castAdd A' p)) (R p) (C p) then ∏ p, partyW mu T q x p (R p) (C p) else 0 := by
-    simp only [Finset.sum_product, Cnd]
-  refine big.symm.trans ?_
+      (Fin (K + K) → Option S → Fin (K + K) → List Γ) → Prop := fun ⟨ρ, n, y, R, C⟩ =>
+    ValidRows ρ ∧ (y ∈ Contents (hold0 np) (hold1 np) none (seen0 n) ∧ Agree (hold0 np) (hold1 np) (seen0 n) y) ∧
+      ∀ p, InitOk ub cb (fun s => ρ s p) (fun a b => (n a b).val) p (y (Fin.castAdd A' p)) (R p) (C p)
   symm
+  suffices (∑ X ∈ segs Γ S K T, if ∀ s, Stair (X s) then segW mu T q x X else 0) =
+      ∑ ω ∈ univ ×ˢ (univ ×ˢ (univ ×ˢ (sides Γ S K T ×ˢ sides Γ S K T))),
+        if Cnd ω then ∏ p, partyW mu T q x p (ω.2.2.2.1 p) (ω.2.2.2.2 p) else 0 by
+    simpa only [Finset.sum_product, Cnd] using this
   -- the data of given segments
-  let nX : (Option S → Fin (K + K) → Fin (K + K) → List Γ) → Fin (K + K) → Fin (K + K) → Fin (U0 + 1) :=
-    fun X a b => ⟨min (ucount ub (strOf cb fun s => X s a b)) U0, Nat.lt_succ_of_le (Nat.min_le_right _ _)⟩
   let yX : (Option S → Fin (K + K) → Fin (K + K) → List Γ) → Fin (K + K + A') → Uid (K + K) U0 N U1 → UW ub :=
     fun X p id => match id with
       | .init a b k => if p = Fin.castAdd A' a ∨ p = Fin.castAdd A' b then unitsOf ub (strOf cb fun s => X s a b) k
@@ -152,26 +176,19 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
   have hst : ∀ X, (if ∀ s, Stair (X s) then segW mu T q x X else 0) ≠ 0 →
       (∀ s, Stair (X s)) ∧ segW mu T q x X ≠ 0 := by
     intro X h
-    by_cases hs : ∀ s, Stair (X s)
-    · rw [ite_eq_left hs] at h
-      exact ⟨hs, h⟩
-    · rw [ite_eq_right hs] at h
-      exact absurd rfl h
+    split_ifs at h with hs
+    · exact ⟨hs, h⟩
+    · exact (h rfl).elim
   have hrows : ∀ X : Option S → Fin (K + K) → Fin (K + K) → List Γ, (∀ s, Stair (X s)) →
       ∃ ρ : Option S → Fin (K + K) → RowData (K + K), ValidRows ρ ∧ ∀ s p, RowOk (ρ s p) (X s p) := by
     intro X h
     choose ρ h1 h2 using fun s => exists_rows (h s)
     exact ⟨ρ, h1, h2⟩
   choose ρX hρ1 hρ2 using hrows
-  have hcount : ∀ X, segW mu T q x X ≠ 0 → ∀ a b, ucount ub (strOf cb fun s => X s a b) ≤ U0 := by
-    intro X h a b
-    refine le_trans ?_ hU
-    rw [ucount, length_strOf]
-    refine Nat.add_le_add_right (Nat.div_le_div_right (Nat.mul_le_mul_right _ (Nat.add_le_add_right ?_ _))) _
-    have ha : partyW mu T q x a (fun s b => X s a b) (fun s b => X s b a) ≠ 0 := fun h0 =>
-      h (Finset.prod_eq_zero (Finset.mem_univ a) h0)
-    exact (Finset.sum_le_sum fun s _ => length_le_cat (X s a) b).trans (partyW_sum_le hx ha)
-  refine Finset.sum_bij_ne_zero (fun X _ h => (ρX X (hst X h).1, nX X, yX X, fun p s b => X s p b,
+  let nX (X : Option S → Fin (K + K) → Fin (K + K) → List Γ) (h : segW mu T q x X ≠ 0)
+      (a b : Fin (K + K)) : Fin (U0 + 1) :=
+    ⟨ucount ub (strOf cb fun s => X s a b), Nat.lt_succ_of_le (ucount_le_of_segW_ne_zero hU hx h a b)⟩
+  refine Finset.sum_bij_ne_zero (fun X _ h => (ρX X (hst X h).1, nX X (hst X h).2, yX X, fun p s b => X s p b,
     fun p s b => X s b p)) ?_ ?_ ?_ ?_
   · intro X hX h
     rw [mem_segs] at hX
@@ -182,28 +199,15 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
     funext s a b
     exact congrFun (congrFun (congrFun this a) s) b
   · rintro ⟨ρ, n, y, R, C⟩ hω h
-    have hC : Cnd (ρ, n, y, R, C) := by
-      by_contra hc
-      rw [ite_eq_right hc] at h
-      exact h rfl
-    rw [ite_eq_left hC] at h
+    split_ifs at h with hC
+    swap
+    · exact (h rfl).elim
     obtain ⟨v, ⟨hy, hag⟩, hI⟩ := hC
     simp only at v hy hag hI h
     rw [mem_contents_iff] at hy
     simp only [Finset.mem_product, Finset.mem_univ, true_and, mem_sides] at hω
-    -- rows and columns agree
-    have hRC : ∀ a b, (fun s => R a s b) = fun s => C b s a := by
-      intro a b
-      apply strOf_inj hcb hc
-      apply unitsOf_inj hub
-      intro k
-      have r := (hI a).2.1 b
-      have r' := (hI b).2.2 a
-      by_cases hk : k < (n a b).1
-      · have hkU : k < U0 := lt_of_lt_of_le hk (Nat.le_of_lt_succ (n a b).2)
-        rw [← r.2 ⟨k, hkU⟩, ← r'.2 ⟨k, hkU⟩]
-        exact hag (.init a b ⟨k, hkU⟩) (init_mem_seen0.2 hk)
-      · rw [unitsOf_eq_none.2 (r.1.trans_le (not_lt.1 hk)), unitsOf_eq_none.2 (r'.1.trans_le (not_lt.1 hk))]
+    have hRC (a b) : (fun s => R a s b) = fun s => C b s a :=
+      segments_eq_of_agree hcb hc hub hag ((hI a).2.1 b) ((hI b).2.2 a)
     let X : Option S → Fin (K + K) → Fin (K + K) → List Γ := fun s a b => R a s b
     have hC' : C = fun p s b => X s b p := by
       funext p s b
@@ -220,13 +224,9 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
     have e1 : ρX X (hst X hne).1 = ρ := by
       funext s
       exact rows_unique (hρ1 X _ s) (v s) (hρ2 X _ s) (hrow s)
-    have e2 : nX X = n := by
+    have e2 : nX X (hst X hne).2 = n := by
       funext a b
-      apply Fin.ext
-      have := ((hI a).2.1 b).1
-      show min (ucount ub (strOf cb fun s => R a s b)) U0 = (n a b).1
-      rw [this]
-      exact Nat.min_eq_left (Nat.le_of_lt_succ (n a b).2)
+      exact Fin.ext ((hI a).2.1 b).1
     have e3 : yX X = y := by
       funext p id
       cases id with
@@ -247,9 +247,6 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
     rw [e1, e2, e3, hC']
   · intro X _ h
     obtain ⟨hs, hne⟩ := hst X h
-    have hcnt := hcount X hne
-    have hn : ∀ a b, (nX X a b).1 = ucount ub (strOf cb fun s => X s a b) := fun a b =>
-      Nat.min_eq_left (hcnt a b)
     have hy : ∀ p a b k, p = Fin.castAdd A' a ∨ p = Fin.castAdd A' b → yX X p (.init a b k) = unitsOf ub (strOf cb fun s => X s a b) k := by
       intro p a b k hp
       exact ite_eq_left hp
@@ -264,7 +261,6 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
         by_cases hp : p = Fin.castAdd A' a ∨ p = Fin.castAdd A' b
         · have h1 : yX X p (.init a b k) = unitsOf ub (strOf cb fun s => X s a b) k := hy p a b k hp
           refine h1.trans (unitsOf_eq_none.2 ?_)
-          rw [← hn]
           exact not_lt.1 fun hk => hn' ⟨init_mem_seen0.2 hk, hp⟩
         · exact ite_eq_right hp
     · intro id hid
@@ -272,8 +268,8 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
       | new ν k => exact absurd hid new_not_mem_seen0
       | init a b k => exact (hy _ a b k (Or.inl rfl)).trans (hy _ a b k (Or.inr rfl)).symm
     · intro p
-      refine ⟨fun s => hρ2 X hs s p, fun b => ⟨(hn p b).symm, fun k => hy _ p b k (Or.inl rfl)⟩,
-        fun b => ⟨(hn b p).symm, fun k => hy _ b p k (Or.inr rfl)⟩⟩
+      refine ⟨fun s => hρ2 X hs s p, fun b => ⟨rfl, fun k => hy _ p b k (Or.inl rfl)⟩,
+        fun b => ⟨rfl, fun k => hy _ b p k (Or.inr rfl)⟩⟩
 
 open Classical in
 /-- **Start.** The value of an automaton in `K * T` steps is the sum, over the states between the blocks, the row data
