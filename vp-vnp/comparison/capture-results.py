@@ -54,6 +54,19 @@ def baseline_site_record(site, expected, replay_log):
     }
 
 
+def normalize_paths(value, home):
+    if isinstance(value, dict):
+        return {key: normalize_paths(item, home) for key, item in value.items()}
+    if isinstance(value, list):
+        return [normalize_paths(item, home) for item in value]
+    if isinstance(value, str):
+        worktree = re.escape(str(home / ".codex/worktrees")) + r"/[^/\s]+/formal-math/vp-vnp(?=/|$)"
+        value = re.sub(worktree, "$VP_VNP_WORKTREE", value)
+        value = value.replace(f"{home}/", "$HOME/")
+        return re.sub(r"(?<=/\.lake/)five-root-export-[\w-]+(?=/)", "five-root-export-$EXPORT_RUN", value)
+    return value
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--runs", required=True, type=Path,
@@ -81,7 +94,8 @@ def main():
         result["before/verify.jsonl"] = records
     if not result:
         raise ValueError("no benchmark records collected")
-    raw = (json.dumps(result, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    publication = normalize_paths(result, Path.home())
+    raw = (json.dumps(publication, sort_keys=True, separators=(",", ":")) + "\n").encode()
     with args.output.open("xb") as stream:
         stream.write(gzip.compress(raw, mtime=0))
 

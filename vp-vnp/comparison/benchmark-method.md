@@ -41,6 +41,8 @@ done
 
 The capture step archives Lake’s elapsed job times for project modules in the three clean logs. The report shows the trials and medians for selected rewrites. These figures retain Lake’s rounding and include contention from other jobs in the same build.
 
+The checked-in JSON archive uses `$HOME` for the local home directory, `$VP_VNP_WORKTREE` for the project root of the recorded side, and `$EXPORT_RUN` for the temporary export directory suffix. The capture step leaves the original JSON Lines and logs untouched. The timings, tool fingerprints and SHA-256 digests cover the original runs.
+
 ## Verification runs
 
 Run the following separately from the paired timing samples. A successful site run includes Lean proof compilation, the axioms of the five exports, the statement-spelling proofs, the Comparator layout check, generator, full site and replay, and `vbp check`. Before relying on the results, use `git diff --exit-code "$before_rev" "$after_rev" -- vp-vnp/Statement.lean vp-vnp/Comparator vp-vnp/paper.pdf` to check exact tracked bytes independently. The Linux upstream Comparator workflow is a separate check from `vbp comparator-check`, which checks the challenge layout.
