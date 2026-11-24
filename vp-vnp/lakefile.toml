@@ -27,3 +27,35 @@ name = "Paper"
 
 [[lean_lib]]
 name = "Statement"
+
+# The blueprint site (https://eric-vergo.github.io/formal-math/), from the Verso Blueprint tool
+# chain in the eric-vergo forks of Verso Blueprint, Verso and SubVerso (all for Lean v4.36.0).
+# Only used by the `VpVnpBlueprint` library and `BlueprintMain.lean`; see `blueprint/README.md`.
+# The proof does not depend on anything below this line.
+[[require]]
+name = "subverso"
+git = "https://github.com/eric-vergo/subverso"
+rev = "4e04c61d96960d5a1461c6c870572ccb8b45a495"
+
+[[require]]
+name = "verso"
+git = "https://github.com/eric-vergo/verso"
+rev = "94cea086b880f61f5b3847d30151b8e5f80e1259"
+
+[[require]]
+name = "VersoBlueprint"
+git = "https://github.com/eric-vergo/verso-blueprint"
+rev = "8a5a5c5eb37979d4304589cad2cd2504ea2d88ba"
+
+# The blueprint document (not a default target: `lake build` does not build it). Its chapters
+# under `blueprint/VpVnpBlueprint/Generated/` are written by
+# `lake env lean --run blueprint/scripts/GenerateNodes.lean`; build the site with
+# `lake exe vbp build`.
+[[lean_lib]]
+name = "VpVnpBlueprint"
+srcDir = "blueprint"
+
+[lean_lib.leanOptions]
+experimental.module = true
+# Make a misspelled `(lean := "...")` declaration name an error rather than a warning.
+weak.verso.blueprint.externalCode.strictResolve = true
