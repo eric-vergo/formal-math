@@ -137,7 +137,7 @@ exactly the tool compares is defined by the tool, not by this chapter.
 
 The paper's account of the upstream run (Section Q.1, page 66): “Comparator accepted them against
 `Challenge.lean`, rechecking the proofs with Lean's kernel and with the independently written
-checker nanoda.” 
+checker nanoda.”
 
 On this branch the three files lie in {repoFile "vp-vnp/Comparator/VpVnp"}[`Comparator/VpVnp`],
 the layout the site's tools require; the two Lean files are unchanged, and the judged theorems
