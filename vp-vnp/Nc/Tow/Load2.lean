@@ -245,39 +245,16 @@ theorem nEnd_eq {j : ℕ} {i : Fin h} (n : T.Ed j → ℕ) (ω : T.V (j + 1) i) 
         s(T.co i (T.host i (T.vx i (T.e1 e))), T.co i (T.e1 e)) = q then n e else 0) else 0) := by
     intro c
     unfold Tower.be
-    by_cases hc : T.πV (T.vx i c) = ω ∧ s(T.co i (T.host i (T.vx i c)), T.co i c) = q
-    · rw [ite_eq_left hc]
-      refine Finset.sum_congr rfl fun e _ => ?_
-      have hne := T.e_ne e
-      by_cases h0 : T.e0 e = c
-      · have h1 : ¬ T.e1 e = c := fun hh => hne (h0.trans hh.symm)
-        subst h0
-        by_cases ht : T.ty e = i
-        · rw [ite_eq_left ⟨ht, Or.inl rfl⟩, ite_eq_left rfl, ite_eq_left ⟨ht, hc⟩, ite_eq_right h1, Nat.add_zero]
-        · rw [ite_eq_right fun hh => ht hh.1, ite_eq_left rfl, ite_eq_right fun hh => ht hh.1, ite_eq_right h1, Nat.add_zero]
-      · rw [ite_eq_right h0, Nat.zero_add]
-        by_cases h1 : T.e1 e = c
-        · subst h1
-          by_cases ht : T.ty e = i
-          · rw [ite_eq_left ⟨ht, Or.inr rfl⟩, ite_eq_left rfl, ite_eq_left ⟨ht, hc⟩]
-          · rw [ite_eq_right fun hh => ht hh.1, ite_eq_left rfl, ite_eq_right fun hh => ht hh.1]
-        · rw [ite_eq_right h1, ite_eq_right]
-          rintro ⟨-, hh | hh⟩
-          · exact h0 hh
-          · exact h1 hh
-    · rw [ite_eq_right hc]
-      symm
-      refine Finset.sum_eq_zero fun e _ => ?_
-      rw [Nat.add_eq_zero_iff]
-      constructor
-      · by_cases h0 : T.e0 e = c
-        · subst h0
-          rw [ite_eq_left rfl, ite_eq_right fun hh => hc hh.2]
-        · rw [ite_eq_right h0]
-      · by_cases h0 : T.e1 e = c
-        · subst h0
-          rw [ite_eq_left rfl, ite_eq_right fun hh => hc hh.2]
-        · rw [ite_eq_right h0]
+    rw [Finset.ite_sum_zero]
+    refine Finset.sum_congr rfl fun e _ => ?_
+    by_cases h0 : T.e0 e = c
+    · subst c
+      have h1 := (T.e_ne e).symm
+      simp [h1, ← ite_and, and_comm]
+    · by_cases h1 : T.e1 e = c
+      · subst c
+        simp [h0, ← ite_and, and_comm]
+      · simp [h0, h1]
   rw [Finset.sum_congr rfl fun c _ => e2 c, Finset.sum_comm, ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun e _ => ?_
   rw [Finset.sum_add_distrib, Finset.sum_ite_eq, Finset.sum_ite_eq, ite_eq_left (mem_univ _), ite_eq_left (mem_univ _)]
