@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 import NS1.ApproxScale
 import NS1.ApproxBack
+import Paper.Next
 
 /-!
 # The paper, appendix "Approximate computation": one round, and back to exact values
@@ -208,6 +209,12 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
     omega
   have hn : ∀ q ∈ (K.expand B).budg J, Span (nB * 2 ^ J * (2 ^ B * M)) q.2 :=
     fun q hq => hnB ▸ span_expand_budg hM hq
+  have hplain := round_plain_bounds (ht := K.ht) (nB := nB) (e := e) hu4 (by omega) hX10 hX2 hX3 hXu
+    (by omega : K.ht + B + J + 1 ≤ X) hps (by
+      rw [Nat.mul_assoc]
+      omega)
+    (by omega) (by omega) (fun c hc => (hb c hc).1)
+  rw [hnB] at hplain
   refine ⟨_, _, ?_, prop_approx_acc_round hD hp hJ hn hG (tG := u ^ f) (Ln := u ^ g) (t := u ^ e) ?_ ?_ ?_ ?_ ?_ ?_, ?_⟩
   · -- the exponent of the rescaling
     have h1 : nB ≤ 2 ^ J := by
@@ -222,43 +229,8 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
             (Nat.mul_pos (Nat.two_pow_pos B) (by omega))
       _ = 2 ^ (J + J + B + 1) * M := by rw [pow_succ, pow_add, pow_add]; ring
       _ ≤ _ := Nat.mul_le_mul_right _ (Nat.pow_le_pow_right (by norm_num) (by omega))
-  · -- time of the plain instances
-    rw [← hnB]
-    have m1 : MM (K.ht + B + J + 1) + 2 ≤ u := by
-      unfold MM
-      omega
-    have m2 : 40 * (nB * (J + 1)) ≤ u ^ (e + 8) := by
-      calc 40 * (nB * (J + 1)) ≤ 40 * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
-        _ = nB * (40 * X) := by ring
-        _ ≤ 2 * u ^ (h * α + 1) := (hb 40 (by omega)).1
-        _ ≤ u ^ (h * α + 1 + 1) := by have := pbig (h * α + 1); omega
-        _ ≤ u ^ (e + 8) := pow_le_pow hu1 (by omega)
-    have m3 : 40 ≤ u ^ (e + 8) := by
-      have h7 : 2000 * u ^ (e + 7) ≤ u ^ (e + 8) := pbig (e + 7)
-      have := ppos (e + 7)
-      omega
-    calc MM (K.ht + B + J + 1) * u ^ (e + 8) + 40 * (nB * (J + 1)) + 40
-        ≤ (MM (K.ht + B + J + 1) + 2) * u ^ (e + 8) := by rw [add_mul]; omega
-      _ ≤ u * u ^ (e + 8) := Nat.mul_le_mul_right _ m1
-      _ = u ^ (e + 9) := (pu (e + 8)).symm
-  · -- size of the plain instances
-    rw [← hnB, ← hsW]
-    have m1 : sW + 3 ≤ u ^ (α * (16 * h - 32)) := by
-      calc sW + 3 ≤ u ^ 1 := by rw [pow_one]; omega
-        _ ≤ _ := pow_le_pow hu1 (by omega)
-    have m2 : p.size ≤ u ^ (α * (16 * h - 32)) := hps.trans (pow_le_pow hu1 (by
-      have : 4 * h * α = 4 * (h * α) := by ring
-      omega))
-    have m3 : (u ^ α) ^ (16 * h - 32) = u ^ (α * (16 * h - 32)) := by rw [← pow_mul]
-    have m4 : 4 * (nB * (J + 1)) ≤ u ^ (α * (16 * h - 32)) := by
-      calc 4 * (nB * (J + 1)) ≤ 4 * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
-        _ = nB * (4 * X) := by ring
-        _ ≤ 2 * u ^ (h * α + 1) := (hb 4 (by omega)).1
-        _ ≤ u ^ (h * α + 1 + 1) := by have := pbig (h * α + 1); omega
-        _ ≤ _ := pow_le_pow hu1 (by omega)
-    have := pbig (α * (16 * h - 32))
-    rw [m3]
-    omega
+  · exact hplain.1
+  · exact hplain.2
   · intro k hk
     rw [show e + 9 = f + 24 by omega, pow_add] at hk
     exact Nat.le_of_mul_le_mul_right hk (ppos 24)

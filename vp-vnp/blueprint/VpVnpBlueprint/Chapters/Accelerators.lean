@@ -475,7 +475,9 @@ a trie of powers. If the trie has at most $`u^k` nodes, the exponent length sati
 $`B+1 \leq X`, and $`cX^2 \leq u`, then charging $`cX` for each expanded node costs at most
 $`2u^{k+1}` in total (`NS1.KT.expand_cost_le`). The proof multiplies the node bound for
 `K.expand B` by the cost per node. The bound on the encoded cutting input
-(`NS1.size_zq_of_budget`) also applies to both rounds.
+(`NS1.size_zq_of_budget`) also applies to both rounds. The theorem `Paper.round_plain_bounds`
+combines these estimates with the interpreter cost to bound the time and size of each plain instance
+before either round invokes the cut.
 :::
 
 # K.4. Nonexistence of accelerators
@@ -545,6 +547,8 @@ from $`A`). That a field which is finitely generated as a ring is finite is
 
 The Lean statement, for every finite commutative ring `R`: there are `M` and `red : ℕ → ℕ` with
 `red i < M` and $`c^{2^{\mathtt{red}\, i}} = c^{2^i}` for all `c` and `i`.
+For each function in the finite image of $`i \mapsto (c \mapsto c^{2^i})`, choose one index
+that realizes it. The chosen indices form a finite set, so a single bound works for all of them.
 :::
 
 :::lemma_ "thm_noacc_all_scales" (lean := "Paper.thm_noacc_all_scales, Paper.AllScales") (parent := "part-contracting")

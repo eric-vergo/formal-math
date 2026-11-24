@@ -16,6 +16,52 @@ open _root_.NS1.Tree
 
 variable {A : Type} [CommRing A] {θ : List Bool → A} {R : Type} [CommRing R] [Algebra A R]
 
+/-- Time and size of the plain instances submitted to the cut in either kind of accelerator round. -/
+theorem round_plain_bounds {u h α B J X e ht nB ps : ℕ}
+    (hu4 : 2000 ≤ u) (hW : WF.code.size + 3 ≤ u) (hX10 : 10 ≤ X) (hX2 : 10 * X ≤ X ^ 2)
+    (hX3 : 10 * X ^ 2 ≤ X ^ 3) (hXu : 1000 * X ^ 3 ≤ u) (hX : ht + B + J + 1 ≤ X)
+    (hps : ps ≤ u ^ (4 * h * α)) (hp : 4 * h * α ≤ α * (16 * h - 32))
+    (he : h * α + 2 ≤ e + 8) (hd : h * α + 2 ≤ α * (16 * h - 32))
+    (hnBX : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * u ^ (h * α + 1)) :
+    MM (ht + B + J + 1) * u ^ (e + 8) + 40 * (nB * (J + 1)) + 40 ≤ u ^ (e + 9) ∧
+      WF.code.size + ps + (u ^ α) ^ (16 * h - 32) + 4 * (nB * (J + 1)) + 3 ≤ u ^ (α * (16 * h - 32) + 1) := by
+  have hu1 : 1 ≤ u := by omega
+  have hJX : J + 1 ≤ X := by omega
+  have pu := pow_succ' u
+  have pbig (a : ℕ) : 2000 * u ^ a ≤ u ^ (a + 1) := by rw [pu]; exact Nat.mul_le_mul_right _ hu4
+  have ppos (a : ℕ) : 1 ≤ u ^ a := Nat.one_le_pow _ _ hu1
+  have budget_le (c d : ℕ) (hc : c * X ^ 2 ≤ 1000 * X ^ 3) (hd : h * α + 2 ≤ d) :
+      c * (nB * (J + 1)) ≤ u ^ d := by
+    calc c * (nB * (J + 1)) ≤ c * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
+      _ = nB * (c * X) := by ring
+      _ ≤ 2 * u ^ (h * α + 1) := hnBX c hc
+      _ ≤ u ^ (h * α + 2) := (Nat.mul_le_mul_right _ (by decide : 2 ≤ 2000)).trans (pbig _)
+      _ ≤ u ^ d := pow_le_pow hu1 hd
+  constructor
+  · -- time of the plain instances
+    have m1 : MM (ht + B + J + 1) + 2 ≤ u := by
+      unfold MM
+      omega
+    have m2 := budget_le 40 (e + 8) (by omega) (by omega)
+    have m3 : 40 ≤ u ^ (e + 8) := by
+      have h7 : 2000 * u ^ (e + 7) ≤ u ^ (e + 8) := pbig (e + 7)
+      have := ppos (e + 7)
+      omega
+    calc MM (ht + B + J + 1) * u ^ (e + 8) + 40 * (nB * (J + 1)) + 40
+        ≤ (MM (ht + B + J + 1) + 2) * u ^ (e + 8) := by rw [add_mul]; omega
+      _ ≤ u * u ^ (e + 8) := Nat.mul_le_mul_right _ m1
+      _ = u ^ (e + 9) := (pu (e + 8)).symm
+  · -- size of the plain instances
+    have m1 : WF.code.size + 3 ≤ u ^ (α * (16 * h - 32)) := by
+      calc WF.code.size + 3 ≤ u ^ 1 := by rw [pow_one]; omega
+        _ ≤ _ := pow_le_pow hu1 (by omega)
+    have m2 : ps ≤ u ^ (α * (16 * h - 32)) := hps.trans (pow_le_pow hu1 hp)
+    have m3 : (u ^ α) ^ (16 * h - 32) = u ^ (α * (16 * h - 32)) := by rw [← pow_mul]
+    have m4 := budget_le 4 (α * (16 * h - 32)) (by omega) (by omega)
+    have := pbig (α * (16 * h - 32))
+    rw [m3]
+    omega
+
 set_option maxHeartbeats 1000000 in
 /-- **Paper: proof of Proposition prop:next, one round.** "One round, from f+8 to f, for f ≥ α(H−32)+40": from values
 in v^(f+8) steps to values in v^f steps, with exponent bound max(B_p+J, B); the program grows by v^(h₀α+2) + v^(H+1).
@@ -65,41 +111,15 @@ theorem prop_next_round {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤ α) 
   obtain ⟨g, hg⟩ : ∃ g, e + 11 = g + 16 * h := ⟨e + 11 - 16 * h, by omega⟩
   have h1 := hnBX 1 (by omega)
   have hJX : J + 1 ≤ X := by omega
-  have budget_le (c d : ℕ) (hc : c * X ^ 2 ≤ 1000 * X ^ 3) (hd : h * α + 2 ≤ d) :
-      c * (nB * (J + 1)) ≤ u ^ d := by
-    calc c * (nB * (J + 1)) ≤ c * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
-      _ = nB * (c * X) := by ring
-      _ ≤ 2 * u ^ (h * α + 1) := hnBX c hc
-      _ ≤ u ^ (h * α + 2) := (Nat.mul_le_mul_right _ (by decide : 2 ≤ 2000)).trans (pbig _)
-      _ ≤ u ^ d := pow_le_pow hu1 hd
+  have hplain := round_plain_bounds (ht := K.ht) (nB := nB) (e := e) hu4 (by omega) hX10 hX2 hX3 hXu
+    (by omega : K.ht + B + J + 1 ≤ X) hps (by
+      rw [Nat.mul_assoc]
+      omega)
+    (by omega) (by omega) hnBX
+  rw [hnB] at hplain
   refine ⟨_, round hD hp hJ hG (tG := u ^ f) (Ln := u ^ g) (t := u ^ e) ?_ ?_ ?_ ?_ ?_, ?_⟩
-  · -- time of the plain instances
-    rw [← hnB]
-    have m1 : MM (K.ht + B + J + 1) + 2 ≤ u := by
-      unfold MM
-      omega
-    have m2 := budget_le 40 (e + 8) (by omega) (by omega)
-    have m3 : 40 ≤ u ^ (e + 8) := by
-      have h7 : 2000 * u ^ (e + 7) ≤ u ^ (e + 8) := pbig (e + 7)
-      have := ppos (e + 7)
-      omega
-    calc MM (K.ht + B + J + 1) * u ^ (e + 8) + 40 * (nB * (J + 1)) + 40
-        ≤ (MM (K.ht + B + J + 1) + 2) * u ^ (e + 8) := by rw [add_mul]; omega
-      _ ≤ u * u ^ (e + 8) := Nat.mul_le_mul_right _ m1
-      _ = u ^ (e + 9) := (pu (e + 8)).symm
-  · -- size of the plain instances
-    rw [← hnB, ← hsW]
-    have m1 : sW + 3 ≤ u ^ (α * (16 * h - 32)) := by
-      calc sW + 3 ≤ u ^ 1 := by rw [pow_one]; omega
-        _ ≤ _ := pow_le_pow hu1 (by omega)
-    have m2 : p.size ≤ u ^ (α * (16 * h - 32)) := hps.trans (pow_le_pow hu1 (by
-      have : 4 * h * α = 4 * (h * α) := by ring
-      omega))
-    have m3 : (u ^ α) ^ (16 * h - 32) = u ^ (α * (16 * h - 32)) := by rw [← pow_mul]
-    have m4 := budget_le 4 (α * (16 * h - 32)) (by omega) (by omega)
-    have := pbig (α * (16 * h - 32))
-    rw [m3]
-    omega
+  · exact hplain.1
+  · exact hplain.2
   · intro k hk
     rw [show e + 9 = f + 24 by omega, pow_add] at hk
     exact Nat.le_of_mul_le_mul_right hk (ppos 24)
