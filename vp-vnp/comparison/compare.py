@@ -234,8 +234,12 @@ def verification(archive, revisions):
         paired(label, *(runs[stage]["warnings"] for runs in checked))
 
     artifacts = {"site_files": "Site files", "site_bytes": "Site bytes", "html_pages": "HTML pages",
-                 "olean_files": "Project `.olean` files after site build", "proved_verdicts": "Proved challenge verdicts"}
+                 "olean_files": "Project `.olean` files after site build", "proved_verdicts": "Proved challenge verdicts",
+                 "omitted_neighbourhood_drawings": "Omitted graph neighbourhood drawings"}
     paired("Rendered artifacts", *({**{label: site[key] for key, label in artifacts.items()},
+           "HTML cache entries checked": site["blueprint_check"]["htmlCacheEntries"],
+           "Manifest entries checked": site["blueprint_check"]["manifestEntries"],
+           "Consistency errors": len(site["blueprint_check"]["errors"]),
            **{f"`{path}` bytes": info["bytes"] for path, info in site["artifacts"].items()}} for site in sites))
     print("### Rendered Project Stats\n")
     for group, label in (("rendered_size", "Size tile"), ("rendered_progress", "Coverage statement"),

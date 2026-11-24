@@ -196,6 +196,11 @@ def rendered_stats(stats):
     }
 
 
+def omitted_drawings(log):
+    result = re.search(r"^Blueprint graph: ([\d,]+) neighbourhood drawings left out", log, re.M)
+    return int(result[1].replace(",", "")) if result else 0
+
+
 def verify(args):
     lake = ["lake", "--no-cache", "--no-ansi"]
 
@@ -251,6 +256,7 @@ def verify(args):
         **stats,
         "fresh_replay_checkers": dict(replay_checkers),
         "replay_messages": re.findall(r"^Kernel replay: (.+)$", replay_log, re.M),
+        "omitted_neighbourhood_drawings": omitted_drawings(replay_log),
         "blueprint_check": report,
         "site_bytes": site_bytes,
         "site_files": sum(f.is_file() for f in site.rglob("*")),

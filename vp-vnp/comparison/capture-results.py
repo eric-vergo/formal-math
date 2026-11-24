@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 import re
 
-from benchmark import digest, rendered_stats, warning_counts
+from benchmark import digest, omitted_drawings, rendered_stats, warning_counts
 
 
 def record_file(path):
@@ -55,6 +55,7 @@ def main():
             artifacts.update(rendered_stats((site / "Project-Stats/index.html").read_text()))
             artifacts["html_pages"] = sum(p.is_file() for p in site.rglob("*.html"))
             artifacts["replay_messages"] = re.findall(r"^Kernel replay: (.+)$", site_log, re.M)
+            artifacts["omitted_neighbourhood_drawings"] = omitted_drawings(site_log)
         result["before/verify.jsonl"] = records
     if not result:
         raise ValueError("no benchmark records collected")
