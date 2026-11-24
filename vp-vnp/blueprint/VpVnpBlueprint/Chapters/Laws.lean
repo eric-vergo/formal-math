@@ -497,8 +497,9 @@ outcomes that leaves room for the strings (`cap * (m x + lam) + 1 ≤ U1` for a 
 loads $`\mathrm{len}` of the law of the move `x`). For initial node tensors `init a` that depend
 only on, and vanish unless they have, the node's copies of its given packets, it states
 $$`\mathrm{val}_0 \;=\; \sum_{o \text{ good}} \mathrm{val}_{\mathrm{end}}(o),`
-where the sum runs over the outcomes for which all moves are good, $`\mathrm{val}_0` is the value at the start (`posVal` with the given packets, all current)
-and $`\mathrm{val}_{\mathrm{end}}(o)` is the sum, over the contents of the copies of all packets
+where the sum runs over the outcomes for which all moves are good, $`\mathrm{val}_0` is the
+value at the start (`posVal` with the given packets, all current) and
+$`\mathrm{val}_{\mathrm{end}}(o)` is the sum, over the contents of the copies of all packets
 that exist for `o`, with the two copies of every current packet equal, of the product of the
 tables `partyTab`. `thm_tree_move` is the same for one move, and it rests on the identity
 `Nc.G.move_identity` for one law. Nothing here refers to towers; the paper's two moves are the two
@@ -519,8 +520,7 @@ the quotation; the integrality that the second needs is the last clause of
 {bpref "exists_laws"}[`exists_laws`].
 :::
 
-The paper closes the section with a remark that carries the whole count (page 45), quoted: “The
-numbers of packets in the new networks depend only on the outcomes, never on the contents of
+The paper closes the section with this remark (page 45), quoted: “The numbers of packets in the new networks depend only on the outcomes, never on the contents of
 packets, and all bounds below follow from such numbers.” In Lean this is the form of a `Plan`: its
 three components are functions of `(n, o)` alone.
 
