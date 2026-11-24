@@ -30,26 +30,12 @@ theorem prod_path {K : ℕ} (M : Fin K → Matrix Q Q F) (a b : Q) :
   induction K generalizing a with
   | zero =>
     simp only [List.ofFn_zero, List.prod_nil, Finset.univ_eq_empty, Finset.prod_empty]
-    rw [Matrix.one_apply]
+    rw [Matrix.one_apply, ← (Equiv.funUnique (Fin 1) Q).symm.sum_comp]
+    change (if a = b then 1 else 0) = ∑ q : Q, if q = a ∧ q = b then (1 : F) else 0
     by_cases h : a = b
-    · subst h
-      rw [ite_eq_left rfl, Finset.sum_eq_single fun _ => a]
-      · simp
-      · intro q _ hne
-        rw [ite_eq_right]
-        rintro ⟨h0, -⟩
-        apply hne
-        funext k
-        have : k = 0 := Fin.ext (by omega)
-        rw [this, h0]
-      · simp
-    · rw [ite_eq_right h, Finset.sum_eq_zero]
-      intro q _
-      rw [ite_eq_right]
-      rintro ⟨h0, h1⟩
-      apply h
-      rw [← h0, ← h1]
-      congr 1
+    · simp [h]
+    · have hq (q : Q) : ¬ (q = a ∧ q = b) := fun e => h (e.1.symm.trans e.2)
+      simp [h, hq]
   | succ K ih =>
     have hR : (∑ q : Fin (K + 1 + 1) → Q, if q 0 = a ∧ q (Fin.last (K + 1)) = b then
         ∏ k, M k (q k.castSucc) (q k.succ) else 0) = ∑ q : Fin (K + 1) → Q,
