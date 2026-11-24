@@ -17,6 +17,18 @@ namespace Nc
 
 variable {Γ : Type*} {K : ℕ}
 
+/-- The first delimiter determines both the prefix and the remaining word. -/
+theorem append_delimiter_inj {a : Γ} {w w' x x' : List Γ} (hw : a ∉ w) (hw' : a ∉ w')
+    (h : w ++ a :: x = w' ++ a :: x') : w = w' ∧ x = x' := by
+  classical
+  have takePrefix (v t : List Γ) (hv : a ∉ v) : (v ++ a :: t).takeWhile (· != a) = v := by
+    rw [List.takeWhile_append_of_pos (by intro b hb; exact bne_iff_ne.2 fun e => hv (e ▸ hb))]
+    simp
+  have he := congrArg (List.takeWhile (· != a)) h
+  rw [takePrefix _ _ hw, takePrefix _ _ hw'] at he
+  subst w'
+  exact ⟨rfl, by simpa using h⟩
+
 /-- Concatenation. -/
 def cat (A : Fin K → List Γ) : List Γ := (List.ofFn A).flatten
 

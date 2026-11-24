@@ -211,31 +211,14 @@ variable {Γ S : Type} [Fintype S] [DecidableEq S]
 theorem flatMap_sep_inj {σ : Type} (l : List σ) {X X' : σ → List Γ}
     (h : (l.flatMap fun s => (X s).map some ++ [none]) = l.flatMap fun s => (X' s).map some ++ [none]) :
     ∀ s ∈ l, X s = X' s := by
-  have sep : ∀ (w w' : List Γ) (r r' : List (Option Γ)), w.map some ++ (none :: r) = w'.map some ++ (none :: r') →
-      w = w' ∧ r = r' := by
-    intro w
-    induction w with
-    | nil =>
-      intro w' r r' h
-      cases w' with
-      | nil => simpa using h
-      | cons a w' => simp at h
-    | cons a w ih =>
-      intro w' r r' h
-      cases w' with
-      | nil => simp at h
-      | cons a' w' =>
-        simp only [List.map_cons, List.cons_append, List.cons.injEq, Option.some.injEq] at h
-        obtain ⟨e1, e2⟩ := ih w' r r' h.2
-        exact ⟨by rw [h.1, e1], e2⟩
   induction l with
   | nil => simp
   | cons s l ih =>
     simp only [List.flatMap_cons, List.append_assoc, List.singleton_append] at h
-    obtain ⟨e1, e2⟩ := sep _ _ _ _ h
+    obtain ⟨e1, e2⟩ := append_delimiter_inj (by simp) (by simp) h
     intro s' hs'
     rcases List.mem_cons.1 hs' with rfl | hs'
-    · exact e1
+    · exact List.map_injective_iff.2 (Option.some_injective _) e1
     · exact ih e2 s' hs'
 
 theorem joinSeg_inj {X X' : Option S → List Γ} (h : joinSeg X = joinSeg X') : X = X' :=

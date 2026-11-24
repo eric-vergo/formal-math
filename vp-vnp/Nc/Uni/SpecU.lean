@@ -3,6 +3,7 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
+import Nc.Tape.Refine
 import Nc.Uni.CmpU
 
 /-!
@@ -22,20 +23,7 @@ variable {Γ : Type*}
 
 /-- Words without the letter a, followed by a, are cut in one way. -/
 theorem cut_inj {a : Γ} {w w' x x' : List Γ} (hw : a ∉ w) (hw' : a ∉ w') (h : w ++ a :: x = w' ++ a :: x') :
-    w = w' ∧ x = x' := by
-  induction w generalizing w' with
-  | nil =>
-    rcases w' with _ | ⟨b, w'⟩
-    · simpa using h
-    · simp only [List.nil_append, List.cons_append, List.cons.injEq] at h
-      exact absurd (by simp [h.1]) hw'
-  | cons b w ih =>
-    rcases w' with _ | ⟨b', w'⟩
-    · simp only [List.nil_append, List.cons_append, List.cons.injEq] at h
-      exact absurd (by simp [h.1]) hw
-    · simp only [List.cons_append, List.cons.injEq, List.mem_cons, not_or] at h hw hw'
-      obtain ⟨h1, h2⟩ := ih hw.2 hw'.2 h.2
-      exact ⟨by rw [h.1, h1], h2⟩
+    w = w' ∧ x = x' := append_delimiter_inj hw hw' h
 
 /-- Words, each followed by the letter a. -/
 def blocks (a : Γ) (ws : List (List Γ)) : List Γ := ws.flatMap fun w => w ++ [a]
