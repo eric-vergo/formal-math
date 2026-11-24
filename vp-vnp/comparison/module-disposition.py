@@ -110,7 +110,7 @@ def main():
         new_path = dest or f"[same path]({url(after, path)})"
         rows.append([old_path, decision, new_path, cohort, depth, note or "—"])
     print("# Disposition of the 319 baseline proof modules\n")
-    print(f"Before `{before['revision']}`  \nAfter `{after['revision']}`\n")
+    print(f"Before `{before['revision']}`\n\nAfter `{after['revision']}`\n")
     print("The `Paper.lean` umbrella, public specification, Comparator, blueprint and report tooling have their own project inventory entries.\n")
     table(["Outcome", "Modules"], sorted(decisions.items()))
     table(["Review cohort", "Documented depth", "Modules"], [[*key, n] for key, n in sorted(coverage.items())])

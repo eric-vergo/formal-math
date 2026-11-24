@@ -44,7 +44,7 @@ def load(path):
         return json.load(stream)
 
 
-def table(headers, rows):
+def table(headers, rows, *, trailing_blank=True):
     def line(items):
         return "| " + " | ".join(str(item) for item in items) + " |"
 
@@ -52,7 +52,8 @@ def table(headers, rows):
     print(line(["---"] * len(headers)))
     for row in rows:
         print(line(row))
-    print()
+    if trailing_blank:
+        print()
 
 
 def change(before, after):
@@ -278,13 +279,14 @@ def verification(archive, revisions):
         if before or after:
             table([label, "Before", "After"], [[key, before.get(key, "—"), after.get(key, "—")]
                                                 for key in dict.fromkeys([*before, *after])])
-    for side, site in zip(sides, sites, strict=True):
-        messages = site.get("replay_messages", [])
-        if messages:
-            print(f"{side.capitalize()} site replay\n")
-            for message in messages:
-                print(f"- {message}")
+    site_replays = [(side, site["replay_messages"]) for side, site in zip(sides, sites, strict=True)
+                    if site.get("replay_messages")]
+    for index, (side, messages) in enumerate(site_replays):
+        if index:
             print()
+        print(f"{side.capitalize()} site replay\n")
+        for message in messages:
+            print(f"- {message}")
 
 
 def main():
@@ -297,7 +299,7 @@ def main():
     before, after = load(args.before), load(args.after)
     inventories = [before, after]
     print("# Comparison data\n")
-    print(f"Before `{before['revision']}`  \nAfter `{after['revision']}`\n")
+    print(f"Before `{before['revision']}`\n\nAfter `{after['revision']}`\n")
     scopes = [
         ("All tracked project files", lambda f: True),
         ("Proof libraries", lambda f: f["library"] in PROOF_LIBRARIES),
@@ -367,7 +369,8 @@ def main():
     print("Each row is a written Lean theorem or lemma command resolved from authored blueprint text. The export test uses the compiled closures.\n")
     old_exposition, new_exposition = (exposition_proofs(inv, path) for inv, path in zip(inventories, paths, strict=True))
     table(["Before", "After"], [[old_exposition.get(name, "—"), new_exposition.get(name, "—")]
-                                 for name in sorted(old_exposition.keys() | new_exposition.keys())])
+                                 for name in sorted(old_exposition.keys() | new_exposition.keys())],
+          trailing_blank=bool(args.timings or args.verification))
     if args.timings:
         print("### Local build benchmark\n")
         table(["Scenario", "Revision", "Wall trials (s)", "Wall median (range), s", "CPU median (s)",

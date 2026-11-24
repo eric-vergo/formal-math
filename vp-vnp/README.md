@@ -12,7 +12,7 @@ Eric Vergo and GPT-6.2 (OpenAI) revised the Lean proofs and accompanying bluepri
 
     git diff --exit-code 9fd368ad HEAD -- Statement.lean Comparator paper.pdf
 
-The real permanent bound now specializes the all-fields theorem. The qualitative flat-case bound follows from the quantitative bound. The blueprint distinguishes these Lean proofs from the paper's original arguments. The [measurement guide](comparison/inventory-method.md) describes the compiled dependency traversal and source measurements.
+The real permanent bound specializes the all-fields theorem, whose exact lower bound follows from the corresponding border bound. The qualitative flat-case bound follows from the quantitative bound. The blueprint gives both the printed arguments and the compiled routes. [Before and after comparison](comparison/README.md) · [Measurement method](comparison/inventory-method.md).
 
 ## Lean 4.36 port at `9fd368ad`
 

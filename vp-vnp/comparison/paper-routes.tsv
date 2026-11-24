@@ -1,0 +1,134 @@
+row	declaration	source	exports	printed_label
+Theorem 1.1	Paper.thm_allfields	Paper/Fields.lean	M S R	yes: M S R
+Theorem 1.1	Solution.mainTheorem	Comparator/VpVnp/Solution.lean	M	secondary
+Corollary 1.2	Paper.cor_allclasses	Paper/Fields.lean	S	yes: S
+Corollary 1.2	Solution.separation	Comparator/VpVnp/Solution.lean	S	secondary
+Definition 1.3	Paper.def_approx	Paper/Approximate.lean	none	definition
+Definition 1.3	Paper.VPBar	Paper/Approximate.lean	A C	secondary
+Definition 1.3	Statement.Approximates	Statement.lean	A C	secondary
+Definition 1.3	Statement.VPBar	Statement.lean	C	secondary
+Theorem 1.4	Paper.thm_approx	Paper/Approximate.lean	A C	yes: A C
+Theorem 1.4	Solution.mainTheoremApprox	Comparator/VpVnp/Solution.lean	A	secondary
+Theorem 1.4	Solution.separationClosure	Comparator/VpVnp/Solution.lean	C	secondary
+Definition 2.1	Paper.def_cases	Paper/Alternative.lean	none	definition
+Definition 2.1	Paper.Flat	Paper/Alternative.lean	M S A C R	secondary
+Definition 2.1	Paper.Contracting	Paper/Alternative.lean	M S A C R	secondary
+Theorem 2.2	Paper.thm_alt	Paper/Alternative.lean	M S A C R	yes
+Definition A.1	Paper.def_spectral	Paper/Tensors.lean	none	definition
+Definition A.1	Paper.def_spectral_congr	Paper/Tensors.lean	M S A C R	secondary
+Lemma A.2	Paper.lem_exponents	Paper/Tensors.lean	M S A C R	yes
+Lemma A.3	Paper.lem_hubs	Paper/Prices.lean	M S A C R	yes
+Lemma A.3	Paper.lem_hubs_further	Paper/Prices.lean	none	secondary
+Definition A.4	Paper.def_price	Paper/Prices.lean	none	definition
+Proposition A.5	Paper.prop_gauge	Paper/Gauges.lean	M S A C R	yes
+Theorem A.6	Paper.thm_duality	Paper/Gauges.lean	M S A C R	yes
+Proposition A.7	Paper.prop_extend	Paper/Extension.lean	M S A C R	yes
+Proposition A.8	Paper.prop_random	Paper/Prices.lean	M S A C R	yes
+Lemma B.1	Paper.lem_count	Paper/States.lean	M S A C R	yes
+Proposition B.2	Paper.prop_identity	Paper/Identity.lean	M S A C R	yes
+Proposition B.3	Paper.prop_crossing	Paper/Crossing.lean	M S A C R	yes
+Display (B.2)	Paper.eq_Q	Paper/Crossing.lean	M S A C R	yes
+Theorem C.1	Paper.thm_cn	Paper/Fan.lean	M S A C R	yes
+Lemma C.2	Paper.lem_means	Paper/Means.lean	none	no
+Proposition C.3	Paper.prop_space	Paper/Curvature.lean	M S A C R	yes
+Lemma C.4	Paper.lem_toolkit	Paper/Toolkit.lean	M S A C R	yes
+Lemma C.4	Paper.lem_toolkit_a	Paper/Toolkit.lean	M S A C R	secondary
+Lemma C.4	Paper.lem_toolkit_b	Paper/Toolkit.lean	M S A C R	secondary
+Lemma C.4	Paper.lem_toolkit_c	Paper/Toolkit.lean	M S A C R	secondary
+Lemma C.4	Paper.lem_toolkit_d	Paper/Toolkit.lean	M S A C R	secondary
+Lemma C.4	Paper.lem_toolkit_e	Paper/Toolkit.lean	M S A C R	secondary
+Lemma C.4	Paper.lem_toolkit_f	Paper/Toolkit.lean	M S A C R	secondary
+Lemma C.4	Paper.lem_toolkit_c_minimizer	Paper/Toolkit.lean	none	secondary
+Definition D.1	Paper.def_cases	Paper/Alternative.lean	none	definition
+Theorem D.2	Paper.thm_alt	Paper/Alternative.lean	M S A C R	yes
+Proposition E.1	Paper.prop_grid	Paper/Grids.lean	M S A C R	yes
+Corollary E.2	Paper.cor_clauses	Paper/Grids.lean	none	no
+Lemma E.3	Paper.lem_fkl_perm	Paper/Flat.lean	none	no
+Lemma E.3	Paper.lem_fkl_perm_printed	Paper/Flat.lean	none	secondary
+Lemma E.4	Paper.lem_balanced	Paper/Flat.lean	M S A C R	yes
+Proposition E.5	Paper.prop_flat_lower	Paper/Flat.lean	none	no
+Proposition E.5	Paper.prop_flat_lower_printed	Paper/Flat.lean	none	secondary
+Theorem E.6	Paper.thm_flat_simple	Paper/Rate.lean	none	no
+Lemma E.7	Paper.lem_few	Paper/Convex.lean	none	no
+Lemma E.8	Paper.lem_convex	Paper/Convex.lean	M S A C R	yes
+Proposition E.9	Paper.prop_cube	Paper/Convex.lean	M S A C R	yes
+Proposition E.10	Paper.prop_flat_rate	Paper/Rate.lean	none	no
+Proposition E.10	Paper.prop_flat_rate_printed	Paper/Rate.lean	none	secondary
+Theorem E.11	Paper.thm_flat_rate	Paper/Rate.lean	none	no
+Lemma F.1	Paper.lem_growth	Paper/Lengths.lean	M S A C R	yes
+Lemma F.2	Paper.lem_words	Paper/Lengths.lean	M S A C R	yes
+Lemma F.3	Paper.lem_first	Paper/Groups.lean	M S A C R	yes
+Display (F.1)	Paper.eq_window	Paper/Groups.lean	M S A C R	yes
+Display (F.1)	Paper.projection_nearest	Paper/Groups.lean	M S A C R	secondary
+Lemma F.4	Paper.lem_tele	Paper/Groups.lean	M S A C R	yes
+Lemma F.5	Paper.lem_angle	Paper/Groups.lean	M S A C R	yes
+Theorem F.6	Paper.thm_poincare	Paper/Groups.lean	M S A C R	yes
+Definition G.1	Paper.def_law	Paper/Laws.lean	none	definition
+Theorem G.2	Paper.thm_laws	Paper/Laws.lean	M S A C R	yes
+Proposition H.1	Paper.prop_tower	Paper/Tower.lean	M S A C R	yes
+Proposition H.1	Paper.prop_tower_representatives	Nc/Tower/Inst.lean	none	secondary
+Theorem H.2	Paper.thm_tree	Paper/Tree.lean	M S A C R	yes
+Theorem H.2	Paper.thm_tree_good	Paper/Tree/Network.lean	none	secondary
+Proposition I.1	Paper.prop_universal	Paper/Universal.lean	M S A C R	yes
+Lemma I.2	Paper.lem_runnet	Paper/Runnet.lean	M S A C R	yes
+Definition J.1	Paper.def_cut	Paper/Cuts.lean	none	definition
+Proposition J.2	Paper.prop_pieces	Paper/Pieces.lean	M S A C R	yes
+Proposition J.2	Paper.prop_pieces_identity	Paper/Pieces.lean	M S A C R	secondary
+Theorem J.3	Paper.thm_onecut	Paper/Cuts.lean	M S A C R	yes
+Theorem J.4	Paper.thm_cut	Paper/Cuts.lean	M S A C R	yes
+Theorem J.4	Paper.exists_setting	Paper/Cuts.lean	M S A C R	secondary
+Definition K.1	Paper.def_acc	Paper/Scales.lean	none	definition
+Lemma K.2	Paper.lem_lowdeg	Paper/LowDeg.lean	M S A C R	yes
+Lemma K.3	Paper.lem_circuit	Paper/Circuit.lean	none	no
+Lemma K.3	Paper.lem_circuit_perm	Paper/Circuit.lean	none	secondary
+Lemma K.4	Paper.lem_postpone	Paper/Postpone.lean	M S A C R	yes
+Proposition K.5	Paper.prop_next	Paper/Next.lean	M S A C R	yes
+Proposition K.5	Paper.scales_setting	Paper/Scales.lean	none	secondary
+Theorem K.6	Paper.thm_noacc	Paper/NoAcc.lean	M S A C R	yes
+Theorem K.6	Paper.scales_setting	Paper/Scales.lean	none	secondary
+Theorem K.7	Paper.thm_contracting	Paper/Scales.lean	none	no
+Theorem L.1	Paper.thm_main	Paper/Fields.lean	R	yes: R
+Theorem L.1	Paper.thm_main_form	Paper/Rate.lean	M S A C R	secondary
+Theorem L.1	Solution.permanent_over_real	Comparator/VpVnp/Solution.lean	R	secondary
+Theorem L.2	Paper.thm_simple	Paper/Fields.lean	none	no
+Corollary L.3	Paper.cor_classes	Paper/Fields.lean	none	no
+Lemma M.1	Paper.lem_transfer	Paper/Transfer.lean	none	no
+Proposition M.2	Paper.prop_hc_grid	Paper/HcGrid.lean	M S A C R	yes
+Proposition M.2	Paper.cor_clauses_hc	Paper/HcGrid.lean	none	secondary
+Theorem M.3	Paper.thm_allfields	Paper/Fields.lean	M S R	yes: M S R
+Corollary M.4	Paper.cor_allclasses	Paper/Fields.lean	S	yes: S
+Definition N.1	Paper.def_approx	Paper/Approximate.lean	none	definition
+Definition N.1	Paper.VPBar	Paper/Approximate.lean	A C	secondary
+Lemma N.2	Paper.lem_transfer_approx	Paper/Transfer.lean	M S A C R	yes
+Lemma N.3	Paper.lem_few_approx	Paper/BorderRate.lean	M S A C R	yes
+Proposition N.4	Paper.prop_approx_acc	Paper/ApproxScales.lean	M S A C R	yes
+Proposition N.4	Paper.prop_approx_acc_setting	Paper/ApproxScales.lean	M S A C R	secondary
+Theorem N.5	Paper.thm_approx	Paper/Approximate.lean	A C	yes: A C
+Remark N.6	—	—	—	—
+unnumbered	Paper.hc_mem_VNP	Paper/Fields.lean	S A C	S A C
+unnumbered	Paper.perm_mem_VNP	Paper/Ryser.lean	none	none
+unnumbered	Paper.vp_subset_vnp	Paper/Rate.lean	S	S
+unnumbered	Paper.exists_beyond_poly	Paper/Fields.lean	S A C	S A C
+unnumbered	Paper.thm_allfields_exceeds	Paper/BorderRate.lean	M S A C R	all five
+unnumbered	Paper.thm_main_calculation	Paper/Rate.lean	M S A C R	all five
+unnumbered	Paper.exists_closed	Paper/BorderRate.lean	M S A C R	all five
+unnumbered	Paper.gridComplete_perm	Paper/Grids.lean	M S A C R	all five
+unnumbered	Paper.gridComplete_hc	Paper/HcGrid.lean	M S A C R	all five
+unnumbered	Paper.clauses_of_complete	Paper/Grids.lean	M S A C R	all five
+unnumbered	Paper.fkl_complete	Paper/Flat.lean	M S A C R	all five
+unnumbered	Paper.prop_flat_lower_sum	Paper/Flat.lean	M S A C R	all five
+unnumbered	Paper.flat_rate_complete	Paper/Rate.lean	none	none
+unnumbered	Paper.flat_rate_approximating	Paper/BorderRate.lean	M S A C R	all five
+unnumbered	Paper.flat_rate_approx_complete	Paper/BorderRate.lean	M S A C R	all five
+unnumbered	Paper.contracting_complete	Paper/Scales.lean	none	none
+unnumbered	Paper.contracting_approx_complete	Paper/ApproxScales.lean	M S A C R	all five
+unnumbered	Paper.approx_rate_closed	Paper/BorderRate.lean	M S A C R	all five
+unnumbered	Paper.lem_circuit_phi	Paper/CircuitPhi.lean	M S A C R	all five
+unnumbered	Paper.lem_circuit_approx	Paper/ApproxScales.lean	M S A C R	all five
+unnumbered	Paper.exists_laws	Paper/Laws.lean	M S A C R	all five
+unnumbered	Paper.exists_generates	Paper/Cuts.lean	M S A C R	all five
+unnumbered	Paper.thm_onecut_evaluator	Paper/Cuts.lean	M S A C R	all five
+unnumbered	Paper.thm_onecut_program	Nc/Dl/Inst.lean	M S A C R	all five
+unnumbered	Paper.universal_symbols_ne	Paper/Circuit.lean	M S A C R	all five
+unnumbered	Nc.Approximates.exists_laurentPolynomial	Nc/Rate/Truncate.lean	M S A C R	all five
+unnumbered	Nc.Approximates.of_laurentPolynomial	Nc/Rate/Truncate.lean	M S A C R	all five
