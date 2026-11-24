@@ -22,9 +22,14 @@ EXPORTS = {
 REPO = "https://github.com/eric-vergo/formal-math"
 EXAMPLES = [
     ("Real permanent bound", ["Paper.thm_main"], ["Paper.thm_main"]),
+    ("Exact lower bound over every field", ["Paper.thm_allfields"], ["Paper.thm_allfields"]),
     ("Real polynomial and class corollaries", ["Paper.thm_simple", "Paper.cor_classes"],
      ["Paper.thm_simple", "Paper.cor_classes"]),
     ("Flat polynomial lower bound", ["Paper.thm_flat_simple"], ["Paper.thm_flat_simple"]),
+    ("Flat displacement estimate", ["Paper.prop_flat_lower_lengths"], ["Paper.prop_flat_lower_lengths"]),
+    ("One-cut assembly", ["Paper.thm_onecut"], ["Paper.thm_onecut"]),
+    ("Tape automaton piece bounds", ["Paper.prop_pieces"], ["Paper.prop_pieces"]),
+    ("Guarded sum of states", ["Nc.Dl.mem_execAll"], ["Nc.Dl.mem_execAll"]),
     ("Thin-tree existence", ["Paper.exists_thinTrees"], ["Paper.exists_thinTrees"]),
     ("Formula decoder inversion", [f"Nc.Uni.inv_{constructor}" for constructor in
                                   ("quote", "id", "hd", "tl", "cons", "ite", "run", "guess", "fail", "theta", "mul")],
