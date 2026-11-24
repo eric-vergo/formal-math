@@ -67,7 +67,7 @@ theorem Approximates.substitute_affine {f : MvPolynomial X F} {s : ℕ} (h : App
   intro d i hi
   have e : aeval Mat' p = aeval Mat' r + MvPolynomial.map φ (aeval Mat f) := by
     rw [← hmap, ← map_add, hrdef, sub_add_cancel]
-  rw [e, coeff_add, HahnSeries.coeff_add, hs d i (by omega), zero_add, coeff_map, hφ, HahnSeries.C_apply,
+  rw [e, AddMonoidAlgebra.coeff_add, Finsupp.add_apply, HahnSeries.coeff_add, hs d i (by omega), zero_add, coeff_map, hφ, HahnSeries.C_apply,
     HahnSeries.coeff_single]
   congr
 
