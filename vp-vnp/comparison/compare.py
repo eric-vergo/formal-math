@@ -87,6 +87,10 @@ def file_type(item):
     return path.suffix or (path.name if path.name.startswith(".") else "(none)")
 
 
+def tooling(item):
+    return item["path"].startswith(("scripts/", "comparison/", "blueprint/scripts/"))
+
+
 def file_types(files):
     result = {}
     for item in files:
@@ -281,8 +285,9 @@ def main():
         ("Proof libraries", lambda f: f["library"] in PROOF_LIBRARIES),
         ("Public statement", lambda f: f["library"] == "Statement"),
         ("Comparator", lambda f: f["library"] == "Comparator"),
-        ("Authored blueprint", lambda f: f["library"] == "Blueprint" and "/scripts/" not in f["path"]),
-        ("Tooling, project metadata and distributable assets", lambda f: f["library"] == "Support" or "/scripts/" in f["path"]),
+        ("Authored blueprint", lambda f: f["library"] == "Blueprint" and not tooling(f)),
+        ("Tooling and measurement inputs", tooling),
+        ("Project metadata and static assets", lambda f: f["library"] == "Support" and not tooling(f)),
     ]
     for title, include in scopes:
         paired(title, *(scope([f for f in inv["project_files"] if include(f)]) for inv in inventories))
@@ -301,7 +306,8 @@ def main():
            "Proofs before", "Proofs after"],
           ([name, *(f"{inv['groups'].get(name, {}).get(k, 0):,}" for k in ("files", "lean_physical", "lean_code", "proofs")
                     for inv in inventories)] for name in groups))
-    paired("Declaration commands", *(declaration_commands(inv["project_files"]) for inv in inventories))
+    paired("Declaration commands in the proof, statement and Comparator", *(
+        declaration_commands(inv["project_files"]) for inv in inventories))
     (old, longest_old), (new, longest_new) = map(proof_sizes, inventories)
     paired("Named theorem and lemma bodies", old, new)
     paths = [{f.get("module"): f["path"] for f in inv["project_files"]} for inv in inventories]
