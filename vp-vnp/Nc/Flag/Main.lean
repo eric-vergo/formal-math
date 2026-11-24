@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import Nc.Flag.Avg
-import Nc.Flag.Num
-import Nc.Cat.Prod
+import Nc.Flag.Rank
+import Nc.Cat.Core
 
 /-!
 # Translations of maps of a group into a metric space; what is used of prices
@@ -47,9 +47,5 @@ theorem transAct_dist (z : PiLp 2 fun _ : G => Y) (g : G) :
   rw [inv_mul_cancel_left]
 
 end Maps
-
-/-! ### Prices -/
-
-variable {Pr : ∀ V : Type, (V → V → ℝ) → Prop}
 
 end Nc.Flag

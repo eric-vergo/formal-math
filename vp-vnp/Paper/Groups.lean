@@ -175,6 +175,20 @@ theorem lem_first_double {m : ℕ} {s : ℝ} (hm : 2 ≤ m) (hs : 1 ≤ s) {a : 
         linarith
     _ = _ := by ring
 
+/-- Exponential decay dominates the fourth power of the window length. -/
+private theorem exists_log_large {ρ ε : ℝ} (h0 : 0 < ρ) (h1 : ρ < 1) (hε : 0 < ε) :
+    ∃ L0 : ℕ, ∀ L ≥ L0, ((L : ℝ) + 1) ^ 4 * ρ ^ L ≤ ε := by
+  have h := tendsto_pow_const_mul_const_pow_of_abs_lt_one 4 (r := ρ) (by rw [abs_of_pos h0]; exact h1)
+  have h2 := (h.eventually (gt_mem_nhds (show (0 : ℝ) < ε * ρ by positivity)))
+  obtain ⟨N, hN⟩ := eventually_atTop.1 h2
+  refine ⟨N, fun L hL => ?_⟩
+  have h3 := hN (L + 1) (by omega)
+  push_cast at h3
+  have h4 : ((L : ℝ) + 1) ^ 4 * ρ ^ L * ρ < ε * ρ := by
+    calc _ = ((L : ℝ) + 1) ^ 4 * ρ ^ (L + 1) := by rw [pow_succ]; ring
+      _ < _ := h3
+  exact (lt_of_mul_lt_mul_right h4 h0.le).le
+
 /-- κ_n² n = o(n²). -/
 theorem kappa_small {μ : ℕ} {s : ℝ} (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : s ^ 2 < μ) :
     Tendsto (fun n : ℕ => kappa μ s n ^ 2 * n / (n : ℝ) ^ 2) atTop (nhds 0) := by
