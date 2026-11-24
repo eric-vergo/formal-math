@@ -81,12 +81,12 @@ theorem exists_grid {K : Type*} [Fintype V] [DecidableEq V] [Fintype K] [Decidab
   refine Eq.trans ?_ (sum_invariant hv s1 s2 fun s => ∑ r : K → Bool, ∏ n, W n (s n) (r (w n)))
   refine Finset.sum_congr rfl fun s _ => ?_
   by_cases hs : ∀ n, s (σ n) = s n
-  · rw [if_pos hs]
+  · rw [ite_eq_left hs]
     refine Eq.trans ?_ (sum_invariant hw r1 r2 fun r => ∏ n, W n (s n) (r n))
     refine Finset.sum_congr rfl fun r _ => ?_
     simp [hs]
-  · rw [if_neg hs]
-    exact Finset.sum_eq_zero fun r _ => if_neg fun hc => hs hc.1
+  · rw [ite_eq_right hs]
+    exact Finset.sum_eq_zero fun r _ => ite_eq_right fun hc => hs hc.1
 
 end Fibres
 

@@ -60,13 +60,13 @@ theorem lem_lowdeg_chains [Fintype σ] (l : ℕ → MvPolynomial σ F) (hl : ∀
           MvPolynomial.constantCoeff (l b) * ∑ h, κa h * X h + X ⟨n, hn⟩ := by
           intro X
           simp only [add_mul, Finset.sum_add_distrib, Finset.mul_sum, mul_assoc, ite_mul, one_mul,
-            zero_mul, Finset.sum_ite_eq', Finset.mem_univ, if_true]
+            zero_mul, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
         rw [h1]
         by_cases hm : m = 0
         · subst hm
-          simp only [if_true, add_mul, Finset.sum_add_distrib, Finset.mul_sum, mul_assoc]
+          simp only [ite_true, add_mul, Finset.sum_add_distrib, Finset.mul_sum, mul_assoc]
           simp [Finset.mul_sum]
-        · simp only [hm, if_false]
+        · simp only [hm, ite_false]
           ring
       · have hs := hl n hn
         rcases hs with ⟨i, e⟩ | ⟨c, e⟩ | ⟨i, hi, j, hj, e⟩ | h
@@ -85,8 +85,8 @@ theorem lem_lowdeg_chains [Fintype σ] (l : ℕ → MvPolynomial σ F) (hl : ∀
           rw [e, map_add (line u), Polynomial.coeff_add, Ha, Hb]
           simp only [Pi.add_apply, add_mul, Finset.sum_add_distrib]
           by_cases hm : m = 0
-          · simp only [hm, if_true]; ring
-          · simp only [hm, if_false]; ring
+          · simp only [hm, ite_true]; ring
+          · simp only [hm, ite_false]; ring
         · exact absurd h hmul
   choose κ lam H using key
   exact ⟨fun k => κ k k.2, fun k => lam k k.2, left, right, fun k u m => H k k.2 u m⟩

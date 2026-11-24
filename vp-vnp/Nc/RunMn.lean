@@ -145,7 +145,7 @@ theorem prod_valid (x : Fin N × Option Γ → Bool) (g : ∀ d, RE Γ S Q n t M
   split_ifs with hx
   · rw [Finset.prod_eq_one, Finset.prod_eq_one, one_mul]
     · intro p _
-      refine if_neg fun h => ?_
+      refine ite_eq_right fun h => ?_
       rcases hx.some p with ⟨y, hy⟩ | ⟨p', hp', h'⟩
       · have := h (.inl (p, y), false) (by simp [cLits])
         simp [hy] at this
@@ -154,7 +154,7 @@ theorem prod_valid (x : Fin N × Option Γ → Bool) (g : ∀ d, RE Γ S Q n t M
     · rintro ⟨p, y, y'⟩ _
       split_ifs with h
       · simp only [cLits, List.forall_mem_cons, Sum.elim_inl] at h
-        exact if_pos (hx.one p y y' h.1 h.2.1)
+        exact ite_eq_left (hx.one p y y' h.1 h.2.1)
       · rfl
   · have hx' : ¬ ((∀ p y y', x (p, y) = true → x (p, y') = true → y = y') ∧
         ∀ p, (∃ y, x (p, y) = true) ∨ ∃ p' < p, x (p', none) = true) := fun h => hx ⟨h.1, h.2⟩
@@ -165,7 +165,7 @@ theorem prod_valid (x : Fin N × Option Γ → Bool) (g : ∀ d, RE Γ S Q n t M
       have : (∏ p : Fin N, if ∀ l ∈ cLits (S := S) (Q := Q) (n := n) (t := t) (M := M) (.inr p : RC Γ N),
           Sum.elim x (hot g) l.1 = l.2 then (cRWt (.inr p : RC Γ N) : F) else 1) = 0 := by
         refine Finset.prod_eq_zero (mem_univ p) ?_
-        rw [if_pos]
+        rw [ite_eq_left]
         · rfl
         · intro l hl
           simp only [cLits, List.mem_append, List.mem_map, mem_toList, mem_univ, true_and, mem_filter] at hl
@@ -179,8 +179,8 @@ theorem prod_valid (x : Fin N × Option Γ → Bool) (g : ∀ d, RE Γ S Q n t M
           if ∀ l ∈ cLits (S := S) (Q := Q) (n := n) (t := t) (M := M) (.inl q : RC Γ N),
           Sum.elim x (hot g) l.1 = l.2 then (cRWt (.inl q : RC Γ N) : F) else 1) = 0 := by
         refine Finset.prod_eq_zero (mem_univ (p, y, y')) ?_
-        rw [if_pos]
-        · exact if_neg hne
+        rw [ite_eq_left]
+        · exact ite_eq_right hne
         · intro l hl
           simp only [cLits, List.mem_cons, List.not_mem_nil, or_false] at hl
           rcases hl with rfl | rfl
@@ -199,10 +199,10 @@ theorem fdSum_valid (lits : RS Γ S Q n t ⊕ RH Γ S n t M → List (RV Γ S Q 
     rw [← prod_valid (F := F) x g]
     refine Finset.prod_congr rfl fun r _ => ?_
     by_cases hr : ∀ l ∈ cLits r, Sum.elim x (hot g) l.1 = l.2
-    · rw [if_pos hr]
-      exact (if_pos hr).symm
-    · rw [if_neg hr]
-      exact (if_neg hr).symm
+    · rw [ite_eq_left hr]
+      exact (ite_eq_left hr).symm
+    · rw [ite_eq_right hr]
+      exact (ite_eq_right hr).symm
 
 end Rules
 
@@ -236,7 +236,7 @@ theorem line_mnExt (f : (ι → Bool) → F) (u : ι → Bool) :
   · push Not at h
     obtain ⟨j, hb, hu⟩ := h
     rw [Finset.prod_eq_zero (mem_univ j), mul_zero]
-    rw [if_pos hb, if_neg hu]
+    rw [ite_eq_left hb, ite_eq_right hu]
 
 /-- The degree of the monomial extension. -/
 theorem totalDegree_mnExt (f : (ι → Bool) → F) {d : ℕ} (hd : ∀ b, f b ≠ 0 → #{j | b j = true} ≤ d) :

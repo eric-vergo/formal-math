@@ -85,7 +85,7 @@ theorem rep_role (hkey : Function.Injective key) {r : M.R} (hr : grp (M.rp r) = 
   refine ⟨h.1.putsAll, fun c' => ?_⟩
   obtain ⟨a, id⟩ := c'
   by_cases hc : (a, id) ∈ (dom n o grp g).filter fun c => c.1 = M.rp r ∧ isNewOf r.1 c.2 = true
-  · rw [ovr, if_pos hc]
+  · rw [ovr, ite_eq_left hc]
     obtain ⟨h1, h2, h3⟩ := mem_filter.1 hc
     simp only at h2
     subst h2
@@ -103,7 +103,7 @@ theorem rep_role (hkey : Function.Injective key) {r : M.R} (hr : grp (M.rp r) = 
       simp only
       rw [kNew_eq]
       exact getElem_map_filter (by have := (o ⟨r.1, ν.1⟩).2; omega) _ k (Nat.lt_succ_of_le hk)
-  · rw [ovr, if_neg hc, ← h.2, tget_putsAll_not (nodup_PN hkey r f)]
+  · rw [ovr, ite_eq_right hc, ← h.2, tget_putsAll_not (nodup_PN hkey r f)]
     rw [mem_PN]
     rintro ⟨ν, i, hi, he⟩
     have := hkey he
@@ -152,12 +152,12 @@ theorem stepOK_role (hkey : Function.Injective key) (hub : 0 < ub) {r : M.R} (hr
     rw [hct, uwBits_ne_nil hub]
   by_cases hp : ∀ e : (M.kind r.1).SlAt r.2, ∀ id ∈ P.ids n o ⟨r.1, e.1⟩, σ (M.rp r, id) ≠ none
   swap
-  · rw [roleSem, if_neg fun h => hp (hpres.1 h), sumL_nil]
+  · rw [roleSem, ite_eq_right fun h => hp (hpres.1 h), sumL_nil]
     symm
     refine Finset.sum_eq_zero fun f _ => ?_
-    have : (roleStep P n o grp g ub r).w f σ = 0 := if_neg fun h => hp h.1
+    have : (roleStep P n o grp g ub r).w f σ = 0 := ite_eq_right fun h => hp h.1
     rw [this, zero_mul]
-  rw [roleSem, if_pos (hpres.2 hp), sumL_bindL, sumL_role _ _ htab]
+  rw [roleSem, ite_eq_left (hpres.2 hp), sumL_bindL, sumL_role _ _ htab]
   show _ = ∑ f : Fin (P.num n o r.1 * ub) → Bk (M.kind r.1) r.2, _
   refine Finset.sum_congr rfl fun f _ => ?_
   -- the streams
@@ -203,15 +203,15 @@ theorem stepOK_role (hkey : Function.Injective key) (hub : 0 < ub) {r : M.R} (hr
     · intro h ν _
       rw [h ν, length_kNew]
   by_cases hc : ∀ ν : (M.kind r.1).CnAt r.2, ucount ub (chS (M.kind r.1) r.2 f ν) = (o ⟨r.1, ν.1⟩).1 + 1
-  · rw [if_pos (hcnt.2 hc)]
+  · rw [ite_eq_left (hcnt.2 hc)]
     have hw : (roleStep P n o grp g ub r).w f σ = ∏ k, (M.kind r.1).tab r.2 (f k).1 (fun e =>
-        (slotBits (P.num n o r.1) (P.ids n o ⟨r.1, e.1⟩) fun id => σ (M.rp r, id)).getD k false) (f k).2 := if_pos ⟨hp, hc⟩
+        (slotBits (P.num n o r.1) (P.ids n o ⟨r.1, e.1⟩) fun id => σ (M.rp r, id)).getD k false) (f k).2 := ite_eq_left ⟨hp, hc⟩
     rw [hw]
     simp only [encT, List.map_cons, List.map_nil, sumL_single]
     congr 1
     exact hΨ _ _ (rep_role hkey hr f hrep)
-  · rw [if_neg fun h => hc (hcnt.1 h)]
-    have hw : (roleStep P n o grp g ub r).w f σ = 0 := if_neg fun h => hc h.2
+  · rw [ite_eq_right fun h => hc (hcnt.1 h)]
+    have hw : (roleStep P n o grp g ub r).w f σ = 0 := ite_eq_right fun h => hc h.2
     rw [hw, zero_mul]
     simp
 

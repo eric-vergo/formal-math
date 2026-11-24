@@ -80,8 +80,8 @@ theorem lem_few_approx {K : Type} [Field K] {V : Type} [Fintype V] [DecidableEq 
       ring
     rw [← coeff_toLaurent_natCast, e1, coeff_mul_T, h x _ (by omega)]
     by_cases hid : i = Fintype.card V * Δ
-    · rw [if_pos hid, if_pos (by omega)]
-    · rw [if_neg hid, if_neg (by omega)]
+    · rw [ite_eq_left hid, ite_eq_left (by omega)]
+    · rw [ite_eq_right hid, ite_eq_right (by omega)]
   have := few φ (Subtype.val : P → V) t (fun q hq => ht q fun hmem => hq ⟨⟨q, hmem⟩, rfl⟩) hB
     (M := univ.sup' univ_nonempty fun j => φ.F (T j)) (fun j => Finset.le_sup' (fun j => φ.F (T j)) (mem_univ j))
   rwa [Fintype.card_fin] at this

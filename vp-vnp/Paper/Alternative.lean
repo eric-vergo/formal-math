@@ -882,9 +882,9 @@ theorem thm_alt_euclidean (hK : ¬ Contracting K) (hμ : 3 ≤ μ) {k : ℕ} (hk
       have h5 := Fin.sum_univ_eq_sum_range (fun j => if hj : j < k then
           (1 / (2 * R)) ^ 2 * dist (E u ⟨j, hj⟩) (E v ⟨j, hj⟩) ^ 2 else 0) k
       rw [h4, sum_subset (s₁ := range k) (s₂ := range μ) (range_subset_range.2 hk)
-        (fun j _ hj => by rw [mem_range] at hj; rw [dif_neg hj]) |>.symm, ← h5]
+        (fun j _ hj => by rw [mem_range] at hj; rw [dite_eq_right hj]) |>.symm, ← h5]
       refine sum_congr rfl fun i _ => ?_
-      rw [dif_pos i.2]
+      rw [dite_eq_left i.2]
     rw [h2] at h1
     have h3 : dist (F (g u)) (F (g v)) = 1 / (2 * R) * dist (E u) (E v) := by
       refine (pow_left_inj₀ dist_nonneg (by positivity) two_ne_zero).1 ?_

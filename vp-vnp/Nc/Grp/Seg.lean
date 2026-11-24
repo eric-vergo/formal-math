@@ -215,7 +215,7 @@ theorem seg_step (hsep : sep.length ≤ c) (hc : ∀ a ∈ rest, a.length ≤ c)
     | f + 2, tk =>
       have h2 : num (f + 2) ≠ .nil := by simp [num]
       have h3 : (num (f + 2)).tl ≠ .nil := by simp [num]
-      rw [if_pos (show okFlag (f + 2) tk = true from rfl)]
+      rw [ite_eq_left (show okFlag (f + 2) tk = true from rfl)]
       exact (Does.ite_true (H := .ite sgTk .fail (segClose sep)) sgF_gives h2 (Does.ite_true
         (H := .ite sgTk (segClose sep) .fail) sgF_gives.tl h3 hcl)).mono (by omega)
   refine ((Does.either hok htk).replace ?_).mono (by omega)

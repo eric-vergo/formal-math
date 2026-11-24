@@ -78,7 +78,7 @@ theorem sum_items_le {items : List Item} {n c N : ℕ} (hn : items.length = n)
     have h2 : (62 * c + 700) * (it.1.length + it.2.length + 1) ≤ (62 * c + 700) * N := Nat.mul_le_mul_left _ this
     have h3 : 1 ≤ N := by omega
     nlinarith
-  have := List.sum_le_card_nsmul _ _ h1
+  have := List.sum_le_length_nsmul _ _ h1
   simpa using this
 
 /-- **Cutting and writing.** -/

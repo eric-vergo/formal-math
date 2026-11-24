@@ -111,7 +111,7 @@ theorem dchain {S : A} {B : ℤ} (o : Tree) : ∀ (j : ℕ) (hj : j < 11) (σ : 
         simp only [Tree.len]
         omega) a3 (a4.trans rfl) (a5.trans rfl) (a6.trans rfl) (fun _ hc => a7 (heap_nx σ _ _ _ _ hc))
         (a8.trans (inpA σ _ (by simp) (by simp) _ _ _)))
-    have h3 := sumTo_ruleA hσ hrec' (.dc ⟨j, hj'⟩) (by rw [hm]; exact dif_pos hj') (by rw [hm]; simp) (by simp)
+    have h3 := sumTo_ruleA hσ hrec' (.dc ⟨j, hj'⟩) (by rw [hm]; exact dite_eq_left hj') (by rw [hm]; simp) (by simp)
       (by rw [hm]; rfl) rfl h2
     refine h3.mono ?_
     simp only [Tree.len]
@@ -138,12 +138,12 @@ theorem dstuck {B : ℤ} (o : Tree) : ∀ (j : ℕ) (hj : j < 11) (σ : St supp)
     by_cases hj' : j < 10
     · have h2 := ih (B := B - 1) (j + 1) (by omega) (nx θ σ (.inl (.dc ⟨j, hj'⟩)) p q s) q (hσ.nx _ _ _ _) rfl rfl
         (hq.mono (heap_nx σ _ _ _ _)) (by omega)
-      have h3 := sumTo_ruleA hσ hrec' (.dc ⟨j, hj'⟩) (by rw [hm]; exact dif_pos hj') (by rw [hm]; simp) (by simp)
+      have h3 := sumTo_ruleA hσ hrec' (.dc ⟨j, hj'⟩) (by rw [hm]; exact dite_eq_left hj') (by rw [hm]; simp) (by simp)
         (by rw [hm]; rfl) rfl h2
       exact h3.mono (by omega)
     · refine sumTo_stuck hσ hrec' ?_ (by rw [hm]; simp) (by simp) (by rw [hm]; simp) B
       rw [hm]
-      exact dif_neg hj'
+      exact dite_eq_right hj'
 
 /-- From a formula to its opcode. -/
 theorem toOp {S : A} {B : ℤ} {σ : St supp} (hσ : OKs σ) (hm : σ.mode = .E) {o a : Tree}
@@ -231,8 +231,8 @@ theorem readName (hθ : ∀ q, q ∉ supp → θ q = 0) {S : A} {B : ℤ} (w : T
       · have hnext : nextR supp σ1.mode (kb bt) = some (.inr (.inr (.inr (.inr ⟨(p, ⟨_, hp⟩, bt), rfl⟩)))) := by
           change nextR supp (.TB p) (kb bt) = _
           cases bt
-          · exact dif_pos hp
-          · exact dif_pos hp
+          · exact dite_eq_left hp
+          · exact dite_eq_left hp
         have h2 := ih ⟨_, hp⟩ (nx θ σ1 (.inr (.inr (.inr (.inr ⟨(p, ⟨_, hp⟩, bt), rfl⟩)))) x1 x2 x3) (hσ1.nx _ _ _ _) rfl
           (hb1.mono (heap_nx σ1 _ _ _ _)) (KS.heap (fun _ hc => heap_nx σ1 _ _ _ _ (heap_nx σ _ _ _ _ hc)) hk)
         have h3 := sumTo_rule hσ1 hrec1 _ hnext (by change Md.TB p ≠ .P; simp)
@@ -256,8 +256,8 @@ theorem readName (hθ : ∀ q, q ∉ supp → θ q = 0) {S : A} {B : ℤ} (w : T
           (by rintro ⟨h, -⟩; exact absurd h (by change Md.TB p ≠ .D 7; simp)) (by change Md.TB p ≠ .Z; simp) _
         change nextR supp (.TB p) (kb bt) = none
         cases bt
-        · exact dif_neg hp
-        · exact dif_neg hp
+        · exact dite_eq_right hp
+        · exact dite_eq_right hp
     have h3 := sumTo_rule hσ hrec' (.inr (.inr (.inr (.inl p)))) (by rw [hm]; rfl) (by rw [hm]; simp) (by simp)
       (by rw [hm]; rfl) rfl key
     have hw : (rule θ supp (.inr (.inr (.inr (.inl p))))).wt = 1 := rfl

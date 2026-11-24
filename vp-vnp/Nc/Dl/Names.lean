@@ -30,7 +30,7 @@ include hnm
 
 theorem byPath_nm (st : ν → Tree) (x : ν) : byPath nm st (nm x) = st x := by
   have h : ∃ y, nm y = nm x := ⟨x, rfl⟩
-  rw [byPath, dif_pos h, hnm h.choose_spec]
+  rw [byPath, dite_eq_left h, hnm h.choose_spec]
 
 theorem update_byPath (st : ν → Tree) (x : ν) (v : Tree) :
     Function.update (byPath nm st) (nm x) v = byPath nm (Function.update st x v) := by
@@ -41,7 +41,7 @@ theorem update_byPath (st : ν → Tree) (x : ν) (v : Tree) :
     rw [byPath_nm hnm, Function.update_apply, Function.update_apply, byPath_nm hnm]
     simp only [hnm.eq_iff]
   · rw [Function.update_of_ne]
-    · rw [byPath, dif_neg h, byPath, dif_neg h]
+    · rw [byPath, dite_eq_right h, byPath, dite_eq_right h]
     · rintro rfl
       exact h ⟨x, rfl⟩
 
@@ -102,7 +102,7 @@ theorem tget_trieOf {α : Type} [Fintype α] {code : α → List Bool} (hc : Fun
       by_cases hab : a = b
       · subst hab
         simp
-      · rw [if_neg fun h => hab (hc h)]
+      · rw [ite_eq_right fun h => hab (hc h)]
         exact ih ((List.mem_cons.1 h).resolve_left hab)
   exact this _ (Finset.mem_toList.2 (Finset.mem_univ a))
 
@@ -173,14 +173,14 @@ theorem foldl_upds {own : ν → Option ι} {o : ι → List (ν × Tree)} {v : 
       rw [upds] at h1
       rw [h1]
       by_cases hx : ∃ a ∈ l, a.1 = x
-      · rw [if_pos hx, if_pos]
+      · rw [ite_eq_left hx, ite_eq_left]
         obtain ⟨a, ha, h⟩ := hx
         exact ⟨a, List.mem_cons_of_mem _ ha, h⟩
-      · rw [if_neg hx]
+      · rw [ite_eq_right hx]
         by_cases hb : b.1 = x
-        · rw [if_pos ⟨b, List.mem_cons_self, hb⟩, ← hb, Function.update_self]
+        · rw [ite_eq_left ⟨b, List.mem_cons_self, hb⟩, ← hb, Function.update_self]
           exact hl b List.mem_cons_self
-        · rw [if_neg, Function.update_of_ne (Ne.symm hb)]
+        · rw [ite_eq_right, Function.update_of_ne (Ne.symm hb)]
           rintro ⟨a, ha, h⟩
           rcases List.mem_cons.1 ha with rfl | ha
           · exact hb h
@@ -206,7 +206,7 @@ theorem foldl_upds {own : ν → Option ι} {o : ι → List (ν × Tree)} {v : 
       · subst hj
         simp [h2, hx]
       · have : ¬ (some j = some i) := fun h => hj (Option.some.inj h)
-        simp only [h2, hx, this, if_false, List.mem_cons, hj, false_or]
+        simp only [h2, hx, this, ite_false, List.mem_cons, hj, false_or]
 
 end Folds
 

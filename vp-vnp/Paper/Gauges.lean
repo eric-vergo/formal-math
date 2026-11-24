@@ -115,18 +115,18 @@ theorem prop_gauge_radius_cover (h : IsPre D p) {κ : Type} [Fintype κ] (t : M)
         have e1 : ∏ z ∈ S, z ^ (if z = y then e z + 1 else e z) =
             y * ∏ z ∈ S, z ^ e z := by
           rw [← Finset.mul_prod_erase S _ hyS, ← Finset.mul_prod_erase S (fun z => z ^ e z) hyS]
-          rw [if_pos rfl, pow_succ', mul_assoc]
+          rw [ite_eq_left rfl, pow_succ', mul_assoc]
           congr 2
           refine Finset.prod_congr rfl fun z hz => ?_
-          rw [if_neg (Finset.ne_of_mem_erase hz)]
+          rw [ite_eq_right (Finset.ne_of_mem_erase hz)]
         have e2 : ∏ z ∈ S, a z ^ (if z = y then e z + 1 else e z) =
             a y * ∏ z ∈ S, a z ^ e z := by
           rw [← Finset.mul_prod_erase S _ hyS,
             ← Finset.mul_prod_erase S (fun z => a z ^ e z) hyS]
-          rw [if_pos rfl, pow_succ', mul_assoc]
+          rw [ite_eq_left rfl, pow_succ', mul_assoc]
           congr 2
           refine Finset.prod_congr rfl fun z hz => ?_
-          rw [if_neg (Finset.ne_of_mem_erase hz)]
+          rw [ite_eq_right (Finset.ne_of_mem_erase hz)]
         rw [e1, e2] at h4
         rw [← mul_assoc]
         refine h4.trans (le_of_eq ?_)
@@ -533,7 +533,7 @@ theorem thm_duality_cover {C : M} {A : B → M} {η : ℝ} (hη : 0 < η) (hη1 
       _ = _ := one_mul _
   · have := hs' x.1
     rw [Finset.sum_add_distrib]
-    simp only [Finset.sum_ite_eq', Finset.mem_univ, if_true]
+    simp only [Finset.sum_ite_eq', Finset.mem_univ, ite_true]
     omega
   · refine D.bind (b := fun j => C ^ u' j * mon A (v' j))
       (c := fun j (_ : μ j) => mon A (fun β => v' j β + if β = β₀ then u' j else 0)) hc' fun j => ?_

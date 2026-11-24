@@ -68,8 +68,8 @@ theorem sumL_segOne (sep : List Bool) {m : ℕ} (hm : 0 < m) (fl : Fin m → ℕ
   rw [h]
   refine Finset.sum_congr rfl fun X _ => ?_
   by_cases hX : CutOk fl l (fun b => (X b : List Γ))
-  · exact (if_pos hX).trans (if_pos hX).symm
-  · exact (if_neg hX).trans (if_neg hX).symm
+  · exact (ite_eq_left hX).trans (ite_eq_left hX).symm
+  · exact (ite_eq_right hX).trans (ite_eq_right hX).symm
 
 /-- **All tapes.** -/
 theorem sumL_segs (sep : List Bool) {m : ℕ} (hm : 0 < m) (bits : Γ → List Bool) (T : ℕ) {N : ℕ} (fl : Fin N → Fin m → ℕ)
@@ -80,7 +80,7 @@ theorem sumL_segs (sep : List Bool) {m : ℕ} (hm : 0 < m) (bits : Γ → List B
         G (List.ofFn fun b => joined bits sep (fun i => (X i b : List Γ)) ++ acc b).reverse else 0 := by
   induction N generalizing acc with
   | zero =>
-    rw [List.ofFn_zero, segsL, foldL, sumL_single, Fintype.sum_unique, if_pos fun i => i.elim0]
+    rw [List.ofFn_zero, segsL, foldL, sumL_single, Fintype.sum_unique, ite_eq_left fun i => i.elim0]
     rfl
   | succ N ih =>
     rw [List.ofFn_succ, segsL, foldL, sumL_bindL]
@@ -94,7 +94,7 @@ theorem sumL_segs (sep : List Bool) {m : ℕ} (hm : 0 < m) (bits : Γ → List B
     rw [← (Fin.snocEquiv fun _ : Fin (N + 1) => Fin m → Wt Γ T).sum_comp, Fintype.sum_prod_type]
     refine Finset.sum_congr rfl fun Y _ => ?_
     by_cases hY : CutOk (fl (Fin.last N)) (l (Fin.last N)) (fun b => (Y b : List Γ))
-    · rw [if_pos hY]
+    · rw [ite_eq_left hY]
       have h2 := ih (fun i => fl i.castSucc) (fun i => l i.castSucc) (fun i => hT _)
         (fun b => (Y b : List Γ).flatMap bits ++ (sep ++ acc b))
       rw [segsL] at h2
@@ -127,9 +127,9 @@ theorem sumL_segs (sep : List Bool) {m : ℕ} (hm : 0 < m) (bits : Γ → List B
       funext b
       rw [e4, joined_snoc]
       simp only [List.append_assoc]
-    · rw [if_neg hY]
+    · rw [ite_eq_right hY]
       symm
-      refine Finset.sum_eq_zero fun X _ => if_neg fun h => hY ?_
+      refine Finset.sum_eq_zero fun X _ => ite_eq_right fun h => hY ?_
       have := h (Fin.last N)
       have e2 : (Fin.snocEquiv fun _ : Fin (N + 1) => Fin m → Wt Γ T) (Y, X) = Fin.snoc X Y := rfl
       rw [e2] at this

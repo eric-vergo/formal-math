@@ -299,8 +299,8 @@ theorem _root_.Paper.thm_tree_move {P : Plan M U0 U1} {cap : ℕ} (hP : P.Ok cap
           (ext (hold0 M.np) (hold1 M.np) (newUnits M x (upd M o x oo)) y z (M.part x p)) := by
     intro oo
     by_cases hg : P.good n (upd M o x oo) x
-    · simp only [hg, if_true]
-    · simp only [hg, if_false, Finset.sum_const_zero]
+    · simp only [hg, ite_true]
+    · simp only [hg, ite_false, Finset.sum_const_zero]
       symm
       refine move_zero hub x (hm x) hB o (Plan.seenAt n o x.1) hSeen hy (fun e => P.ids n o ⟨x, e⟩) hseen hlen hne' oo ?_
       rintro ⟨i, hi⟩
@@ -379,7 +379,7 @@ theorem _root_.Paper.thm_tree_moves {P : Plan M U0 U1} {cap : ℕ} (hP : P.Ok ca
       have e4 : tabUpTo P n (fun _ => d) init 0 = fun y => ∏ a, init a (y a) := by
         funext y
         simp [tabUpTo]
-      rw [e2, e3, e4, if_pos fun x' hx' => absurd hx' (Nat.not_lt_zero _)]
+      rw [e2, e3, e4, ite_eq_left fun x' hx' => absurd hx' (Nat.not_lt_zero _)]
     | succ x ih =>
       intro hx
       rw [ih (Nat.le_of_succ_le hx)]
@@ -411,10 +411,10 @@ theorem _root_.Paper.thm_tree_moves {P : Plan M U0 U1} {cap : ℕ} (hP : P.Ok ca
               exact h2
         by_cases hall : ∀ x' : Fin E, x'.1 < x → P.good n o x'
         swap
-        · rw [if_neg hall]
+        · rw [ite_eq_right hall]
           symm
-          refine Finset.sum_eq_zero fun oo _ => if_neg fun h => hall ((hgx oo).1 h).1
-        rw [if_pos hall]
+          refine Finset.sum_eq_zero fun oo _ => ite_eq_right fun h => hall ((hgx oo).1 h).1
+        rw [ite_eq_left hall]
         rw [posVal_move' (hold0 M.np) (hold1 M.np) none (Plan.seenAt n o x) (P.cur n o x)
           (outSet P n o xE) (fun id h => ?_)
           (fun id h => (Plan.mem_cur.1 h).1) (fun oo : (M.kind xE).Cn → Fin U1 => newUnits M xE (upd M o xE oo))
@@ -425,10 +425,10 @@ theorem _root_.Paper.thm_tree_moves {P : Plan M U0 U1} {cap : ℕ} (hP : P.Ok ca
         · refine Finset.sum_congr rfl fun oo _ => ?_
           by_cases hgo : P.good n (upd M o xE oo) xE
           swap
-          · rw [if_neg fun h => hgo ((hgx oo).1 h).2]
-            simp only [hgo, if_false, mul_zero, posVal, ite_self, Finset.sum_const_zero]
-          rw [if_pos ((hgx oo).2 ⟨hall, hgo⟩)]
-          simp only [hgo, if_true]
+          · rw [ite_eq_right fun h => hgo ((hgx oo).1 h).2]
+            simp only [hgo, ite_false, mul_zero, posVal, ite_self, Finset.sum_const_zero]
+          rw [ite_eq_left ((hgx oo).2 ⟨hall, hgo⟩)]
+          simp only [hgo, ite_true]
           set o' := upd M o xE oo with ho'
           have hlt : ∀ ν : M.N, ν.1.1 < xE.1 → o ν = o' ν := by
             intro ν hν
@@ -525,7 +525,7 @@ theorem _root_.Paper.thm_tree_moves {P : Plan M U0 U1} {cap : ℕ} (hP : P.Ok ca
   symm
   rw [Finset.prod_comm]
   refine Finset.prod_congr rfl fun r _ => ?_
-  rw [Finset.prod_ite_eq, if_pos (Finset.mem_univ _)]
+  rw [Finset.prod_ite_eq, ite_eq_left (Finset.mem_univ _)]
   rfl
 
 end Nc.G

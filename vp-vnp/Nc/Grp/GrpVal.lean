@@ -51,9 +51,9 @@ theorem phi_baseStep {p : Fin (K + K)} (hp : grp (Fin.castAdd A' p) = g) {y : Ce
           simp only [initV]
           by_cases hap : a = p
           · subst hap
-            rw [if_pos rfl]
+            rw [ite_eq_left rfl]
             exact (h2 b).2 k
-          · rw [if_neg hap]
+          · rw [ite_eq_right hap]
             have hbp : b = p := by
               rcases (mem_dom.1 h4).2.2 with h | h
               · exact absurd (Fin.castAdd_injective _ _ h).symm hap
@@ -74,23 +74,23 @@ theorem phi_baseStep {p : Fin (K + K)} (hp : grp (Fin.castAdd A' p) = g) {y : Ce
         exact hy _ fun h => hk (G.Plan.init_mem_seenAt.1 (mem_dom.1 h).2.1)
       refine ⟨h2, fun b => ⟨h3 b, fun k => ?_⟩, fun b => ⟨h4 b, fun k => ?_⟩⟩
       · by_cases hk : k.1 < (n p b).1
-        · rw [hin p b k (Or.inl rfl) hk, initV, if_pos rfl]
+        · rw [hin p b k (Or.inl rfl) hk, initV, ite_eq_left rfl]
         · rw [hout p b k hk]
           exact (unitsOf_eq_none.2 (by rw [h3 b]; exact not_lt.1 hk)).symm
       · by_cases hk : k.1 < (n b p).1
         · rw [hin b p k (Or.inr rfl) hk, initV]
           by_cases hbp : b = p
           · subst hbp
-            rw [if_pos rfl]
+            rw [ite_eq_left rfl]
             exact h5 k
-          · rw [if_neg hbp]
+          · rw [ite_eq_right hbp]
         · rw [hout b p k hk]
           exact (unitsOf_eq_none.2 (by rw [h4 b]; exact not_lt.1 hk)).symm
   by_cases hA : ∀ c ∈ (baseStep mu T cb q x ρ n o grp g ub p).wr, y c = initV cb ub M.N U0 U1 R C p c.2
   · by_cases h2 : InitC cb ub U0 (fun a b => (n a b).1) (fun s => ρ s p) p R C
-    · exact (if_pos hA).trans ((if_pos h2).trans (if_pos (key.2 ⟨hA, h2⟩)).symm)
-    · exact (if_pos hA).trans ((if_neg h2).trans (if_neg fun h => h2 (key.1 h).2).symm)
-  · exact (if_neg hA).trans (if_neg fun h => hA (key.1 h).1).symm
+    · exact (ite_eq_left hA).trans ((ite_eq_left h2).trans (ite_eq_left (key.2 ⟨hA, h2⟩)).symm)
+    · exact (ite_eq_left hA).trans ((ite_eq_right h2).trans (ite_eq_right fun h => h2 (key.1 h).2).symm)
+  · exact (ite_eq_right hA).trans (ite_eq_right fun h => hA (key.1 h).1).symm
 
 /-- Choices in all blocks. -/
 def bkEquiv (L : Law F) (p : L.Ro) (B : ℕ) : (Fin B → Bk L p) ≃
@@ -108,11 +108,11 @@ theorem phi_roleStep {r : M.R} (hr : grp (M.rp r) = g) {y : Cell M U0 U1 → UW 
   rw [G.roleAt, G.role]
   by_cases hne : ∀ e : (M.kind r.1).SlAt r.2, ∀ id ∈ P.ids n o ⟨r.1, e.1⟩, y (M.rp r, id) ≠ none
   swap
-  · rw [if_neg hne, WStep.phi]
+  · rw [ite_eq_right hne, WStep.phi]
     refine Finset.sum_eq_zero fun f _ => ?_
-    have : (roleStep P n o grp g ub r).w f y = 0 := if_neg fun h => hne h.1
+    have : (roleStep P n o grp g ub r).w f y = 0 := ite_eq_right fun h => hne h.1
     rw [this, ite_self]
-  rw [if_pos hne, WStep.phi]
+  rw [ite_eq_left hne, WStep.phi]
   have hsig := Finset.sum_sigma' (univ : Finset (Fin (P.num n o r.1 * ub) → (M.kind r.1).I)) (fun _ => univ)
     (fun i (g : ∀ k, ∀ ν : (M.kind r.1).CnAt r.2, Fin ((M.kind r.1).len (i k) ν) → Bool) =>
       if ∀ ν : (M.kind r.1).CnAt r.2, ChOk ⟨r.1, ν.1⟩ (o ⟨r.1, ν.1⟩).1
@@ -160,9 +160,9 @@ theorem phi_roleStep {r : M.R} (hr : grp (M.rp r) = g) {y : Cell M U0 U1 → UW 
         exact h3
   by_cases h1 : ∀ c ∈ (roleStep P n o grp g ub r).wr, y c = roleV ub r f c.2
   · by_cases h2 : ∀ ν : (M.kind r.1).CnAt r.2, ucount ub (chS (M.kind r.1) r.2 f ν) = (o ⟨r.1, ν.1⟩).1 + 1
-    · exact (if_pos h1).trans ((if_pos ⟨hne, h2⟩).trans (if_pos (key.2 ⟨h1, h2⟩)).symm)
-    · exact (if_pos h1).trans ((if_neg fun h => h2 h.2).trans (if_neg fun h => h2 (key.1 h).2).symm)
-  · exact (if_neg h1).trans (if_neg fun h => h1 (key.1 h).1).symm
+    · exact (ite_eq_left h1).trans ((ite_eq_left ⟨hne, h2⟩).trans (ite_eq_left (key.2 ⟨h1, h2⟩)).symm)
+    · exact (ite_eq_left h1).trans ((ite_eq_right fun h => h2 h.2).trans (ite_eq_right fun h => h2 (key.1 h).2).symm)
+  · exact (ite_eq_right h1).trans (ite_eq_right fun h => h1 (key.1 h).1).symm
 
 /-- The product over the steps. -/
 theorem prod_phi {y : Cell M U0 U1 → UW ub} (hy : ∀ c, c ∉ dom n o grp g → y c = none) :

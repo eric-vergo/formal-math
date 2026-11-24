@@ -36,8 +36,8 @@ theorem codeTab_congr {p : Ro} {G : (i : ι) → ((ν : {ν // c ν = p ∨ d ν
       ∀ ν : {ν // c ν = p ∨ d ν = p}, code ν i (g ν) = z' ν :=
     forall_congr' fun ν => by rw [h ν.1 ν.2]
   by_cases h1 : ∀ ν : {ν // c ν = p ∨ d ν = p}, code ν i (g ν) = z ν
-  · rw [if_pos h1, if_pos (this.1 h1)]
-  · rw [if_neg h1, if_neg fun h2 => h1 (this.2 h2)]
+  · rw [ite_eq_left h1, ite_eq_left (this.1 h1)]
+  · rw [ite_eq_right h1, ite_eq_right fun h2 => h1 (this.2 h2)]
 
 variable {c d code}
 
@@ -80,9 +80,9 @@ theorem contract [Nonempty Ro]
   · rintro ⟨z, f⟩ - hne
     have hcond : ∀ p, ∀ ν : {ν // c ν = p ∨ d ν = p}, code ν (f p).1 ((f p).2 ν) = z ν := by
       by_contra hc
-      rw [if_neg hc] at hne
+      rw [ite_eq_right hc] at hne
       exact hne rfl
-    rw [if_pos hcond] at hne
+    rw [ite_eq_left hcond] at hne
     have hpair : ∀ ν, (⟨(f (c ν)).1, (f (c ν)).2 ⟨ν, Or.inl rfl⟩⟩ : Σ i, S i ν) =
         ⟨(f (d ν)).1, (f (d ν)).2 ⟨ν, Or.inr rfl⟩⟩ := by
       intro ν
@@ -133,7 +133,7 @@ theorem contract [Nonempty Ro]
         rw [hgp p, hg p]
   · rintro ⟨i, g⟩ - -
     simp only
-    rw [if_pos]
+    rw [ite_eq_left]
     exact fun p ν => trivial
 
 end Contract

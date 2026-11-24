@@ -149,13 +149,13 @@ theorem exists_order_of_test_ne_zero (e : Fin (n * n) → Bool) (h : bits (order
   have h1 : ∀ p ∈ clash n, ¬ (e (finProdFinEquiv p.1) = true ∧ e (finProdFinEquiv p.2) = true) := by
     rintro p hp ⟨a, b⟩
     refine h (mul_eq_zero_of_left (Finset.prod_eq_zero hp ?_) _)
-    rw [if_pos a, if_pos b, mul_one, mul_one, ← map_add, add_neg_cancel, map_zero]
+    rw [ite_eq_left a, ite_eq_left b, mul_one, mul_one, ← map_add, add_neg_cancel, map_zero]
   have h2 : ∀ i, ∃ u, e (finProdFinEquiv (i, u)) = true := by
     intro i
     by_contra hc
     push Not at hc
     refine h (mul_eq_zero_of_right _ (Finset.prod_eq_zero (mem_univ i) (Finset.sum_eq_zero fun u _ => ?_)))
-    exact if_neg (hc u)
+    exact ite_eq_right (hc u)
   choose f hf using h2
   have hinj : Function.Injective f := by
     intro i j hij
@@ -180,8 +180,8 @@ theorem bits_orderEdges_order (π : Equiv.Perm (Fin n)) :
   · simp
   · intro p _ hp
     by_cases h1 : π i = p.1
-    · rw [if_pos h1, if_neg (fun h2 => hp (Prod.ext h1.symm h2.symm)), one_mul, zero_mul]
-    · rw [if_neg h1, zero_mul, zero_mul]
+    · rw [ite_eq_left h1, ite_eq_right (fun h2 => hp (Prod.ext h1.symm h2.symm)), one_mul, zero_mul]
+    · rw [ite_eq_right h1, zero_mul, zero_mul]
   · exact fun h => absurd (mem_univ _) h
 
 /-- The Hamiltonian cycle polynomial is the sum of the witness over all tables of
@@ -191,7 +191,7 @@ theorem genHC_eq_sum_wit : genHC F n = ∑ e : Fin (n * n) → Bool, bits (hcWit
   rcases n with _ | k
   · have : IsEmpty (Fin (0 * 0)) := ⟨fun i => absurd i.isLt (by simp)⟩
     have : Unique (Fin (0 * 0) → Bool) := Pi.uniqueOfIsEmpty _
-    rw [Fintype.sum_unique, hcWit, dif_neg (lt_irrefl 0), bits_C, C_1, genHC,
+    rw [Fintype.sum_unique, hcWit, dite_eq_right (lt_irrefl 0), bits_C, C_1, genHC,
       Finset.sum_eq_single_of_mem 1 (mem_filter.2 ⟨mem_univ _, Set.bijOn_univ.2 (Equiv.bijective _),
         fun i => i.elim0⟩) fun σ _ hne => absurd (Equiv.ext fun i => i.elim0) hne]
     simp
@@ -206,7 +206,7 @@ theorem genHC_eq_sum_wit : genHC F n = ∑ e : Fin (n * n) → Bool, bits (hcWit
         by_contra h
         obtain ⟨π, hπ⟩ := exists_order_of_test_ne_zero F (k + 1) e h
         exact he (mem_image.2 ⟨π, mem_univ _, hπ⟩)
-    rw [hcWit, dif_pos k.succ_pos]
+    rw [hcWit, dite_eq_left k.succ_pos]
     simp only [mul_assoc]
     rw [hsum]
     simp only [bits_mul, bits_pos_order, bits_orderEdges_order, ite_mul, one_mul, zero_mul]

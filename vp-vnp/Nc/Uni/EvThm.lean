@@ -41,18 +41,18 @@ theorem tot_seq (m : Run A → A) (la : List (Run A)) (L : Run A → List (Run A
   refine List.map_congr_left fun r _ => ?_
   rw [List.map_map]
   by_cases hr : r.bill = []
-  · rw [if_pos hr, ← List.sum_map_mul_left]
+  · rw [ite_eq_left hr, ← List.sum_map_mul_left]
     congr 1
     refine List.map_congr_left fun s _ => ?_
     simp only [Function.comp, Run.tick, Run.seq, hr, List.nil_append]
     split_ifs
     · ring
     · ring
-  · rw [if_neg hr]
+  · rw [ite_eq_right hr]
     refine List.sum_eq_zero fun y hy => ?_
     rw [List.mem_map] at hy
     obtain ⟨s, -, rfl⟩ := hy
-    exact if_neg fun h => hr (List.append_eq_nil_iff.1 h).1
+    exact ite_eq_right fun h => hr (List.append_eq_nil_iff.1 h).1
 
 variable (supp) in
 /-- Steps of the machine for one step of the evaluation. -/

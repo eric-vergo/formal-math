@@ -188,7 +188,7 @@ theorem holds_cnAt {r : M.R} (ν : (M.kind r.1).CnAt r.2) (k : Fin U1) :
 theorem roleV_new (r : M.R) {B : ℕ} (f : Fin B → Bk (M.kind r.1) r.2) (ν : (M.kind r.1).CnAt r.2) (k : Fin U1) :
     roleV ub r f (G.Uid.new ⟨r.1, ν.1⟩ k : G.Uid (K + K) U0 M.N U1) = unitsOf ub (chS (M.kind r.1) r.2 f ν) k := by
   have h : ∃ c : (M.kind r.1).CnAt r.2, (⟨r.1, c.1⟩ : M.N) = ⟨r.1, ν.1⟩ := ⟨ν, rfl⟩
-  rw [roleV, dif_pos h]
+  rw [roleV, dite_eq_left h]
   have : h.choose = ν := Subtype.ext (eq_of_heq (Sigma.mk.inj h.choose_spec).2)
   rw [this]
 

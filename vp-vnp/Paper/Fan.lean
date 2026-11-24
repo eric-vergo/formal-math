@@ -984,7 +984,7 @@ theorem thm_cn {Y : Type} {w : Y → Y → ℝ} (hw : IsPrice K w) (x v m z : Y)
       (by intro b; cases b <;> assumption) hT0 (max_one_pos n)
     have h4 := thm_cn_end hd hT h3
     have h5 := mul_le_mul_of_nonneg_left (thm_cn_Λ₂_le hd) (sq_nonneg (1 / T : ℝ))
-    simp only [cond_true, cond_false] at h4
+    simp only [Bool.cond_true, Bool.cond_false] at h4
     refine le_of_mul_le_mul_left ?_ hθ0
     nlinarith
   -- let θ → 0

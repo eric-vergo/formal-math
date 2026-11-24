@@ -96,34 +96,34 @@ open Classical in
 noncomputable def trivialPoint (K : Type) [Field K] (I : Type) [Fintype I] [DecidableEq I] : Spec K I where
   F t := if ∃ x, t.val x ≠ 0 then 1 else 0
   nonneg t := by split_ifs <;> norm_num
-  one := if_pos ⟨fun _ => (), one_ne_zero⟩
+  one := ite_eq_left ⟨fun _ => (), one_ne_zero⟩
   mul s t := by
     by_cases hs : ∃ x, s.val x ≠ 0
     · by_cases ht : ∃ x, t.val x ≠ 0
-      · rw [if_pos hs, if_pos ht, if_pos, mul_one]
+      · rw [ite_eq_left hs, ite_eq_left ht, ite_eq_left, mul_one]
         obtain ⟨x, hx⟩ := hs
         obtain ⟨y, hy⟩ := ht
         exact ⟨fun p => (x p, y p), mul_ne_zero hx hy⟩
-      · rw [if_neg ht, mul_zero, if_neg]
+      · rw [ite_eq_right ht, mul_zero, ite_eq_right]
         rintro ⟨x, hx⟩
         exact ht ⟨fun p => (x p).2, right_ne_zero_of_mul hx⟩
-    · rw [if_neg hs, zero_mul, if_neg]
+    · rw [ite_eq_right hs, zero_mul, ite_eq_right]
       rintro ⟨x, hx⟩
       exact hs ⟨fun p => (x p).1, left_ne_zero_of_mul hx⟩
   le_sum {κ} _ s b h := by
     by_cases hs : ∃ x, s.val x ≠ 0
-    · rw [if_pos hs]
+    · rw [ite_eq_left hs]
       obtain ⟨x, hx⟩ := hs
       obtain ⟨L, hL⟩ := h
       rw [hL] at hx
       obtain ⟨k, -, hk⟩ := Finset.exists_ne_zero_of_sum_ne_zero hx
       obtain ⟨y, -, hy⟩ := Finset.exists_ne_zero_of_sum_ne_zero hk
       have h1 : ∃ x, (b k).val x ≠ 0 := ⟨y, right_ne_zero_of_mul hy⟩
-      calc (1 : ℝ) = if ∃ x, (b k).val x ≠ 0 then 1 else 0 := (if_pos h1).symm
+      calc (1 : ℝ) = if ∃ x, (b k).val x ≠ 0 then 1 else 0 := (ite_eq_left h1).symm
         _ ≤ _ := Finset.single_le_sum
           (f := fun k => if ∃ x, (b k).val x ≠ 0 then (1 : ℝ) else 0)
           (fun k _ => by split_ifs <;> norm_num) (Finset.mem_univ k)
-    · rw [if_neg hs]
+    · rw [ite_eq_right hs]
       exact Finset.sum_nonneg fun k _ => by split_ifs <;> norm_num
 
 /-- The last example after Definition def:spectral: "φ^s is again a spectral point for 0 < s ≤ 1." -/
@@ -222,18 +222,18 @@ theorem lem_exponents_tree {A E : Type} [Fintype A] [DecidableEq A] [Nonempty A]
       · by_cases h : ∀ i j, x i = x j
         · rw [Ten.unit_val_of h]
           refine (Finset.prod_eq_one fun p _ => Finset.prod_eq_one fun e _ => ?_).symm
-          exact (ite_eq_right_iff.2 fun _ => if_pos (h (a e) p))
+          exact (ite_eq_right_iff.2 fun _ => ite_eq_left (h (a e) p))
         · rw [Ten.unit_val_not h]
           obtain ⟨e, he⟩ : ∃ e, x (a e) ≠ x (b e) := by
             by_contra hne
             push Not at hne
             exact h (hconn x hne)
           refine (Finset.prod_eq_zero (Finset.mem_univ (b e)) (Finset.prod_eq_zero (Finset.mem_univ e) ?_)).symm
-          exact (if_pos (Or.inr rfl)).trans (if_neg he)
+          exact (ite_eq_left (Or.inr rfl)).trans (ite_eq_right he)
       · intro l hl
         obtain ⟨e, he⟩ := Function.ne_iff.1 hl
         refine Finset.prod_eq_zero (Finset.mem_univ (a e)) (Finset.prod_eq_zero (Finset.mem_univ e) ?_)
-        exact (if_pos (Or.inl rfl)).trans (if_neg he))
+        exact (ite_eq_left (Or.inl rfl)).trans (ite_eq_right he))
   simpa only [Fintype.card_fin] using key
 
 /-- The consequence of lem_exponents_tree in exponents: g_φ(P) ≤ ∑ d_φ(e) over the edges. -/

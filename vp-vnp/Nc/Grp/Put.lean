@@ -129,7 +129,7 @@ theorem bind_putOne (ub : ℕ) (keys : List (List Bool)) (r : List Bool) (t : Tr
     rw [foldL, putOne, putL]
     by_cases h : r = []
     · simp [h, bindL]
-    · simp only [h, if_false]
+    · simp only [h, ite_false]
       rw [bindL_single]
       exact ih _ _
 

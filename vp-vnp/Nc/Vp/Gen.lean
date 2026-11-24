@@ -21,19 +21,19 @@ open Classical in
 /-- The length function of a subgroup: 0 in it, 1 outside. -/
 noncomputable def subLen {G : Type*} [Group G] (H : Subgroup G) : Len G where
   val g := if g ∈ H then 0 else 1
-  one' := if_pos H.one_mem
+  one' := ite_eq_left H.one_mem
   inv' g := by
     by_cases hg : g ∈ H
-    · rw [if_pos hg, if_pos (H.inv_mem hg)]
-    · rw [if_neg hg, if_neg fun h => hg (by simpa using H.inv_mem h)]
+    · rw [ite_eq_left hg, ite_eq_left (H.inv_mem hg)]
+    · rw [ite_eq_right hg, ite_eq_right fun h => hg (by simpa using H.inv_mem h)]
   mul' a b := by
     by_cases ha : a ∈ H
     · by_cases hb : b ∈ H
-      · rw [if_pos ha, if_pos hb, if_pos (H.mul_mem ha hb)]
+      · rw [ite_eq_left ha, ite_eq_left hb, ite_eq_left (H.mul_mem ha hb)]
         norm_num
-      · rw [if_pos ha, if_neg hb]
+      · rw [ite_eq_left ha, ite_eq_right hb]
         split_ifs <;> norm_num
-    · rw [if_neg ha]
+    · rw [ite_eq_right ha]
       split_ifs <;> norm_num
 
 /-- The element with the columns ≥ c replaced by those of 1. -/
@@ -60,13 +60,13 @@ def colEl (A : U h) (c : Fin h) : U h :=
       rw [Matrix.add_apply, Matrix.one_apply_ne hij.ne', Matrix.vecMulVec_apply, zero_add]
       by_cases hj : j = c
       · subst hj
-        rw [if_neg (not_lt.2 hij.le), zero_mul]
+        rw [ite_eq_right (not_lt.2 hij.le), zero_mul]
       · rw [Pi.single_eq_of_ne hj, mul_zero])
     (fun i => by
       rw [Matrix.add_apply, Matrix.one_apply_eq, Matrix.vecMulVec_apply]
       by_cases hj : i = c
       · subst hj
-        rw [if_neg (lt_irrefl _), zero_mul, add_zero]
+        rw [ite_eq_right (lt_irrefl _), zero_mul, add_zero]
       · rw [Pi.single_eq_of_ne hj, mul_zero, add_zero])
 
 theorem mat_colEl (A : U h) (c : Fin h) : mat (colEl A c) =
@@ -82,12 +82,12 @@ theorem colCut_succ (A : U h) (c : Fin h) : colCut A (c.1 + 1) = colEl A c * col
   · rw [Pi.single_eq_same, mul_one, colCut_apply]
     by_cases hj : j = c
     · subst hj
-      rw [if_pos (by omega), if_neg (lt_irrefl _), if_neg (lt_irrefl _), Matrix.one_apply_eq, mul_one]
+      rw [ite_eq_left (by omega), ite_eq_right (lt_irrefl _), ite_eq_right (lt_irrefl _), Matrix.one_apply_eq, mul_one]
       rcases lt_trichotomy i j with hij | hij | hij
-      · rw [if_pos hij, Matrix.one_apply_ne hij.ne, zero_add]
+      · rw [ite_eq_left hij, Matrix.one_apply_ne hij.ne, zero_add]
       · subst hij
-        rw [if_neg (lt_irrefl _), Matrix.one_apply_eq, mat_diag, add_zero]
-      · rw [if_neg (not_lt.2 hij.le), Matrix.one_apply_ne hij.ne', mat_lt A hij, add_zero]
+        rw [ite_eq_right (lt_irrefl _), Matrix.one_apply_eq, mat_diag, add_zero]
+      · rw [ite_eq_right (not_lt.2 hij.le), Matrix.one_apply_ne hij.ne', mat_lt A hij, add_zero]
     · have h1 : (if j.1 < c.1 then mat A c j else (1 : Matrix (Fin h) (Fin h) F2) c j) = 0 := by
         split_ifs with h2
         · exact mat_lt A (Fin.lt_def.2 h2)
@@ -95,8 +95,8 @@ theorem colCut_succ (A : U h) (c : Fin h) : colCut A (c.1 + 1) = colEl A c * col
       rw [h1, mul_zero, add_zero]
       have h2 : j.1 ≠ c.1 := fun e => hj (Fin.ext e)
       by_cases h3 : j.1 < c.1
-      · rw [if_pos (by omega), if_pos h3]
-      · rw [if_neg (by omega), if_neg h3]
+      · rw [ite_eq_left (by omega), ite_eq_left h3]
+      · rw [ite_eq_right (by omega), ite_eq_right h3]
   · intro d _ hd
     rw [Pi.single_eq_of_ne hd, mul_zero, zero_mul]
   · exact fun hn => absurd (mem_univ _) hn
@@ -104,19 +104,19 @@ theorem colCut_succ (A : U h) (c : Fin h) : colCut A (c.1 + 1) = colEl A c * col
 /-- **The x_j generate U h.** -/
 theorem mem_of_x (H : Subgroup (U h)) (hx : ∀ j, x h j ∈ H) (A : U h) : A ∈ H := by
   classical
-  have hS : (subLen H).S = 0 := sum_eq_zero fun j _ => if_pos (hx j)
+  have hS : (subLen H).S = 0 := sum_eq_zero fun j _ => ite_eq_left (hx j)
   have hel : ∀ c : Fin h, colEl A c ∈ H := by
     intro c
     have h1 := Paper.lem_words (subLen H) c.1 (fun i => if i < c then mat A i c else 0) (Pi.single c 1)
       (fun i hi => by
         by_contra hlt
-        exact hi (if_neg fun h => hlt h))
+        exact hi (ite_eq_right fun h => hlt h))
       (fun j hj => by
         by_contra hne
         exact hj (Pi.single_eq_of_ne (fun e => hne (by rw [e])) _)) (colEl A c) (mat_colEl A c)
     rw [show ∑ j, (subLen H).val (x h j) = 0 from hS, mul_zero] at h1
     by_contra hn
-    have h2 : (subLen H).val (colEl A c) = 1 := if_neg hn
+    have h2 : (subLen H).val (colEl A c) = 1 := ite_eq_right hn
     rw [h2] at h1
     norm_num at h1
   have hcut : ∀ c : ℕ, c ≤ h → colCut A c ∈ H := by
@@ -127,7 +127,7 @@ theorem mem_of_x (H : Subgroup (U h)) (hx : ∀ j, x h j ∈ H) (A : U h) : A �
       have : colCut A 0 = 1 := by
         apply mat_inj
         ext i j
-        rw [colCut_apply, if_neg (Nat.not_lt_zero _), mat_one]
+        rw [colCut_apply, ite_eq_right (Nat.not_lt_zero _), mat_one]
       rw [this]
       exact H.one_mem
     | succ c ih =>
@@ -139,7 +139,7 @@ theorem mem_of_x (H : Subgroup (U h)) (hx : ∀ j, x h j ∈ H) (A : U h) : A �
   have : colCut A h = A := by
     apply mat_inj
     ext i j
-    rw [colCut_apply, if_pos j.2]
+    rw [colCut_apply, ite_eq_left j.2]
   rw [← this]
   exact hcut h le_rfl
 

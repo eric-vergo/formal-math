@@ -58,7 +58,7 @@ theorem Restr.of_contract {L : Type} [Fintype L] [DecidableEq L] (π : J → I) 
   refine Finset.prod_congr rfl fun q _ => Finset.prod_congr rfl fun v _ => ?_
   obtain ⟨v, rfl⟩ := v
   refine hT v _ _ _ _ (fun j hj => ?_) (fun l hl => ?_)
-  · have : ex (ξ v) (x (ξ v)) j = x (ξ v) ⟨j, hj⟩ := dif_pos hj
+  · have : ex (ξ v) (x (ξ v)) j = x (ξ v) ⟨j, hj⟩ := dite_eq_left hj
     rw [this]
     clear this
     revert hj
@@ -66,7 +66,7 @@ theorem Restr.of_contract {L : Type} [Fintype L] [DecidableEq L] (π : J → I) 
     rintro rfl
     rfl
   · subst hl
-    exact dif_pos rfl
+    exact dite_eq_left rfl
 
 section Outer
 
@@ -136,10 +136,10 @@ theorem sum_unit_two {E : Type} [Fintype E] [DecidableEq E] (n : E → ℕ)
       exact hz ⟨fun e => z e 0, by simp, funext fun e => funext fun i => hcon e 0 i⟩
     obtain ⟨e, he⟩ := this
     rw [Finset.prod_eq_zero (Finset.mem_univ e), mul_zero]
-    exact if_neg he
+    exact ite_eq_right he
   · rw [Finset.prod_eq_one, mul_one]
     intro e _
-    exact if_pos fun _ _ => rfl
+    exact ite_eq_left fun _ _ => rfl
 
 /-- **Networks.** The vertices v are placed at the parties ξ v, the legs j of s are held
 by the parties π j. There are edges e with labels in Λ e and ends a e, b e, and tensors t k with

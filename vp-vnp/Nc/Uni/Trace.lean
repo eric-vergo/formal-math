@@ -204,7 +204,7 @@ theorem MX.size_eq : Nat.size (x.2.2.1.length + 1) = x.1.length + 1 := by
   have h1 := hx.vals.2
   have h2 := hx.len_cn.2
   have h3 := bv_lt x.2.2.2.1.2
-  simp only [bv, if_true] at h1
+  simp only [bv, ite_true] at h1
   have e : x.2.2.2.1.2.length = x.1.length := by omega
   rw [e] at h1 h3
   refine le_antisymm ?_ ?_

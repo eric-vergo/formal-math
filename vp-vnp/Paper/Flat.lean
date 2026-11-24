@@ -102,7 +102,7 @@ theorem fklLits_occ {k ℓ : ℕ} (b : Pr k × Fin ℓ) : ∃ κ : Val k ℓ, �
   obtain ⟨⟨⟨a, c⟩, hac⟩, i⟩ := b
   refine ⟨⟨(a, fun _ _ => false), rfl⟩, ((pairOf a c (ne_of_gt hac), i), false),
     List.mem_map.2 ⟨(⟨c, ne_of_gt hac⟩, i), by simp, rfl⟩, ?_⟩
-  simp only [pairOf, dif_pos (show a < c from hac)]
+  simp only [pairOf, dite_eq_left (show a < c from hac)]
 
 theorem fklLits_count {k ℓ : ℕ} (hk : 2 ≤ k) : ∑ κ : Val k ℓ, (fklLits κ).length ≤ k ^ 3 * ℓ * 2 ^ (k * ℓ) := by
   have h1 : ∀ κ : Val k ℓ, (fklLits κ).length ≤ k * ℓ := fun κ => by
@@ -153,15 +153,15 @@ theorem fklExact_computes {F : Type} [Field F] {k ℓ s : ℕ} :
     aeval fun κ => if h : κ.2 κ.1 = fun _ => false then X ⟨κ, h⟩ else C 0
   have e : φ (fkl F k ℓ) = fklExact F k ℓ := by
     simp only [φ, fkl, fklExact, map_sum, map_prod, aeval_X]
-    exact Finset.sum_congr rfl fun σ _ => Finset.prod_congr rfl fun a _ => dif_pos (asm_self σ a)
+    exact Finset.sum_congr rfl fun σ _ => Finset.prod_congr rfl fun a _ => dite_eq_left (asm_self σ a)
   obtain ⟨l, hl, j, hj, hje⟩ := h
   refine ⟨fun i => φ (l i), fun i hi => ?_, j, hj, (congrArg φ hje).trans e⟩
   rcases hl i hi with ⟨κ, hx⟩ | ⟨c, hc⟩ | ⟨a, ha, b, hb, hab⟩ | ⟨a, ha, b, hb, hab⟩
   · show IsStep (fun i => φ (l i)) i
     have hv : φ (l i) = if h : κ.2 κ.1 = fun _ => false then X ⟨κ, h⟩ else C 0 := by rw [hx]; simp [φ]
     by_cases h : κ.2 κ.1 = fun _ => false
-    · exact Or.inl ⟨⟨κ, h⟩, hv.trans (dif_pos h)⟩
-    · exact Or.inr (Or.inl ⟨0, hv.trans (dif_neg h)⟩)
+    · exact Or.inl ⟨⟨κ, h⟩, hv.trans (dite_eq_left h)⟩
+    · exact Or.inr (Or.inl ⟨0, hv.trans (dite_eq_right h)⟩)
   · exact Or.inr (Or.inl ⟨c, by simp [φ, hc]⟩)
   · exact Or.inr (Or.inr (Or.inl ⟨a, ha, b, hb, by simp [hab]⟩))
   · exact Or.inr (Or.inr (Or.inr ⟨a, ha, b, hb, by simp [hab]⟩))
@@ -191,15 +191,15 @@ theorem linearPart_cf {R T : Type} [CommSemiring R] [Fintype T] [DecidableEq T] 
     rw [mono, monomial_sum_one]
     rfl
   rw [cf, coeff_sum, Finset.sum_eq_single y]
-  · rw [e, coeff_C_mul, coeff_monomial, if_pos rfl, mul_one]
+  · rw [e, coeff_C_mul, coeff_monomial, ite_eq_left rfl, mul_one]
   · intro x _ hx
-    rw [e, coeff_C_mul, coeff_monomial, if_neg, mul_zero]
+    rw [e, coeff_C_mul, coeff_monomial, ite_eq_right, mul_zero]
     intro h
     refine hx (funext fun a => ?_)
     have h1 := DFunLike.congr_fun h (a, x a)
-    rw [mono_apply, mono_apply, if_pos ⟨mem_univ _, rfl⟩] at h1
+    rw [mono_apply, mono_apply, ite_eq_left ⟨mem_univ _, rfl⟩] at h1
     by_contra hne
-    rw [if_neg fun h2 => hne h2.2.symm] at h1
+    rw [ite_eq_right fun h2 => hne h2.2.symm] at h1
     exact one_ne_zero' _ h1
   · exact fun h => absurd (mem_univ _) h
 
@@ -418,9 +418,9 @@ theorem prop_flat_lower_lengths {k : ℕ} (hk : 1 ≤ k) (A : Finset (Fin k)) (h
         z * (√2)⁻¹ * (sg A a * (vvec A a - vvec A b)) := by
     intro a b
     by_cases hab : a = b
-    · rw [if_pos hab, if_pos hab, hab]
+    · rw [ite_eq_left hab, ite_eq_left hab, hab]
       simp
-    · rw [if_neg hab, if_neg hab, pvec]
+    · rw [ite_eq_right hab, ite_eq_right hab, pvec]
       have h4 := dist_half_le (norm_uvec hab) (if a ∈ A then z • vvec A else -(z • vvec A))
       refine h4.trans (le_of_eq ?_)
       rw [sg]
@@ -556,7 +556,7 @@ theorem prop_flat_lower {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk : 2 ≤
       _ = _ := sum_pairs_add (fun a b => dist (pvec a b) (if a ∈ A.1 then x A else -x A)) δ
       _ ≤ _ := by rw [← hN]; linarith
   · have h2 := (abs_lt.1 (hφ (Sum.inr (A.1, true)) (Sum.inr (A.1, false)))).1
-    simp only [id, pos, Sum.elim_inr, if_true, Bool.false_eq_true, if_false] at h2
+    simp only [id, pos, Sum.elim_inr, ite_true, Bool.false_eq_true, ite_false] at h2
     have h3 : dist (x A) (-x A) = 1 / (3 * √k) := by
       rw [dist_eq_norm, sub_neg_eq_add, ← two_smul ℝ, norm_smul, hxn]
       norm_num

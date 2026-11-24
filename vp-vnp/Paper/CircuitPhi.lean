@@ -84,7 +84,7 @@ theorem lem_circuit_value (mu : Letter S (Fin n) Γ → Matrix Q Q F) (i e : Q) 
     rw [Fintype.sum_prod_type]
     refine Finset.sum_congr rfl fun o _ => ?_
     by_cases ho : Matched (List.ofFn o) u
-    · rw [if_pos ho, prod_ofFn_apply]
+    · rw [ite_eq_left ho, prod_ofFn_apply]
       refine Finset.sum_congr rfl fun q _ => ?_
       simp [ho]
     · simp [ho]
@@ -269,7 +269,7 @@ theorem lem_circuit_phi (mu : Letter S Unit Γ → Matrix Q Q F) (i e : Q) (t N 
     rw [hf, fdSum_valid] at hb
     by_cases hx : VOk b
     · exact card_ones_le hx
-    · rw [if_neg hx] at hb
+    · rw [ite_eq_right hx] at hb
       exact absurd rfl hb
   · intro u hu
     have hv : ∀ b, f b = if VOk b then fdSum (rLits (Γ := Γ) (S := S) (n := 1) (t := t) (M := M) (N := N) i e)
@@ -281,18 +281,18 @@ theorem lem_circuit_phi (mu : Letter S Unit Γ → Matrix Q Q F) (i e : Q) (t N 
       funext b
       simp [Nc.code, code1, wordOf]
     have hval : f (code1 N u) = runVal mu i e t fun _ => u := by
-      rw [hv, if_pos (vOk_code1 u hu), ← hcode, lem_circuit_value mu' i e (fun _ => u) (by omega)
+      rw [hv, ite_eq_left (vOk_code1 u hu), ← hcode, lem_circuit_value mu' i e (fun _ => u) (by omega)
         (by rw [length_wordOf_ofFn]; simpa using hu)]
       exact runVal_rename φ mu i e t fun _ => u
     have hline : line (fun b => if code1 N u b then (1 : F) else 0) (mlExtC 0 f) =
         Polynomial.C (runVal mu i e t fun _ => u) * Polynomial.X ^ (u.length + 1) := by
       rw [line_mnExt, Finset.sum_eq_single (code1 N u)]
-      · rw [if_pos fun _ h => h, hval, card_ones_code1 u hu]
+      · rw [ite_eq_left fun _ h => h, hval, card_ones_code1 u hu]
       · intro b _ hne
         split_ifs with h
         · have h0 : f b = 0 := by
             rw [hv]
-            exact if_neg fun hx => hne (eq_code1 hx h)
+            exact ite_eq_right fun hx => hne (eq_code1 hx h)
           rw [h0, map_zero, zero_mul]
         · rfl
       · intro h

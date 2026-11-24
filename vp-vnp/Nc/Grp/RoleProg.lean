@@ -23,7 +23,7 @@ open Classical in
 noncomputable def we (a : A) : WE := if h : ∃ e : WE, e.val θ = a then h.choose else .zero
 
 theorem we_val {a : A} (h : ∃ e : WE, e.val θ = a) : (we θ a).val θ = a := by
-  rw [we, dif_pos h]
+  rw [we, dite_eq_left h]
   exact h.choose_spec
 
 /-- Slots of a role, as a list. -/

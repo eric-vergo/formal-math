@@ -28,7 +28,7 @@ theorem pick_injective {σ : Equiv.Perm N} {s : N → Bool} (h : ∀ n, s (σ n)
     Function.Injective (pick σ s) := by
   intro n m e
   unfold pick at e
-  rcases hn : s n <;> rcases hm : s m <;> simp only [hn, hm, if_true, if_false, Bool.false_eq_true] at e
+  rcases hn : s n <;> rcases hm : s m <;> simp only [hn, hm, ite_true, ite_false, Bool.false_eq_true] at e
   · exact σ.injective e
   · have := h n
     rw [e, hn, hm] at this
@@ -49,7 +49,7 @@ theorem inv_of_pick_injective {σ : Equiv.Perm N} {s : N → Bool} (h : Function
     cases hm
   · obtain ⟨m, hm'⟩ := (Finite.injective_iff_surjective.1 h) (σ n)
     unfold pick at hm'
-    rcases hs : s m <;> simp only [hs, if_true, if_false, Bool.false_eq_true] at hm'
+    rcases hs : s m <;> simp only [hs, ite_true, ite_false, Bool.false_eq_true] at hm'
     · have := σ.injective hm'
       rw [this, hn] at hs
       cases hs
@@ -168,7 +168,7 @@ theorem gridMatrix_permanent_aux (h : R) (hh : h * 2 = 1) (σ ρ : Equiv.Perm N)
   simp only [Fintype.prod_option, Fintype.prod_bool]
   rw [sum_row_none, sum_row_true, sum_row_false, ← mul_assoc, map_mul, mk_gadget h hh, ← map_mul]
   congr 1
-  simp only [Fintype.sum_prod_type, Fintype.sum_bool, slot, wt, if_true, if_false, Bool.false_eq_true,
+  simp only [Fintype.sum_prod_type, Fintype.sum_bool, slot, wt, ite_true, ite_false, Bool.false_eq_true,
     Bool.not_true, Bool.not_false]
   ring
 
@@ -188,8 +188,8 @@ theorem gridMatrix_permanent (h : R) (hh : h * 2 = 1) (σ ρ : Equiv.Perm N) (W 
   · have key := slot_bijective σ ρ s r (fun n => s (pick ρ r n))
     simp only [implies_true, and_true] at key
     by_cases hc : (∀ n, s (σ n) = s n) ∧ (∀ n, r (ρ n) = r n)
-    · rw [if_pos hc]
-      refine (if_pos (key.2 hc)).trans ?_
+    · rw [ite_eq_left hc]
+      refine (ite_eq_left (key.2 hc)).trans ?_
       have e1 : ∀ n, wt ρ W n (s n, r n, s (pick ρ r n)) =
           (if r n then W n (s n) (r n) else 1) *
             (if r (ρ n) then 1 else W (ρ n) (s (ρ n)) (r (ρ n))) := by
@@ -201,10 +201,10 @@ theorem gridMatrix_permanent (h : R) (hh : h * 2 = 1) (σ ρ : Equiv.Perm N) (W 
         ← Finset.prod_mul_distrib]
       refine Finset.prod_congr rfl fun n _ => ?_
       split_ifs <;> simp
-    · rw [if_neg hc]
-      exact if_neg fun hb => hc (key.1 hb)
+    · rw [ite_eq_right hc]
+      exact ite_eq_right fun hb => hc (key.1 hb)
   · intro q _ hq
-    apply if_neg
+    apply ite_eq_right
     intro hb
     apply hq
     have := (slot_bijective σ ρ s r q).1 hb

@@ -198,13 +198,13 @@ theorem AW_ev (w : List Bool) : ∃ k ≤ 20 * w.length + 5, ∃ o, Ev θ AW (.c
     cases b with
     | true =>
       refine ⟨0, Nat.zero_le _, .nil, ?_⟩
-      simp only [List.all_cons, Bool.not_true, Bool.false_and, Bool.false_eq_true, if_false]
+      simp only [List.all_cons, Bool.not_true, Bool.false_and, Bool.false_eq_true, ite_false]
       exact Ev.ite_true_nil (.tl (.id _)) (by simp [ofBits]) (Ev.ite_true_nil (.hd (.tl (.id _)))
         (by simp [ofBits, bit, one]) (.fail _))
     | false =>
       simp only [List.all_cons, Bool.not_false, Bool.true_and]
       by_cases h : w.all (! ·)
-      · simp only [h, if_true] at ih ⊢
+      · simp only [h, ite_true] at ih ⊢
         have ih' : Dt θ (Fm.ofTree AW.code) (.cons AW.code (ofBits w)) o k := by rwa [Fm.ofTree_code]
         refine ⟨_, ?_, o, Dt.ite_true (.tl (.id _)) (by simp [ofBits]) (Dt.ite_false (.hd (.tl (.id _)))
           (.run (.hd (.id _)) (.cons (.hd (.id _)) (.tl (.tl (.id _)))) ih'))⟩
@@ -232,7 +232,7 @@ theorem AZ_ev (t : Bt) : ∃ k ≤ 40 * t.nds, ∃ o, Ev θ AZ (.cons AZ.code t.
     obtain ⟨k, hk, o, h⟩ := AW_ev (θ := θ) w
     simp only [Bt.zero]
     by_cases hz : w.all (! ·)
-    · simp only [hz, if_true] at h ⊢
+    · simp only [hz, ite_true] at h ⊢
       have h' : Dt θ (Fm.ofTree AW.code) (.cons AW.code (ofBits w)) o k := by rwa [Fm.ofTree_code]
       refine ⟨_, ?_, o, Dt.ite_true (.tl (.id _)) (by simp [Bt.enc]) (Dt.ite_false (.hd (.tl (.id _)))
         (.run (.quote _ _) (.cons (.quote _ _) (.tl (.tl (.id _)))) h'))⟩
@@ -260,15 +260,15 @@ theorem AZ_ev (t : Bt) : ∃ k ≤ 40 * t.nds, ∃ o, Ev θ AZ (.cons AZ.code t.
     simp only [Bt.zero]
     by_cases hzl : l.zero
     · by_cases hzr : r.zero
-      · simp only [hzl, hzr, if_true, Bool.and_self] at el er ⊢
+      · simp only [hzl, hzr, ite_true, Bool.and_self] at el er ⊢
         refine ⟨_, ?_, _, Dt.ite_true (.tl (.id _)) (by simp [Bt.enc]) (Dt.ite_true (.hd (.tl (.id _)))
           (by simp [Bt.enc]) (Dt.cons (k := 10 + kl) (j := 10 + kr) el er))⟩
         simp only [Bt.nds]
         omega
-      · simp only [hzl, hzr, if_true, if_false, Bool.and_false, Bool.false_eq_true, List.map_nil] at el er ⊢
+      · simp only [hzl, hzr, ite_true, ite_false, Bool.and_false, Bool.false_eq_true, List.map_nil] at el er ⊢
         exact ⟨0, Nat.zero_le _, .nil, Ev.ite_true_nil (.tl (.id _)) (by simp [Bt.enc])
           (Ev.ite_true_nil (.hd (.tl (.id _))) (by simp [Bt.enc]) (Ev.cons_nil_right el er))⟩
-    · simp only [hzl, if_false, Bool.false_and, Bool.false_eq_true, List.map_nil] at el er ⊢
+    · simp only [hzl, ite_false, Bool.false_and, Bool.false_eq_true, List.map_nil] at el er ⊢
       exact ⟨0, Nat.zero_le _, .nil, Ev.ite_true_nil (.tl (.id _)) (by simp [Bt.enc])
         (Ev.ite_true_nil (.hd (.tl (.id _))) (by simp [Bt.enc]) (Ev.cons_nil_left el er))⟩
 

@@ -54,9 +54,9 @@ theorem chT_ev {κ : List Bool → E} {S : Set (List Bool)} {c : ℕ} {x : Tree}
     obtain ⟨l1, e1, r1⟩ := ih (f := fun w => f (true :: w)) (o := fun w => o (true :: w)) fun w hw => h _ (by simp [hw])
     obtain ⟨l0, e0, r0⟩ := ih (f := fun w => f (false :: w)) (o := fun w => o (false :: w)) fun w hw => h _ (by simp [hw])
     refine ⟨_, Ev.ite (L := fun r => if r.out = .nil then l0 else l1) (Ev.guess x)
-      (fun r _ h => by rw [if_neg h]; exact e1) (fun r _ h => by rw [if_pos h]; exact e0), ?_⟩
+      (fun r _ h => by rw [ite_eq_right h]; exact e1) (fun r _ h => by rw [ite_eq_left h]; exact e0), ?_⟩
     simp only [KT.words, List.flatMap_cons, List.flatMap_nil, List.append_nil, List.map_append, List.map_map,
-      Run.det, Tree.one, if_true, reduceCtorEq, if_false, Function.comp_def]
+      Run.det, Tree.one, ite_true, reduceCtorEq, ite_false, Function.comp_def]
     refine List.rel_append ?_ ?_ <;> rw [List.forall₂_map_left_iff]
     · refine r0.imp fun r q hr => ⟨?_, ?_, ?_, ?_, ?_⟩
       · simp [Run.seq, Run.tick, hr.th]
@@ -123,7 +123,7 @@ theorem coeff_wrap_zero {W n : ℕ} {P : E[T;T⁻¹]} (h : Span n P) (hn : n < 2
   rw [Finset.sum_eq_single 0]
   · simp
   · intro i hi hi0
-    refine if_neg fun h0 => hi0 ?_
+    refine ite_eq_right fun h0 => hi0 ?_
     rw [ZMod.intCast_zmod_eq_zero_iff_dvd] at h0
     refine Int.eq_zero_of_dvd_of_natAbs_lt_natAbs h0 ?_
     rw [Int.natAbs_natCast]
@@ -150,10 +150,10 @@ theorem sum_terms {W m : ℕ} (P : E[T;T⁻¹]) (h : P.coeff.support.card ≤ 2 
   · conv_rhs => rw [← Finset.sum_map_toList, ← Fin.sum_univ_fun_getElem]
     rw [Finset.sum_range]
     refine Finset.sum_congr rfl fun i _ => ?_
-    rw [termCoef, if_pos i.2, termExp, List.getD_eq_getElem _ _ i.2]
+    rw [termCoef, ite_eq_left i.2, termExp, List.getD_eq_getElem _ _ i.2]
   · intro k _ hk
     rw [Finset.mem_range] at hk
-    rw [termCoef, if_neg hk]
+    rw [termCoef, ite_eq_right hk]
     simp
 
 end Terms

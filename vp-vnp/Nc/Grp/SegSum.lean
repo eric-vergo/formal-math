@@ -172,7 +172,7 @@ theorem sum_segL_start (sep : List Bool) (bits : Γ → List Bool) (T : ℕ) {m 
     simp only [List.ofFn_zero, List.reverse_nil, closeL]
     have e2 : ∀ X : Fin 0 → List Γ, cat X = [] := fun X => by simp [cat]
     by_cases h : l.take (l.length - j) = []
-    · rw [if_pos (by rw [h]; rfl), Finset.sum_eq_single (fun b : Fin 0 => b.elim0)]
+    · rw [ite_eq_left (by rw [h]; rfl), Finset.sum_eq_single (fun b : Fin 0 => b.elim0)]
       · have e3 : ∀ (X : Fin 0 → List Γ) (y : List Γ), (Fin.snoc X y : Fin 1 → List Γ) 0 = y :=
           fun X y => Fin.snoc_last (α := fun _ => List Γ) y X
         simp [List.ofFn_succ, e3]
@@ -183,7 +183,7 @@ theorem sum_segL_start (sep : List Bool) (bits : Γ → List Bool) (T : ℕ) {m 
         apply hX
         rw [mem_filter, Fintype.mem_piFinset]
         exact ⟨fun b => b.elim0, by rw [e2, h], fun b => b.elim0⟩
-    · rw [if_neg (by simpa using h), Finset.sum_eq_zero]
+    · rw [ite_eq_right (by simpa using h), Finset.sum_eq_zero]
       · rfl
       · intro X hX
         simp only [mem_filter, e2] at hX

@@ -243,7 +243,7 @@ theorem gbit_ev (p : List Bool) (x : Tree) : Ev θ (gbit p) x [⟨3, 1, [], .nil
     simpa [Run.det, Run.seq, Run.tick, one] using this
   have := Ev.ite (L := fun r => if r.out = .nil then [.det 1 .nil] else [⟨4, 1, [p], one⟩]) (Ev.guess (θ := θ) x)
     (b := .cons (.mul (.quote (ofBits p))) (.quote .nil)) (c := .quote .nil)
-    (fun r _ h => by rw [if_neg h]; exact h1) (fun r _ h => by rw [if_pos h]; exact Ev.quote .nil x)
+    (fun r _ h => by rw [ite_eq_right h]; exact h1) (fun r _ h => by rw [ite_eq_left h]; exact Ev.quote .nil x)
   simpa [Run.det, Run.seq, Run.tick, one, gbit] using this
 
 /-- Guess the digits of a number; multiply by the powers of a constant. `ν i` is the exponent in the name that is
@@ -291,7 +291,7 @@ theorem gw_ev {pre : List Bool} {b : ℕ} {c : R} (x : Tree) {n j : ℕ}
       refine ⟨?_, ?_, ?_, ?_, ?_⟩
       · simp [Run.seq, Run.tick, h1]
       · simp [Run.seq, Run.tick, h2, ofBits, bit]
-      · simp only [Run.seq, Run.tick, List.nil_append, h3, KT.val, Bool.false_eq_true, if_false, zero_add, ← pow_mul]
+      · simp only [Run.seq, Run.tick, List.nil_append, h3, KT.val, Bool.false_eq_true, ite_false, zero_add, ← pow_mul]
         congr 1
         rw [← add_assoc, pow_succ]
         ring
@@ -304,7 +304,7 @@ theorem gw_ev {pre : List Bool} {b : ℕ} {c : R} (x : Tree) {n j : ℕ}
       refine ⟨?_, ?_, ?_, ?_, ?_⟩
       · simp [Run.seq, Run.tick, h1]
       · simp [Run.seq, Run.tick, h2, ofBits, bit]
-      · simp only [Run.seq, Run.tick, List.singleton_append, List.map_cons, List.prod_cons, h3, hκ, KT.val, if_true,
+      · simp only [Run.seq, Run.tick, List.singleton_append, List.map_cons, List.prod_cons, h3, hκ, KT.val, ite_true,
           ← pow_mul, ← pow_add]
         congr 1
         rw [← add_assoc, pow_succ]

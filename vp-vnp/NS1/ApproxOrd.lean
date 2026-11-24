@@ -38,7 +38,7 @@ theorem exists_coeff_mul_ne_zero {P Q : E[T;T⁻¹]} {i : ℤ} (h : (P * Q).coef
   obtain ⟨b, hb, h2⟩ := Finset.exists_ne_zero_of_sum_ne_zero h1
   refine ⟨a, b, Finsupp.mem_support_iff.1 ha, Finsupp.mem_support_iff.1 hb, ?_⟩
   by_contra hne
-  exact h2 (if_neg hne)
+  exact h2 (ite_eq_right hne)
 
 theorem OrdGE.zero (r : ℤ) : OrdGE r (0 : E[T;T⁻¹]) := fun i _ => by simp
 
@@ -68,7 +68,7 @@ theorem OrdGE.list_sum {r : ℤ} {l : List E[T;T⁻¹]} (h : ∀ P ∈ l, OrdGE 
     exact (h P List.mem_cons_self).add (ih fun Q hQ => h Q (List.mem_cons_of_mem _ hQ))
 
 theorem OrdGE.of_algebraMap (a : A) : OrdGE 0 (algebraMap A E[T;T⁻¹] a) := fun i hi => by
-  rw [coeff_algebraMap, if_neg hi.ne]
+  rw [coeff_algebraMap, ite_eq_right hi.ne]
 
 /-- A product of approximations approximates the product. -/
 theorem OrdGE.prod_sub {β : Type*} {r : ℤ} (hr : 0 ≤ r) (l : List β) (f : β → E[T;T⁻¹]) (g : β → A)
@@ -106,7 +106,7 @@ theorem Span.of_algebraMap (a : A) (n : ℕ) : Span n (algebraMap A E[T;T⁻¹] 
   rw [coeff_algebraMap] at hi
   by_cases h : i = 0
   · simp [h]
-  · exact absurd (if_neg h) hi
+  · exact absurd (ite_eq_right h) hi
 
 theorem Span.one (n : ℕ) : Span n (1 : E[T;T⁻¹]) := by
   have := Span.of_algebraMap (E := E) (1 : E) n

@@ -46,7 +46,7 @@ theorem prod_ofFn_apply (mu : A → Matrix Q Q F) (t : ℕ) (o : Fin t → A) (i
         simp only [Fin.consEquiv_apply, Fin.cons_zero, true_and, Fin.prod_univ_succ, Fin.castSucc_zero,
           Fin.cons_succ, ← Fin.succ_last, ← Fin.succ_castSucc]
       · intro b _ hb
-        refine Finset.sum_eq_zero fun q _ => if_neg ?_
+        refine Finset.sum_eq_zero fun q _ => ite_eq_right ?_
         rintro ⟨h, -⟩
         exact hb (by simpa using h)
       · intro h
@@ -58,7 +58,7 @@ theorem prod_ofFn_apply (mu : A → Matrix Q Q F) (t : ℕ) (o : Fin t → A) (i
     rw [Finset.sum_eq_single (q 0)]
     · simp only [true_and, mul_ite, mul_zero]
     · intro b _ hb
-      rw [if_neg (fun h => hb h.1.symm), mul_zero]
+      rw [ite_eq_right (fun h => hb h.1.symm), mul_zero]
     · intro h
       exact absurd (mem_univ _) h
 

@@ -73,7 +73,7 @@ theorem srt_eq (bs : List B) (l : List (Rc n B)) (j : ℕ) (hj : j ≤ n) :
   | zero => simp [srt, keys]
   | succ j ih =>
     have hlt : j < n := hj
-    rw [srt, dif_pos hlt, ih hlt.le, pass, keys, List.flatMap_assoc]
+    rw [srt, dite_eq_left hlt, ih hlt.le, pass, keys, List.flatMap_assoc]
     refine List.flatMap_congr fun b _ => ?_
     rw [List.filter_flatMap, List.flatMap_map]
     refine List.flatMap_congr fun k hk => ?_

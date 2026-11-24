@@ -92,7 +92,7 @@ theorem le_type_bound (F : Spec K I) [Nonempty A] (π : A → I) (t : Ten K I)
       rw [unit_val_of (fun _ _ => rfl), map_one, one_mul]
       refine Finset.prod_congr rfl fun j _ => congr_arg _ (funext fun q => ?_)
       by_cases hq : ∃ a, π a = q
-      · simp only [pick, dif_pos hq]
+      · simp only [pick, dite_eq_left hq]
       · have := ht q fun ⟨a, ha⟩ => hq ⟨a, ha⟩
         exact Subsingleton.elim _ _
   refine (le_coeff F (s := (Ten.kpow t N).withVal v) (D := E) Φ fun x =>
@@ -144,7 +144,7 @@ theorem pow_le_few (F : Spec K I) [Nonempty A] [Nonempty κ] (π : A → I) (t :
     (∑ w : {w : Fin N → κ // wordType w = τ}, G w x).coeff (N * D)
   have hsum : ∀ x, (Ten.kpow t N).val x = ∑ τ, v τ x := by
     intro x
-    refine ((coeff_sum_words hL₁ N x le_rfl).trans (if_pos rfl)).symm.trans ?_
+    refine ((coeff_sum_words hL₁ N x le_rfl).trans (ite_eq_left rfl)).symm.trans ?_
     show _ = ∑ τ, (∑ w : {w : Fin N → κ // wordType w = τ}, G w x).coeff (N * D)
     rw [← Polynomial.finsetSum_coeff]
     exact congr_arg (fun P => AddMonoidAlgebra.coeff P _)
@@ -208,7 +208,7 @@ theorem few (F : Spec K I) [Nonempty I] [Nonempty κ] (π : A → I) (t : Ten K 
     have hk : ∃ k y, (b k).val y ≠ 0 := by
       by_contra hne
       push Not at hne
-      exact hx (by have := (hL x D le_rfl).trans (if_pos rfl); simpa [hne] using this.symm)
+      exact hx (by have := (hL x D le_rfl).trans (ite_eq_left rfl); simpa [hne] using this.symm)
     obtain ⟨k, y, hy⟩ := hk
     refine h1.trans (one_le_mul_of_one_le_of_one_le ?_ ((F.one_le hy).trans (hM k)))
     exact Real.one_le_rpow (by exact_mod_cast Fintype.card_pos) (hexp_nonneg F π)

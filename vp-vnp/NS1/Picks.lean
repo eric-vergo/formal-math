@@ -48,7 +48,7 @@ theorem sum_funs {α : Type} [Fintype α] [DecidableEq α] [Fintype ι] (opts : 
       intro f
       simp [funext_iff]
     simp only [this, funs, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, add_zero, Finset.sum_ite_eq',
-      Finset.mem_univ, if_true]
+      Finset.mem_univ, ite_true]
   | cons i s ih =>
     rw [List.nodup_cons] at hs
     rw [funs, sum_flatMap_map]
@@ -58,7 +58,7 @@ theorem sum_funs {α : Type} [Fintype α] [DecidableEq α] [Fintype ι] (opts : 
       intro a
       refine Finset.sum_congr rfl fun f _ => ?_
       by_cases ha : f i = a
-      · rw [if_pos ha]
+      · rw [ite_eq_left ha]
         refine if_congr (and_congr_right fun _ => ?_) rfl rfl
         constructor
         · intro h j hj
@@ -70,7 +70,7 @@ theorem sum_funs {α : Type} [Fintype α] [DecidableEq α] [Fintype ι] (opts : 
             rw [Function.update_self, ha]
           · rw [Function.update_of_ne hji]
             exact h j (by rw [List.mem_cons, not_or]; exact ⟨hji, hj⟩)
-      · rw [if_neg ha, if_neg]
+      · rw [ite_eq_right ha, ite_eq_right]
         rintro ⟨-, h⟩
         apply ha
         rw [h i hs.1, Function.update_self]
@@ -85,10 +85,10 @@ theorem sum_funs {α : Type} [Fintype α] [DecidableEq α] [Fintype ι] (opts : 
     rw [Finset.sum_ite_eq]
     simp only [List.mem_toFinset]
     by_cases hf : f i ∈ opts i
-    · rw [if_pos hf]
+    · rw [ite_eq_left hf]
       refine if_congr (and_congr_left fun _ => ?_) rfl rfl
       simp [hf]
-    · rw [if_neg hf, if_neg]
+    · rw [ite_eq_right hf, ite_eq_right]
       rintro ⟨h, -⟩
       exact hf (h i List.mem_cons_self)
 
@@ -132,7 +132,7 @@ theorem execAll_checks_pos {m : ℕ} {ps : List (List Bool)} {σ : List Bool →
   induction ps with
   | nil => rfl
   | cons p ps ih =>
-    rw [List.map_cons, execAll, DStep.exec, if_neg (h p List.mem_cons_self), List.flatMap_cons, List.flatMap_nil,
+    rw [List.map_cons, execAll, DStep.exec, ite_eq_right (h p List.mem_cons_self), List.flatMap_cons, List.flatMap_nil,
       List.append_nil]
     exact ih fun q hq => h q (List.mem_cons_of_mem _ hq)
 
@@ -144,9 +144,9 @@ theorem execAll_checks_neg {m : ℕ} {ps : List (List Bool)} {σ : List Bool →
   | cons p ps ih =>
     rw [List.map_cons, execAll, DStep.exec]
     by_cases hp : σ p = .nil
-    · rw [if_pos hp]
+    · rw [ite_eq_left hp]
       rfl
-    · rw [if_neg hp, List.flatMap_cons, List.flatMap_nil, List.append_nil]
+    · rw [ite_eq_right hp, List.flatMap_cons, List.flatMap_nil, List.append_nil]
       refine ih ?_
       obtain ⟨q, hq, hq'⟩ := h
       rcases List.mem_cons.1 hq with rfl | hq

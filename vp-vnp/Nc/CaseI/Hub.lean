@@ -61,10 +61,10 @@ theorem sum_sep (A : Finset (Fin k)) :
       if a ∈ A then (k : ℝ) - A.card else 0 := by
     intro a
     by_cases ha : a ∈ A
-    · simp only [if_pos ha]
+    · simp only [ite_eq_left ha]
       rw [sum_ite_card]
       ring
-    · simp [if_neg ha]
+    · simp [ite_eq_right ha]
   simp only [h4]
   rw [sum_ite_card]
   ring
@@ -74,8 +74,8 @@ theorem inner_hubDir (A : Finset (Fin k)) (w : EuclideanSpace ℝ (Fin k)) :
   rw [hubDir, sum_inner, Finset.sum_filter]
   refine Finset.sum_congr rfl fun e _ => ?_
   by_cases h : Sep A e
-  · rw [if_pos h, if_pos h, real_inner_smul_left, EuclideanSpace.inner_single_left]
+  · rw [ite_eq_left h, ite_eq_left h, real_inner_smul_left, EuclideanSpace.inner_single_left]
     simp [sg]
-  · rw [if_neg h, if_neg h]
+  · rw [ite_eq_right h, ite_eq_right h]
 
 end Nc.CaseI

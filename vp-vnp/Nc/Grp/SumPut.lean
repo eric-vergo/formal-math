@@ -30,16 +30,16 @@ theorem putsL_eq {ub : ℕ} (hub : 0 < ub) (P : List (List (List Bool) × List B
   | cons p P ih =>
     rw [List.map_cons, List.map_cons, putsL, List.headD_cons, List.tail_cons, putL_eq hub]
     by_cases hp : ucount ub p.2 = p.1.length
-    · rw [if_pos hp, List.flatMap_cons, List.flatMap_nil, List.append_nil, ih]
+    · rw [ite_eq_left hp, List.flatMap_cons, List.flatMap_nil, List.append_nil, ih]
       by_cases hP : ∀ p ∈ P, ucount ub p.2 = p.1.length
-      · rw [if_pos hP, if_pos (by
+      · rw [ite_eq_left hP, ite_eq_left (by
           intro p' hp'
           rcases List.mem_cons.1 hp' with rfl | hp'
           · exact hp
           · exact hP p' hp')]
         rfl
-      · rw [if_neg hP, if_neg fun h => hP fun p' hp' => h p' (List.mem_cons_of_mem _ hp')]
-    · rw [if_neg hp, if_neg fun h => hp (h p List.mem_cons_self)]
+      · rw [ite_eq_right hP, ite_eq_right fun h => hP fun p' hp' => h p' (List.mem_cons_of_mem _ hp')]
+    · rw [ite_eq_right hp, ite_eq_right fun h => hp (h p List.mem_cons_self)]
       rfl
 
 theorem tget_putsAll_not {ub : ℕ} {P : List (List (List Bool) × List Bool)} (hP : (P.flatMap Prod.fst).Nodup)
@@ -49,7 +49,7 @@ theorem tget_putsAll_not {ub : ℕ} {P : List (List (List Bool) × List Bool)} (
   | cons p P ih =>
     rw [List.flatMap_cons, List.nodup_append] at hP
     rw [List.flatMap_cons, List.mem_append, not_or] at hk
-    rw [putsAll, ih hP.2.1 hk.2, tget_putAll _ hP.1, if_neg hk.1]
+    rw [putsAll, ih hP.2.1 hk.2, tget_putAll _ hP.1, ite_eq_right hk.1]
 
 theorem tget_putsAll {ub : ℕ} {P : List (List (List Bool) × List Bool)} (hP : (P.flatMap Prod.fst).Nodup)
     {p : List (List Bool) × List Bool} (hp : p ∈ P) {i : ℕ} {k : List Bool} (hk : p.1[i]? = some k) (t : Tree) :
@@ -62,7 +62,7 @@ theorem tget_putsAll {ub : ℕ} {P : List (List (List Bool) × List Bool)} (hP :
     rcases List.mem_cons.1 hp with rfl | hp
     · have hmem : k ∈ p.1 := List.mem_of_getElem? hk
       have hnot : k ∉ P.flatMap Prod.fst := fun h => hP.2.2 k hmem k h rfl
-      rw [tget_putsAll_not hP.2.1 hnot, tget_putAll _ hP.1, if_pos hmem]
+      rw [tget_putsAll_not hP.2.1 hnot, tget_putAll _ hP.1, ite_eq_left hmem]
       congr 3
       obtain ⟨hi, rfl⟩ := List.getElem?_eq_some_iff.1 hk
       exact hP.1.idxOf_getElem i hi
@@ -133,14 +133,14 @@ theorem sumL_boths {ι : Type} (T ub : ℕ) (ks : List ι) (f g : ι → List Bo
   | cons k ks ih =>
     rw [List.map_cons, sumL_script_cons, insSem]
     by_cases h : tget (f k) t = tget (g k) t
-    · rw [if_pos h, sumL_single, ih]
+    · rw [ite_eq_left h, sumL_single, ih]
       by_cases h' : ∀ k ∈ ks, tget (f k) t = tget (g k) t
-      · rw [if_pos h', if_pos (by
+      · rw [ite_eq_left h', ite_eq_left (by
           intro k' hk'
           rcases List.mem_cons.1 hk' with rfl | hk'
           · exact h
           · exact h' k' hk')]
-      · rw [if_neg h', if_neg fun h1 => h' fun k' hk' => h1 k' (List.mem_cons_of_mem _ hk')]
-    · rw [if_neg h, sumL_nil, if_neg fun h1 => h (h1 k List.mem_cons_self)]
+      · rw [ite_eq_right h', ite_eq_right fun h1 => h' fun k' hk' => h1 k' (List.mem_cons_of_mem _ hk')]
+    · rw [ite_eq_right h, sumL_nil, ite_eq_right fun h1 => h (h1 k List.mem_cons_self)]
 
 end Nc.Grp

@@ -52,7 +52,7 @@ theorem unitsOf_inj (hub : 0 < ub) {L L' : List Bool} (h : ∀ k, unitsOf ub L k
     intro i hi
     have hk : i / ub < ucount ub L := (Nat.div_lt_iff_lt_mul hub).2 hi
     have := h (i / ub)
-    simp only [unitsOf, if_pos hk, if_pos (hc ▸ hk), Option.some.injEq] at this
+    simp only [unitsOf, ite_eq_left hk, ite_eq_left (hc ▸ hk), Option.some.injEq] at this
     have h2 := congrFun this ⟨i % ub, Nat.mod_lt _ hub⟩
     simp only [uword, Nat.div_add_mod'] at h2
     exact h2

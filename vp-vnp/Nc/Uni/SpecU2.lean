@@ -152,7 +152,7 @@ theorem passes_iff {l : List (Rc n (Bl K))} (hl : l ≠ []) (k j : ℕ) (hjk : j
   | succ k ih =>
     have hj : j < n := by omega
     have hne : srt (bsl K) l j ≠ [] := srt_ne_nil hl j
-    rw [canon, dif_pos hj]
+    rw [canon, dite_eq_left hj]
     rcases ps with _ | ⟨p, ps⟩
     · simp only [reduceCtorEq, false_and, iff_false]
       rintro ⟨h, -⟩
@@ -163,7 +163,7 @@ theorem passes_iff {l : List (Rc n (Bl K))} (hl : l ≠ []) (k j : ℕ) (hjk : j
       rcases fin with _ | ⟨d, d'⟩
       · simp [fIn] at h1
       · simp [fIn] at h1
-    · have hs : srt (bsl K) l (j + 1) = Sort.pass (bsl K) ⟨j, hj⟩ (srt (bsl K) l j) := by rw [srt, dif_pos hj]
+    · have hs : srt (bsl K) l (j + 1) = Sort.pass (bsl K) ⟨j, hj⟩ (srt (bsl K) l j) := by rw [srt, dite_eq_left hj]
       have key : (encW (recs j (srt (bsl K) l j)) : List (Sy M K)) = encW (dIn p.1) → (∀ b, encW (dOut b p.1) = (p.2 b).map Subtype.val) →
           p = cps j hj (srt (bsl K) l j) := by
         intro h1 h2
@@ -256,8 +256,8 @@ theorem imu_iff {l : List (Rc n (Bl K))} (hl : l ≠ []) (x : XU M K) :
       exact ⟨fOut_inj (encW_inj (h false)), fOut_inj (encW_inj (h true))⟩
     · rintro ⟨h1, h2⟩ k
       cases k
-      · simp only [Bool.false_eq_true, if_false]; rw [h1]
-      · simp only [if_true]; rw [h2]
+      · simp only [Bool.false_eq_true, ite_false]; rw [h1]
+      · simp only [ite_true]; rw [h2]
   constructor
   · rintro ⟨h1, h2, h3⟩
     obtain ⟨a1, a2⟩ := h0.1 ⟨e1.1 h1, e2.1 h2⟩

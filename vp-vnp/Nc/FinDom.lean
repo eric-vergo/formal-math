@@ -76,7 +76,7 @@ theorem fdSum_eq (lits : θ → List ((ι ⊕ Σ d, E d) × Bool)) (w : θ → F
       have : (∏ d : D, if ∀ l ∈ fdLits lits (Sum.inr (Sum.inl d)), Sum.elim x a l.1 = l.2 then
             fdWt (E := E) w (Sum.inr (Sum.inl d)) else 1) = 0 := by
         refine Finset.prod_eq_zero (mem_univ d) ?_
-        rw [if_pos]
+        rw [ite_eq_left]
         · rfl
         · intro l hl
           simp only [fdLits, List.mem_map, Finset.mem_toList, mem_univ, true_and] at hl
@@ -87,7 +87,7 @@ theorem fdSum_eq (lits : θ → List ((ι ⊕ Σ d, E d) × Bool)) (w : θ → F
     rw [Fintype.prod_sum_type, Fintype.prod_sum_type]
     have h1 : (∏ d : D, if ∀ l ∈ fdLits lits (Sum.inr (Sum.inl d)), Sum.elim x (hot g) l.1 = l.2 then
             fdWt (E := E) w (Sum.inr (Sum.inl d)) else 1) = 1 := by
-      refine Finset.prod_eq_one fun d _ => if_neg fun h => ?_
+      refine Finset.prod_eq_one fun d _ => ite_eq_right fun h => ?_
       have := h (Sum.inr ⟨d, g d⟩, false) (by simp [fdLits])
       simp [hot] at this
     have h2 : (∏ q : (Σ d, E d) × (Σ d, E d),
@@ -99,7 +99,7 @@ theorem fdSum_eq (lits : θ → List ((ι ⊕ Σ d, E d) × Bool)) (w : θ → F
       · simp only [fdLits, List.forall_mem_cons, Sum.elim_inr, hot, decide_eq_true_eq] at h
         obtain ⟨rfl, rfl, -⟩ := h
         simp only [fdWt]
-        refine if_neg ?_
+        refine ite_eq_right ?_
         rintro ⟨hd, hne⟩
         subst hd
         exact hne rfl

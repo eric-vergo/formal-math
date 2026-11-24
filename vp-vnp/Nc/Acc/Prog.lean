@@ -170,7 +170,7 @@ theorem lamK_ge {N : ℕ} (lam : Fin N × Option Bool → R) {i : ℕ} (h : ¬ i
     lamK lam i o = 0 := by
   cases o with
   | none => rfl
-  | some γ => exact dif_neg h
+  | some γ => exact dite_eq_right h
 
 /-- The constants of an accelerator. -/
 def accK (M m N : ℕ) (γ : R) (k : ℕ → ℕ → ℕ → R) (lam : ℕ → Fin N × Option Bool → R) : KT R :=
@@ -275,7 +275,7 @@ theorem accF_kv {M m N d s : ℕ} {p : MvPolynomial (Fin N × Option Bool) R} (h
         · simp [codeB, hc, lamK, i.2]
         · intro c _ hne
           simp only [codeB, hc, Option.some.injEq]
-          rw [if_neg hne.symm, mul_zero]
+          rw [ite_eq_right hne.symm, mul_zero]
         · simp
     · intro i _ hi
       exact lamK_ge _ (by simpa using hi) _

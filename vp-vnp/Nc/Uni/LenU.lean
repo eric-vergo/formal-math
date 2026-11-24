@@ -83,7 +83,7 @@ theorem canon_length {n : ℕ} (l : List (Rc n (Bl K))) (k j : ℕ) (hjk : j + k
     have hj : j < n := by omega
     obtain ⟨h1, h2⟩ := ih (j + 1) (by omega)
     have hl : (srt (bsl K) l j).length = l.length := length_srt mem_bsl bsl_nodup l j
-    rw [canon, dif_pos hj]
+    rw [canon, dite_eq_left hj]
     refine ⟨by rw [List.length_cons, h1], ?_⟩
     intro p hp
     rw [List.mem_cons] at hp

@@ -324,7 +324,7 @@ variable (θ) in
 noncomputable def evl (F : Fm) (x : Tree) : List (Run A) := if h : Hl θ F x then h.choose else []
 
 theorem Hl.ev {F : Fm} {x : Tree} (h : Hl θ F x) : Ev θ F x (evl θ F x) := by
-  rw [evl, dif_pos h]
+  rw [evl, dite_eq_left h]
   exact h.choose_spec
 
 theorem Ev.hl {F : Fm} {x : Tree} {l : List (Run A)} (h : Ev θ F x l) : Hl θ F x := ⟨l, h⟩

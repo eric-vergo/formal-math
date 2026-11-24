@@ -124,7 +124,7 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
       refine ⟨[(1, W)], ((Does.ite_true (Gives.id _).hd.hd (by simp [DStep.tree, num]) (Does.ite_true (Gives.id _).hd.hd.tl
         (by simp [DStep.tree, num]) (Does.ite_false (Gives.id _).hd.hd.tl.tl
         (Does.ite_false hg (Gives.id _).tl))))).mono ?_, ?_, fun Φ => ?_⟩
-      · simp only [DStep.cost, gets, h, if_true]
+      · simp only [DStep.cost, gets, h, ite_true]
         omega
       · intro q hq
         rw [List.mem_singleton] at hq
@@ -142,7 +142,7 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
       refine ⟨_, ((Does.ite_true (Gives.id _).hd.hd (by simp [DStep.tree, num]) (Does.ite_true (Gives.id _).hd.hd.tl
         (by simp [DStep.tree, num]) (Does.ite_false (Gives.id _).hd.hd.tl.tl
         (Does.ite_true hg h (Does.letk (R := fun o => [(1, tset dst o W)]) d hs)))))).mono ?_, ?_, fun Φ => ?_⟩
-      · simp only [DStep.cost, gets, h, if_false]
+      · simp only [DStep.cost, gets, h, ite_false]
         omega
       · intro q hq
         obtain ⟨q1, hq1, r, hr, e, -⟩ := mem_bindW hq
@@ -150,7 +150,7 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
         subst hr
         obtain ⟨u, hu, hu'⟩ := h1 q1 hq1
         rw [e, gets_tset, hu']
-        simp only [DStep.exec, gets, h, if_false]
+        simp only [DStep.exec, gets, h, ite_false]
         exact List.mem_map.2 ⟨u, hu, rfl⟩
       · rw [wsum_bindW]
         simp only [wsum_cons, wsum_nil, one_mul, add_zero, gets_tset]
@@ -417,14 +417,14 @@ theorem tmB_gives (t : Tm) (W : Tree) :
     have e0 : (Tm.ifeq p t a b).expand (gets W) = if tget p W = t then a.expand (gets W) else b.expand (gets W) := rfl
     rw [e0]
     by_cases h : tget p W = t
-    · rw [if_pos h]
+    · rw [ite_eq_left h]
       have hb' : bit (decide (tget p W = t)) ≠ .nil := by simp [h, bit, one]
       refine ((Gives.id _).tl.hd.hd.ite_true (by simp [Tm.tree, num]) ((Gives.id _).tl.hd.hd.tl.ite_true
         (by simp [Tm.tree, num]) ((Gives.id _).tl.hd.hd.tl.tl.ite_true (by simp [Tm.tree, num])
         ((Gives.id _).tl.hd.hd.tl.tl.tl.ite_false (Gives.ite_true he hb' ha))))).mono ?_
       simp only [Tm.cost, gets]
       omega
-    · rw [if_neg h]
+    · rw [ite_eq_right h]
       have hb' : bit (decide (tget p W = t)) = .nil := by simp [h, bit]
       rw [show (Tree.cons tmB.code (.cons (Tm.ifeq p t a b).tree W)).tl.hd.tl.tl.hd = t from rfl, hb'] at he
       refine ((Gives.id _).tl.hd.hd.ite_true (by simp [Tm.tree, num]) ((Gives.id _).tl.hd.hd.tl.ite_true

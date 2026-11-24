@@ -106,7 +106,7 @@ theorem _root_.NS1.Does.appT {F : Fm} {x p : Tree} {l : List (A × β)} {enc : �
   have hR : ∀ b ∈ l, ∃ b' ∈ l, R (enc b.2) = f b'.2 ∧ enc b'.2 = enc b.2 := by
     intro b hb
     have h : ∃ b' ∈ l, enc b'.2 = enc b.2 := ⟨b, hb, rfl⟩
-    exact ⟨h.choose, h.choose_spec.1, dif_pos h, h.choose_spec.2⟩
+    exact ⟨h.choose, h.choose_spec.1, dite_eq_left h, h.choose_spec.2⟩
   have h1 := Does.app (p := p) (R := R) (d := d) hF (by
     intro q hq
     obtain ⟨b, hb, rfl⟩ := List.mem_map.1 hq
@@ -190,7 +190,7 @@ theorem _root_.NS1.Does.runT {F G : Fm} {x p : Tree} {l : List (A × β)} {enc :
   have hR : ∀ b ∈ l, ∃ b' ∈ l, R (enc b.2) = f b'.2 ∧ enc b'.2 = enc b.2 := by
     intro b hb
     have h : ∃ b' ∈ l, enc b'.2 = enc b.2 := ⟨b, hb, rfl⟩
-    exact ⟨h.choose, h.choose_spec.1, dif_pos h, h.choose_spec.2⟩
+    exact ⟨h.choose, h.choose_spec.1, dite_eq_left h, h.choose_spec.2⟩
   have h1 := Does.runW (p := p) (R := R) (e := e) hF hG (by
     intro q hq
     obtain ⟨b, hb, rfl⟩ := List.mem_map.1 hq

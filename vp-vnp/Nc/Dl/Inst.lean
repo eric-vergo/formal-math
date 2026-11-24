@@ -155,7 +155,7 @@ theorem _root_.Paper.thm_onecut_program {i e : Q} {b0 b1 : Γ} {τ s cap bd ιb 
     have hρ' : ∀ s p, (ρ s p).1 = false → (ρ s p).2.1 ≤ (ρ s p).2.2 := by
       intro s p hf
       have := hρ s p
-      rw [if_neg (by simp [hf])] at this
+      rw [ite_eq_right (by simp [hf])] at this
       exact this.2
     obtain ⟨h1, h2, h3⟩ := hGR P q (parts ℓ (wordG b0 b1 z)) ρ n o (grp n o) g C.key C.dkey tg bT bub b hC.inj hub hP hx hρ'
       hkind

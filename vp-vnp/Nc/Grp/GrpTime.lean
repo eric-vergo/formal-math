@@ -156,10 +156,10 @@ theorem length_endIns (b : G.Uid (K + K) U0 M.N U1 → UW ub) : (endIns P n o gr
       id ∈ G.Plan.seenAt n o E ∧ Holds (G.hold0 M.np) (G.hold1 M.np)
         (if grp (G.hold0 M.np id) = g then G.hold0 M.np id else G.hold1 M.np id) id
     by_cases h0 : grp (G.hold0 M.np id) = g
-    · rw [if_pos h0]
+    · rw [ite_eq_left h0]
       exact ⟨h0, h3, holds0 id⟩
     · by_cases h1' : grp (G.hold1 M.np id) = g
-      · rw [if_neg h0]
+      · rw [ite_eq_right h0]
         exact ⟨h1', h3, holds1 id⟩
       · simp [h0, h1'] at h2
   · intro id _ id' _ e

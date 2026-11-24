@@ -53,10 +53,10 @@ theorem flags_rowOk {m : ℕ} {d : RowData m} (hd : d.1 = false → d.2.1 ≤ d.
     (∀ b, okFlag (rowFlag d b) (decide (X b ≠ [])) = true) ↔ RowOk d X := by
   unfold RowOk
   by_cases h : d.1 = true
-  · rw [if_pos h]
+  · rw [ite_eq_left h]
     refine forall_congr' fun b => ?_
     simp [rowFlag, h, okFlag]
-  · rw [if_neg h]
+  · rw [ite_eq_right h]
     have h' : d.1 = false := by simpa using h
     have hle := hd h'
     constructor
@@ -206,10 +206,10 @@ theorem sumL_pack (hub : 0 < ub) (hK : 0 < K + K) {p : Fin (K + K)}
     rfl
   by_cases hR : (∀ s, cat (R.words s) = wl s) ∧ ∀ s, RowOk (ρ s p) (R.words s)
   swap
-  · rw [if_neg fun h => hR (cR.1 h)]
+  · rw [ite_eq_right fun h => hR (cR.1 h)]
     symm
-    refine Finset.sum_eq_zero fun C _ => if_neg fun h => hR ⟨h.1, h.2.2.1⟩
-  rw [if_pos (cR.2 hR), List.reverse_reverse, sumL_bindL]
+    refine Finset.sum_eq_zero fun C _ => ite_eq_right fun h => hR ⟨h.1, h.2.2.1⟩
+  rw [ite_eq_left (cR.2 hR), List.reverse_reverse, sumL_bindL]
   have sR : (List.ofFn fun b => joined (code cb) (sepOf cb) (fun i : Fin (nT S) => (R ((tapes S).get i) b : List Γ)) ++ [true]) =
       (PR n key cb p R.words).map fun z => z.2 ++ [true] := by
     rw [PR, List.map_ofFn]
@@ -229,10 +229,10 @@ theorem sumL_pack (hub : 0 < ub) (hK : 0 < K + K) {p : Fin (K + K)}
     rw [hlenR]
   by_cases hR2 : ∀ b, ucount ub (strOf cb fun s => R.words s b) = n p b
   swap
-  · rw [if_neg fun h => hR2 (cR2.1 h)]
+  · rw [ite_eq_right fun h => hR2 (cR2.1 h)]
     symm
-    refine Finset.sum_eq_zero fun C _ => if_neg fun h => hR2 h.2.2.2.1
-  rw [if_pos (cR2.2 hR2)]
+    refine Finset.sum_eq_zero fun C _ => ite_eq_right fun h => hR2 h.2.2.2.1
+  rw [ite_eq_left (cR2.2 hR2)]
   simp only [encT, List.map_cons, List.map_nil, sumL_single]
   rw [sumL_bindL, eC, sumL_segs (sepOf cb) hK (code cb) T (fun _ _ => 2) (fun i => rl ((tapes S).get i))
     (fun i => hrl _), sum_segs_equiv]
@@ -246,8 +246,8 @@ theorem sumL_pack (hub : 0 < ub) (hK : 0 < K + K) {p : Fin (K + K)}
     simp [okFlag]
   by_cases hC : ∀ s, cat (C.words s) = rl s
   swap
-  · rw [if_neg fun h => hC (cC.1 h), if_neg fun h => hC h.2.1]
-  rw [if_pos (cC.2 hC), List.reverse_reverse]
+  · rw [ite_eq_right fun h => hC (cC.1 h), ite_eq_right fun h => hC h.2.1]
+  rw [ite_eq_left (cC.2 hC), List.reverse_reverse]
   have sC : (List.ofFn fun b => joined (code cb) (sepOf cb) (fun i : Fin (nT S) => (C ((tapes S).get i) b : List Γ)) ++ [true]) =
       (PC n key dkey cb p C.words).map fun z => z.2 ++ [true] := by
     rw [PC, List.map_ofFn]
@@ -266,9 +266,9 @@ theorem sumL_pack (hub : 0 < ub) (hK : 0 < K + K) {p : Fin (K + K)}
     refine forall_congr' fun b => ?_
     rw [hlenC]
   by_cases hC2 : ∀ b, ucount ub (strOf cb fun s => C.words s b) = n b p
-  · rw [if_pos (cC2.2 hC2), if_pos ⟨hR.1, hC, hR.2, hR2, hC2⟩]
+  · rw [ite_eq_left (cC2.2 hC2), ite_eq_left ⟨hR.1, hC, hR.2, hR2, hC2⟩]
     simp only [List.map_cons, List.map_nil, sumL_single]
-  · rw [if_neg fun h => hC2 (cC2.1 h), if_neg fun h => hC2 h.2.2.2.2]
+  · rw [ite_eq_right fun h => hC2 (cC2.1 h), ite_eq_right fun h => hC2 h.2.2.2.2]
     rfl
 
 end Nc.Grp

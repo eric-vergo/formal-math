@@ -517,8 +517,8 @@ theorem prop_approx_acc_exact {H v t t' : ℕ} {K : KT E[T;T⁻¹]} {B : ℕ} {D
         rw [mark, AddMonoidAlgebra.coe_algebraMap, Function.comp_apply, AddMonoidAlgebra.single_mul_single, zero_add,
           AddMonoidAlgebra.coeff_single, Finsupp.single_apply]
         by_cases h : KT.val q.2.2 = 0
-        · rw [if_pos (h0.2 h), if_pos h, one_mul, mul_comm]
-        · rw [if_neg (mt h0.1 h), if_neg h, zero_mul, mul_zero]
+        · rw [ite_eq_left (h0.2 h), ite_eq_left h, one_mul, mul_comm]
+        · rw [ite_eq_right (mt h0.1 h), ite_eq_right h, zero_mul, mul_zero]
     rw [← hL _ length_xL, hsum, hR]
     have hspan : Span (K₂.nds * 2 ^ J * (2 ^ B * M)) (NS1.val K.lk l) := by
       rw [hbud]
@@ -536,7 +536,7 @@ theorem prop_approx_acc_exact {H v t t' : ℕ} {K : KT E[T;T⁻¹]} {B : ℕ} {D
         simpa using (hq q List.mem_cons_self).mul (Span.of_algebraMap (E := E) (s q.1) 0)
     rw [coeff_wrap_zero hspan hW]
     have := hv 0 zero_lt_one
-    simp only [AddMonoidAlgebra.coeff_sub, Finsupp.sub_apply, sub_eq_zero, coeff_algebraMap, if_true] at this
+    simp only [AddMonoidAlgebra.coeff_sub, Finsupp.sub_apply, sub_eq_zero, coeff_algebraMap, ite_true] at this
     exact this
 
 end Paper

@@ -161,9 +161,9 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
       (∀ s, Stair (X s)) ∧ segW mu T q x X ≠ 0 := by
     intro X h
     by_cases hs : ∀ s, Stair (X s)
-    · rw [if_pos hs] at h
+    · rw [ite_eq_left hs] at h
       exact ⟨hs, h⟩
-    · rw [if_neg hs] at h
+    · rw [ite_eq_right hs] at h
       exact absurd rfl h
   have hrows : ∀ X : Option S → Fin (K + K) → Fin (K + K) → List Γ, (∀ s, Stair (X s)) →
       ∃ ρ : Option S → Fin (K + K) → RowData (K + K), ValidRows ρ ∧ ∀ s p, RowOk (ρ s p) (X s p) := by
@@ -192,9 +192,9 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
   · rintro ⟨ρ, n, y, R, C⟩ hω h
     have hC : Cnd (ρ, n, y, R, C) := by
       by_contra hc
-      rw [if_neg hc] at h
+      rw [ite_eq_right hc] at h
       exact h rfl
-    rw [if_pos hC] at h
+    rw [ite_eq_left hC] at h
     obtain ⟨v, ⟨hy, hag⟩, hI⟩ := hC
     simp only at v hy hag hI h
     rw [mem_contents_iff] at hy
@@ -223,7 +223,7 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
       rw [hC']
       rfl
     have hne : (if ∀ s, Stair (X s) then segW mu T q x X else 0) ≠ 0 := by
-      rw [if_pos hstX, hW]
+      rw [ite_eq_left hstX, hW]
       exact h
     refine ⟨X, mem_segs.2 fun s a b => hω.1 a s b, hne, ?_⟩
     have e1 : ρX X (hst X hne).1 = ρ := by
@@ -246,11 +246,11 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
         show (if p = Fin.castAdd A' a ∨ p = Fin.castAdd A' b then unitsOf ub (strOf cb fun s => R a s b) k else none) =
           y p (.init a b k)
         by_cases hp : p = Fin.castAdd A' a ∨ p = Fin.castAdd A' b
-        · rw [if_pos hp]
+        · rw [ite_eq_left hp]
           rcases hp with rfl | rfl
           · exact (((hI a).2.1 b).2 k).symm
           · rw [((hI b).2.2 a).2 k, hRC]
-        · rw [if_neg hp]
+        · rw [ite_eq_right hp]
           symm
           exact hy _ _ fun hh => hp hh.2
     rw [e1, e2, e3, hC']
@@ -261,8 +261,8 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
       Nat.min_eq_left (hcnt a b)
     have hy : ∀ p a b k, p = Fin.castAdd A' a ∨ p = Fin.castAdd A' b → yX X p (.init a b k) = unitsOf ub (strOf cb fun s => X s a b) k := by
       intro p a b k hp
-      exact if_pos hp
-    rw [if_pos hs, if_pos]
+      exact ite_eq_left hp
+    rw [ite_eq_left hs, ite_eq_left]
     · rfl
     refine ⟨hρ1 X hs, ⟨?_, ?_⟩, ?_⟩
     · rw [mem_contents_iff]
@@ -275,7 +275,7 @@ theorem sum_pos (hcb : Function.Injective cb) (hc : 0 < c) (hub : 0 < ub)
           refine h1.trans (unitsOf_eq_none.2 ?_)
           rw [← hn]
           exact not_lt.1 fun hk => hn' ⟨init_mem_seen0.2 hk, hp⟩
-        · exact if_neg hp
+        · exact ite_eq_right hp
     · intro id hid
       cases id with
       | new ν k => exact absurd hid new_not_mem_seen0

@@ -87,9 +87,9 @@ theorem nextR_of (r : Ru supp) (hr : ¬ Sp r) : nextR supp (rule θ supp r).src 
     | i2 b => cases b <;> rfl
     | dc j =>
       have : (j.castSucc : Fin 11).1 < 10 := j.2
-      exact dif_pos this
+      exact dite_eq_left this
     | _ => rfl
-  · exact dif_pos u.2
+  · exact dite_eq_left u.2
   · rfl
   · rfl
   · obtain ⟨⟨p, p', b⟩, hx⟩ := x
@@ -97,8 +97,8 @@ theorem nextR_of (r : Ru supp) (hr : ¬ Sp r) : nextR supp (rule θ supp r).src 
     simp only at hx
     subst hx
     cases b
-    · exact dif_pos hp'
-    · exact dif_pos hp'
+    · exact dite_eq_left hp'
+    · exact dite_eq_left hp'
 
 theorem rd_of (r : Ru supp) (hr : ¬ Sp r) : (rule θ supp r).rd = none := by
   rcases r with r | u | p | p | x

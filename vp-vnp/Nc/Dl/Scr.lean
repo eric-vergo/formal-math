@@ -246,22 +246,22 @@ theorem expand_endTm {d1 : Tree} {gt : Fin mm → Tree} (hd1 : ∀ d : Fin D, C.
     split_ifs with hc <;> simp [hc]
   by_cases hc : id ∈ P.cur n o E
   swap
-  · rw [if_neg fun h' => hc (hcur.1 h'), if_neg hc]
-  rw [if_pos (hcur.2 hc), if_pos hc]
+  · rw [ite_eq_right fun h' => hc (hcur.1 h'), ite_eq_right hc]
+  rw [ite_eq_left (hcur.2 hc), ite_eq_left hc]
   simp only [Tm.expand, hslp]
   by_cases h0 : grp n o (G.hold0 M.np id) = g
-  · rw [if_pos ((hg _).2 h0), if_pos h0]
+  · rw [ite_eq_left ((hg _).2 h0), ite_eq_left h0]
     by_cases h1 : grp n o (G.hold1 M.np id) = g
-    · rw [if_pos ((hg _).2 h1), if_pos h1]
+    · rw [ite_eq_left ((hg _).2 h1), ite_eq_left h1]
       rfl
-    · rw [if_neg fun h' => h1 ((hg _).1 h'), if_neg h1, hone _ (hb id hc fun h' => h1 (h' ▸ h0))]
+    · rw [ite_eq_right fun h' => h1 ((hg _).1 h'), ite_eq_right h1, hone _ (hb id hc fun h' => h1 (h' ▸ h0))]
       simp
-  · rw [if_neg fun h' => h0 ((hg _).1 h'), if_neg h0]
+  · rw [ite_eq_right fun h' => h0 ((hg _).1 h'), ite_eq_right h0]
     rw [expand_ifTm, hslp]
     by_cases h1 : grp n o (G.hold1 M.np id) = g
-    · rw [if_pos ((hg _).2 h1), if_pos h1, hone _ (hb id hc fun h' => h0 (h'.trans h1))]
+    · rw [ite_eq_left ((hg _).2 h1), ite_eq_left h1, hone _ (hb id hc fun h' => h0 (h'.trans h1))]
       simp
-    · rw [if_neg fun h' => h1 ((hg _).1 h'), if_neg h1]
+    · rw [ite_eq_right fun h' => h1 ((hg _).1 h'), ite_eq_right h1]
       rfl
 
 /-- **The script of a group.** -/
@@ -309,7 +309,7 @@ theorem expand_scriptTm {d1 : Tree} {gt : Fin mm → Tree} (hd1 : ∀ d : Fin D,
     | cons id l ih =>
       rw [List.flatMap_cons, ih]
       by_cases hc : id ∈ P.cur n o E
-      · simp only [hc, if_true, List.filter_cons_of_pos, decide_true, List.filterMap_cons]
+      · simp only [hc, ite_true, List.filter_cons_of_pos, decide_true, List.filterMap_cons]
         cases (if grp n o (G.hold0 M.np id) = g then
           if grp n o (G.hold1 M.np id) = g then some (Grp.Ins.both (C.key (G.hold0 M.np id, id)) (C.key (G.hold1 M.np id, id)))
           else some (.one (C.key (G.hold0 M.np id, id)) (uwBits (b id)))

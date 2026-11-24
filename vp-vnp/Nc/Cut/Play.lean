@@ -72,7 +72,7 @@ theorem sum_contents_union (h0 h1 : U → A) (e : W) (Seen New : Finset U) (hd :
     refine ⟨fun a id hn => ?_, fun id hn => by simp [hn]⟩
     by_cases h : id ∈ New
     · simp [h]
-    · simp only [h, if_false]
+    · simp only [h, ite_false]
       apply hy.1
       rintro ⟨h1 | h1, h2⟩
       · exact hn ⟨h1, h2⟩
@@ -82,7 +82,7 @@ theorem sum_contents_union (h0 h1 : U → A) (e : W) (Seen New : Finset U) (hd :
       Finset.mem_union] at hp ⊢
     refine ⟨fun a id hn => ?_, fun id hid => ?_⟩
     · have h1 : ¬ (id ∈ New ∧ Holds h0 h1 a id) := fun h => hn ⟨Or.inr h.1, h.2⟩
-      simp only [ext, h1, if_false]
+      simp only [ext, h1, ite_false]
       exact hp.1 a id fun h => hn ⟨Or.inl h.1, h.2⟩
     · rw [ext_self hid (Or.inl rfl), ext_self hid (Or.inr rfl)]
   · intro y hy
@@ -91,11 +91,11 @@ theorem sum_contents_union (h0 h1 : U → A) (e : W) (Seen New : Finset U) (hd :
     by_cases h : id ∈ New
     · by_cases ha : Holds h0 h1 a id
       · rw [ext_self h ha]
-        simp only [h, if_true]
+        simp only [h, ite_true]
         rcases ha with rfl | rfl
         · rfl
         · exact hy.2 id h
-      · simp only [ext, h, ha, and_false, if_false, if_true]
+      · simp only [ext, h, ha, and_false, ite_false, ite_true]
         exact (hy.1 a id fun hh => ha hh.2).symm
     · simp [ext, h]
   · rintro ⟨y, z⟩ hp
@@ -103,14 +103,14 @@ theorem sum_contents_union (h0 h1 : U → A) (e : W) (Seen New : Finset U) (hd :
     ext1
     · funext a id
       by_cases h : id ∈ New
-      · simp only [h, if_true]
+      · simp only [h, ite_true]
         exact (hp.1 a id fun hh => Finset.disjoint_left.1 hd hh.1 h).symm
       · simp [ext, h]
     · funext id
       by_cases h : id ∈ New
-      · simp only [h, if_true]
+      · simp only [h, ite_true]
         exact ext_self h (Or.inl rfl)
-      · simp only [h, if_false]
+      · simp only [h, ite_false]
         exact (hp.2 id h).symm
   · intro y hy
     simp only [Contents, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union] at hy
@@ -119,11 +119,11 @@ theorem sum_contents_union (h0 h1 : U → A) (e : W) (Seen New : Finset U) (hd :
     by_cases h : id ∈ New
     · by_cases ha : Holds h0 h1 a id
       · rw [ext_self h ha]
-        simp only [h, if_true]
+        simp only [h, ite_true]
         rcases ha with rfl | rfl
         · rfl
         · exact (hy.2 id h).symm
-      · simp only [ext, h, ha, and_false, if_false, if_true]
+      · simp only [ext, h, ha, and_false, ite_false, ite_true]
         exact hy.1 a id fun hh => ha hh.2
     · simp [ext, h]
 

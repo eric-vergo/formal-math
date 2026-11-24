@@ -144,7 +144,7 @@ theorem appG_map {α β : I → Type} [∀ p, Fintype (β p)] [∀ p, DecidableE
   · intro y _ hy
     obtain ⟨p, hp⟩ := Function.ne_iff.1 hy
     rw [Finset.prod_eq_zero (Finset.mem_univ p), zero_mul]
-    exact if_neg hp
+    exact ite_eq_right hp
   · intro h
     exact absurd (Finset.mem_univ _) h
 

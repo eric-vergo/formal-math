@@ -106,24 +106,24 @@ theorem phase_det {st : NmT S M U0 U1 pS → Tree} {step : ι → DStep} (g : ι
       rw [List.mem_singleton] at ha
       subst ha
       have h : ∃ j, g j = g i := ⟨i, rfl⟩
-      rw [dif_pos h, dif_pos h, hg h.choose_spec]
+      rw [dite_eq_left h, dite_eq_left h, hg h.choose_spec]
       exact ⟨rfl, rfl⟩) (by
       intro i x hx
       by_cases h : ∃ i, g i = x
-      · rw [dif_pos h] at hx
+      · rw [dite_eq_left h] at hx
         refine ⟨_, List.mem_singleton_self _, ?_⟩
         rw [← Option.some.inj hx]
         exact h.choose_spec
-      · rw [dif_neg h] at hx
+      · rw [dite_eq_right h] at hx
         simp at hx) s st
   have e : (s.foldl (fun st i => Function.update st (g i) (v i)) st) = s.foldl (fun st i => upds st [(g i, v i)]) st := rfl
   rw [e, hf]
   congr 2
   funext x
   by_cases h : ∃ i, g i = x
-  · rw [dif_pos h, dif_pos h]
+  · rw [dite_eq_left h, dite_eq_left h]
     simp [hall, h]
-  · simp only [dif_neg h]
+  · simp only [dite_eq_right h]
 
 end Generic
 

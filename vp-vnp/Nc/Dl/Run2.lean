@@ -155,7 +155,7 @@ theorem nodup_optsB (c : Bool) : (optsB ub c).Nodup := by
   unfold optsB
   cases c
   · simp
-  · simp only [if_true]
+  · simp only [ite_true]
     refine List.Nodup.map_on (fun u hu u' hu' h => ?_) (nodup_allBits ub)
     exact wOf_inj (length_of_mem_allBits hu) (length_of_mem_allBits hu') h
 
@@ -163,7 +163,7 @@ theorem mem_optsB {c : Bool} {w : UW ub} : w ∈ optsB ub c ↔ (w ≠ none ↔ 
   unfold optsB
   cases c
   · simp
-  · simp only [if_true, List.mem_map, iff_true]
+  · simp only [ite_true, List.mem_map, iff_true]
     constructor
     · rintro ⟨u, -, rfl⟩
       exact Option.some_ne_none _
@@ -224,14 +224,14 @@ theorem phase9 {st : NmT S M U0 U1 pS → Tree} {cut : G.Uid (K + K) U0 M.N U1 �
   · refine Finset.sum_congr rfl fun b _ => ?_
     have key : (∀ id, b id ∈ optsB ub (cut id)) ↔ ∀ id, b id ≠ none ↔ cut id = true := forall_congr' fun id => mem_optsB
     by_cases h : ∀ id, b id ≠ none ↔ cut id = true
-    · rw [if_pos h, if_pos (key.2 h)]
-    · rw [if_neg h, if_neg fun h' => h (key.1 h')]
+    · rw [ite_eq_left h, ite_eq_left (key.2 h)]
+    · rw [ite_eq_right h, ite_eq_right fun h' => h (key.1 h')]
   · rw [exec_bits C.nm_inj, hst]
     unfold optsB
     cases cut id
     · rfl
-    · simp only [if_true, List.map_map]
-      rw [if_neg (by simp [bit, one])]
+    · simp only [ite_true, List.map_map]
+      rw [ite_eq_right (by simp [bit, one])]
       refine List.map_congr_left fun u hu => ?_
       have h1 := uwBits_wOf (length_of_mem_allBits hu)
       simp only [Function.comp_apply, wOf, ov9]

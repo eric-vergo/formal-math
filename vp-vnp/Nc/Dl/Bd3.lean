@@ -33,7 +33,7 @@ theorem cost_catTm (σ : List Bool → Tree) (ts : List Tm) :
 
 theorem sum_map_le {α : Type*} (l : List α) (f : α → ℕ) {n b : ℕ} (h : ∀ a ∈ l, f a ≤ b) (hn : l.length ≤ n) :
     (l.map f).sum ≤ n * b := by
-  refine (List.sum_le_card_nsmul _ b ?_).trans ?_
+  refine (List.sum_le_length_nsmul _ b ?_).trans ?_
   · intro x hx
     rw [List.mem_map] at hx
     obtain ⟨a, ha, rfl⟩ := hx

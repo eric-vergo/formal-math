@@ -175,7 +175,7 @@ theorem hard_of_good (h : Good i e x (gEm g) (gSt g) (gPl g) (gCt g)) : Hard i e
     have hs := h.step z τ
     have hM := (gPl g z τ.succ).2
     rw [hs] at hM
-    rw [dif_pos hM] at hl
+    rw [dite_eq_left hM] at hl
     simp at hl
     exact hl (Fin.ext hs)
   · simp only [hLits, List.forall_mem_cons, elim_vPl, decide_eq_true_eq] at hl
@@ -183,7 +183,7 @@ theorem hard_of_good (h : Good i e x (gEm g) (gSt g) (gPl g) (gCt g)) : Hard i e
     have hs := h.link j j' (by simpa [active] using hr)
     have hM := (gPl g (.inp j') 0).2
     rw [hs] at hM
-    rw [dif_pos hM] at hl
+    rw [dite_eq_left hM] at hl
     simp at hl
     exact hl (Fin.ext hs)
   · simp only [hLits, List.forall_mem_cons, elim_vPl, elim_vEm, elim_vCt, decide_eq_true_eq,
@@ -197,12 +197,12 @@ theorem hard_of_good (h : Good i e x (gEm g) (gSt g) (gPl g) (gCt g)) : Hard i e
   · simp only [hLits, List.forall_mem_cons, elim_vPl, elim_vEm, decide_eq_true_eq] at hl
     obtain ⟨ho, rfl, hl⟩ := hl
     obtain ⟨hN, hx⟩ := h.read j τ γ ho
-    rw [dif_pos hN] at hl
+    rw [dite_eq_left hN] at hl
     simp [hx] at hl
   · simp only [hLits, List.forall_mem_cons, elim_vPl, decide_eq_true_eq] at hl
     obtain ⟨rfl, hl⟩ := hl
     obtain ⟨hN, hx⟩ := h.sep j
-    rw [dif_pos hN] at hl
+    rw [dite_eq_left hN] at hl
     simp [hx] at hl
 
 end Hard
@@ -221,10 +221,10 @@ theorem prod_soft (mu : Letter S (Fin n) Γ → Matrix Q Q F) (x : Fin N × Opti
   rw [Fintype.prod_prod_type]
   refine Finset.prod_congr rfl fun τ _ => ?_
   rw [Finset.prod_eq_single (gEm g τ, gSt g (Fin.castSucc τ), gSt g (Fin.succ τ))]
-  · rw [if_pos]
+  · rw [ite_eq_left]
     simp [sLits]
   · rintro ⟨a, q, q'⟩ _ hne
-    refine if_neg fun h => hne ?_
+    refine ite_eq_right fun h => hne ?_
     simp only [sLits, List.forall_mem_cons, elim_vEm, elim_vSt, decide_eq_true_eq] at h
     rw [h.1, h.2.1, h.2.2.1]
   · intro h
@@ -239,13 +239,13 @@ theorem prod_hard (i e : Q) (x : Fin N × Option Γ → Bool) (g : ∀ d, RE Γ 
   · have hh := hard_of_good i e x g hg
     refine Finset.prod_eq_one fun r _ => ?_
     by_cases hr : active r = true
-    · rw [if_neg (hh r hr)]
+    · rw [ite_eq_right (hh r hr)]
     · simp [hr]
   · have hh : ¬ Hard i e x g := fun h => hg (good_of_hard i e x g h)
     unfold Hard at hh
     push Not at hh
     obtain ⟨r, hr, hl⟩ := hh
     refine Finset.prod_eq_zero (mem_univ r) ?_
-    rw [if_pos hl, if_pos hr]
+    rw [ite_eq_left hl, ite_eq_left hr]
 
 end Nc

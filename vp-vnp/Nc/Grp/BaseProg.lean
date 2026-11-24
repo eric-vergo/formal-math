@@ -105,14 +105,14 @@ theorem ex_sim : ∃ F κ, ∀ (T : ℕ) (q q' : Fin (Fintype.card Q)),
       by_cases h : s.1 = q'
       · have e2 : bit (decide (num s.1 = num q')) ≠ .nil := by simp [h, bit, one]
         refine ((Does.ite_true (H := .fail) e1 e2 (Gives.id _).tl.tl.tl).replace ?_).mono (by omega)
-        rw [if_pos h]
+        rw [ite_eq_left h]
         rfl
       · have e2 : bit (decide (num s.1 = num q')) = .nil := by
           have : num s.1 ≠ num q' := fun h' => h (Fin.ext (num_injective h'))
           simp [this, bit]
         rw [e2] at e1
         refine ((Does.ite_false e1 (Does.fail _)).replace ?_).mono (by omega)
-        rw [if_neg h]
+        rw [ite_eq_right h]
         rfl)
   rw [bindL_map] at h3
   refine h3.mono ?_
@@ -165,9 +165,9 @@ theorem ex_inOuts : ∃ F : Fm → Fm, ∃ κ, ∀ (p : Fm) (x : Tree) (part : L
     (f := fun j => if outOf j = (none, false) then p else .quote .nil)
     (o := fun j => listT ((inOuts (S := S) part j).map ofBits)) (fun j => by
       by_cases h : outOf j = ((none : Option S), false)
-      · simp only [inOuts, h, if_true]
+      · simp only [inOuts, h, ite_true]
         exact hp.mono (by omega)
-      · simp only [inOuts, h, if_false]
+      · simp only [inOuts, h, ite_false]
         exact (Gives.quote _ _).mono (by omega))
   refine h1.mono ?_
   nlinarith

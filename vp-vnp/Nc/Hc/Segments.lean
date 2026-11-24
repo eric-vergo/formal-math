@@ -150,7 +150,7 @@ theorem after_slot_symm (o : Σ i, O i) (j : Fin (T.len o)) :
   rw [Equiv.apply_symm_apply]
 
 omit [Fintype I] [DecidableEq G] [∀ i, Fintype (O i)] in
-theorem place_len (o : Σ i, O i) : T.place o (T.len o) = .head (T.next o.1) := dif_neg (lt_irrefl _)
+theorem place_len (o : Σ i, O i) : T.place o (T.len o) = .head (T.next o.1) := dite_eq_right (lt_irrefl _)
 
 omit [Fintype I] [DecidableEq G] [∀ i, Fintype (O i)] in
 /-- The successor along a selection is always an edge. -/
@@ -196,13 +196,13 @@ theorem route_reaches (hnext : T.next.IsCycleOn Set.univ) {J : ∀ i, O i} (hJ :
     | succ j ih =>
       intro hj
       have h := ih (by omega)
-      rw [place, dif_pos (show j < _ by omega)] at h
+      rw [place, dite_eq_left (show j < _ by omega)] at h
       generalize hp : T.slot.symm ⟨⟨i, J i⟩, ⟨j, by omega⟩⟩ = p at h
       have hs : T.side J p.1 = p.2 := (sel_iff hJ p.1 p.2).1 (hp ▸ sel_slot_symm J i _)
       have h3 := hstep _ (hstep _ (hstep _ h))
       have e : f (f (f (.tip p.1 p.2))) = T.after p := by
-        simp only [f, route, hs, if_true, Bool.not_not]
-        rw [if_neg (by cases p.2 <;> simp)]
+        simp only [f, route, hs, ite_true, Bool.not_not]
+        rw [ite_eq_right (by cases p.2 <;> simp)]
       rw [e, ← hp, after_slot_symm] at h3
       exact h3
   have hheads : ∀ i, Rch (.head i) := by
@@ -224,7 +224,7 @@ theorem route_reaches (hnext : T.next.IsCycleOn Set.univ) {J : ∀ i, O i} (hJ :
       have h1 : T.port (g, T.side J g) = o := by rw [← e, T.port_slot_symm]
       exact h1 ▸ sel_eq hsel
     have h := hchain o.1 (hheads o.1) (j : ℕ) (by rw [← ho]; exact j.2.le)
-    rw [← ho, place, dif_pos j.2, Fin.eta, e] at h
+    rw [← ho, place, dite_eq_left j.2, Fin.eta, e] at h
     have h2 := hstep _ h
     have e1 : f (.tip g (T.side J g)) = .mid g := by simp [f, route]
     rw [e1] at h2
@@ -255,7 +255,7 @@ theorem route_bijective (hnext : T.next.IsCycleOn Set.univ) {J : ∀ i, O i} (hJ
       have hs : T.side J p.1 = p.2 := (sel_iff hJ p.1 p.2).1 (hp ▸ sel_slot_symm J i' j)
       refine ⟨.tip p.1 (!p.2), ?_⟩
       simp only [route, hs, Bool.not_not]
-      rw [if_neg (by cases p.2 <;> simp), ← hp, after_slot_symm, show (j : ℕ) + 1 = T.len ⟨i', J i'⟩ by
+      rw [ite_eq_right (by cases p.2 <;> simp), ← hp, after_slot_symm, show (j : ℕ) + 1 = T.len ⟨i', J i'⟩ by
         simp only [j]; omega, place_len]
       simp [hi']
   all_goals
@@ -371,14 +371,14 @@ theorem exists_selection (hσ : σ.IsCycleOn Set.univ) (he : ∀ p, T.Edge p (σ
     | zero =>
       intro hj
       refine hactive _ _ (.head i) ?_ (by simp)
-      rw [hJ i, place, dif_pos hj]
+      rw [hJ i, place, dite_eq_left hj]
     | succ j ih =>
       intro hj
       have h := ih (by omega)
       generalize hp : T.slot.symm ⟨⟨i, J i⟩, j, by omega⟩ = p at h
       refine hactive _ _ (.tip p.1 (!p.2)) ?_ (by simp)
-      rw [hrouteD, route, if_neg (by rw [h]; cases p.2 <;> simp), Bool.not_not, ← hp, after_slot_symm, place,
-        dif_pos hj]
+      rw [hrouteD, route, ite_eq_right (by rw [h]; cases p.2 <;> simp), Bool.not_not, ← hp, after_slot_symm, place,
+        dite_eq_left hj]
   have hsel : ∀ p, T.Sel J p → d p.1 = p.2 := by
     intro p hp
     obtain ⟨⟨o, j⟩, rfl⟩ := T.slot.symm.surjective p
@@ -451,7 +451,7 @@ theorem hcSum_weight {R : Type*} [CommSemiring R] (hnext : T.next.IsCycleOn Set.
     · simp only [weight]
       refine Finset.sum_eq_zero fun o ho => absurd ⟨o, ?_⟩ hp
       exact (mem_filter.1 ho).2.symm
-    all_goals exact if_neg hp
+    all_goals exact ite_eq_right hp
   rw [Finset.filter_filter]
   symm
   refine Finset.sum_bij (fun J hJ => routePerm hnext (mem_filter.1 hJ).2) ?_ ?_ ?_ ?_
@@ -475,8 +475,8 @@ theorem hcSum_weight {R : Type*} [CommSemiring R] (hnext : T.next.IsCycleOn Set.
     have h2 : ∀ p : (G × Bool) ⊕ G, T.weight w (Vtx.equivSum.symm (.inr p))
         (routePerm hnext hv (Vtx.equivSum.symm (.inr p))) = 1 := by
       rintro (⟨g, s⟩ | g)
-      · exact if_pos (edge_route J _ (.tip g s))
-      · exact if_pos (edge_route J _ (.mid g))
+      · exact ite_eq_left (edge_route J _ (.tip g s))
+      · exact ite_eq_left (edge_route J _ (.mid g))
     rw [Finset.prod_congr rfl fun p _ => h2 p, Finset.prod_const_one, mul_one]
     exact Finset.prod_congr rfl fun i _ => (h1 i).symm
 

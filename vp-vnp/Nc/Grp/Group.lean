@@ -64,32 +64,32 @@ theorem sumL_end (b : G.Uid (K + K) U0 M.N U1 → UW ub) (l : List (G.Uid (K + K
       List.forall_mem_cons
     by_cases h0 : grp (G.hold0 M.np id) = g
     · by_cases h1 : grp (G.hold1 M.np id) = g
-      · rw [List.filterMap_cons_some (by rw [if_pos h0, if_pos h1]), sumL_script_cons, insSem]
+      · rw [List.filterMap_cons_some (by rw [ite_eq_left h0, ite_eq_left h1]), sumL_script_cons, insSem]
         simp only [hr.2, hof]
         by_cases he : uwBits (σ (G.hold0 M.np id, id)) = uwBits (σ (G.hold1 M.np id, id))
-        · rw [if_pos he, sumL_single, ih]
+        · rw [ite_eq_left he, sumL_single, ih]
           refine if_congr ?_ rfl rfl
           rw [hcons]
           simp [EndOk, h0, h1, he]
-        · rw [if_neg he, sumL_nil, if_neg fun h => he ((hcons.1 h).1.1 h0 h1)]
-      · rw [List.filterMap_cons_some (by rw [if_pos h0, if_neg h1]), sumL_script_cons, insSem]
+        · rw [ite_eq_right he, sumL_nil, ite_eq_right fun h => he ((hcons.1 h).1.1 h0 h1)]
+      · rw [List.filterMap_cons_some (by rw [ite_eq_left h0, ite_eq_right h1]), sumL_script_cons, insSem]
         simp only [hr.2, hof]
         by_cases he : uwBits (σ (G.hold0 M.np id, id)) = uwBits (b id)
-        · rw [if_pos he, sumL_single, ih]
+        · rw [ite_eq_left he, sumL_single, ih]
           refine if_congr ?_ rfl rfl
           rw [hcons]
           simp [EndOk, h0, h1, he]
-        · rw [if_neg he, sumL_nil, if_neg fun h => he ((hcons.1 h).1.2.1 h0 h1)]
+        · rw [ite_eq_right he, sumL_nil, ite_eq_right fun h => he ((hcons.1 h).1.2.1 h0 h1)]
     · by_cases h1 : grp (G.hold1 M.np id) = g
-      · rw [List.filterMap_cons_some (by rw [if_neg h0, if_pos h1]), sumL_script_cons, insSem]
+      · rw [List.filterMap_cons_some (by rw [ite_eq_right h0, ite_eq_left h1]), sumL_script_cons, insSem]
         simp only [hr.2, hof]
         by_cases he : uwBits (σ (G.hold1 M.np id, id)) = uwBits (b id)
-        · rw [if_pos he, sumL_single, ih]
+        · rw [ite_eq_left he, sumL_single, ih]
           refine if_congr ?_ rfl rfl
           rw [hcons]
           simp [EndOk, h0, h1, he]
-        · rw [if_neg he, sumL_nil, if_neg fun h => he ((hcons.1 h).1.2.2 h0 h1)]
-      · rw [List.filterMap_cons_none (by rw [if_neg h0, if_neg h1]), ih]
+        · rw [ite_eq_right he, sumL_nil, ite_eq_right fun h => he ((hcons.1 h).1.2.2 h0 h1)]
+      · rw [List.filterMap_cons_none (by rw [ite_eq_right h0, ite_eq_right h1]), ih]
         refine if_congr ?_ rfl rfl
         rw [hcons]
         simp [EndOk, h0, h1]

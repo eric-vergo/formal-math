@@ -99,12 +99,12 @@ variable {K : Type} [Field K] {I J : Type} [Fintype I] [DecidableEq I] [Fintype 
 
 /-- The entry of a unit tensor at equal indices is 1. -/
 theorem unit_val_of {r : ℕ} {x : J → Fin r} (h : ∀ i j, x i = x j) : (unit K J r).val x = 1 :=
-  if_pos h
+  ite_eq_left h
 
 /-- The other entries of a unit tensor are 0. -/
 theorem unit_val_not {r : ℕ} {x : J → Fin r} (h : ¬ ∀ i j, x i = x j) :
     (unit K J r).val x = 0 :=
-  if_neg h
+  ite_eq_right h
 
 theorem unit_val_congr {L : Type} [Fintype L] [DecidableEq L] {r r' : ℕ} {x : J → Fin r}
     {y : L → Fin r'} (h : (∀ i j, x i = x j) ↔ ∀ i j, y i = y j) :
@@ -157,7 +157,7 @@ theorem Equi.push_unit {L : Type} [Fintype L] [DecidableEq L] (ρ : L → J) (h�
     by_cases h : ∀ l l', x (ρ l) ⟨l, rfl⟩ = x (ρ l') ⟨l', rfl⟩
     · rw [unit_val_of h, unit_val_of, Finset.prod_eq_one, _root_.mul_one]
       · rintro q -
-        refine if_pos (show ∀ l l', x q l = x q l' from fun l l' => ?_)
+        refine ite_eq_left (show ∀ l l', x q l = x q l' from fun l l' => ?_)
         rw [← cast l.1 q l.2, ← cast l'.1 q l'.2]
         exact h _ _
       · intro q q'
@@ -174,7 +174,7 @@ theorem Equi.push_unit {L : Type} [Fintype L] [DecidableEq L] (ρ : L → J) (h�
       · push Not at h1
         obtain ⟨q, l, l', hq⟩ := h1
         rw [Finset.prod_eq_zero (Finset.mem_univ q), zero_mul]
-        exact if_neg (show ¬ ∀ l l', x q l = x q l' from fun h => hq (h l l'))
+        exact ite_eq_right (show ¬ ∀ l l', x q l = x q l' from fun h => hq (h l l'))
   · refine Restr.of_map' (fun q a _ => a) fun x => ?_
     refine unit_val_congr (x := x) (y := fun l => x (ρ l)) ⟨fun h i j => h _ _, fun h i j => ?_⟩
     obtain ⟨i, rfl⟩ := hρ i
@@ -214,7 +214,7 @@ theorem Restr.push_const (q : I) (t : Ten K J) : Restr (Ten.push (fun _ => q) t)
     rw [Finset.prod_eq_single q]
     · simp
     · intro p _ hp
-      rw [dif_neg fun h => hp h.symm]
+      rw [dite_eq_right fun h => hp h.symm]
     · simp
   exact (key x).trans (_root_.mul_one _).symm
 
@@ -314,7 +314,7 @@ theorem Restr.move (π π' : J → I) (t : Ten K J) :
             push Not at hcon
             exact hy (funext fun _ => funext fun j => (hcon j).symm)
           obtain ⟨j, hj⟩ := this
-          rw [Finset.prod_eq_zero (Finset.mem_univ (Sum.inr j)) (if_neg hj), zero_mul]
+          rw [Finset.prod_eq_zero (Finset.mem_univ (Sum.inr j)) (ite_eq_right hj), zero_mul]
         · simp
       · intro l _ hl
         have : ∃ j, ¬ x j = l j := by
@@ -323,7 +323,7 @@ theorem Restr.move (π π' : J → I) (t : Ten K J) :
           exact hl (funext fun j => (hcon j).symm)
         obtain ⟨j, hj⟩ := this
         refine Finset.sum_eq_zero fun y _ => ?_
-        rw [Finset.prod_eq_zero (Finset.mem_univ (Sum.inl j)) (if_neg hj), zero_mul]
+        rw [Finset.prod_eq_zero (Finset.mem_univ (Sum.inl j)) (ite_eq_right hj), zero_mul]
       · simp)
   refine h.trans (Restr.mul (Restr.refl _) ?_)
   exact (Equi.prod_unique _).1

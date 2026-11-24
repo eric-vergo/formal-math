@@ -101,14 +101,14 @@ theorem sum_eq_exec (l : List (WStep F Ce W)) (hl : Seq l) (G : (Ce → W) → F
     constructor
     · rintro ⟨h1, h2⟩ c hc
       by_cases hcs : c ∈ s.wr
-      · rw [ovr, if_pos hcs, h2 c hcs]
-      · rw [ovr, if_neg hcs]
+      · rw [ovr, ite_eq_left hcs, h2 c hcs]
+      · rw [ovr, ite_eq_right hcs]
         exact h1 c fun h => (mem_union.1 h).elim hcs hc
     · intro h
       refine ⟨fun c hc => ?_, fun c hc => ?_⟩
       · rw [wrs, mem_union, not_or] at hc
-        rw [h c hc.2, ovr, if_neg hc.1]
-      · rw [h c fun h' => (disjoint_left.1 hd hc h'), ovr, if_pos hc]
+        rw [h c hc.2, ovr, ite_eq_right hc.1]
+      · rw [h c fun h' => (disjoint_left.1 hd hc h'), ovr, ite_eq_left hc]
 
 theorem mem_wrs {l : List (WStep F Ce W)} {c : Ce} : c ∈ wrs l ↔ ∃ s ∈ l, c ∈ s.wr := by
   induction l with

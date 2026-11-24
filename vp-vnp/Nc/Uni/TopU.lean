@@ -183,7 +183,7 @@ theorem pv_eq {τ : ℕ} {z : Tree} (h : Plain θ τ z) : pv θ z = tot (fun _ =
   unfold pv tot pval
   congr 1
   refine List.map_congr_left fun r hr => ?_
-  rw [if_pos (h.2 r hr).1, mul_one]
+  rw [ite_eq_left (h.2 r hr).1, mul_one]
 
 /-- After the tree has been read. -/
 theorem PKS_eval (hθ : ∀ q, q ∉ supp → θ q = 0) {τ : ℕ} {z : Tree} (h : Plain θ τ z) {H : List (Rec Kd)} {k j s0 s1 : ℕ}

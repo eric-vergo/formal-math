@@ -52,10 +52,10 @@ theorem putL_gen {ub : ℕ} (hub : 0 < ub) (keys : List (List Bool)) (r : List B
     rw [putL]
     by_cases hr : r = []
     · subst hr
-      rw [if_pos rfl, if_neg]
+      rw [ite_eq_left rfl, ite_eq_right]
       rw [List.length_nil, zero_add, Nat.div_eq_of_lt (by omega)]
       simp
-    · rw [if_neg hr, ih]
+    · rw [ite_eq_right hr, ih]
       have hl : 0 < r.length := List.length_pos_iff.2 hr
       have hc : (r.length + ub - 1) / ub = ((r.drop ub).length + ub - 1) / ub + 1 := by
         rw [List.length_drop]
@@ -88,7 +88,7 @@ theorem putL_eq {ub : ℕ} (hub : 0 < ub) (keys : List (List Bool)) (L : List Bo
   split_ifs with h
   · congr 1
     refine putAll_congr _ _ fun i hi => ?_
-    rw [unitsOf, if_pos (by omega)]
+    rw [unitsOf, ite_eq_left (by omega)]
     rfl
   · rfl
 
@@ -101,11 +101,11 @@ theorem tget_putAll (keys : List (List Bool)) (hk : keys.Nodup) (u : ℕ → Lis
     rw [putAll, ih hk.2, tget_tset]
     by_cases h1 : p ∈ ks
     · have hne : k ≠ p := fun h => hk.1 (h ▸ h1)
-      rw [if_pos h1, if_pos (List.mem_cons_of_mem _ h1), List.idxOf_cons_ne _ hne]
-    · rw [if_neg h1]
+      rw [ite_eq_left h1, ite_eq_left (List.mem_cons_of_mem _ h1), List.idxOf_cons_ne _ hne]
+    · rw [ite_eq_right h1]
       by_cases h2 : p = k
       · subst h2
-        rw [if_pos rfl, if_pos List.mem_cons_self, List.idxOf_cons_self]
-      · rw [if_neg h2, if_neg (by simp [h1, h2])]
+        rw [ite_eq_left rfl, ite_eq_left List.mem_cons_self, List.idxOf_cons_self]
+      · rw [ite_eq_right h2, ite_eq_right (by simp [h1, h2])]
 
 end Nc.Grp

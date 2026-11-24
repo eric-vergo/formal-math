@@ -225,9 +225,9 @@ theorem thm_laws_over_field {K : Type} [Field K] {h : ℕ} [NeZero h] (h2 : 2 �
       rw [← sum_off]
       refine Finset.sum_congr rfl fun p _ => Finset.sum_congr rfl fun q _ => ?_
       by_cases hpq : p = q
-      · rw [if_pos hpq, hpq, hw.self]
+      · rw [ite_eq_left hpq, hpq, hw.self]
         norm_num
-      · rw [if_neg hpq]
+      · rw [ite_eq_right hpq]
         have h7 := out_mk s(p, q)
         rw [Sym2.eq_iff] at h7
         rcases h7 with ⟨e1, e2⟩ | ⟨e1, e2⟩
@@ -291,7 +291,7 @@ theorem thm_laws_over_field {K : Type} [Field K] {h : ℕ} [NeZero h] (h2 : 2 �
       rw [show m t = 0 by omega]
       infer_instance
     have h2 := htab t fun _ _ => false
-    rw [if_pos fun _ => rfl, Finset.univ_eq_empty, Finset.sum_empty] at h2
+    rw [ite_eq_left fun _ => rfl, Finset.univ_eq_empty, Finset.sum_empty] at h2
     exact one_ne_zero h2
   let L : Loads α ((a : ℝ) + Z₁) → Nc.G.Law K := fun t =>
     { Ro := U h

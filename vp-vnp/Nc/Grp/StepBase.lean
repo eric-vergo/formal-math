@@ -97,10 +97,10 @@ theorem nodup_PC (p : Fin (K + K)) (C : Option S → Fin (K + K) → List Γ) :
   refine ⟨fun b _ => ?_, (List.nodup_finRange _).imp fun {b b'} hb => ?_⟩
   · refine ((List.nodup_finRange _).filter _).map fun i j h => ?_
     by_cases hbp : b = p
-    · simp only [hbp, if_true] at h
+    · simp only [hbp, ite_true] at h
       have := hd h
       simpa using this
-    · simp only [hbp, if_false] at h
+    · simp only [hbp, ite_false] at h
       have := hk h
       simpa using this
   · rw [Function.onFun, List.disjoint_left]
@@ -110,13 +110,13 @@ theorem nodup_PC (p : Fin (K + K)) (C : Option S → Fin (K + K) → List Γ) :
     rw [h1] at h2
     by_cases hbp : b = p
     · have hbp' : b' ≠ p := fun h => hb (hbp.trans h.symm)
-      rw [if_pos hbp, if_neg hbp'] at h2
+      rw [ite_eq_left hbp, ite_eq_right hbp'] at h2
       exact key_ne_dkey hkey _ _ h2.symm
-    · rw [if_neg hbp] at h2
+    · rw [ite_eq_right hbp] at h2
       by_cases hbp' : b' = p
-      · rw [if_pos hbp'] at h2
+      · rw [ite_eq_left hbp'] at h2
         exact key_ne_dkey hkey _ _ h2
-      · rw [if_neg hbp'] at h2
+      · rw [ite_eq_right hbp'] at h2
         have := hk h2
         simp only [Prod.mk.injEq, true_and, G.Uid.init.injEq] at this
         exact hb this.1
@@ -149,9 +149,9 @@ theorem baseT_R (p b : Fin (K + K)) (R C : Option S → Fin (K + K) → List Γ)
   · rw [mem_PC hkey]
     rintro ⟨b', j, -, h⟩
     by_cases hb : b' = p
-    · rw [if_pos hb] at h
+    · rw [ite_eq_left hb] at h
       exact key_ne_dkey hkey _ _ h
-    · rw [if_neg hb] at h
+    · rw [ite_eq_right hb] at h
       have := key_injective hkey h
       simp only [Prod.mk.injEq, true_and, G.Uid.init.injEq] at this
       exact hb this.1.symm
@@ -185,7 +185,7 @@ theorem rep_baseT {p : Fin (K + K)} (hp : grp (Fin.castAdd A' p) = g) (R C : Opt
   refine ⟨h.1.putsAll.putsAll, fun c' => ?_⟩
   obtain ⟨a, id⟩ := c'
   by_cases hc : (a, id) ∈ (dom n o grp g).filter fun c => c.1 = Fin.castAdd A' p ∧ isInit c.2 = true
-  · rw [ovr, if_pos hc]
+  · rw [ovr, ite_eq_left hc]
     obtain ⟨h1, h2, h3⟩ := mem_filter.1 hc
     simp only at h2
     subst h2
@@ -196,26 +196,26 @@ theorem rep_baseT {p : Fin (K + K)} (hp : grp (Fin.castAdd A' p) = g) (R C : Opt
       simp only [initV]
       by_cases hap : a' = p
       · subst hap
-        rw [if_pos rfl]
+        rw [ite_eq_left rfl]
         exact baseT_R hkey a' b' R C t k hk
-      · rw [if_neg hap]
+      · rw [ite_eq_right hap]
         have hbp : b' = p := by
           rcases (mem_dom.1 h1).2.2 with h | h
           · exact absurd (Fin.castAdd_injective _ _ h).symm hap
           · exact (Fin.castAdd_injective _ _ h).symm
         subst hbp
         have := baseT_C (cb := cb) (ub := ub) hkey b' a' R C t k hk
-        rw [if_neg hap] at this
+        rw [ite_eq_right hap] at this
         exact this
-  · rw [ovr, if_neg hc, ← h.2]
+  · rw [ovr, ite_eq_right hc, ← h.2]
     refine baseT_not hkey p R C t (fun b i hi he => hc ?_) fun b i hi he => hc ?_
     · have := key_injective hkey he
       rw [this]
       exact mem_filter.2 ⟨mem_dom.2 ⟨hp, G.Plan.init_mem_seenAt.2 hi, Or.inl rfl⟩, rfl, rfl⟩
     · by_cases hb : b = p
-      · rw [if_pos hb] at he
+      · rw [ite_eq_left hb] at he
         exact absurd he (key_ne_dkey hkey _ _)
-      · rw [if_neg hb] at he
+      · rw [ite_eq_right hb] at he
         have := key_injective hkey he
         rw [this]
         exact mem_filter.2 ⟨mem_dom.2 ⟨hp, G.Plan.init_mem_seenAt.2 hi, Or.inr rfl⟩, rfl, rfl⟩
@@ -233,7 +233,7 @@ theorem diag_iff (hub : 0 < ub) {p : Fin (K + K)} {R C : Option S → Fin (K + K
     · have h1 := h k (by simp [hk])
       rw [baseT_R hkey p p R C t k hk] at h1
       have h2 := baseT_C (cb := cb) (ub := ub) hkey p p R C t k hk
-      rw [if_pos rfl] at h2
+      rw [ite_eq_left rfl] at h2
       rw [h2] at h1
       refine G.uwBits_inj ?_ ?_ (ofBits_injective h1)
       · rw [Ne, unitsOf_eq_none]
@@ -244,7 +244,7 @@ theorem diag_iff (hub : 0 < ub) {p : Fin (K + K)} {R C : Option S → Fin (K + K
   · intro h k hk
     have hk' : k.1 < (n p p).1 := by simpa using hk
     have h2 := baseT_C (cb := cb) (ub := ub) hkey p p R C t k hk'
-    rw [if_pos rfl] at h2
+    rw [ite_eq_left rfl] at h2
     rw [h2, baseT_R hkey p p R C t k hk', h k]
 
 end keys
@@ -272,16 +272,16 @@ theorem base_core (hkey : Function.Injective (Sum.elim key dkey)) (hub : 0 < ub)
   by_cases hc : (∀ s, cat (R.words s) = wl s) ∧ (∀ s, cat (C.words s) = rl s) ∧ (∀ s, RowOk (ρ s p) (R.words s)) ∧
           (∀ b, ucount ub (strOf cb fun s => R.words s b) = n p b) ∧
           (∀ b, ucount ub (strOf cb fun s => C.words s b) = n b p)
-  · rw [if_pos hc]
+  · rw [ite_eq_left hc]
     obtain ⟨c1, c2, c3, c4, c5⟩ := hc
     have hd := diag_iff (cb := cb) hkey hub (c4 p) (c5 p) t
     by_cases hdiag : ∀ k : Fin U0, unitsOf ub (strOf cb fun s => R.words s p) k = unitsOf ub (strOf cb fun s => C.words s p) k
-    · refine (if_pos (hd.2 hdiag)).trans ?_
-      rw [if_pos ⟨c1, c2, c3, c4, c5, hdiag⟩]
+    · refine (ite_eq_left (hd.2 hdiag)).trans ?_
+      rw [ite_eq_left ⟨c1, c2, c3, c4, c5, hdiag⟩]
       exact hΨ _ _ (rep_baseT hkey hp R.words C.words h)
-    · refine (if_neg fun hh => hdiag (hd.1 hh)).trans ?_
-      rw [if_neg (fun hh => hdiag hh.2.2.2.2.2)]
-  · rw [if_neg hc, if_neg fun hh => hc ⟨hh.1, hh.2.1, hh.2.2.1, hh.2.2.2.1, hh.2.2.2.2.1⟩]
+    · refine (ite_eq_right fun hh => hdiag (hd.1 hh)).trans ?_
+      rw [ite_eq_right (fun hh => hdiag hh.2.2.2.2.2)]
+  · rw [ite_eq_right hc, ite_eq_right fun hh => hc ⟨hh.1, hh.2.1, hh.2.2.1, hh.2.2.2.1, hh.2.2.2.2.1⟩]
 
 theorem length_wr (w : List (Letter S Unit Γ)) (s : Option S) : (wr w s).length ≤ w.length := by
   cases s with
@@ -344,8 +344,8 @@ theorem stepOK_base (hkey : Function.Injective (Sum.elim key dkey)) (hub : 0 < u
     rw [sumL_boths]
     by_cases hh : ∀ k ∈ (List.finRange U0).filter fun k => k.1 < (n p p).1,
         tget (key (Fin.castAdd A' p, .init p p k)) t' = tget (dkey (p, k)) t'
-    · rw [if_pos hh, if_pos hh]
-    · rw [if_neg hh, if_neg hh]
+    · rw [ite_eq_left hh, ite_eq_left hh]
+    · rw [ite_eq_right hh, ite_eq_right hh]
   unfold baseIns
   rw [sumL_script_cons, hB]
   refine Fin.addCases (motive := fun p => grp (Fin.castAdd A' p) = g → (∀ s, (ρ s p).1 = false → (ρ s p).2.1 ≤ (ρ s p).2.2) →
@@ -360,7 +360,7 @@ theorem stepOK_base (hkey : Function.Injective (Sum.elim key dkey)) (hub : 0 < u
           Ψ' (ovr ((dom n o grp g).filter fun c => c.1 = Fin.castAdd A' p ∧ isInit c.2 = true)
             (fun c => initV cb ub M.N U0 U1 R.words C.words p c.2) σ)) ?_ ?_ p hp hρ
   · intro κ hp hρ
-    rw [Fin.addCases_left, insSem, dif_pos ⟨(qn Q _).2, (qn Q _).2⟩, sumL_bindL, sumL_simSem mu cb hmu]
+    rw [Fin.addCases_left, insSem, dite_eq_left ⟨(qn Q _).2, (qn Q _).2⟩, sumL_bindL, sumL_simSem mu cb hmu]
     have h1 : ∀ w : Fin T → Letter S Unit Γ, sumL (packSem A (sepOf cb) ub (bodyOf ρ n key dkey (Fin.castAdd K κ))
         (outsOf cb (List.ofFn w)) t) (fun t' => if ∀ k ∈ (List.finRange U0).filter fun k =>
           k.1 < (n (Fin.castAdd K κ) (Fin.castAdd K κ)).1, tget (key (Fin.castAdd A' (Fin.castAdd K κ),
@@ -375,21 +375,21 @@ theorem stepOK_base (hkey : Function.Injective (Sum.elim key dkey)) (hub : 0 < u
     refine Finset.sum_congr rfl fun C _ => ?_
     rw [partyW_block, blockW]
     by_cases hi : InitC cb ub U0 (fun a b => (n a b).1) (fun s => ρ s (Fin.castAdd K κ)) (Fin.castAdd K κ) R.words C.words
-    · rw [if_pos hi]
+    · rw [ite_eq_left hi]
       by_cases hn : ∀ b, R.words none b = []
-      · rw [if_pos hn, Finset.sum_mul]
+      · rw [ite_eq_left hn, Finset.sum_mul]
         refine Finset.sum_congr rfl fun w _ => ?_
         have he := emit_eq_vec (List.ofFn w) R.words C.words
         by_cases hw : emit (List.ofFn w) = vec R.words C.words
         · obtain ⟨e1, e2⟩ := he.2 ⟨hn, hw⟩
-          rw [if_pos hw, if_pos ⟨e1, e2, hi⟩]
-        · rw [if_neg hw, if_neg fun hh => hw (he.1 ⟨hh.1, hh.2.1⟩).2, mul_zero, zero_mul]
-      · rw [if_neg hn, zero_mul]
+          rw [ite_eq_left hw, ite_eq_left ⟨e1, e2, hi⟩]
+        · rw [ite_eq_right hw, ite_eq_right fun hh => hw (he.1 ⟨hh.1, hh.2.1⟩).2, mul_zero, zero_mul]
+      · rw [ite_eq_right hn, zero_mul]
         refine Finset.sum_eq_zero fun w _ => ?_
-        rw [if_neg fun hh => hn ((emit_eq_vec (List.ofFn w) R.words C.words).1 ⟨hh.1, hh.2.1⟩).1, mul_zero]
-    · rw [if_neg hi, zero_mul]
+        rw [ite_eq_right fun hh => hn ((emit_eq_vec (List.ofFn w) R.words C.words).1 ⟨hh.1, hh.2.1⟩).1, mul_zero]
+    · rw [ite_eq_right hi, zero_mul]
       refine Finset.sum_eq_zero fun w _ => ?_
-      rw [if_neg fun hh => hi hh.2.2, mul_zero]
+      rw [ite_eq_right fun hh => hi hh.2.2, mul_zero]
   · intro κ hp hρ
     rw [Fin.addCases_right, insSem]
     have h1 := base_core (n := n) (o := o) hkey hub hp hρ (T := T) (wl := fun s => if s = none then x κ else []) (rl := fun _ => [])
@@ -414,10 +414,10 @@ theorem stepOK_base (hkey : Function.Injective (Sum.elim key dkey)) (hub : 0 < u
         | none => simpa using d
         | some s => simpa using cat_eq_nil.2 (a s)
     by_cases hi : InitC cb ub U0 (fun a b => (n a b).1) (fun s => ρ s (Fin.natAdd K κ)) (Fin.natAdd K κ) R.words C.words
-    · rw [if_pos hi]
+    · rw [ite_eq_left hi]
       by_cases hw : (∀ s b, R.words (some s) b = []) ∧ (∀ s b, C.words s b = []) ∧ cat (R.words none) = x κ
-      · rw [if_pos hw, if_pos ⟨(he.2 hw).1, (he.2 hw).2, hi⟩, one_mul]
-      · rw [if_neg hw, if_neg fun hh => hw (he.1 ⟨hh.1, hh.2.1⟩), zero_mul]
-    · rw [if_neg hi, if_neg fun hh => hi hh.2.2, zero_mul]
+      · rw [ite_eq_left hw, ite_eq_left ⟨(he.2 hw).1, (he.2 hw).2, hi⟩, one_mul]
+      · rw [ite_eq_right hw, ite_eq_right fun hh => hw (he.1 ⟨hh.1, hh.2.1⟩), zero_mul]
+    · rw [ite_eq_right hi, ite_eq_right fun hh => hi hh.2.2, zero_mul]
 
 end Nc.Grp

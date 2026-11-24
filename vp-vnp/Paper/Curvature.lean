@@ -38,7 +38,7 @@ theorem prop_space_step {d : Term V → Term V → ℝ} (hd : IsPrice K d) (n : 
     (fun _ => by norm_num) (by simp) (fun l κ => if l = 0 then κ.1 else κ.2)
   refine ⟨fun s t => w' (Term.place n s) (Term.place n t), h1.comp _, ?_, ?_⟩
   · intro s t hs ht
-    simp only [Term.place, if_pos hs, if_pos ht]
+    simp only [Term.place, ite_eq_left hs, ite_eq_left ht]
     exact h2 s t
   · intro s t hst
     have hs : s.depth ≤ n := hst ▸ le_max_left _ _
@@ -46,10 +46,10 @@ theorem prop_space_step {d : Term V → Term V → ℝ} (hd : IsPrice K d) (n : 
     have hm : ¬ (Term.mid s t).depth ≤ n := by
       simp only [depth, hst]
       omega
-    simp only [Term.place, if_pos hs, if_pos ht, if_neg hm]
+    simp only [Term.place, ite_eq_left hs, ite_eq_left ht, ite_eq_right hm]
     have g1 := h3 (Sum.inl s) (Sum.inr (s, t))
     have g2 := h3 (Sum.inl t) (Sum.inr (s, t))
-    simp only [Fin.sum_univ_two, Sum.elim_inl, Sum.elim_inr, id, if_true, Fin.isValue, one_ne_zero, if_false] at g1 g2
+    simp only [Fin.sum_univ_two, Sum.elim_inl, Sum.elim_inr, id, ite_true, Fin.isValue, one_ne_zero, ite_false] at g1 g2
     rw [hd.self] at g1 g2
     rw [hd.symm t s] at g2
     constructor <;> linarith

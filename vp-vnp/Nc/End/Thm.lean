@@ -62,13 +62,13 @@ theorem eval_letS {K : Type} [Field K] {Γ : Type} [DecidableEq Γ] {bt : Bool �
       · intro h
         exact ⟨_, h, by rw [hγ]; rfl⟩
     by_cases h1 : γ = bt true
-    · simp only [letS, if_pos h1, eval_X, codeB]
+    · simp only [letS, ite_eq_left h1, eval_X, codeB]
       exact if_congr (hx true h1).symm rfl rfl
     · by_cases h2 : γ = bt false
-      · simp only [letS, if_neg h1, if_pos h2, eval_X, codeB]
+      · simp only [letS, ite_eq_right h1, ite_eq_left h2, eval_X, codeB]
         exact if_congr (hx false h2).symm rfl rfl
-      · simp only [letS, if_neg h1, if_neg h2, map_zero]
-        rw [if_neg]
+      · simp only [letS, ite_eq_right h1, ite_eq_right h2, map_zero]
+        rw [ite_eq_right]
         rintro ⟨x, -, h3⟩
         rw [Option.map_eq_some_iff] at h3
         obtain ⟨y, -, h4⟩ := h3

@@ -38,9 +38,9 @@ theorem exists_series [Fintype σ] {p : MvPolynomial σ F} {M : ℕ} (hp : Compu
   obtain ⟨κ, lam, left, right, H⟩ := Paper.lem_lowdeg_chains l hl
   refine ⟨fun g a b => if h : g < s then ∑ j, if (left j).1 = a ∧ (right j).1 = b then κ ⟨g, h⟩ j else 0 else 0,
     fun g => if h : g < s then lam ⟨g, h⟩ else 0, fun g => if g < s then l g else 0, k, hk.trans_le hs,
-    if_pos hk, fun u g => ?_⟩
+    ite_eq_left hk, fun u g => ?_⟩
   by_cases hg : g < s
-  · simp only [dif_pos hg, if_pos hg]
+  · simp only [dite_eq_left hg, ite_eq_left hg]
     have h1 : ∑ a ∈ range (2 ^ M), ∑ b ∈ range (2 ^ M),
         PowerSeries.C (∑ j, if (left j).1 = a ∧ (right j).1 = b then κ ⟨g, hg⟩ j else 0) *
           (ser u (if a < s then l a else 0) * ser u (if b < s then l b else 0)) =
@@ -51,12 +51,12 @@ theorem exists_series [Fintype σ] {p : MvPolynomial σ F} {M : ℕ} (hp : Compu
       rw [Finset.sum_eq_single (left j).1, Finset.sum_eq_single (right j).1]
       · simp
       · intro b _ hb
-        rw [if_neg fun h => hb h.2.symm, map_zero, zero_mul]
+        rw [ite_eq_right fun h => hb h.2.symm, map_zero, zero_mul]
       · intro h
         exact absurd (Finset.mem_range.2 ((right j).2.trans_le hs)) h
       · intro a _ ha
         refine Finset.sum_eq_zero fun b _ => ?_
-        rw [if_neg fun h => ha h.1.symm, map_zero, zero_mul]
+        rw [ite_eq_right fun h => ha h.1.symm, map_zero, zero_mul]
       · intro h
         exact absurd (Finset.mem_range.2 ((left j).2.trans_le hs)) h
     rw [h1]
@@ -68,8 +68,8 @@ theorem exists_series [Fintype σ] {p : MvPolynomial σ F} {M : ℕ} (hp : Compu
       simpa using h2
     | succ m =>
       simp only [map_add, PowerSeries.coeff_succ_X_mul, PowerSeries.coeff_C, Nat.add_eq_zero_iff, one_ne_zero, and_false,
-        if_false, map_sum, PowerSeries.coeff_C_mul, Finset.sum_const_zero, zero_add]
-      simp only [Nat.add_eq_zero_iff, one_ne_zero, and_false, if_false, zero_add] at h2
+        ite_false, map_sum, PowerSeries.coeff_C_mul, Finset.sum_const_zero, zero_add]
+      simp only [Nat.add_eq_zero_iff, one_ne_zero, and_false, ite_false, zero_add] at h2
       rw [ser, PowerSeries.coeff_mk, h2]
       refine Finset.sum_congr rfl fun j _ => ?_
       congr 1
@@ -79,7 +79,7 @@ theorem exists_series [Fintype σ] {p : MvPolynomial σ F} {M : ℕ} (hp : Compu
       simp only [ser, PowerSeries.coeff_mk]
       congr 2
       omega
-  · simp only [dif_neg hg, if_neg hg, ser_zero]
+  · simp only [dite_eq_right hg, ite_eq_right hg, ser_zero]
     simp
 
 /-- The sum of the coefficients of degree at most `b` of a product. -/

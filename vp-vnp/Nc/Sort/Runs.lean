@@ -230,11 +230,11 @@ theorem flatMap_ite_eq {ι β : Type*} [DecidableEq ι] (l : List ι) (hl : l.No
       have : (l.flatMap fun j => if j = a then g j else []) = [] := by
         rw [List.flatMap_eq_nil_iff]
         intro j hj
-        rw [if_neg]
+        rw [ite_eq_right]
         rintro rfl
         exact hl.1 hj
       simp [this]
-    · rw [if_neg h, List.nil_append]
+    · rw [ite_eq_right h, List.nil_append]
       exact ih hl.2 (by simpa [Ne.symm h] using hi)
 
 theorem proj_chanWord (w : Z → List Γ) : proj (chanWord w) = w := by

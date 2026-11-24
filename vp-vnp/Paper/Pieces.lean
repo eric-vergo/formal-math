@@ -112,8 +112,8 @@ theorem prop_pieces_identity (hn : ∀ p, ∑ b, ((n p b).val + (n b p).val) ≤
   refine Finset.sum_congr rfl fun o _ => ?_
   by_cases hg : ∀ z, TT.plan.good n o z
   swap
-  · rw [if_neg hg, if_neg hg]
-  rw [if_pos hg, if_pos hg, ← posVal_groups, posVal_groups _ _ _ _ _ (grp o)]
+  · rw [ite_eq_right hg, ite_eq_right hg]
+  rw [ite_eq_left hg, ite_eq_left hg, ← posVal_groups, posVal_groups _ _ _ _ _ (grp o)]
   refine Finset.sum_congr rfl fun bb _ => Finset.prod_congr rfl fun g _ => ?_
   unfold G.grpVal groupVal
   refine Finset.sum_congr rfl fun y hy => ?_
@@ -269,7 +269,7 @@ theorem pieceFin_val (p : Fin (K + K + TT.A')) : (pieceFin TT k n o p : ℕ) = p
     (prop_pieces_count hk (by omega) (yhat_pos hn hg hK hM hk) ((sum_given _).le.trans hM) (TT.up_total n hn o hg)
       (fun p hp => TT.children_le n o p hp) (TT.root_children_le n o) p)
     (Staged.piece_lt p)
-  rw [pieceFin, dif_pos h]
+  rw [pieceFin, dite_eq_left h]
 
 theorem pieceFin_iff (p : Fin (K + K + TT.A')) (g : Fin (pieceNum TT k)) :
     pieceFin TT k n o p = g ↔ pieceAt TT k n o p = g.val := by rw [Fin.ext_iff, pieceFin_val hn hg hK hM hk]
@@ -407,8 +407,8 @@ end Build
 
 theorem ind_ite {X : Type} {P : X → Prop} {x : X} {i : Decidable (P x)} : ind P x = @ite ℕ (P x) i 1 0 := by
   by_cases hp : P x
-  · rw [ind_true hp, if_pos hp]
-  · rw [ind_false hp, if_neg hp]
+  · rw [ind_true hp, ite_eq_left hp]
+  · rw [ind_false hp, ite_eq_right hp]
 
 theorem ind_eq_one {X : Type} {P : X → Prop} {x : X} : ind P x = 1 ↔ P x := by
   by_cases hp : P x
@@ -866,9 +866,9 @@ theorem prop_pieces {h : ℕ} [NeZero h] (VL : VLaws A (cNear (h := h)) (dNear (
     refine Finset.sum_congr rfl fun ρ _ => if_congr Iff.rfl ?_ rfl
     refine Finset.sum_congr rfl fun n _ => ?_
     by_cases hn : ∀ p, ∑ b, ((n p b).val + (n b p).val) ≤ load
-    · rw [if_pos hn]
+    · rw [ite_eq_left hn]
       exact prop_pieces_identity hn fun o => pieceFin TT k n o
-    · rw [if_neg hn]
+    · rw [ite_eq_right hn]
       push Not at hn
       obtain ⟨p, hp⟩ := hn
       unfold posVal

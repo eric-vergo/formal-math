@@ -30,16 +30,16 @@ theorem mono_apply (S : Finset (Fin k)) (x : Fin k → T) (i : Fin k × T) :
     mono S x i = if i.1 ∈ S ∧ x i.1 = i.2 then 1 else 0 := by
   rw [mono, Finsupp.finsetSum_apply]
   by_cases h : i.1 ∈ S ∧ x i.1 = i.2
-  · rw [if_pos h, Finset.sum_eq_single i.1]
-    · rw [Finsupp.single_apply, if_pos (show (i.1, x i.1) = i from Prod.ext rfl h.2)]
+  · rw [ite_eq_left h, Finset.sum_eq_single i.1]
+    · rw [Finsupp.single_apply, ite_eq_left (show (i.1, x i.1) = i from Prod.ext rfl h.2)]
     · intro b _ hb
-      rw [Finsupp.single_apply, if_neg]
+      rw [Finsupp.single_apply, ite_eq_right]
       rintro rfl
       exact hb rfl
     · exact fun hn => absurd h.1 hn
-  · rw [if_neg h]
+  · rw [ite_eq_right h]
     refine Finset.sum_eq_zero fun b hb => ?_
-    rw [Finsupp.single_apply, if_neg]
+    rw [Finsupp.single_apply, ite_eq_right]
     rintro rfl
     exact h ⟨hb, rfl⟩
 
@@ -90,14 +90,14 @@ theorem cf_mul (S : Finset (Fin k)) (P Q : MvPolynomial (Fin k × T) F) (x : Fin
       have h1 := hv (a, t)
       simp only [Finset.mem_filter]
       by_cases h2 : a ∈ S ∧ x a = t
-      · rw [if_pos h2] at h1
+      · rw [ite_eq_left h2] at h1
         obtain ⟨h3, rfl⟩ := h2
         by_cases h4 : u (a, x a) = 1
         · simp [h3, h4]
-        · simp only [h4, and_false, false_and, if_false]
+        · simp only [h4, and_false, false_and, ite_false]
           omega
-      · rw [if_neg h2] at h1
-        rw [if_neg]
+      · rw [ite_eq_right h2] at h1
+        rw [ite_eq_right]
         · omega
         · rintro ⟨⟨h3, -⟩, h4⟩
           exact h2 ⟨h3, h4⟩
@@ -111,13 +111,13 @@ theorem cf_mul (S : Finset (Fin k)) (P Q : MvPolynomial (Fin k × T) F) (x : Fin
 theorem cf_X {S : Finset (Fin k)} (hS : 2 ≤ S.card) (i : Fin k × T) (x : Fin k → T) :
     cf S (X i : MvPolynomial (Fin k × T) F) x = 0 := by
   classical
-  rw [cf, coeff_X, if_neg]
+  rw [cf, coeff_X, ite_eq_right]
   intro h
   obtain ⟨a, ha, b, hb, hab⟩ := Finset.one_lt_card.1 (by omega : 1 < S.card)
   have h1 := DFunLike.congr_fun h (a, x a)
   have h2 := DFunLike.congr_fun h (b, x b)
-  rw [mono_apply, if_pos ⟨ha, rfl⟩, Finsupp.single_apply] at h1
-  rw [mono_apply, if_pos ⟨hb, rfl⟩, Finsupp.single_apply] at h2
+  rw [mono_apply, ite_eq_left ⟨ha, rfl⟩, Finsupp.single_apply] at h1
+  rw [mono_apply, ite_eq_left ⟨hb, rfl⟩, Finsupp.single_apply] at h2
   split_ifs at h1 with e1
   split_ifs at h2 with e2
   exact hab (Prod.ext_iff.1 (e1.symm.trans e2)).1
@@ -125,11 +125,11 @@ theorem cf_X {S : Finset (Fin k)} (hS : 2 ≤ S.card) (i : Fin k × T) (x : Fin 
 theorem cf_C {S : Finset (Fin k)} (hS : S.Nonempty) (c : F) (x : Fin k → T) :
     cf S (C c : MvPolynomial (Fin k × T) F) x = 0 := by
   classical
-  rw [cf, coeff_C, if_neg]
+  rw [cf, coeff_C, ite_eq_right]
   intro h
   obtain ⟨a, ha⟩ := hS
   have h1 := DFunLike.congr_fun h (a, x a)
-  rw [mono_apply, if_pos ⟨ha, rfl⟩] at h1
+  rw [mono_apply, ite_eq_left ⟨ha, rfl⟩] at h1
   simp at h1
 
 /-- The balanced subsets of S. -/
@@ -188,12 +188,12 @@ theorem Dec.single {S A : Finset (Fin k)} (hA : A ∈ bal S) {δ : ℕ} (hδ : �
     · simp
     · intro B _ hB
       beta_reduce
-      rw [if_neg fun h => hB h.2, mul_zero]
+      rw [ite_eq_right fun h => hB h.2, mul_zero]
     · exact fun h => absurd hA h
     · intro δ' _ hδ'
       refine Finset.sum_eq_zero fun B _ => ?_
       beta_reduce
-      rw [if_neg fun h => hδ' h.1, mul_zero]
+      rw [ite_eq_right fun h => hδ' h.1, mul_zero]
     · exact fun h => absurd (Finset.mem_univ _) h
 
 /-- Products with functions of other blocks. -/
@@ -219,9 +219,9 @@ theorem Dec.mul {S S' : Finset (Fin k)} (hS : S ⊆ S') {f q : (Fin k → T) →
       exact ⟨hA.1.trans hS, hA.2⟩
     rw [← Finset.sum_subset hsub]
     · refine Finset.sum_congr rfl fun A hA => ?_
-      rw [if_pos (mem_bal.1 hA).1, mul_assoc]
+      rw [ite_eq_left (mem_bal.1 hA).1, mul_assoc]
     · intro A hA hA'
-      rw [if_neg, mul_zero]
+      rw [ite_eq_right, mul_zero]
       intro h3
       exact hA' (mem_bal.2 ⟨h3, (mem_bal.1 hA).2⟩)
 

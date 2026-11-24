@@ -39,7 +39,7 @@ theorem partyTab_ne_none {init : (Uid A U0 M.N U1 → UW ub) → F} {a : Fin (A 
       intro p hp h0
       refine h2 (Finset.prod_eq_zero (Finset.mem_univ (⟨x, p⟩ : M.R)) ?_)
       have : M.rp ⟨x, p⟩ = a := hp
-      rw [if_pos this]
+      rw [ite_eq_left this]
       exact h0
     rcases ha with ha | ha
     · have : a = M.part x ((M.kind x).c ν) := ha

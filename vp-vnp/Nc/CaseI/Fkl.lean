@@ -29,10 +29,10 @@ def asm (x : Pr k → Fin 2 → Fin ℓ → Bool) (a : Fin k) : Ix k ℓ := fun 
   if h : a < b then x ⟨(a, b), h⟩ 0 else if h : b < a then x ⟨(b, a), h⟩ 1 else fun _ => false
 
 theorem asm_lt (x : Pr k → Fin 2 → Fin ℓ → Bool) (e : Pr k) : asm x e.1.1 e.1.2 = x e 0 := by
-  rw [asm, dif_pos e.2]
+  rw [asm, dite_eq_left e.2]
 
 theorem asm_gt (x : Pr k → Fin 2 → Fin ℓ → Bool) (e : Pr k) : asm x e.1.2 e.1.1 = x e 1 := by
-  rw [asm, dif_neg (not_lt.2 e.2.le), dif_pos e.2]
+  rw [asm, dite_eq_right (not_lt.2 e.2.le), dite_eq_left e.2]
 
 theorem asm_inj : Function.Injective (asm : (Pr k → Fin 2 → Fin ℓ → Bool) → Fin k → Ix k ℓ) := by
   intro x y h
@@ -72,9 +72,9 @@ theorem prod_X (y : Fin k → Ix k ℓ) :
 theorem mono_univ_inj {y z : Fin k → Ix k ℓ} (h : mono univ y = mono univ z) : y = z := by
   funext a
   have h1 := DFunLike.congr_fun h (a, y a)
-  rw [mono_apply, mono_apply, if_pos ⟨Finset.mem_univ _, rfl⟩] at h1
+  rw [mono_apply, mono_apply, ite_eq_left ⟨Finset.mem_univ _, rfl⟩] at h1
   by_contra hne
-  rw [if_neg fun h2 => hne h2.2.symm] at h1
+  rw [ite_eq_right fun h2 => hne h2.2.symm] at h1
   exact one_ne_zero h1
 
 /-- The coefficients. -/
@@ -84,24 +84,24 @@ theorem cf_fkl (x : Pr k → Fin 2 → Fin ℓ → Bool) :
   rw [cf, fkl, coeff_sum]
   simp only [prod_X, coeff_monomial]
   by_cases h : ∀ e, x e 0 = x e 1
-  · rw [if_pos h, Finset.sum_eq_single fun e => x e 0]
-    · rw [if_pos]
+  · rw [ite_eq_left h, Finset.sum_eq_single fun e => x e 0]
+    · rw [ite_eq_left]
       congr 2
       funext e i
       fin_cases i
       · rfl
       · exact h e
     · intro σ _ hσ
-      rw [if_neg]
+      rw [ite_eq_right]
       intro h1
       have h2 := asm_inj (mono_univ_inj h1)
       apply hσ
       funext e
       exact congrFun (congrFun h2 e) 0
     · exact fun hn => absurd (Finset.mem_univ _) hn
-  · rw [if_neg h]
+  · rw [ite_eq_right h]
     refine Finset.sum_eq_zero fun σ _ => ?_
-    rw [if_neg]
+    rw [ite_eq_right]
     intro h1
     have h2 := asm_inj (mono_univ_inj h1)
     apply h

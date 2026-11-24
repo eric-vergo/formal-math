@@ -217,7 +217,7 @@ theorem count_of_accept (hub : 0 < ub) (hx : ∀ κ, (x κ).length ≤ T)
       ∃ R C : Option S → Fin (K + K) → List Γ, ∑ s, (cat (R s)).length ≤ T ∧ ∑ s, (cat (C s)).length ≤ T ∧
       (∀ b, ucount ub (strOf cb fun s => R s b) = n p b) ∧ ∀ b, ucount ub (strOf cb fun s => C s b) = n b p) ?_ ?_ p
     · intro κ ht'
-      rw [Fin.addCases_left, insSem, dif_pos ⟨(qn Q _).2, (qn Q _).2⟩] at ht'
+      rw [Fin.addCases_left, insSem, dite_eq_left ⟨(qn Q _).2, (qn Q _).2⟩] at ht'
       obtain ⟨r, hr⟩ := List.exists_mem_of_ne_nil _ ht'
       obtain ⟨a, ha, r', hr', -⟩ := mem_bindL hr
       obtain ⟨w, hw, ew⟩ := mem_simSem ha
@@ -278,7 +278,7 @@ theorem putsL_ne_nil {kss : List (List (List Bool))} {strs : List (List Bool)} {
     (h2 : strs = P.map fun p => p.2 ++ [true]) : ∀ p ∈ P, ucount ub p.2 = p.1.length := by
   rw [h1, h2, putsL_eq hub] at h
   by_contra hc
-  rw [if_neg hc] at h
+  rw [ite_eq_right hc] at h
   exact h rfl
 
 /-- **(ii)** The outcomes of the moves at the roles of the group. -/

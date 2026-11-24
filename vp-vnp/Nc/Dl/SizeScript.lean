@@ -261,7 +261,7 @@ theorem size_endIns (hU : Fintype.card (G.Uid (K + K) U0 M.N U1) ≤ X) (hkey : 
               rw [h0]
               exact fun h => h1 h.symm
             simp only [h0, h1, if_true, if_false, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num,
-              if_pos hcut]
+              ite_eq_left hcut]
             omega
         · by_cases h1 : grp (G.hold1 M.np id) = g
           · have hcut : id ∈ cutAt P n o grp g := by
@@ -269,9 +269,9 @@ theorem size_endIns (hU : Fintype.card (G.Uid (K + K) U0 M.N U1) ≤ X) (hkey : 
               rw [h1]
               exact h0
             simp only [h0, h1, if_true, if_false, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num,
-              if_pos hcut]
+              ite_eq_left hcut]
             omega
-          · simp only [h0, h1, if_false]
+          · simp only [h0, h1, ite_false]
             omega
       · rw [List.filter_cons_of_neg (by simpa using hc)]
         omega

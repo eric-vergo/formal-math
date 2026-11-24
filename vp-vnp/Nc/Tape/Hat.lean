@@ -139,7 +139,7 @@ theorem kstar_eq (f : Series F (Z × Γ)) :
 theorem hat_ne (f : Series F (Z × Γ)) (v : Z → List Γ) :
     hat (Series.ne f) v = if v = fun _ => [] then 0 else hat f v := by
   by_cases h : v = fun _ => []
-  · rw [if_pos h, hat]
+  · rw [ite_eq_left h, hat]
     refine Finset.sum_eq_zero fun o ho => ?_
     rw [mem_fib, h] at ho
     have : o = [] := by
@@ -147,7 +147,7 @@ theorem hat_ne (f : Series F (Z × Γ)) (v : Z → List Γ) :
       rw [ho] at this
       simpa using this.symm
     simp [Series.ne, this]
-  · rw [if_neg h, hat, hat]
+  · rw [ite_eq_right h, hat, hat]
     refine Finset.sum_congr rfl fun o ho => ?_
     rw [mem_fib] at ho
     have : o ≠ [] := by rintro rfl; exact h (by rw [← ho]; rfl)

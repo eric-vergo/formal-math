@@ -29,8 +29,8 @@ theorem tget_mkTrie_mem (l : List (List Bool × Tree)) (p : List Bool) :
     rw [mkTrie, List.foldr_cons, tget_tset]
     by_cases h : p = a.1
     · right
-      exact ⟨a, List.mem_cons_self, h.symm, if_pos h⟩
-    · rw [if_neg h]
+      exact ⟨a, List.mem_cons_self, h.symm, ite_eq_left h⟩
+    · rw [ite_eq_right h]
       rw [mkTrie] at ih
       rcases ih with ih | ⟨b, hb, h1, h2⟩
       · exact Or.inl ih
@@ -125,12 +125,12 @@ theorem okStep_pick {α : Type} (opts : List α) (o : α → List (NmT S M U0 U1
     have hsum : ((opts.map fun a => optT C.nm (o a)).map fun t => (t.toList.map fun y => 60 * y.hd.len + 80).sum).sum ≤
         X * (w * (60 * Lc + 80)) := by
       rw [List.map_map]
-      refine (List.sum_le_card_nsmul _ (w * (60 * Lc + 80)) ?_).trans ?_
+      refine (List.sum_le_length_nsmul _ (w * (60 * Lc + 80)) ?_).trans ?_
       · intro n hn
         rw [List.mem_map] at hn
         obtain ⟨a, ha, rfl⟩ := hn
         simp only [Function.comp_apply, optT, toList_listT, List.map_map]
-        refine (List.sum_le_card_nsmul _ (60 * Lc + 80) ?_).trans ?_
+        refine (List.sum_le_length_nsmul _ (60 * Lc + 80) ?_).trans ?_
         · intro n hn
           rw [List.mem_map] at hn
           obtain ⟨b, hb, rfl⟩ := hn

@@ -391,9 +391,9 @@ theorem SumTo.two {σ : State (M := M) (K := K)} (hm : σ.mode ≠ P.mh) (st st�
     intro st' hst'
     rw [Finset.mem_insert, Finset.mem_singleton] at hst'
     rcases hst' with rfl | rfl
-    · rw [if_pos rfl]; exact h
-    · rw [if_neg hne.symm]; exact h₁)
-  rw [Finset.sum_pair hne, if_pos rfl, if_neg hne.symm] at h1
+    · rw [ite_eq_left rfl]; exact h
+    · rw [ite_eq_right hne.symm]; exact h₁)
+  rw [Finset.sum_pair hne, ite_eq_left rfl, ite_eq_right hne.symm] at h1
   exact h1
 
 end Mach

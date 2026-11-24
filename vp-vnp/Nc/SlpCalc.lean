@@ -125,7 +125,7 @@ theorem Cost.run (hD : 0 < D) {c : ℕ} {h : Inp → ℕ} (hc : Cost D A c h) :
       Set.mem_insert_of_mem _ (Set.mem_insert _ _), h2, Set.mem_insert _ _,
       fun a b => if hlt : φ a b < D then ⟨φ a b, hlt⟩ else ⟨0, hD⟩, by
         intro x a b ha hb
-        simp only [ha, hb, dif_pos (hφ x)]⟩))
+        simp only [ha, hb, dite_eq_left (hφ x)]⟩))
     have e : p' + (p + q + 1) = p' + p + q + 1 := by ring
     rw [e]
     refine a3.mono ?_
@@ -234,8 +234,8 @@ lemma rel (hD : 1 < D) {p q : ℕ} {h1 h2 : Inp → ℕ} (r : ℕ → ℕ → Pr
   have := Cost.op (fun a b => if r a b then 1 else 0) c1 c2 (fun x => by split_ifs <;> omega)
   refine this.congr fun x => ?_
   by_cases h : r (h1 x) (h2 x)
-  · rw [ind_true (P := fun x => r (h1 x) (h2 x)) h, if_pos h]
-  · rw [ind_false (P := fun x => r (h1 x) (h2 x)) h, if_neg h]
+  · rw [ind_true (P := fun x => r (h1 x) (h2 x)) h, ite_eq_left h]
+  · rw [ind_false (P := fun x => r (h1 x) (h2 x)) h, ite_eq_right h]
 
 /-- A property of a value. -/
 lemma rel1 (hD : 1 < D) {p : ℕ} {h : Inp → ℕ} (r : ℕ → Prop) (c1 : Cost D A p h) :
@@ -318,7 +318,7 @@ lemma Cost.ite {c p q : ℕ} {P : Inp → Prop} [DecidablePred P] {h1 h2 : Inp �
     · simp only [ind_false h]; omega)
   refine (a3.congr fun x => ?_).mono (by ring_nf; omega)
   by_cases h : P x
-  · simp only [ind_true h, if_pos h]; omega
-  · simp only [ind_false h, if_neg h]; omega
+  · simp only [ind_true h, ite_eq_left h]; omega
+  · simp only [ind_false h, ite_eq_right h]; omega
 
 end Unc

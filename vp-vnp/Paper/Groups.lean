@@ -41,7 +41,7 @@ theorem lem_first_rank_one {a : ℕ} (l : Len (U (a + a))) (u φ : Fin a → F2)
     · have e1 : ∀ c, i = we (hl (a := a) (b := a)) c ↔ ⟨i.1, h1⟩ = c := by
         intro c
         simp [we, Fin.ext_iff]
-      simp only [e1, h1, dif_pos, ite_mul, one_mul, zero_mul, sum_ite_eq, mem_univ, if_true]
+      simp only [e1, h1, dite_eq_left, ite_mul, one_mul, zero_mul, sum_ite_eq, mem_univ, ite_true]
       by_cases h2 : a ≤ j.1
       · have e2 : ∀ c, j = we (hr (a := a) (b := a)) c ↔ ⟨j.1 - a, by omega⟩ = c := by
           intro c
@@ -403,7 +403,7 @@ theorem eq_window (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : s ^ 2 < μ) (hA : ∀ z
     have e2 : ((A.W p n).len z).val (x n j) = dist z (A.act (wh h p n (x n j)) z) := rfl
     rw [e2, e1]
     unfold IsoAct.e
-    rw [dif_pos hj]
+    rw [dite_eq_left hj]
   have h6 : (((A.W p n).len z).S) ^ 2 ≤ n * ∑ j ∈ Ico p (p + n - 1), A.e j z ^ 2 := by
     have h7 : ∑ j ∈ Ico p (p + n - 1), A.e j z ^ 2 = ∑ j : Fin (n - 1), A.e (p + j.1) z ^ 2 := by
       rw [sum_Ico_eq_sum_range, ← Fin.sum_univ_eq_sum_range (fun j => A.e (p + j) z ^ 2)]
@@ -756,14 +756,14 @@ theorem thm_poincare_pairs (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : s ^ 2 < μ) (h
           if a.1 = b.1 + 1 then c * (dist z (Q a z) ^ 2 + dist z (Q b z) ^ 2) else 0) := by
     intro z a b
     rcases lt_trichotomy a.1 b.1 with hab | hab | hab
-    · rw [if_neg (fun h => by rw [h] at hab; exact lt_irrefl _ hab),
-        if_neg (show ¬ a.1 = b.1 + 1 by omega), add_zero]
+    · rw [ite_eq_right (fun h => by rw [h] at hab; exact lt_irrefl _ hab),
+        ite_eq_right (show ¬ a.1 = b.1 + 1 by omega), add_zero]
       exact hpair z a b hab
     · have : a = b := Fin.ext hab
       subst this
       simp
-    · rw [if_neg (fun h => by rw [h] at hab; exact lt_irrefl _ hab),
-        if_neg (show ¬ b.1 = a.1 + 1 by omega), zero_add, dist_comm]
+    · rw [ite_eq_right (fun h => by rw [h] at hab; exact lt_irrefl _ hab),
+        ite_eq_right (show ¬ b.1 = a.1 + 1 by omega), zero_add, dist_comm]
       have := hpair z b a hab
       rw [add_comm (dist z (Q b z) ^ 2)] at this
       exact this
@@ -776,23 +776,23 @@ theorem thm_poincare_pairs (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : s ^ 2 < μ) (h
       · rw [sum_eq_single (⟨a.1 + 1, ha⟩ : Fin L)]
         · simp
         · intro b _ hb
-          rw [if_neg]
+          rw [ite_eq_right]
           intro h1
           exact hb (Fin.ext h1)
         · simp
       · rw [sum_eq_zero]
         · exact mul_nonneg hc0.le (hr a)
         · intro b _
-          rw [if_neg]
+          rw [ite_eq_right]
           have := b.2
           omega
     have e2 : ∀ b : Fin L, ∑ a : Fin L, (if b.1 = a.1 + 1 then c * r b else 0) ≤ c * r b := by
       intro b
       by_cases hb : 1 ≤ b.1
       · rw [sum_eq_single (⟨b.1 - 1, by omega⟩ : Fin L)]
-        · rw [if_pos (by simp only; omega)]
+        · rw [ite_eq_left (by simp only; omega)]
         · intro a _ ha
-          rw [if_neg]
+          rw [ite_eq_right]
           intro h1
           apply ha
           apply Fin.ext
@@ -802,7 +802,7 @@ theorem thm_poincare_pairs (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : s ^ 2 < μ) (h
       · rw [sum_eq_zero]
         · exact mul_nonneg hc0.le (hr b)
         · intro a _
-          rw [if_neg]
+          rw [ite_eq_right]
           omega
     have e3 : ∀ a b : Fin L, (if b.1 = a.1 + 1 then c * (r a + r b) else 0) =
         (if b.1 = a.1 + 1 then c * r a else 0) + if b.1 = a.1 + 1 then c * r b else 0 := by
@@ -827,7 +827,7 @@ theorem thm_poincare_pairs (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : s ^ 2 < μ) (h
       · rw [hab]; ring
       · ring
     simp only [e1, sum_sub_distrib, sum_add_distrib, sum_const, card_univ, Fintype.card_fin,
-      nsmul_eq_mul, sum_ite_eq, mem_univ, if_true, ← mul_sum]
+      nsmul_eq_mul, sum_ite_eq, mem_univ, ite_true, ← mul_sum]
     ring
   have h2 := hnb r hr0
   have h3 : ∑ a : Fin L, ∑ b : Fin L, (if a.1 = b.1 + 1 then c * (r a + r b) else 0) ≤
@@ -984,7 +984,7 @@ theorem thm_poincare_limit (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : s ^ 2 < μ) (h
     obtain ⟨a, ha1, ha2⟩ := h3
     have he := A.e_zero (hfix a) ha1 ha2 (window_le hh a)
     unfold IsoAct.e at he
-    rw [dif_pos hj] at he
+    rw [dite_eq_left hj] at he
     exact (dist_eq_zero.1 he).symm
   · have h1 : dist z y₀ ≤ X 0 := le_of_tendsto' ((tendsto_const_nhds (x := z)).dist hy₀) fun n => by
       have := htot 0 n (Nat.zero_le n)
@@ -1069,7 +1069,7 @@ theorem thm_poincare_action (hμ : 2 ≤ μ) (hs : 1 ≤ s) (hsm : s ^ 2 < μ) (
     rw [← Fin.sum_univ_eq_sum_range (fun j => A.e j z ^ 2)]
     refine sum_congr rfl fun j _ => ?_
     unfold IsoAct.e
-    rw [dif_pos j.2]
+    rw [dite_eq_left j.2]
   rw [hsum] at hw
   rw [div_le_iff₀ (by exact_mod_cast Fintype.card_pos)]
   refine (sum_le_card_nsmul univ _ _ fun g _ => hd g).trans ?_

@@ -153,7 +153,7 @@ theorem segW_ne_zero {q : Fin (K + 1) → Q} {x : Fin K → List Γ}
     have := h0 (Fin.castAdd K κ)
     rw [partyW_block] at this
     by_contra hc
-    rw [if_neg hc] at this
+    rw [ite_eq_right hc] at this
     exact this rfl
   have h2 : ∀ κ, (∀ s b, X (some s) (Fin.natAdd K κ) b = []) ∧ (∀ s b, X s b (Fin.natAdd K κ) = []) ∧
       cat (X none (Fin.natAdd K κ)) = x κ := by
@@ -161,17 +161,17 @@ theorem segW_ne_zero {q : Fin (K + 1) → Q} {x : Fin K → List Γ}
     have := h0 (Fin.natAdd K κ)
     rw [partyW_input] at this
     by_contra hc
-    rw [if_neg hc] at this
+    rw [ite_eq_right hc] at this
     exact this rfl
   refine ⟨h1, fun s κ => (h2 κ).1 s, fun s κ => (h2 κ).2.1 s, fun κ => (h2 κ).2.2, ?_⟩
   rw [segW, Fin.prod_univ_add]
   have e1 : (∏ κ : Fin K, partyW mu T q x (Fin.natAdd K κ) (fun s b => X s (Fin.natAdd K κ) b)
       fun s b => X s b (Fin.natAdd K κ)) = 1 := by
     refine Finset.prod_eq_one fun κ _ => ?_
-    rw [partyW_input, if_pos (h2 κ)]
+    rw [partyW_input, ite_eq_left (h2 κ)]
   rw [e1, mul_one]
   refine Finset.prod_congr rfl fun κ _ => ?_
-  rw [partyW_block, if_pos (h1 κ)]
+  rw [partyW_block, ite_eq_left (h1 κ)]
 
 open Classical in
 /-- **Segments.** -/
@@ -188,9 +188,9 @@ theorem sum_segs (q : Fin (K + 1) → Q) {x : Fin K → List Γ} (hx : ∀ κ, (
   · intro X _ hne
     have hst : ∀ s, Stair (X s) := by
       by_contra hc
-      rw [if_neg hc] at hne
+      rw [ite_eq_right hc] at hne
       exact hne rfl
-    rw [if_pos hst] at hne
+    rw [ite_eq_left hst] at hne
     obtain ⟨-, -, -, -, e⟩ := segW_ne_zero hne
     rw [e] at hne
     rw [Fintype.mem_piFinset]
@@ -200,14 +200,14 @@ theorem sum_segs (q : Fin (K + 1) → Q) {x : Fin K → List Γ} (hx : ∀ κ, (
   · intro X _ hX X' _ hX' heq
     have hst : ∀ s, Stair (X s) := by
       by_contra hc
-      rw [if_neg hc] at hX
+      rw [ite_eq_right hc] at hX
       exact hX rfl
     have hst' : ∀ s, Stair (X' s) := by
       by_contra hc
-      rw [if_neg hc] at hX'
+      rw [ite_eq_right hc] at hX'
       exact hX' rfl
-    rw [if_pos hst] at hX
-    rw [if_pos hst'] at hX'
+    rw [ite_eq_left hst] at hX
+    rw [ite_eq_left hst'] at hX'
     obtain ⟨a1, a2, a3, a4, -⟩ := segW_ne_zero hX
     obtain ⟨b1, b2, b3, b4, -⟩ := segW_ne_zero hX'
     funext s
@@ -236,9 +236,9 @@ theorem sum_segs (q : Fin (K + 1) → Q) {x : Fin K → List Γ} (hx : ∀ κ, (
     have hm : (∀ s, cat (fun k => v k (.tp s false)) = cat fun k => v k (.tp s true)) ∧
         ∀ j, cat (fun k => v k (.inp j)) = u j := by
       by_contra hc
-      rw [if_neg hc] at hne
+      rw [ite_eq_right hc] at hne
       exact hne rfl
-    rw [if_pos hm] at hne
+    rw [ite_eq_left hm] at hne
     have hvT : ∀ κ z, (v κ z).length ≤ T := by
       intro κ z
       have := Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 hv κ) z
@@ -293,10 +293,10 @@ theorem sum_segs (q : Fin (K + 1) → Q) {x : Fin K → List Γ} (hx : ∀ κ, (
       have e1 : (∏ κ : Fin K, partyW mu T q x (Fin.natAdd K κ) (fun s b => X s (Fin.natAdd K κ) b)
           fun s b => X s b (Fin.natAdd K κ)) = 1 := by
         refine Finset.prod_eq_one fun κ _ => ?_
-        rw [partyW_input, if_pos ⟨fun s => c2 s κ, fun s => c3 s κ, c4 κ⟩]
+        rw [partyW_input, ite_eq_left ⟨fun s => c2 s κ, fun s => c3 s κ, c4 κ⟩]
       rw [e1, mul_one]
       refine Finset.prod_congr rfl fun κ _ => ?_
-      rw [partyW_block, if_pos (c1 κ), hvec]
+      rw [partyW_block, ite_eq_left (c1 κ), hvec]
     refine ⟨X, ?_, ?_, ?_⟩
     · rw [mem_segs]
       intro s a b
@@ -309,18 +309,18 @@ theorem sum_segs (q : Fin (K + 1) → Q) {x : Fin K → List Γ} (hx : ∀ κ, (
       · cases s with
         | none => rw [hW2]; exact hx κ
         | some s => rw [hW4]; exact Nat.zero_le _
-    · rw [if_pos fun s => (hX s).stair, hWX]
+    · rw [ite_eq_left fun s => (hX s).stair, hWX]
       exact hne
     · funext κ
       exact hvec κ
   · intro X _ hne
     have hst : ∀ s, Stair (X s) := by
       by_contra hc
-      rw [if_neg hc] at hne
+      rw [ite_eq_right hc] at hne
       exact hne rfl
-    rw [if_pos hst] at hne ⊢
+    rw [ite_eq_left hst] at hne ⊢
     obtain ⟨a1, a2, a3, a4, e⟩ := segW_ne_zero hne
-    rw [if_pos, e]
+    rw [ite_eq_left, e]
     have hcat : ∀ s, cat (fun p => cat (X s p)) = cat fun p => cat fun a => X s a p := fun s =>
       IsRef.cat_eq ⟨hst s, fun _ => rfl, fun _ => rfl⟩
     constructor

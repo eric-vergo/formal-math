@@ -42,8 +42,8 @@ theorem exists_theta (A : Type) [CommRing A] [Algebra.FiniteType ℤ A] :
       by_contra hlt
       apply hp
       simp only [θ]
-      rw [if_pos h, List.getD_eq_default _ _ (not_lt.1 hlt)]
-    · exact absurd (if_neg h) hp
+      rw [ite_eq_left h, List.getD_eq_default _ _ (not_lt.1 hlt)]
+    · exact absurd (ite_eq_right h) hp
   · refine WE.exists_of_adjoin (p₀ := []) ?_ ?_
     · have := hθ 0
       simpa [gens] using this

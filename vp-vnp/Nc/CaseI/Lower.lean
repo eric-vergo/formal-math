@@ -40,9 +40,9 @@ theorem sum_pairs (G : Fin k → Fin k → ℝ) :
   rw [h2, ← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun e _ => ?_
   rcases lt_trichotomy e.1 e.2 with h | h | h
-  · rw [if_pos h, if_neg (not_lt.2 h.le), if_neg h.ne, add_zero]
-  · rw [if_neg (not_lt.2 h.ge), if_neg (not_lt.2 h.le), if_pos h, add_zero]
-  · rw [if_neg (not_lt.2 h.le), if_pos h, if_neg h.ne', zero_add]
+  · rw [ite_eq_left h, ite_eq_right (not_lt.2 h.le), ite_eq_right h.ne, add_zero]
+  · rw [ite_eq_right (not_lt.2 h.ge), ite_eq_right (not_lt.2 h.le), ite_eq_left h, add_zero]
+  · rw [ite_eq_right (not_lt.2 h.le), ite_eq_left h, ite_eq_right h.ne', zero_add]
 
 /-- Sum a constant over the ordered pairs of distinct nodes. -/
 theorem sum_off_diagonal (c : ℝ) :

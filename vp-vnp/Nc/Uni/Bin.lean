@@ -59,10 +59,10 @@ theorem bv_bin {L n : ℕ} (h : n < 2 ^ L) : bv (bin L n) = n := by
     rw [bin, bv, length_bin]
     rw [pow_succ] at h
     by_cases hn : 2 ^ L ≤ n
-    · simp only [hn, decide_true, if_true]
+    · simp only [hn, decide_true, ite_true]
       rw [ih (by omega)]
       omega
-    · simp only [hn, decide_false, Bool.false_eq_true, if_false]
+    · simp only [hn, decide_false, Bool.false_eq_true, ite_false]
       rw [ih (by omega)]
       omega
 
@@ -85,7 +85,7 @@ theorem bv_true (k : ℕ) : bv (List.replicate k true) + 1 = 2 ^ k := by
   induction k with
   | zero => rfl
   | succ k ih =>
-    rw [List.replicate_succ, bv, List.length_replicate, if_pos rfl, pow_succ]
+    rw [List.replicate_succ, bv, List.length_replicate, ite_eq_left rfl, pow_succ]
     omega
 
 /-- The successor of a word. -/
@@ -93,7 +93,7 @@ theorem bv_succ (u : List Bool) (k : ℕ) :
     bv (u ++ true :: List.replicate k false) = bv (u ++ false :: List.replicate k true) + 1 := by
   have h := bv_true k
   rw [bv_append, bv_append, bv, bv, bv_false]
-  simp only [if_true, Bool.false_eq_true, if_false, List.length_cons, List.length_replicate]
+  simp only [ite_true, Bool.false_eq_true, ite_false, List.length_cons, List.length_replicate]
   omega
 
 /-- A word that has a successor ends with 0 1 ⋯ 1. -/
@@ -105,7 +105,7 @@ theorem exists_cut {w : List Bool} (h : bv w + 1 < 2 ^ w.length) :
     cases b
     · exact ⟨w, 0, rfl⟩
     · rw [bv_append, List.length_append, pow_add] at h
-      simp only [bv, List.length_nil, List.length_singleton, pow_zero, pow_one, if_true] at h
+      simp only [bv, List.length_nil, List.length_singleton, pow_zero, pow_one, ite_true] at h
       obtain ⟨u, k, rfl⟩ := ih (by omega)
       refine ⟨u, k + 1, ?_⟩
       rw [List.replicate_succ', List.append_assoc]

@@ -98,11 +98,11 @@ theorem exists_laurentPolynomial_coeff (c : LaurentSeries F) (n : ℤ) :
   refine ⟨.ofCoeff (Finsupp.onFinset (Finset.Ico c.order n) (fun i => if i < n then c.coeff i else 0) ?_), ?_⟩
   · intro i hi
     by_cases h : i < n
-    · rw [if_pos h] at hi
+    · rw [ite_eq_left h] at hi
       refine Finset.mem_Ico.2 ⟨?_, h⟩
       by_contra h'
       exact hi (HahnSeries.coeff_eq_zero_of_lt_order (not_le.1 h'))
-    · exact absurd (if_neg h) hi
+    · exact absurd (ite_eq_right h) hi
   · intro i hi
     simp [hi]
 

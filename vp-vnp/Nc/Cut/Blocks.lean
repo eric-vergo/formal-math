@@ -33,19 +33,19 @@ theorem prod_path {K : ℕ} (M : Fin K → Matrix Q Q F) (a b : Q) :
     rw [Matrix.one_apply]
     by_cases h : a = b
     · subst h
-      rw [if_pos rfl, Finset.sum_eq_single fun _ => a]
+      rw [ite_eq_left rfl, Finset.sum_eq_single fun _ => a]
       · simp
       · intro q _ hne
-        rw [if_neg]
+        rw [ite_eq_right]
         rintro ⟨h0, -⟩
         apply hne
         funext k
         have : k = 0 := Fin.ext (by omega)
         rw [this, h0]
       · simp
-    · rw [if_neg h, Finset.sum_eq_zero]
+    · rw [ite_eq_right h, Finset.sum_eq_zero]
       intro q _
-      rw [if_neg]
+      rw [ite_eq_right]
       rintro ⟨h0, h1⟩
       apply h
       rw [← h0, ← h1]
@@ -69,7 +69,7 @@ theorem prod_path {K : ℕ} (M : Fin K → Matrix Q Q F) (a b : Q) :
           rfl
         · rfl
       · intro a' _ ha'
-        refine Finset.sum_eq_zero fun q _ => if_neg ?_
+        refine Finset.sum_eq_zero fun q _ => ite_eq_right ?_
         rintro ⟨h0, -⟩
         exact ha' h0
       · simp
@@ -80,7 +80,7 @@ theorem prod_path {K : ℕ} (M : Fin K → Matrix Q Q F) (a b : Q) :
     rw [Finset.sum_eq_single (q 0)]
     · by_cases h : q (Fin.last K) = b <;> simp [h]
     · intro c _ hc
-      rw [if_neg (fun hh => hc hh.1.symm), mul_zero]
+      rw [ite_eq_right (fun hh => hc hh.1.symm), mul_zero]
     · simp
 
 theorem emit_flatten {K : ℕ} (o : Fin K → List (Letter S J Γ)) (z : Ch S J) :
@@ -158,7 +158,7 @@ theorem runVal_blocks (mu : Letter S J Γ → Matrix Q Q F) (i e : Q) (K T : ℕ
         (if c then ∏ k, ((List.ofFn (o k)).map mu).prod (q k.castSucc) (q k.succ) else 0) else 0 := by
     intro o c _
     by_cases hc : c
-    · simp only [if_pos hc]
+    · simp only [ite_eq_left hc]
     · simp [hc]
   simp only [h2]
   rw [Finset.sum_comm]
@@ -166,7 +166,7 @@ theorem runVal_blocks (mu : Letter S J Γ → Matrix Q Q F) (i e : Q) (K T : ℕ
   by_cases hq : q 0 = i ∧ q (Fin.last K) = e
   swap
   · simp [hq]
-  simp only [if_pos hq]
+  simp only [ite_eq_left hq]
   -- group the families of blocks by what they emit
   have h3 : ∀ o : Fin K → Fin T → Letter S J Γ, (fun k => emit (List.ofFn (o k))) ∈
       Fintype.piFinset fun _ : Fin K => Fintype.piFinset fun _ : Ch S J => wordsLe Γ T := by
@@ -180,23 +180,23 @@ theorem runVal_blocks (mu : Letter S J Γ → Matrix Q Q F) (i e : Q) (K T : ℕ
   rw [Finset.sum_filter]
   by_cases hv : (∀ s, cat (fun k => v k (.tp s false)) = cat fun k => v k (.tp s true)) ∧
       ∀ j, cat (fun k => v k (.inp j)) = u j
-  · rw [if_pos hv]
+  · rw [ite_eq_left hv]
     simp only [blockW]
     rw [Finset.prod_univ_sum, Fintype.piFinset_univ]
     refine Finset.sum_congr rfl fun o _ => ?_
     by_cases ho : (fun k => emit (List.ofFn (o k))) = v
     · have ho' : ∀ k, emit (List.ofFn (o k)) = v k := fun k => congrFun ho k
-      rw [if_pos ho, if_pos (by simpa only [ho'] using hv)]
-      exact Finset.prod_congr rfl fun k _ => by rw [if_pos (ho' k)]
-    · rw [if_neg ho]
+      rw [ite_eq_left ho, ite_eq_left (by simpa only [ho'] using hv)]
+      exact Finset.prod_congr rfl fun k _ => by rw [ite_eq_left (ho' k)]
+    · rw [ite_eq_right ho]
       symm
       have : ∃ k, emit (List.ofFn (o k)) ≠ v k := by
         by_contra hc
         push Not at hc
         exact ho (funext hc)
       obtain ⟨k, hk⟩ := this
-      exact Finset.prod_eq_zero (Finset.mem_univ k) (if_neg hk)
-  · rw [if_neg hv, Finset.sum_eq_zero]
+      exact Finset.prod_eq_zero (Finset.mem_univ k) (ite_eq_right hk)
+  · rw [ite_eq_right hv, Finset.sum_eq_zero]
     intro o _
     split_ifs with ho hc
     · exfalso

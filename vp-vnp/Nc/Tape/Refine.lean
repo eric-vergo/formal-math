@@ -182,7 +182,7 @@ theorem IsRef.unique {A B : Fin K → List Γ} {X Y : Fin K → Fin K → List �
     by_cases e : a' = a ∧ b' = b
     · obtain ⟨rfl, rfl⟩ := e
       have h4 := congrFun (congrFun this a') b'
-      simp only [upd, and_self, if_true] at h4
+      simp only [upd, and_self, ite_true] at h4
       rw [hx, hy, h4]
     · have h4 := congrFun (congrFun this a') b'
       simpa [upd, e] using h4

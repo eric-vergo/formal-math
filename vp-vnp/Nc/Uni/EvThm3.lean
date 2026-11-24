@@ -28,31 +28,31 @@ theorem tot_seq3 (m : Run A → A) (la lb : List (Run A)) (L : Run A → Run A �
   unfold tot at h1
   rw [h1]
   by_cases hr : r.bill = []
-  · rw [if_pos hr, ← List.sum_map_mul_left]
+  · rw [ite_eq_left hr, ← List.sum_map_mul_left]
     congr 1
     refine List.map_congr_left fun s _ => ?_
     rw [List.map_map]
     by_cases hs : s.bill = []
-    · rw [if_pos hs, ← List.sum_map_mul_left, ← List.sum_map_mul_left]
+    · rw [ite_eq_left hs, ← List.sum_map_mul_left, ← List.sum_map_mul_left]
       congr 1
       refine List.map_congr_left fun t _ => ?_
       simp only [Function.comp, Run.tick, Run.seq, hr, hs, List.nil_append]
       split_ifs
       · ring
       · ring
-    · rw [if_neg hs, mul_zero]
+    · rw [ite_eq_right hs, mul_zero]
       refine List.sum_eq_zero fun y hy => ?_
       rw [List.mem_map] at hy
       obtain ⟨t, -, rfl⟩ := hy
-      exact if_neg fun h => hs (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 h).1).2
-  · rw [if_neg hr]
+      exact ite_eq_right fun h => hs (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 h).1).2
+  · rw [ite_eq_right hr]
     refine List.sum_eq_zero fun y hy => ?_
     rw [List.mem_map] at hy
     obtain ⟨s, -, rfl⟩ := hy
     refine List.sum_eq_zero fun y hy => ?_
     rw [List.map_map, List.mem_map] at hy
     obtain ⟨t, -, rfl⟩ := hy
-    exact if_neg fun h => hr (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 h).1).1
+    exact ite_eq_right fun h => hr (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 h).1).1
 
 theorem EvOK.run {a b : Fm} {x : Tree} {la lb : List (Run A)} {L : Run A → Run A → List (Run A)}
     (iha : EvOK θ supp a x la) (ihb : EvOK θ supp b x lb)
@@ -253,7 +253,7 @@ theorem EvOK.theta (hθ : ∀ q, q ∉ supp → θ q = 0) {a : Fm} {x : Tree} {l
     · have ok4 := ok3.nx (θ := θ) (.inr (.inl ⟨(), hp⟩)) (σ1.regs 4) (σ1.regs 0) (σ1.regs 0)
       have h4 := readName (θ := θ) hθ (S := m (f r)) (B := Bd (f r)) r.out ⟨[], hp⟩
         (nx θ σ3 (.inr (.inl ⟨(), hp⟩)) (σ1.regs 4) (σ1.regs 0) (σ1.regs 0)) ok4 rfl ?_ ?_
-      · have h5 := sumTo_rule ok3 hfr (.inr (.inl ⟨(), hp⟩)) (by rw [hm3]; exact dif_pos hp) (by rw [hm3]; simp)
+      · have h5 := sumTo_rule ok3 hfr (.inr (.inl ⟨(), hp⟩)) (by rw [hm3]; exact dite_eq_left hp) (by rw [hm3]; simp)
           (by rw [hm3]; simp) (by rw [hm3]; rfl) rfl h4
         have hw : (rule θ supp (.inr (.inl ⟨(), hp⟩))).wt = 1 := rfl
         rw [hw, one_mul] at h5
@@ -273,7 +273,7 @@ theorem EvOK.theta (hθ : ∀ q, q ∉ supp → θ q = 0) {a : Fm} {x : Tree} {l
         have := not_pre hp hθ r.out.path
         simpa using this
       rw [hz, zero_mul]
-      exact sumTo_stuck ok3 hfr (by rw [hm3]; exact dif_neg hp) (by rw [hm3]; simp) (by rw [hm3]; simp)
+      exact sumTo_stuck ok3 hfr (by rw [hm3]; exact dite_eq_right hp) (by rw [hm3]; simp) (by rw [hm3]; simp)
         (by rw [hm3]; simp) _
 
 /-- **The machine evaluates all formulas.** -/

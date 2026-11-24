@@ -98,7 +98,7 @@ theorem clauses_of_complete {F : Type} [Field F] {G : ∀ S, MvPolynomial (Fin S
     · have key : ∀ i, wt κ = X i → wt κ ∈ affIn (F := F) (some i) := fun i e => by
         rw [e]
         exact Submodule.subset_span (by simp)
-      rw [show o κ = some h.choose from dif_pos h]
+      rw [show o κ = some h.choose from dite_eq_left h]
       exact key _ h.choose_spec
     · obtain ⟨a, ha⟩ := (hwt κ).resolve_left h
       rw [ha]
@@ -125,21 +125,21 @@ theorem clauses_of_complete {F : Type} [Field F] {G : ∀ S, MvPolynomial (Fin S
     refine Finset.prod_congr rfl fun κ _ => ?_
     have hpos := List.length_pos_iff.2 (hne κ)
     rw [Fintype.sum_bool]
-    simp only [W, if_true, Bool.false_eq_true, if_false, Finset.prod_const_one]
+    simp only [W, ite_true, Bool.false_eq_true, ite_false, Finset.prod_const_one]
     by_cases hall : ∀ l ∈ lits κ, x l.1 = l.2
-    · rw [if_pos hall]
+    · rw [ite_eq_left hall]
       have : ∀ i : Fin (lits κ).length, x ((lits κ).get i).1 = ((lits κ).get i).2 := fun i => hall _ (List.get_mem _ _)
-      simp only [v, this, if_true]
+      simp only [v, this, ite_true]
       rw [Finset.prod_eq_single (⟨0, hpos⟩ : Fin (lits κ).length)]
       · simp
       · intro i _ hi
-        exact if_neg fun h => hi (Fin.ext h)
+        exact ite_eq_right fun h => hi (Fin.ext h)
       · simp
-    · rw [if_neg hall]
+    · rw [ite_eq_right hall]
       push Not at hall
       obtain ⟨l, hl, hne'⟩ := hall
       obtain ⟨i, rfl⟩ := List.mem_iff_get.1 hl
-      rw [Finset.prod_eq_zero (mem_univ i) (if_neg hne'), zero_add]
+      rw [Finset.prod_eq_zero (mem_univ i) (ite_eq_right hne'), zero_add]
 
 /-- **Paper: Corollary cor:clauses.** "Let 2 ≠ 0 in k. A clause sum with N literals in all, whose weights are constants
 or variables, is the permanent of an S×S matrix, S ≥ 3N, with entries that are affine in one variable each." -/

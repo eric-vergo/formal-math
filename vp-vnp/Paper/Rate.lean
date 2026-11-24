@@ -37,10 +37,10 @@ theorem prop_flat_rate_direction {k : ℕ} (hk : 1 ≤ k) (A : Finset (Fin k)) (
     rw [inner_hubDir, ← sum_sep]
     refine Finset.sum_congr rfl fun e _ => ?_
     by_cases h : CaseI.Sep A e
-    · rw [if_pos h, if_pos h]
+    · rw [ite_eq_left h, ite_eq_left h]
       simp only [hw, sg]
       split_ifs <;> norm_num
-    · rw [if_neg h, if_neg h]
+    · rw [ite_eq_right h, ite_eq_right h]
   have hcs := real_inner_le_norm (hubDir A) w
   rw [hwn, hin] at hcs
   have hp : 2 / 9 * (k : ℝ) ^ 2 ≤ (A.card : ℝ) * ((k : ℝ) - A.card) := by nlinarith
@@ -240,13 +240,13 @@ theorem rate_of_someSetPays {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk : 2
           refine Finset.sum_le_sum fun e _ => ?_
           rw [Fin.sum_univ_two, mul_add]
           refine (add_le_add (h2 e 0) (h2 e 1)).trans (le_of_eq ?_)
-          simp only [endNode, if_true, Fin.one_eq_zero_iff, OfNat.ofNat_ne_one, if_false]
+          simp only [endNode, ite_true, Fin.one_eq_zero_iff, OfNat.ofNat_ne_one, ite_false]
           ring
       _ ≤ _ := by
         rw [Finset.sum_add_distrib, ← Finset.sum_mul, sum_pairs_one]
         linarith
   · have h2 := (abs_lt.1 (hF (hubPt A true) (hubPt A false))).1
-    simp only [pos, hubPt, Sum.elim_inr, if_true, Bool.false_eq_true, if_false] at h2
+    simp only [pos, hubPt, Sum.elim_inr, ite_true, Bool.false_eq_true, ite_false] at h2
     have h3 : dist (x A) (-x A) = 4 / (9 * √k) := by
       rw [dist_eq_norm, sub_neg_eq_add, ← two_smul ℝ, norm_smul, hxn]
       norm_num

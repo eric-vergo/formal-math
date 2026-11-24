@@ -84,7 +84,7 @@ theorem posVal_groups (h0 h1 : U → A) (e : W) (Seen Cur : Finset U) (grp : A �
       mem_gcontents_iff] at hy ⊢
     refine ⟨⟨fun id hid => by simp [hid], fun g a id hn => ?_⟩, fun g => ⟨?_, ?_, ?_⟩⟩
     · by_cases h : grp a = g
-      · simp only [h, if_true]
+      · simp only [h, ite_true]
         exact hy.1 a id fun hh => hn ⟨h, hh⟩
       · simp [h]
     · intro id hid g1 g2
@@ -117,15 +117,15 @@ theorem posVal_groups (h0 h1 : U → A) (e : W) (Seen Cur : Finset U) (grp : A �
     ext1
     · funext id
       by_cases h : id ∈ cutUnits h0 h1 grp Cur
-      · simp only [h, if_true]
+      · simp only [h, ite_true]
         simp only [cutUnits, Finset.mem_filter] at h
         exact (hq.2 _).fst id h.1 rfl (Ne.symm h.2)
-      · simp only [h, if_false]
+      · simp only [h, ite_false]
         exact (hq.1.1 id h).symm
     · funext g a id
       by_cases h : grp a = g
       · subst h; simp
-      · simp only [h, if_false]
+      · simp only [h, ite_false]
         exact (hq.1.2 g a id fun hh => h hh.1).symm
   · intro y hy
     refine Finset.prod_congr rfl fun a _ => ?_
@@ -176,7 +176,7 @@ theorem posVal_move' {O : Type*} [Fintype O] (h0 h1 : U → A) (e : W) (Seen Cur
   by_cases hE0 : E y = 0
   · simp [hE0]
   by_cases hb : Agree h0 h1 (Cur \ Out) y
-  · simp only [hb, if_true]
+  · simp only [hb, ite_true]
     rw [← Finset.mul_sum, ← hC y hy hE0]
     have : Agree h0 h1 Cur y ↔ Agree h0 h1 Out y := by
       constructor

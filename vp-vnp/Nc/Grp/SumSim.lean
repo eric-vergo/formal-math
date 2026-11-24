@@ -88,7 +88,7 @@ theorem sumL_simSem (hmu : ∀ z q q', ∃ e : WE, e.val θ = mu z q q') (T : �
   rw [simSem, sumL_bindL, sumL_sim mu cb hmu]
   refine Finset.sum_congr rfl fun o _ => ?_
   rw [Finset.sum_eq_single q']
-  · simp only [if_true, sumL_single, List.append_nil]
+  · simp only [ite_true, sumL_single, List.append_nil]
     rfl
   · intro q'' _ h
     have : qn Q q'' ≠ qn Q q' := fun h' => h ((qn Q).injective h')
@@ -191,8 +191,8 @@ theorem inOuts_left (u : List Γ) (i : Fin (nT S)) :
     rw [outOf, Fin.addCases_left]
   rw [inOuts, h]
   by_cases hs : (tapes S).get i = none
-  · rw [if_pos (by rw [hs]), if_pos hs]
-  · rw [if_neg (fun h' => hs (Prod.ext_iff.1 h').1), if_neg hs]
+  · rw [ite_eq_left (by rw [hs]), ite_eq_left hs]
+  · rw [ite_eq_right (fun h' => hs (Prod.ext_iff.1 h').1), ite_eq_right hs]
     rfl
 
 theorem inOuts_right (u : List Γ) (i : Fin (nT S)) :

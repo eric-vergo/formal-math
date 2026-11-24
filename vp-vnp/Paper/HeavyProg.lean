@@ -29,7 +29,7 @@ theorem slp_cast {Inp ι : Type} {D D' p : ℕ} {inp : ι → Inp → Fin D} {in
     · refine Or.inr (Or.inr ⟨i, hi, j, hj, fun a b => if ha : a.1 < D then
         (if hb : b.1 < D then cast (φ ⟨a, ha⟩ ⟨b, hb⟩) else a) else a, fun x => ?_⟩)
       simp only []
-      rw [dif_pos (show (cast (fn i x)).1 < D from (fn i x).2), dif_pos (show (cast (fn j x)).1 < D from (fn j x).2)]
+      rw [dite_eq_left (show (cast (fn i x)).1 < D from (fn i x).2), dite_eq_left (show (cast (fn j x)).1 < D from (fn j x).2)]
       exact congrArg cast (e x)
   · obtain ⟨k, hk, e⟩ := h2 f hf
     exact ⟨k, hk, e⟩
@@ -65,10 +65,10 @@ theorem anc_stage (hS : SY inp Y p c H) (hpar : ∀ q q', ind (fun x => (T x).pa
               by_cases h : q' = rt
               · refine (PY.const hA (q' = q.2)).congr fun x => ?_
                 unfold nxt
-                rw [if_pos (h.trans (hrt x).symm)]
+                rw [ite_eq_left (h.trans (hrt x).symm)]
               · refine (PY.base (u0 (hpar q' q.2)) hY).congr fun x => ?_
                 unfold nxt
-                rw [if_neg fun e => h (e.trans (hrt x))])
+                rw [ite_eq_right fun e => h (e.trans (hrt x))])
           refine (h1.congr fun x => ?_).toCY
           rw [Function.iterate_succ_apply']
           exact ⟨fun ⟨q', e, e'⟩ => e ▸ e', fun e => ⟨_, rfl, e⟩⟩) (by omega)
@@ -127,8 +127,8 @@ theorem piece_prog (hS : SY inp Y p c H) (hpar : ∀ q q', ind (fun x => (T x).p
       unfold below
       refine Finset.sum_congr rfl fun q _ => ?_
       by_cases h : (T x).Below q q'
-      · rw [if_pos h, ind_true (P := fun x => (T x).Below q q') h, one_mul]
-      · rw [if_neg h, ind_false (P := fun x => (T x).Below q q') h, zero_mul]
+      · rw [ite_eq_left h, ind_true (P := fun x => (T x).Below q q') h, one_mul]
+      · rw [ite_eq_right h, ind_false (P := fun x => (T x).Below q q') h, zero_mul]
     refine CY.congr ?_ fun x => (e x).symm
     have hle : ∀ x q, ind (fun x => (T x).Below q q') x * f x q ≤ Y := fun x q =>
       (Nat.mul_le_mul (ind_le _ _) (hf' x q)).trans (le_of_eq (one_mul _))
@@ -183,9 +183,9 @@ theorem piece_prog (hS : SY inp Y p c H) (hpar : ∀ q q', ind (fun x => (T x).p
           refine (h2.congr fun x => ?_).toCY
           rw [top]
           by_cases h : (T x).Head giv (u x) M Yh k q.1
-          · rw [if_pos h]
+          · rw [ite_eq_left h]
             exact ⟨fun e => e.elim (fun e => e.2) fun e => absurd h e.1, fun e => Or.inl ⟨h, e⟩⟩
-          · rw [if_neg h]
+          · rw [ite_eq_right h]
             exact ⟨fun e => e.elim (fun e => absurd e.1 h) fun ⟨_, q', e, e'⟩ => e ▸ e',
               fun e => Or.inr ⟨h, _, rfl, e⟩⟩) (by omega)
       refine ⟨H', s', u0.trans u', fun d hd q q' => ?_⟩
@@ -202,9 +202,9 @@ theorem piece_prog (hS : SY inp Y p c H) (hpar : ∀ q q', ind (fun x => (T x).p
       refine Finset.sum_congr rfl fun q' _ => ?_
       by_cases h : (T x).Head giv (u x) M Yh k q'
       · by_cases h' : q' < q
-        · rw [if_pos ⟨h, h'⟩, if_pos h', ind_true (P := fun x => (T x).Head giv (u x) M Yh k q') h]
-        · rw [if_neg fun e => h' e.2, if_neg h']
-      · rw [if_neg fun e => h e.1, ind_false (P := fun x => (T x).Head giv (u x) M Yh k q') h]
+        · rw [ite_eq_left ⟨h, h'⟩, ite_eq_left h', ind_true (P := fun x => (T x).Head giv (u x) M Yh k q') h]
+        · rw [ite_eq_right fun e => h' e.2, ite_eq_right h']
+      · rw [ite_eq_right fun e => h e.1, ind_false (P := fun x => (T x).Head giv (u x) M Yh k q') h]
         split_ifs <;> rfl
     refine CY.congr ?_ fun x => (e x).symm
     refine CY.sum hA _ ((card_filter_le _ _).trans (by simpa using hP)) (fun q' _ => CY.base (u6 (f5 q')) hY) fun x => ?_

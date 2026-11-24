@@ -36,7 +36,7 @@ theorem rankLE_iff [Nonempty I] {t : Ten K I} {r : ℕ} :
     symm
     refine Finset.sum_of_injOn (fun s _ => s) (fun a _ b _ h => congr_fun h p₀) (fun _ _ => by simp)
       (fun y _ hy => ?_) (fun s _ => by simp)
-    rw [if_neg, mul_zero]
+    rw [ite_eq_right, mul_zero]
     intro h
     exact hy ⟨y p₀, by simp, funext fun p => h p₀ p⟩
   constructor
@@ -64,7 +64,7 @@ theorem rankLE_card [Nonempty I] (t : Ten K I) : RankLE t (Fintype.card (∀ p, 
   · intro s _ hs
     have : x ≠ e s := fun h => hs (by rw [h]; simp)
     obtain ⟨p, hp⟩ := Function.ne_iff.1 this
-    exact Finset.prod_eq_zero (Finset.mem_univ p) (if_neg hp)
+    exact Finset.prod_eq_zero (Finset.mem_univ p) (ite_eq_right hp)
   · simp
 
 end Ten

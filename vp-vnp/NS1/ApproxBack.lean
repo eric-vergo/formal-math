@@ -45,7 +45,7 @@ theorem finF_kv {κ : List Bool → E} {S : Set (List Bool)} {P z : Tree} {t : B
     · intro r hr
       simp only [Bt.nds] at hk
       by_cases hz : (Bt.leaf o).zero
-      · simp only [hz, if_true, List.map_cons, List.map_nil, List.mem_singleton] at hr
+      · simp only [hz, ite_true, List.map_cons, List.map_nil, List.mem_singleton] at hr
         subst hr
         refine ⟨?_, by simp [Run.delay, Run.det]⟩
         simp only [Run.delay, Run.det]

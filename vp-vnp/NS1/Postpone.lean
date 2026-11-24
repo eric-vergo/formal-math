@@ -193,12 +193,12 @@ theorem ok_node (l r : Bt) (b : List (List Bool)) :
     | cons a p =>
       cases a with
       | true =>
-        rw [part_cons, part_cons, if_neg (by simp), if_pos rfl, ok_cons]
+        rw [part_cons, part_cons, ite_eq_right (by simp), ite_eq_left rfl, ok_cons]
         cases h : Bt.dec p r with
         | none => simp [Bt.dec, h]
         | some r' => simp [Bt.dec, h, ih]
       | false =>
-        rw [part_cons, part_cons, if_pos rfl, if_neg (by simp), ok_cons]
+        rw [part_cons, part_cons, ite_eq_left rfl, ite_eq_right (by simp), ok_cons]
         cases h : Bt.dec p l with
         | none => simp [Bt.dec, h]
         | some l' => simp [Bt.dec, h, ih]
@@ -232,13 +232,13 @@ theorem prod_lookup_node (l r : KT R) (b : List (List Bool)) : (b.map (KT.node l
       | true =>
         by_cases h : [] ∈ b
         · simp [h]
-        · simp only [h, KT.lookup, List.mem_cons, if_false, Bool.true_eq_false, if_true, List.map_cons, List.prod_cons,
+        · simp only [h, KT.lookup, List.mem_cons, ite_false, Bool.true_eq_false, ite_true, List.map_cons, List.prod_cons,
             reduceCtorEq, or_self]
           ring
       | false =>
         by_cases h : [] ∈ b
         · simp [h]
-        · simp only [h, KT.lookup, List.mem_cons, if_false, Bool.false_eq_true, if_true, List.map_cons, List.prod_cons,
+        · simp only [h, KT.lookup, List.mem_cons, ite_false, Bool.false_eq_true, ite_true, List.map_cons, List.prod_cons,
             reduceCtorEq, or_self]
           ring
 
@@ -258,9 +258,9 @@ theorem sum_budg (J : ℕ) (K : KT R) (b : List (List Bool)) (hb : b.length < 2 
           (KT.words J).map fun w => if KT.val w = b.length then c ^ b.length else 0 := by
         refine List.map_congr_left fun w _ => ?_
         by_cases h2 : KT.val w = b.length
-        · simp [h2, if_pos h]
+        · simp [h2, ite_eq_left h]
         · simp [h2]
-      rw [e1, sum_words, if_pos hb]
+      rw [e1, sum_words, ite_eq_left hb]
       have : b.map (KT.leaf c).lookup = List.replicate b.length c := by
         rw [List.eq_replicate_iff]
         refine ⟨by simp, fun x hx => ?_⟩
@@ -269,7 +269,7 @@ theorem sum_budg (J : ℕ) (K : KT R) (b : List (List Bool)) (hb : b.length < 2 
         rw [h p hp]
         rfl
       rw [this, List.prod_replicate]
-    · simp only [h, false_and, if_false, List.map_const', List.sum_replicate, smul_zero]
+    · simp only [h, false_and, ite_false, List.map_const', List.sum_replicate, smul_zero]
       push Not at h
       obtain ⟨p, hp, hne⟩ := h
       symm
@@ -286,7 +286,7 @@ theorem sum_budg (J : ℕ) (K : KT R) (b : List (List Bool)) (hb : b.length < 2 
     simp only [KT.budg, sum_flatMap_map, List.map_map, Function.comp_def, ok_node]
     by_cases h : [] ∈ b
     · simp [h]
-    · simp only [h, not_false_eq_true, true_and, if_false]
+    · simp only [h, not_false_eq_true, true_and, ite_false]
       rw [← List.sum_map_mul_right]
       congr 1
       refine List.map_congr_left fun p _ => ?_
@@ -379,7 +379,7 @@ theorem WF_ev {H T : ℕ} {p d : Tree} {l : List (Run A)} (h : Ev θ (Fm.ofTree 
       refine ⟨_, h5, ?_⟩
       have hn : q.2.nds = t.nds := Bt.nds_decAll (mem_simS hq).2
       by_cases hz : q.2.zero
-      · simp only [hz, if_true]
+      · simp only [hz, ite_true]
         refine .cons ⟨?_, ?_, ?_⟩ .nil
         · simp [Run.det, h1]
         · simp [Run.det, h2]
@@ -431,7 +431,7 @@ theorem val_eq_sum_budg {J : ℕ} {K : KT R} {κ : List Bool → R} {l : List (R
     simp only [List.map_cons, List.sum_cons, map_add, mul_add]
     congr 1
     by_cases h : ok q.1 r.bill = true
-    · simp only [h, if_true]
+    · simp only [h, ite_true]
       ring
     · simp [h]
 

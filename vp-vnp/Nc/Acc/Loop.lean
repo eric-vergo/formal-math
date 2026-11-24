@@ -122,7 +122,7 @@ theorem nameL_gives {self T t : Tree} {b : Tree} {g acc : List Bool} {ws : List 
         cases c with
         | nil => simp at hc2
         | cons a c => simp [ofBits]
-      have e : lc (ofBits c) = c := by rw [lc, if_neg hne, path_ofBits]
+      have e : lc (ofBits c) = c := by rw [lc, ite_eq_right hne, path_ofBits]
       rw [e]
       exact (h1.ite_true hne h1).mono (by norm_num)
   have hlc : (lc t).length ≤ 2 := by

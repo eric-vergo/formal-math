@@ -84,7 +84,7 @@ theorem stage_lt {p : Fin P} (hp : p ≠ T.root) : T.stage p < T.depth :=
 
 theorem below_up {q p : Fin P} (h : T.Below q p) (hp : p ≠ T.root) : T.Below q (T.par p) := by
   refine ⟨by rw [T.stage_par p hp]; exact Nat.le_succ_of_le h.1, ?_⟩
-  rw [T.stage_par p hp, Nat.succ_sub h.1, Function.iterate_succ_apply', h.2, nxt, if_neg hp]
+  rw [T.stage_par p hp, Nat.succ_sub h.1, Function.iterate_succ_apply', h.2, nxt, ite_eq_right hp]
 
 theorem below_down {q p : Fin P} (hq : q ≠ T.root) (h : T.Below (T.par q) p) : T.Below q p := by
   have h1 := h.1
@@ -93,14 +93,14 @@ theorem below_down {q p : Fin P} (hq : q ≠ T.root) (h : T.Below (T.par q) p) :
   refine ⟨by omega, ?_⟩
   have e : T.stage p - T.stage q = T.stage p - (T.stage q + 1) + 1 := by omega
   rw [e, Function.iterate_succ_apply]
-  rwa [show T.nxt q = T.par q from if_neg hq]
+  rwa [show T.nxt q = T.par q from ite_eq_right hq]
 
 open Classical in
 theorem below_mono (f : Fin P → ℕ) {p : Fin P} (hp : p ≠ T.root) : T.below f p ≤ T.below f (T.par p) :=
   Finset.sum_le_sum fun q _ => by
     by_cases h : T.Below q p
-    · rw [if_pos h, if_pos (below_up h hp)]
-    · rw [if_neg h]
+    · rw [ite_eq_left h, ite_eq_left (below_up h hp)]
+    · rw [ite_eq_right h]
       exact Nat.zero_le _
 
 open Classical in
@@ -130,12 +130,12 @@ theorem below_kids (f : Fin P → ℕ) (p : Fin P) : T.below (T.kids f) p ≤ T.
     unfold below
     rw [Finset.sum_congr rfl fun a _ => h2 a, Finset.sum_comm]
     refine Finset.sum_congr rfl fun q _ => ?_
-    rw [Finset.sum_ite_eq, if_pos (mem_univ _)]
+    rw [Finset.sum_ite_eq, ite_eq_left (mem_univ _)]
   rw [h1]
   refine (Finset.sum_le_sum fun q hq => ?_).trans (Finset.sum_le_sum_of_subset (subset_univ _))
   by_cases h : T.Below (T.par q) p
-  · rw [if_pos h, if_pos (below_down (mem_filter.1 hq).2 h)]
-  · rw [if_neg h]
+  · rw [ite_eq_left h, ite_eq_left (below_down (mem_filter.1 hq).2 h)]
+  · rw [ite_eq_right h]
     exact Nat.zero_le _
 
 open Classical in
@@ -188,9 +188,9 @@ theorem top_spec : ∀ d p, T.stage p + d = T.depth → T.Head giv u M Y k (T.to
     intro p hp
     rw [top]
     by_cases h : T.Head giv u M Y k p
-    · rw [if_pos h]
+    · rw [ite_eq_left h]
       exact ⟨h, below_refl p, Or.inl rfl⟩
-    · rw [if_neg h]
+    · rw [ite_eq_right h]
       have hr : p ≠ T.root := fun e => h (Or.inl e)
       obtain ⟨a1, a2, a3⟩ := ih (T.par p) (by rw [T.stage_par p hr]; omega)
       refine ⟨a1, below_down hr a2, Or.inr ?_⟩
@@ -208,13 +208,13 @@ theorem hd_head {p : Fin P} (h : T.Head giv u M Y k p) : T.hd giv u M Y k p = p 
   generalize T.depth - T.stage p = d
   cases d with
   | zero => rfl
-  | succ d => rw [top, if_pos h]
+  | succ d => rw [top, ite_eq_left h]
 
 theorem hd_par {p : Fin P} (h : ¬ T.Head giv u M Y k p) : T.hd giv u M Y k p = T.hd giv u M Y k (T.par p) := by
   have hr : p ≠ T.root := fun e => h (Or.inl e)
   unfold hd
   have hlt := stage_lt hr
-  rw [T.stage_par p hr, show T.depth - T.stage p = T.depth - (T.stage p + 1) + 1 by omega, top, if_neg h]
+  rw [T.stage_par p hr, show T.depth - T.stage p = T.depth - (T.stage p + 1) + 1 by omega, top, ite_eq_right h]
 
 theorem rank_inj {p q : Fin P} (hp : T.Head giv u M Y k p) (hq : T.Head giv u M Y k q)
     (e : T.rank giv u M Y k p = T.rank giv u M Y k q) : p = q := by
@@ -259,7 +259,7 @@ theorem below_subtree {x : Fin P} (hx : ¬ T.Heavy giv u M Y k x) :
       obtain ⟨-, h2⟩ := hp
       refine ⟨by rw [T.stage_par p hr]; omega, ?_⟩
       rw [show T.stage x - T.stage p = d + 1 by omega, Function.iterate_succ_apply,
-        show T.nxt p = T.par p from if_neg hr] at h2
+        show T.nxt p = T.par p from ite_eq_right hr] at h2
       rw [T.stage_par p hr, show T.stage x - (T.stage p + 1) = d by omega]
       exact h2
     have hnh : ∀ e q, T.Below q x → T.stage x = T.stage q + e → ¬ T.Heavy giv u M Y k q := by
@@ -281,7 +281,7 @@ theorem below_subtree {x : Fin P} (hx : ¬ T.Heavy giv u M Y k x) :
         obtain ⟨-, h2⟩ := hq
         refine ⟨by rw [T.stage_par q hq']; omega, ?_⟩
         rw [show T.stage x - T.stage q = e + 1 by omega, Function.iterate_succ_apply,
-          show T.nxt q = T.par q from if_neg hq'] at h2
+          show T.nxt q = T.par q from ite_eq_right hq'] at h2
         rw [T.stage_par q hq', show T.stage x - (T.stage q + 1) = e by omega]
         exact h2
     have hp' : ¬ T.Head giv u M Y k p := fun e =>

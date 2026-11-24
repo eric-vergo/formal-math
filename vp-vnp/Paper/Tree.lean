@@ -270,10 +270,10 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
       exact ndStage_par _ _ (hne p hp)
     children_le := fun n o x hx => by
       have := card_treeChildren (R := R) (FL := FL) (Pl := Pl) hH.h_pos n o x
-      rwa [if_neg hx] at this
+      rwa [ite_eq_right hx] at this
     root_children_le := fun n o => by
       have := card_treeChildren (R := R) (FL := FL) (Pl := Pl) hH.h_pos n o (Pl.pt none)
-      rw [if_pos rfl] at this
+      rw [ite_eq_left rfl] at this
       exact this.trans (hC.bot.trans (by omega))
     dead_le := fun o => ?_
     kinds := fun x => ?_
@@ -312,7 +312,7 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
   · change if (eE R FL x).isRight = true then kindM R ch FL (eE R FL x) ∈ laws else kindM R ch FL (eE R FL x) = relay F
     rcases eE R FL x with y | l
     · simp [kindM]
-    · simp only [Sum.isRight_inr, if_true]
+    · simp only [Sum.isRight_inr, ite_true]
       exact hC.mem _
   · change 0 < ndStage (Pl.pt.symm (Pl.pt (partM R ch FL (eE R FL r'.1) r'.2)))
     rw [Equiv.symm_apply_apply]
@@ -337,7 +337,7 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
     generalize eE R FL x = mv
     rcases mv with y | l
     · exact Iff.rfl
-    · simp only [Sum.isRight_inr, if_true, GoodMv, GoodL, Nat.one_mul]
+    · simp only [Sum.isRight_inr, ite_true, GoodMv, GoodL, Nat.one_mul]
       rfl
   · obtain ⟨hu, hl'⟩ := mem_filter.1 hu
     obtain ⟨hu, hd⟩ := mem_sdiff.1 hu

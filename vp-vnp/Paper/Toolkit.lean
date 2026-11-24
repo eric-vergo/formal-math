@@ -146,7 +146,7 @@ theorem lem_toolkit_a (x v : Y) (t : ℝ) (h0 : 0 ≤ t) (h1 : t ≤ 1) : ∃ γ
   have hpt : IsPt x v t b := by
     intro z
     have h := hb z
-    simp only [Fintype.sum_bool, cond_true, cond_false] at h
+    simp only [Fintype.sum_bool, Bool.cond_true, Bool.cond_false] at h
     have h2 := dist_triangle x b v
     rw [dist_comm x b] at h2
     have h3 : t * (1 - t) * dist x v ^ 2 ≤ t * (1 - t) * (dist b x + dist b v) ^ 2 := by

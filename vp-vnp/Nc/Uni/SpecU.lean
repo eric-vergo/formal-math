@@ -160,7 +160,7 @@ theorem emCo_lsF (m : Bl K → List (NB M K)) : emCo m lsF = cOut m ++ [Sy.bar] 
     simp [on]
   simp only [h1]
   rw [bsl, List.map_flatMap, List.flatMap_def, List.map_ofFn]
-  simp only [on, mem_singleton, if_true]
+  simp only [on, mem_singleton, ite_true]
   rfl
 
 theorem emCo_bk_true (m : Bl K → List (NB M K)) (b : Bl K) :
@@ -188,7 +188,7 @@ theorem emPs_lsT (p : Ps M K) : emPs p lsT = encW (dIn p.1) ++ [Sy.bar] := by
     intro d; simp [emDr, on]
   unfold emPs
   rw [h1]
-  simp only [h2, on, mem_barSet_lsT, if_true, List.append_nil]
+  simp only [h2, on, mem_barSet_lsT, ite_true, List.append_nil]
   rw [encW, dIn, List.flatMap_map]
 
 theorem emPs_lsF (p : Ps M K) : emPs p lsF = cOut p.2 ++ [Sy.bar] := by
@@ -217,7 +217,7 @@ theorem emPs_bk_false (p : Ps M K) (b : Bl K) : emPs p (.tp (.bk b) false) = enc
       by_cases h : d.2.1 = b <;> simp [h]
   unfold emPs
   rw [h1]
-  simp only [h2, on, mem_barSet_bk, if_true, List.append_nil]
+  simp only [h2, on, mem_barSet_bk, ite_true, List.append_nil]
   rw [h3, encW, dOut, List.flatMap_map]
 
 theorem emPs_bk_true (p : Ps M K) (b : Bl K) : emPs p (.tp (.bk b) true) = (p.2 b).map Subtype.val ++ [Sy.bar] := by

@@ -78,9 +78,9 @@ theorem runVal_rename (φ : J ≃ J') (mu : Letter S J' Γ → Matrix Q Q F) (i 
         exact (emit_rename φ (List.ofFn o) (.inp j)).symm.trans (h (φ j))
   rw [hl]
   by_cases h : Matched (List.ofFn o) (fun j => u (φ j))
-  · rw [if_pos h, if_pos (hm.1 h), List.map_map]
+  · rw [ite_eq_left h, ite_eq_left (hm.1 h), List.map_map]
     rfl
-  · rw [if_neg h, if_neg fun h' => h (hm.2 h')]
+  · rw [ite_eq_right h, ite_eq_right fun h' => h (hm.2 h')]
 
 end Rename
 

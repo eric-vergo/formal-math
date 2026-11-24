@@ -298,7 +298,7 @@ theorem ex_ins (hc : (sepOf cb).length ≤ c) : ∃ F κ, ∀ (T ub : ℕ) (i : 
         exact Does.of_gives e4 (hFp ub B b.2 t (κl * T) h1 h2))
     have e5 := switchF_does (θ := θ) g0 (fs := fs) (f := fBlock) rfl e3
     refine (e5.replace ?_).mono ?_
-    · rw [insSem, dif_pos ⟨hq, hq'⟩]
+    · rw [insSem, dite_eq_left ⟨hq, hq'⟩]
     · simp only [insCost, bodyCost]
       set N := flen B.flags + B.kR.length + putCost ub B.kR + putCost ub B.kC + 1 with hN
       have h1 : κp * (κl * T + flen B.flags + B.kR.length + putCost ub B.kR + putCost ub B.kC + 1) ≤
@@ -355,10 +355,10 @@ theorem ex_ins (hc : (sepOf cb).length ≤ c) : ∃ F κ, ∀ (T ub : ℕ) (i : 
     have h2 : Does θ fBoth x (insSem (S := S) θ mu cb kinds T ub (.both k k') t) (300 * insCost T ub (.both k k')) := by
       simp only [insSem, insCost]
       by_cases h : tget k t = tget k' t
-      · rw [if_pos h]
+      · rw [ite_eq_left h]
         have e4 : bit (decide (tget k t = tget k' t)) ≠ .nil := by simp [h, bit, one]
         exact (Does.ite_true e3 e4 gt).mono (by omega)
-      · rw [if_neg h]
+      · rw [ite_eq_right h]
         have e4 : bit (decide (tget k t = tget k' t)) = .nil := by simp [h, bit]
         rw [e4] at e3
         exact (Does.ite_false e3 (Does.fail _)).mono (by omega)
@@ -380,12 +380,12 @@ theorem ex_ins (hc : (sepOf cb).length ≤ c) : ∃ F κ, ∀ (T ub : ℕ) (i : 
     have h2 : Does θ fOne x (insSem (S := S) θ mu cb kinds T ub (.one k w) t) (300 * insCost T ub (.one k w)) := by
       simp only [insSem, insCost]
       by_cases h : tget k t = ofBits w
-      · rw [if_pos h]
+      · rw [ite_eq_left h]
         have e4 : bit (decide (tget k t = x.hd.tl.tl)) ≠ .nil := by
           have : tget k t = x.hd.tl.tl := h
           simp [this, bit, one]
         exact (Does.ite_true e3 e4 gt).mono (by omega)
-      · rw [if_neg h]
+      · rw [ite_eq_right h]
         have e4 : bit (decide (tget k t = x.hd.tl.tl)) = .nil := by
           have : ¬ tget k t = x.hd.tl.tl := h
           simp [this, bit]

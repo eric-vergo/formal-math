@@ -48,7 +48,7 @@ theorem length_segL (sep : List Bool) (m f : ℕ) (tk : Bool) (cur : List Bool) 
     have h2 : rest = [] := List.length_eq_zero_iff.1 (by omega)
     subst h1 h2
     rw [segL_eq] at hl
-    simp only [closeL, takeL, List.append_nil, if_true] at hl
+    simp only [closeL, takeL, List.append_nil, ite_true] at hl
     split_ifs at hl
     · rw [List.mem_singleton] at hl
       subst hl

@@ -101,8 +101,8 @@ theorem phase1 (hK : 0 < K) [Nonempty Q] (Φ : (List Bool → Tree) → B) :
       · intro h
         have h1 := h 0
         have h2 := h (Fin.last K)
-        rw [opts1, if_pos rfl, List.mem_singleton] at h1
-        rw [opts1, if_neg (Ne.symm h0), if_pos rfl, List.mem_singleton] at h2
+        rw [opts1, ite_eq_left rfl, List.mem_singleton] at h1
+        rw [opts1, ite_eq_right (Ne.symm h0), ite_eq_left rfl, List.mem_singleton] at h2
         exact ⟨h1, h2⟩
       · rintro ⟨h1, h2⟩ a
         unfold opts1
@@ -111,9 +111,9 @@ theorem phase1 (hK : 0 < K) [Nonempty Q] (Φ : (List Bool → Tree) → B) :
         · rw [ha', h2]; exact List.mem_singleton_self _
         · simp
     by_cases hq : q 0 = i ∧ q (Fin.last K) = e
-    · rw [if_pos hq, if_pos (key.2 hq)]
+    · rw [ite_eq_left hq, ite_eq_left (key.2 hq)]
       rfl
-    · rw [if_neg hq, if_neg fun h => hq (key.1 h)]
+    · rw [ite_eq_right hq, ite_eq_right fun h => hq (key.1 h)]
   · unfold opts1
     split_ifs
     · simp
@@ -152,7 +152,7 @@ theorem phase2 [Nonempty (RowData (K + K))] {st : NmT S M U0 U1 pS → Tree} (hz
     (fun f a b hb => ?_) (fun f a x hx => ?_) rfl (fun _ => Classical.arbitrary _)]
   · rw [← (Equiv.curry (Option S) (Fin (K + K)) (RowData (K + K))).sum_comp]
     refine Finset.sum_congr rfl fun f _ => ?_
-    rw [if_pos]
+    rw [ite_eq_left]
     · rfl
     · intro a
       simp
@@ -197,7 +197,7 @@ theorem phase3 {st : NmT S M U0 U1 pS → Tree} (hz : st .zero = .nil) (Φ : (Li
     (o3 C hU0) own3 (v3 C hU0) (fun f a b hb => ?_) (fun f a x hx => ?_) rfl (fun _ => 0)]
   · rw [← (Equiv.curry (Fin (K + K)) (Fin (K + K)) (Fin (U0 + 1))).sum_comp]
     refine Finset.sum_congr rfl fun f _ => ?_
-    rw [if_pos]
+    rw [ite_eq_left]
     · rfl
     · intro a
       simp
@@ -222,7 +222,7 @@ theorem phase3 {st : NmT S M U0 U1 pS → Tree} (hz : st .zero = .nil) (Φ : (Li
     · rename_i a0
       subst hx
       refine ⟨(.dg a0, dgT C a0 (f (a0, a0))), ?_, rfl⟩
-      simp only [o3, if_true]
+      simp only [o3, ite_true]
       exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (List.mem_singleton_self _)))
     · subst hx
       exact ⟨_, List.mem_cons_of_mem _ (List.mem_cons_of_mem _ List.mem_cons_self), rfl⟩
@@ -252,7 +252,7 @@ theorem phase4 [Nonempty (Fin U1)] {st : NmT S M U0 U1 pS → Tree} (hz : st .ze
     (fun ν j => [(.dO ν, C.dt (digO hU1 j)), (.ch ν false, chT C ν false j), (.ch ν true, chT C ν true j)]) own4
     (v4 C hU1) (fun f a b hb => ?_) (fun f a x hx => ?_) rfl (fun _ => Classical.arbitrary _)]
   · refine Finset.sum_congr rfl fun f _ => ?_
-    rw [if_pos]
+    rw [ite_eq_left]
     intro a
     simp
   · simp only [List.mem_cons, List.not_mem_nil, or_false] at hb
@@ -310,10 +310,10 @@ theorem phase5 {st : NmT S M U0 U1 pS → Tree} {ρ : Option S → Fin (K + K) �
     · rw [exec_op C.nm_inj, hz, hr, path_ofBits]
       simp only [path, tget, hd_cons]
       rw [tget_trieOf C.rc_inj]
-      have : prevHi (ρ a.1) a.2 = 0 := by rw [prevHi, dif_pos h]
+      have : prevHi (ρ a.1) a.2 = 0 := by rw [prevHi, dite_eq_left h]
       rw [validRow_iff, this]
     · rw [exec_op C.nm_inj, hr, hr, path_ofBits, path_ofBits, tget_trieOf C.rc_inj, tget_trieOf C.rc_inj]
-      have : prevHi (ρ a.1) a.2 = (ρ a.1 ⟨a.2.1 - 1, by omega⟩).2.2.1 := by rw [prevHi, dif_neg h]
+      have : prevHi (ρ a.1) a.2 = (ρ a.1 ⟨a.2.1 - 1, by omega⟩).2.2.1 := by rw [prevHi, dite_eq_right h]
       rw [validRow_iff, this]
   · rw [Function.update_of_ne (by simp)]
     exact hst.1

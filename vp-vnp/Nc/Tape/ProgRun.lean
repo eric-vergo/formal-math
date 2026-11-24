@@ -43,14 +43,14 @@ theorem RatLe.idle {n : ℕ} {P : Series F Ω} (hP : RatLe n P) : RatLe (n + 1) 
         | none => simp
         | some a =>
           by_cases h : o.all Option.isSome
-          · simp only [h, if_true, List.all_cons, Option.isSome_some, Bool.true_and,
+          · simp only [h, ite_true, List.all_cons, Option.isSome_some, Bool.true_and,
               List.reduceOption_cons_of_some, Option.elim]
             rfl
           · simp [h]
     funext o
     rw [Rep.series, key]
     by_cases h : o.all Option.isSome
-    · simp only [h, if_true]; rfl
+    · simp only [h, ite_true]; rfl
     · simp [h]
   · refine ⟨Unit, inferInstance, ⟨1, fun a => a.elim 1 fun _ => 0, 1⟩, by simp, ?_⟩
     have key : ∀ o : List (Option Ω), (⟨1, fun a => a.elim 1 fun _ => 0, 1⟩ : Rep F (Option Ω) Unit).tail o =
@@ -86,7 +86,7 @@ theorem idle_apply (P : Series F Ω) (w : List Ω) (j : ℕ) :
         intro hall
         have := List.all_eq_true.1 hall _ hmem
         simp at this
-      rw [if_neg this, mul_zero]
+      rw [ite_eq_right this, mul_zero]
     · have hmem : none ∈ (w.map some ++ List.replicate j none).take k := by
         rw [List.take_append, List.mem_append]
         right
@@ -96,7 +96,7 @@ theorem idle_apply (P : Series F Ω) (w : List Ω) (j : ℕ) :
         intro hall
         have := List.all_eq_true.1 hall _ hmem
         simp at this
-      rw [if_neg this, zero_mul]
+      rw [ite_eq_right this, zero_mul]
   · intro h
     exfalso
     apply h
@@ -110,11 +110,11 @@ theorem idle_ne_zero (P : Series F Ω) (o : List (Option Ω)) (h : Series.idle P
   beta_reduce at hk
   have h1 : (o.take k).all Option.isSome = true := by
     by_contra hn
-    rw [if_neg hn, zero_mul] at hk
+    rw [ite_eq_right hn, zero_mul] at hk
     exact hk rfl
   have h2 : (o.drop k).all Option.isNone = true := by
     by_contra hn
-    rw [if_neg hn, mul_zero] at hk
+    rw [ite_eq_right hn, mul_zero] at hk
     exact hk rfl
   refine ⟨(o.take k).reduceOption, (o.drop k).length, ?_⟩
   have e1 : ∀ l : List (Option Ω), l.all Option.isSome = true → l.reduceOption.map some = l := by
@@ -221,8 +221,8 @@ theorem exists_run {n : ℕ} {P : Series F (Ch S J × Γ)} (hP : RatLe n P) :
     by_contra hcon
     have hm : Matched (List.ofFn o) u := by
       by_contra hm
-      exact hcon (if_neg hm)
-    rw [if_pos hm] at hcon
+      exact hcon (ite_eq_right hm)
+    rw [ite_eq_left hm] at hcon
     obtain ⟨w, j, hw⟩ := idle_ne_zero P _ hcon
     have hlen : w.length + j = t := by
       have := congrArg List.length hw
@@ -250,7 +250,7 @@ theorem exists_run {n : ℕ} {P : Series F (Ch S J × Γ)} (hP : RatLe n P) :
     simp only [mem_sigma, mem_filter, mem_fib] at hx
     have l1 : w.length ≤ t := by
       rw [← sum_length_proj w, hx.2, sum_length_tup]; exact hx.1.2
-    rw [ofFn_getElem? w t l1, if_pos, idle_apply]
+    rw [ofFn_getElem? w t l1, ite_eq_left, idle_apply]
     rw [Matched, emit_idle, hx.2]
     exact ⟨fun s => rfl, fun j => rfl⟩
 

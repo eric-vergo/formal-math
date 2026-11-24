@@ -18,7 +18,7 @@ theorem isJacobsonRing_int : IsJacobsonRing ℤ := by
   · subst h
     rw [eq_bot_iff]
     intro x hx
-    have h1 := Ideal.mem_jacobson_bot.1 hx x
+    have h1 := Ring.mem_jacobson_iff.1 hx x
     rcases Int.isUnit_iff.1 h1 with h2 | h2
     · have : x * x = 0 := by omega
       exact mul_self_eq_zero.1 this

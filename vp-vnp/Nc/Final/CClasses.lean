@@ -69,10 +69,10 @@ theorem IsStep.reindex {l L : ℕ → MvPolynomial X F} {k : ℕ}
 
 theorem Computes.mono {p : MvPolynomial X F} {s t : ℕ} (h : Computes p s) (hst : s ≤ t) : Computes p t := by
   obtain ⟨l, hl, a, ha, rfl⟩ := h
-  refine ⟨fun k => if k < s then l k else MvPolynomial.C 0, fun k hk => ?_, a, by omega, if_pos ha⟩
+  refine ⟨fun k => if k < s then l k else MvPolynomial.C 0, fun k hk => ?_, a, by omega, ite_eq_left ha⟩
   by_cases h : k < s
   · exact (hl k h).reindex id strictMono_id fun i hi => if_pos (hi.trans_lt h)
-  · exact Or.inr (Or.inl ⟨0, by simp only [h, if_false]⟩)
+  · exact Or.inr (Or.inl ⟨0, by simp only [h, ite_false]⟩)
 
 /-- Apply a ring map that sends input gates to inputs and constant gates to constants. -/
 private theorem Computes.map_gates {K : Type*} [CommSemiring K] {p : MvPolynomial X F} {s : ℕ}
@@ -103,13 +103,13 @@ theorem Computes.join {p q r : MvPolynomial X F} {s t : ℕ} (hp : Computes p s)
   obtain ⟨l, hl, a, ha, rfl⟩ := hp
   obtain ⟨l', hl', b, hb, rfl⟩ := hq
   let L : ℕ → MvPolynomial X F := fun k => if k < s then l k else if k < s + t then l' (k - s) else r
-  have L1 : ∀ k < s, L k = l k := fun k hk => if_pos hk
+  have L1 : ∀ k < s, L k = l k := fun k hk => ite_eq_left hk
   have L2 : ∀ k < t, L (s + k) = l' k := fun k hk => by
     simp only [L]
-    rw [if_neg (by omega), if_pos (by omega), Nat.add_sub_cancel_left]
+    rw [ite_eq_right (by omega), ite_eq_left (by omega), Nat.add_sub_cancel_left]
   have L3 : L (s + t) = r := by
     simp only [L]
-    rw [if_neg (by omega), if_neg (by omega)]
+    rw [ite_eq_right (by omega), ite_eq_right (by omega)]
   refine ⟨L, fun k hk => ?_, s + t, by omega, L3⟩
   rcases lt_or_ge k s with h | h
   · exact (hl k h).reindex id strictMono_id fun i hi => L1 i (hi.trans_lt h)

@@ -295,11 +295,11 @@ theorem either {R : List (A × Tree)} (hG : Does θ G x Q c) (hH : Does θ H x R
     Does θ (.ite .guess G H) x (Q ++ R) (max c d + 2) := by
   obtain ⟨l, e1, e2, e3⟩ := hG
   obtain ⟨l', f1, f2, f3⟩ := hH
-  refine ⟨_, Ev.ite (L := fun r => if r.out = .nil then l' else l) (Ev.guess x) (fun r _ h => by rw [if_neg h]; exact e1)
-    (fun r _ h => by rw [if_pos h]; exact f1), ?_, fun φ => ?_⟩
+  refine ⟨_, Ev.ite (L := fun r => if r.out = .nil then l' else l) (Ev.guess x) (fun r _ h => by rw [ite_eq_right h]; exact e1)
+    (fun r _ h => by rw [ite_eq_left h]; exact f1), ?_, fun φ => ?_⟩
   · intro u hu
     simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.mem_append, List.mem_map, Run.det, Tree.one,
-      if_true, reduceCtorEq, if_false] at hu
+      _root_.ite_true, reduceCtorEq, _root_.ite_false] at hu
     rcases hu with ⟨s, hs, rfl⟩ | ⟨s, hs, rfl⟩
     · obtain ⟨a1, a2, q, hq, a3⟩ := f2 s hs
       refine ⟨by simp [Run.seq, Run.tick, a1], ?_, q, List.mem_append_right _ hq, a3⟩
@@ -311,7 +311,7 @@ theorem either {R : List (A × Tree)} (hG : Does θ G x Q c) (hH : Does θ H x R
       omega
   · rw [wsum_append, ← e3 φ, ← f3 φ]
     simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.map_append, List.sum_append, List.map_map,
-      Run.det, Tree.one, if_true, reduceCtorEq, if_false]
+      Run.det, Tree.one, _root_.ite_true, reduceCtorEq, _root_.ite_false]
     rw [add_comm]
     congr 1
     · congr 1

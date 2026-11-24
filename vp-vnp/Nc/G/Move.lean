@@ -181,7 +181,7 @@ theorem sum_outTab (hub : 0 < ub) {m B : ℕ} (hm : L.Le m) (hB : B * (m + L.lam
   rcases isEmpty_or_nonempty L.Ro with hRo | hRo
   · have hCn : IsEmpty L.Cn := ⟨fun ν => hRo.elim (L.c ν)⟩
     have hSl : IsEmpty L.Sl := ⟨fun e => hRo.elim (L.a e)⟩
-    rw [if_pos fun e => hSl.elim e]
+    rw [ite_eq_left fun e => hSl.elim e]
     simp
   have e1 : ∀ o : L.Cn → Fin U1, (∑ z : L.Cn → Fin U1 → UW ub,
       ∏ p, codeTab L.c L.d (chCode L ub U1 B) p (outTab L ub X o p) z) =
@@ -218,8 +218,8 @@ theorem sum_outTab (hub : 0 < ub) {m B : ℕ} (hm : L.Le m) (hB : B * (m + L.lam
       · rintro rfl p ν
         rfl
     by_cases h : o = fun ν => (⟨cnt i ν, hlt i ν⟩ : Fin U1)
-    · rw [if_pos h, if_pos (key.2 h)]
-    · rw [if_neg h, if_neg fun h' => h (key.1 h')]
+    · rw [ite_eq_left h, ite_eq_left (key.2 h)]
+    · rw [ite_eq_right h, ite_eq_right fun h' => h (key.1 h')]
   simp only [e2]
   have swap : (∑ o : L.Cn → Fin U1, ∑ i : Fin B → L.I,
       ∑ g : (ν : L.Cn) → (k : Fin B) → Fin (L.len (i k) ν) → Bool,
@@ -246,7 +246,7 @@ theorem sum_codeTab_zero (hub : 0 < ub) {m B : ℕ} (hm : L.Le m) (hB : B * (m +
     have hSl : IsEmpty L.Sl := ⟨fun e => hRo.elim (L.a e)⟩
     have hI : IsEmpty (Fin B → L.I) := ⟨fun i => h ⟨i, fun ν => hCn.elim ν⟩⟩
     have := L.pow B X
-    rw [if_pos fun e => hSl.elim e, Fintype.sum_empty] at this
+    rw [ite_eq_left fun e => hSl.elim e, Fintype.sum_empty] at this
     have h0 : ∀ a : F, a = 0 := fun a => by rw [← mul_one a, this, mul_zero]
     exact h0 _
   rw [contract (fun ν => chCode_injective hub hm hB ν) (L.conn_pow B) (outTab L ub X o)]
@@ -275,7 +275,7 @@ theorem role_eq_codeTab {x : Fin E} {p : (M.kind x).Ro} {t : ℕ} {ids : (M.kind
     role M x p t ids o y = codeTab (M.kind x).c (M.kind x).d (chCode (M.kind x) ub U1 (t * ub)) p
       (outTab (M.kind x) ub X (fun ν => o ⟨x, ν⟩) p) (fun ν k => y (.new ⟨x, ν⟩ k)) := by
   classical
-  rw [role, if_pos hy, codeTab]
+  rw [role, ite_eq_left hy, codeTab]
   refine Finset.sum_congr rfl fun i _ => ?_
   refine Fintype.sum_equiv (Equiv.piComm fun (k : Fin (t * ub)) (ν : (M.kind x).CnAt p) =>
     Fin ((M.kind x).len (i k) ν) → Bool) _ _ fun g => ?_
@@ -299,11 +299,11 @@ theorem role_eq_codeTab {x : Fin E} {p : (M.kind x).Ro} {t : ℕ} {ids : (M.kind
     (fun k => y (.new ⟨x, ν.1⟩ k))
   · by_cases h2 : ∀ ν : (M.kind x).CnAt p, ucount ub (chString (M.kind x).lab (fun j => (M.kind x).len j ν) i
         fun k => g k ν) = (o ⟨x, ν.1⟩).1 + 1
-    · refine (if_pos fun ν => (e1 ν).2 ⟨h1 ν, h2 ν⟩).trans (Eq.trans ?_ (if_pos h1).symm)
-      exact (if_pos h2).symm
-    · refine (if_neg fun h => h2 fun ν => ((e1 ν).1 (h ν)).2).trans (Eq.trans ?_ (if_pos h1).symm)
-      exact (if_neg h2).symm
-  · exact (if_neg fun h => h1 fun ν => ((e1 ν).1 (h ν)).1).trans (if_neg h1).symm
+    · refine (ite_eq_left fun ν => (e1 ν).2 ⟨h1 ν, h2 ν⟩).trans (Eq.trans ?_ (ite_eq_left h1).symm)
+      exact (ite_eq_left h2).symm
+    · refine (ite_eq_right fun h => h2 fun ν => ((e1 ν).1 (h ν)).2).trans (Eq.trans ?_ (ite_eq_left h1).symm)
+      exact (ite_eq_right h2).symm
+  · exact (ite_eq_right fun h => h1 fun ν => ((e1 ν).1 (h ν)).1).trans (ite_eq_right h1).symm
 
 theorem new_mem_newUnits {x : Fin E} {o : M.N → Fin U1} {ν : M.N} {k : Fin U1} :
     (Uid.new ν k : Uid A U0 M.N U1) ∈ newUnits M x o ↔ ν.1 = x ∧ k ≤ o ν := by
@@ -333,7 +333,7 @@ theorem upd_self (o : M.N → Fin U1) (x : Fin E) (oo : (M.kind x).Cn → Fin U1
 
 theorem upd_ne (o : M.N → Fin U1) {x : Fin E} (oo : (M.kind x).Cn → Fin U1) {ν : M.N} (h : ν.1 ≠ x) :
     upd M o x oo ν = o ν := by
-  rw [upd, dif_neg (Ne.symm h)]
+  rw [upd, dite_eq_right (Ne.symm h)]
 
 /-- One outcome of a move, as a sum over code words. -/
 theorem move_outcome (x : Fin E) {t : ℕ} (o : M.N → Fin U1) (Seen : Finset (Uid A U0 M.N U1))
@@ -443,7 +443,7 @@ theorem move_outcome (x : Fin E) {t : ℕ} (o : M.N → Fin U1) (Seen : Finset (
           rw [unitsOf_eq_none, h6]
           exact hn
         · simp only [z]
-          rw [dif_neg hx]
+          rw [dite_eq_right hx]
     · simpa only [hz] using hζ
     · funext ν k
       exact hz ν k
@@ -464,9 +464,9 @@ theorem move_identity (hub : 0 < ub) (x : Fin E) {m t : ℕ} (hm : (M.kind x).Le
   classical
   rw [Finset.sum_congr rfl fun oo _ => move_outcome x o Seen hSeen hy ids hids ht hne oo, sum_outTab hub hm hB]
   by_cases hall : ∀ e, ∀ id ∈ ids e, y (M.part x ((M.kind x).a e)) id = y (M.part x ((M.kind x).b e)) id
-  · rw [if_pos hall, if_pos]
+  · rw [ite_eq_left hall, ite_eq_left]
     exact fun e => (slotBits_eq_iff (fun id hid => (hne e id hid).1) (fun id hid => (hne e id hid).2) (ht e)).2 (hall e)
-  · rw [if_neg hall, if_neg]
+  · rw [ite_eq_right hall, ite_eq_right]
     exact fun h => hall fun e =>
       (slotBits_eq_iff (fun id hid => (hne e id hid).1) (fun id hid => (hne e id hid).2) (ht e)).1 (h e)
 

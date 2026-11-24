@@ -39,7 +39,7 @@ theorem diagF_ev {κ : List Bool → R} {D z : Tree} {g : Fm} {cg tD : ℕ} {P :
   set lD := lZ.flatMap fun s => (evl θ (Fm.ofTree D) s.out).map fun t => ((Run.det 1 D).seq s).seq t |>.tick t.out
     with hlD
   have e := Ev.ite (b := .quote .nil) (c := app D (ZE .id g)) (L := fun r => if r.out = .nil then lD else [.det 1 .nil])
-    (Ev.guess (θ := θ) z) (fun r _ h => by rw [if_neg h]; exact .quote .nil z) (fun r _ h => by rw [if_pos h]; exact eD)
+    (Ev.guess (θ := θ) z) (fun r _ h => by rw [ite_eq_right h]; exact .quote .nil z) (fun r _ h => by rw [ite_eq_left h]; exact eD)
   have hl : ([.det 1 .nil, .det 1 Tree.one] : List (Run A)).flatMap (fun r =>
       (if r.out = .nil then lD else [.det 1 .nil]).map fun s => (r.seq s).tick s.out) =
       (lD.map fun s => ((Run.det 1 .nil).seq s).tick s.out) ++ [((Run.det 1 Tree.one).seq (.det 1 .nil)).tick .nil] := by

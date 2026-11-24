@@ -20,9 +20,9 @@ theorem sum_lt {M j : ℕ} (hj : j ≤ M) (x y : ℝ) :
   obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hj
   rw [Fin.sum_univ_eq_sum_range (fun l => if l < j then x else y), Finset.sum_range_add]
   have h1 : ∑ l ∈ range j, (if l < j then x else y) = ∑ l ∈ range j, x :=
-    Finset.sum_congr rfl fun l hl => if_pos (Finset.mem_range.1 hl)
+    Finset.sum_congr rfl fun l hl => ite_eq_left (Finset.mem_range.1 hl)
   have h2 : ∑ l ∈ range d, (if j + l < j then x else y) = ∑ l ∈ range d, y :=
-    Finset.sum_congr rfl fun l _ => if_neg (by omega)
+    Finset.sum_congr rfl fun l _ => ite_eq_right (by omega)
   rw [h1, h2]
   simp
 

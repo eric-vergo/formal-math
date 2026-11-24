@@ -32,7 +32,7 @@ theorem Approximates.aeval {f : MvPolynomial X F} {s : ℕ} (h : Approximates f 
       rw [mem_support_iff] at hb ⊢
       intro h0
       have h1 := hpf b 0 le_rfl
-      rw [h0, if_pos rfl] at h1
+      rw [h0, ite_eq_left rfl] at h1
       exact hb (h1.symm.trans (by simp))
     have e1 : (MvPolynomial.aeval (fun q => MvPolynomial.map (HahnSeries.C : F →+* LaurentSeries F) (M q)) p).coeff d =
         ∑ b ∈ p.support, p.coeff b * HahnSeries.C ((MvPolynomial.aeval M (monomial b (1 : F))).coeff d) := by
@@ -54,7 +54,7 @@ theorem Approximates.aeval {f : MvPolynomial X F} {s : ℕ} (h : Approximates f 
     rw [e1, HahnSeries.coeff_sum]
     simp only [e3, hpf _ i hi]
     by_cases h0 : i = 0
-    · simp only [if_pos h0, e2]
+    · simp only [ite_eq_left h0, e2]
     · simp [h0]
 
 end Nc

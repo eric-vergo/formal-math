@@ -42,7 +42,7 @@ theorem hi_le_prevHi {ρ : Fin A → RowData A} (h : ∀ p, ValidRow ρ p) {p p'
   | zero => omega
   | succ q ih =>
     have e : prevHi ρ ⟨q + 1, hp'⟩ = (ρ ⟨q, Nat.lt_of_succ_lt hp'⟩).2.2.1 := by
-      rw [prevHi, dif_neg (Nat.succ_ne_zero q)]
+      rw [prevHi, dite_eq_right (Nat.succ_ne_zero q)]
       rfl
     rw [e]
     rcases Nat.lt_succ_iff_lt_or_eq.1 hlt with h1 | h1
@@ -54,7 +54,7 @@ theorem RowOk.flag {d : RowData A} {X : Fin A → List Γ} (h : RowOk d X) {b : 
     d.1 = false := by
   by_contra hc
   rw [Bool.not_eq_false] at hc
-  rw [RowOk, if_pos hc] at h
+  rw [RowOk, ite_eq_left hc] at h
   exact hb (h b)
 
 /-- Valid row data imply staircase support. -/
@@ -66,9 +66,9 @@ theorem stair_of_rows {ρ : Fin A → RowData A} (h : ∀ p, ValidRow ρ p) {X :
   have r := hX a
   have r' := hX a'
   have v' := h a'
-  rw [RowOk, if_neg (by simp [f])] at r
-  rw [RowOk, if_neg (by simp [f'])] at r'
-  rw [ValidRow, if_neg (by simp [f'])] at v'
+  rw [RowOk, ite_eq_right (by simp [f])] at r
+  rw [RowOk, ite_eq_right (by simp [f'])] at r'
+  rw [ValidRow, ite_eq_right (by simp [f'])] at v'
   have h1 := (r.2.2 b hb).2
   have h2 := hi_le_prevHi h hlt
   have h3 := (r'.2.2 b' hb').1
@@ -123,7 +123,7 @@ theorem exists_rows {X : Fin A → Fin A → List Γ} (hX : Stair X) :
       have hmax := Finset.max'_mem _ hne
       simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hmin hmax
       refine ⟨(false, Finset.min' _ hne, Finset.max' _ hne), ?_, ?_, ?_⟩
-      · simp only [RowOk, Bool.false_eq_true, if_false]
+      · simp only [RowOk, Bool.false_eq_true, ite_false]
         refine ⟨hmin, hmax, fun b hb => ⟨Finset.min'_le _ _ (by simpa using hb), Finset.le_max' _ _ (by simpa using hb)⟩⟩
       · apply le_antisymm
         · exact le_hiBefore (Nat.lt_succ_self _) hmax
@@ -134,7 +134,7 @@ theorem exists_rows {X : Fin A → Fin A → List Γ} (hX : Stair X) :
             subst this
             have hm : b ∈ univ.filter fun b => X p' b ≠ [] := by simpa using hb
             exact Finset.le_max' _ _ hm
-      · simp only [Bool.false_eq_true, if_false]
+      · simp only [Bool.false_eq_true, ite_false]
         exact ⟨hiBefore_le fun p' b hp' hb => hX p' p b _ hb hmin hp', Finset.min'_le _ _ (by simpa using hmax)⟩
   choose ρ h1 h2 h3 using hrow
   have hprev : ∀ p, prevHi ρ p = hiBefore X p.1 := by
@@ -164,7 +164,7 @@ theorem rows_unique {X : Fin A → Fin A → List Γ} {ρ ρ' : Fin A → RowDat
     | succ q ih =>
       intro hq
       apply row_eq h h' hX hX'
-      rw [prevHi, prevHi, dif_neg (Nat.succ_ne_zero q), dif_neg (Nat.succ_ne_zero q)]
+      rw [prevHi, prevHi, dite_eq_right (Nat.succ_ne_zero q), dite_eq_right (Nat.succ_ne_zero q)]
       have := ih (Nat.lt_of_succ_lt hq)
       show (ρ ⟨q, _⟩).2.2.1 = (ρ' ⟨q, _⟩).2.2.1
       rw [this]
@@ -181,14 +181,14 @@ where
     by_cases he : ∀ b, X p b = []
     · have f : (ρ p).1 = true := by
         by_contra hc
-        rw [RowOk, if_neg hc] at r
+        rw [RowOk, ite_eq_right hc] at r
         exact r.1 (he _)
       have f' : (ρ' p).1 = true := by
         by_contra hc
-        rw [RowOk, if_neg hc] at r'
+        rw [RowOk, ite_eq_right hc] at r'
         exact r'.1 (he _)
-      rw [if_pos f] at v
-      rw [if_pos f'] at v'
+      rw [ite_eq_left f] at v
+      rw [ite_eq_left f'] at v'
       refine Prod.ext (f.trans f'.symm) (Prod.ext (Fin.ext ?_) (Fin.ext ?_))
       · rw [v.1, v'.1, hp]
       · rw [v.2, v'.2, hp]
@@ -196,8 +196,8 @@ where
       obtain ⟨b, hb⟩ := he
       have f := r.flag hb
       have f' := r'.flag hb
-      rw [RowOk, if_neg (by simp [f])] at r
-      rw [RowOk, if_neg (by simp [f'])] at r'
+      rw [RowOk, ite_eq_right (by simp [f])] at r
+      rw [RowOk, ite_eq_right (by simp [f'])] at r'
       refine Prod.ext (f.trans f'.symm) (Prod.ext ?_ ?_)
       · exact le_antisymm (r.2.2 _ r'.1).1 (r'.2.2 _ r.1).1
       · exact le_antisymm (r'.2.2 _ r.2.1).2 (r.2.2 _ r'.2.1).2

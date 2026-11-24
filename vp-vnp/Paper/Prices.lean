@@ -245,7 +245,7 @@ theorem prop_random_compact {Z : Type*} (A B : Z → Z → ℝ)
   -- the price on T, as a function on all pairs
   let D : Finset Z → Z → Z → ℝ := fun T a b => if h : a ∈ T ∧ b ∈ T then d T ⟨a, h.1⟩ ⟨b, h.2⟩ else 0
   have hD : ∀ {S T : Finset Z} (hT : S ⊆ T) (a b : S), D T a b = d T ⟨a, hT a.2⟩ ⟨b, hT b.2⟩ :=
-    fun hT a b => dif_pos ⟨hT a.2, hT b.2⟩
+    fun hT a b => dite_eq_left ⟨hT a.2, hT b.2⟩
   let U : Ultrafilter (Finset Z) := Ultrafilter.of atTop
   have hmem : ∀ S : Finset Z, ∀ᶠ T in (U : Filter (Finset Z)), S ⊆ T := fun S =>
     Ultrafilter.of_le _ (eventually_ge_atTop S)
@@ -523,7 +523,7 @@ theorem lem_hubs {A : Type} [Fintype A] [DecidableEq A] (π : A → I) (t : Ten 
     · simp
     · intro y _ hy
       obtain ⟨a, ha⟩ := Function.ne_iff.1 hy
-      rw [Finset.prod_eq_zero (Finset.mem_univ a) (if_neg fun hxy => ha hxy.symm), zero_mul]
+      rw [Finset.prod_eq_zero (Finset.mem_univ a) (ite_eq_right fun hxy => ha hxy.symm), zero_mul]
     · simp)
   refine key.trans ((Equi.prod_reindex _ (Equiv.optionEquivSumPUnit A).symm).1.trans
     ((Equi.prod_sum _).1.trans (Restr.mul (Restr.prod fun a => ?_) ((Equi.prod_unique _).1.trans ?_))))
