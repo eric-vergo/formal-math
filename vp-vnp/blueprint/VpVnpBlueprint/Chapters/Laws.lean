@@ -800,14 +800,17 @@ has in the place of that description. It is this blueprint's account of the file
 {repoFile "vp-vnp/Nc/SlpCalc.lean"}[`Nc/SlpCalc.lean`], and it is a gloss throughout: the Lean
 statements shown beside the nodes are what is proved, and the prose is a reading of them.
 
-*What was read and what was not.* Read in full: the definitions shown in this chapter, the
-structure `ThinTrees`, the statements of the theorems named below, and the proofs of
-`Paper.thm_tree` and `Paper.exists_thinTrees`, which assemble the fields. Read as statements only:
-the theorems on loads (`Nc/Tow/Load*.lean`), on the packets at the end and on copies
-(`Nc/Tow/End*.lean`, `Nc/Tow/Ever*.lean`), on the rules (`Nc/Tow/Ok.lean`), on one move
-(`Nc/G/Move.lean`), and the stages of the program (`Nc/Tow/Slp*.lean`). Their proofs, about nine
-thousand lines in `Nc/Tow` alone, were not read. Where the account below says how a proof goes, it
-describes which statements are combined, as the statements and the assembling proofs show it.
+*How the construction is documented.* The original blueprint read the definitions, the
+`ThinTrees` structure and the two assembly proofs, `Paper.thm_tree` and
+`Paper.exists_thinTrees`. For the bounds on loads, end packets and copies, the move rules and
+the program stages, it traced how the theorem statements fit together. Two calculations in the
+cleaned load proof can also be read directly in
+{repoFile "vp-vnp/Nc/Tow/Load2.lean"}[`Nc/Tow/Load2.lean`]. A middle relay at stage three has a
+single possible source, the stage-two relay. Bounding the load from that source gives
+`Nc.Tow.num_mid3_le_mid2`, used both in the four-stage bound and in the node copy count.
+For the end segments, `Nc.Tow.nEnd_eq` moves the condition selecting a vertex and an unordered
+pair inside the edge sum. An edge contributes through its first endpoint, its second, or
+neither. Distinctness of the endpoints ensures it is counted once.
 
 *The architecture.* The Lean proof separates three things that the printed proof treats together.
 First, a calculus of moves for arbitrary laws and arbitrary plans, in which the invariance of the
