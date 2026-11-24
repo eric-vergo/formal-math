@@ -143,6 +143,16 @@ def line_stats(text, masked, comments):
     return counts
 
 
+def lean_stats(text, document_start):
+    code = text[:document_start]
+    masked, comments = split_lean(code)
+    loc = line_stats(code, masked, comments)
+    loc["document"] = len(text[document_start:].splitlines())
+    loc["physical"] += loc["document"]
+    loc["nonblank"] = sum(bool(line.strip()) for line in text.splitlines())
+    return loc, masked
+
+
 def separator(source):
     """Find a declaration value delimiter at bracket depth zero."""
     stack = []
@@ -304,12 +314,7 @@ def analyze(args):
             text = data.decode()
             # Verso prose following #doc is accounted separately from Lean code.
             command_end = re.search(r"^#doc\b", text, re.M) if lib == "Blueprint" else None
-            lean_text = text[:command_end.start()] if command_end else text
-            masked, comments = split_lean(lean_text)
-            loc = line_stats(lean_text, masked, comments)
-            doc_lines = len(text[len(lean_text):].splitlines())
-            loc["document"] = doc_lines
-            loc["physical"] += doc_lines
+            loc, masked = lean_stats(text, command_end.start() if command_end else len(text))
             entry["loc"] = loc
             mod = module_name(path)
             entry["module"] = mod
@@ -347,7 +352,9 @@ def analyze(args):
                 if command_end and path.startswith("blueprint/VpVnpBlueprint"):
                     blueprint["authored"].append(item)
         elif b"\0" not in data:
-            entry["physical_lines"] = len(data.decode().splitlines())
+            lines = data.decode().splitlines()
+            entry["physical_lines"] = len(lines)
+            entry["nonblank_lines"] = sum(bool(line.strip()) for line in lines)
         files.append(entry)
         for group in {"total", lib, subsystem}:
             grouped[group]["files"] += 1
@@ -360,9 +367,12 @@ def analyze(args):
         text = p.read_text()
         item = read_blueprint(path, text)
         item["bytes"] = p.stat().st_size
-        item["physical_lines"] = len(text.splitlines())
+        document = re.search(r"^#doc\b", text, re.M)
+        loc, masked = lean_stats(text, document.start() if document else len(text))
+        item["physical_lines"] = loc["physical"]
+        item["loc"] = loc
         mod = "VpVnpBlueprint.Generated." + ".".join(Path(path).with_suffix("").parts)
-        local_graph[mod] = IMPORT.findall(text.split("#doc", 1)[0])
+        local_graph[mod] = IMPORT.findall(masked)
         blueprint["generated"].append(item)
 
     blueprint_counts = {}
@@ -398,6 +408,11 @@ def analyze(args):
         root: sorted(n for n, m in closure if m in modules)
         for root, closure in kernel["exports"].items()
     }
+    union = {tuple(item) for items in kernel["exports"].values() for item in items}
+    export_union = {
+        "constants": len(union), "project_constants": sum(m in modules for _, m in union),
+        "modules": len({m for _, m in union}), "project_modules": len({m for _, m in union if m in modules}),
+    }
     blueprint_membership = set(kernel["blueprintProjectClosure"])
     import_roots = ["Comparator.VpVnp.Solution", "Paper", "BlueprintMain", "VpVnpBlueprint"]
     inactive = sorted(
@@ -413,7 +428,7 @@ def analyze(args):
         "import_reachability": {r: reachable(local_graph, r) for r in import_roots},
         "import_counts": {r: graph_stats(local_graph, r) for r in import_roots if r in local_graph},
         "blueprint": blueprint, "blueprint_counts": blueprint_counts,
-        "kernel_counts": export_counts, "export_project_names": export_project_names,
+        "kernel_counts": export_counts, "export_project_names": export_project_names, "export_union": export_union,
         "blueprint_declared_roots": kernel["blueprintDeclaredRoots"],
         "blueprint_project_closure": kernel["blueprintProjectClosure"],
         "proof_candidates_outside_export_and_blueprint_closures": inactive,
@@ -442,7 +457,7 @@ def main():
     else:
         args.output.write_bytes(raw)
     if args.summary:
-        wanted = ["revision", "groups", "import_counts", "blueprint_counts", "kernel_counts",
+        wanted = ["revision", "groups", "import_counts", "blueprint_counts", "kernel_counts", "export_union",
                   "proof_candidates_with_no_source_usages", "exact_normalized_proof_body_duplicates"]
         summary = {k: result[k] for k in wanted}
         summary["tracked_files"] = len(result["tracked_files"])

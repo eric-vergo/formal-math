@@ -47,8 +47,10 @@ including compiler-generated constants. Use those lists for per-export route fla
 - **Source lines.** Physical lines include the last line even without a newline. A code line has
   nonwhitespace Lean text outside comments. A comment line includes a token of a line comment
   or a nested block comment. Mixed lines appear in both counts. Blank lines have neither.
+  Nonblank lines count lines that contain a nonwhitespace character in the original text.
   Lines beginning at the first top-level Verso `#doc` command are counted as document lines.
-  Non-Lean tracked text has physical counts and binary data has byte counts.
+  The same split applies to generated Lean. Non-Lean tracked text has physical and nonblank
+  counts. Binary data has byte counts.
 - **Proof commands.** Use Lean's `.ilean` declaration ranges and selection ranges, in zero-based
   UTF-16 coordinates. Report one entry per distinct source command whose selection follows
   `theorem` or `lemma`. If the compiler records only the selection range of a single-line
@@ -64,8 +66,9 @@ including compiler-generated constants. Use those lists for per-export route fla
   records are identified separately. Generated blueprint files have their own inventory.
 - **Imports.** Read proof imports from the compiler's `.ilean` data, and blueprint and support
   imports from source. Keep external imports in the adjacency map. Root metrics count local
-  edges, including the root's own outgoing edges, and measure depth as the largest shortest
-  distance from the root along local imports. Fanout counts distinct local imports.
+  edges, including the root's own outgoing edges. The inventory retains the maximum shortest
+  distance from the root. The comparison reports the longest directed path from the root
+  in the local DAG and the maximum count of immediate local importers of one module.
 - **Blueprint.** Count written and generated directives by kind, preserve source lines and
   declaration associations, and count listed-by-name entries separately from full nodes.
   Written names use the generator's association convention. The compiled pruning check also
@@ -79,6 +82,8 @@ including compiler-generated constants. Use those lists for per-export route fla
   Count distinct non-self edges from each visited declaration. Depth is the largest shortest
   distance from the root. Max fanout is the largest distinct dependency count of any declaration
   in the closure. Project membership comes from the explicitly imported project module list.
+  The compact inventory includes the cardinality of the deduplicated union of all five roots,
+  with separate project and whole-environment counts.
 - **Pruning candidates.** Report named source proofs outside both the export and authored
   blueprint kernel closures. The smaller list additionally requires zero explicit source
   usages from the project's `.ilean` files. These lists do not establish that removing a
