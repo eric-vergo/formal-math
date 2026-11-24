@@ -49,6 +49,12 @@ def read_reviews(directory, paths):
         group_names.update(f"Nc/Dl/{p}.lean" for p in dealing.split(", "))
     network = (directory / "network.md").read_text()
     network_levels = dict(re.findall(r"^- ([\w/]+\.lean) — ([^\n]+)$", network, re.M))
+    transfer = directory / "comparison.md"
+    if transfer.is_file():
+        transferred = set(re.findall(r"^- ([\w/]+\.lean) — full proof-body read\b", transfer.read_text(), re.M))
+        if len(transferred) != 17 or not transferred <= network_levels.keys():
+            raise ValueError("transferred modules must match their entries in the network ledger")
+        network_levels.update(dict.fromkeys(transferred, "full proof-body read"))
     ledger = {}
     for cohort, reviewed in (("Contracting", contracting_names), ("Flat/common", flat_names), ("Group/dealing", group_names)):
         for path in sorted(reviewed):
@@ -97,8 +103,11 @@ def main():
     print("The `Paper.lean` umbrella, public specification, Comparator, blueprint and report tooling have their own project inventory entries.\n")
     table(["Outcome", "Modules"], sorted(decisions.items()))
     table(["Review cohort", "Documented depth", "Modules"], [[*key, n] for key, n in sorted(coverage.items())])
-    print("The four original review ledgers preserve mathematical decisions and focused checks. The cohort totals here assign overlapping group/dealing files to the group/dealing reviewer. The two revision inventories provide exact blob IDs for the source dispositions.\n")
-    print("- [Contracting](reviews/contracting.md)\n- [Flat and common](reviews/flat.md)\n- [Group and dealing](reviews/groups.md)\n- [Network and machine](reviews/network.md)\n")
+    print("The review ledgers preserve mathematical decisions and focused checks. The cohort totals assign overlapping group/dealing files to the group/dealing reviewer and include the tower and cut transfer in the network/machine cohort. The two revision inventories provide exact blob IDs for the source dispositions.\n")
+    print("- [Contracting](reviews/contracting.md)\n- [Flat and common](reviews/flat.md)\n- [Group and dealing](reviews/groups.md)\n- [Network and machine](reviews/network.md)")
+    if (args.reviews / "comparison.md").is_file():
+        print("- [Tower and cut proofs](reviews/comparison.md)")
+    print()
     print("## Baseline proof modules\n")
     table(["Baseline source", "Outcome", "After location", "Review cohort", "Documented depth", "Retained mathematics"], rows)
     print("## Added proof module paths\n")
