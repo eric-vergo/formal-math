@@ -230,7 +230,10 @@ theorems: `Paper.prop_crossing_cut` (Lemma A.3 combined with Lemma A.2, as an in
 $`\phi`), `Paper.prop_crossing_cover` (subadditivity on the $`\Psi_N`),
 `Paper.prop_crossing_classes` (the pigeonhole step), `Paper.prop_crossing_class_size` and
 `Paper.prop_crossing_products` (the two uses of Lemma B.1), `Paper.prop_crossing_spectral` (the
-inequality for $`d_\phi`), and `Paper.prop_crossing_first` (the first statement for prices).
+inequality for $`d_\phi`), and `Paper.prop_crossing_first` (the first statement for prices). The latter
+uses the closedness of the crossing inequalities in the distances and the two parameters.
+Projecting away the compact quarter disk gives a closed condition on the distances, so the
+inequality passes from scaled spectral points to their closure.
 :::
 
 The constraint $`r^2 + r'^2 \leq 2(p^2 + q^2)` is quadratic because the counts of Lemma B.1 grow

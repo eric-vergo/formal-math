@@ -381,57 +381,24 @@ theorem prop_crossing_first {Y : Type} {d : Y → Y → ℝ} (hd : IsPrice K d) 
     ∃ r l : ℝ, 0 ≤ r ∧ 0 ≤ l ∧ r ^ 2 + l ^ 2 ≤ 2 * (p ^ 2 + q ^ 2) ∧
       p * d x v + q * d y u ≤ p * d x o + q * d y o + p * d v o' + q * d u o' + r * d o o' ∧
       p * d x v + q * d y u ≤ p * d x w + q * d u w + q * d y w' + p * d v w' + l * d w w' := by
-  set ρ := 2 * (p ^ 2 + q ^ 2) with hρ
-  have hρ0 : 0 ≤ ρ := by positivity
-  obtain ⟨z, ⟨h1, h2, h3⟩, h⟩ : ∃ z ∈ quarter ρ, p * d x v + q * d y u ≤
-      min (p * d x o + q * d y o + p * d v o' + q * d u o' + z.1 * d o o')
-        (p * d x w + q * d u w + q * d y w' + p * d v w' + z.2 * d w w') := by
-    refine exists_quarter hρ0 fun δ hδ => ?_
-    set T := 3 * (p + q) + ρ + 1 with hT
-    have hT0 : 0 < T := by positivity
-    set η := δ / T with hη
-    have hη0 : 0 < η := by positivity
-    have hηT : η * T = δ := by rw [hη]; field_simp
-    obtain ⟨F, c, hc, hF⟩ := hd.exists_spec ![x, y, v, u, o, o', w, w'] hη0
+  let ρ := 2 * (p ^ 2 + q ^ 2)
+  let _ : CompactSpace (quarter ρ) := isCompact_iff_compactSpace.mp (isCompact_quarter ρ)
+  let atPoint : Fin 8 → Y := ![x, y, v, u, o, o', w, w']
+  let admissible : Set ((Fin 8 → Fin 8 → ℝ) × quarter ρ) := {t |
+    p * t.1 0 2 + q * t.1 1 3 ≤
+      min (p * t.1 0 4 + q * t.1 1 4 + p * t.1 2 5 + q * t.1 3 5 + t.2.val.1 * t.1 4 5)
+        (p * t.1 0 6 + q * t.1 3 6 + q * t.1 1 7 + p * t.1 2 7 + t.2.val.2 * t.1 6 7)}
+  have hclosed : IsClosed admissible := isClosed_le (by fun_prop) (by fun_prop)
+  have h := prices_induction (hd.mem atPoint) (isClosedMap_fst_of_compactSpace admissible hclosed) (by
+    intro F c hc
     obtain ⟨z, hz, h⟩ := prop_crossing_spectral hp hq F 0 1 2 3 4 5 6 7
-    refine ⟨z, hz, ?_⟩
-    obtain ⟨hz1, hz2, hz3⟩ := hz
-    have q1 : z.1 ≤ ρ + 1 := by nlinarith [sq_nonneg (z.1 - 1)]
-    have q2 : z.2 ≤ ρ + 1 := by nlinarith [sq_nonneg (z.2 - 1)]
-    have lo : ∀ (i j : Fin 8) {t : ℝ}, 0 ≤ t →
-        t * (c * F.e i j) ≤ t * d (![x, y, v, u, o, o', w, w'] i) (![x, y, v, u, o, o', w, w'] j) +
-          t * η := by
-      intro i j t ht
-      rw [← mul_add]
-      exact mul_le_mul_of_nonneg_left (by linarith [(abs_lt.1 (hF i j)).1]) ht
-    have hi : ∀ (i j : Fin 8) {t : ℝ}, 0 ≤ t →
-        t * d (![x, y, v, u, o, o', w, w'] i) (![x, y, v, u, o, o', w, w'] j) ≤
-          t * (c * F.e i j) + t * η := by
-      intro i j t ht
-      rw [← mul_add]
-      exact mul_le_mul_of_nonneg_left (by linarith [(abs_lt.1 (hF i j)).2]) ht
-    have a1 : p * d x v ≤ p * (c * F.e 0 2) + p * η := hi 0 2 hp
-    have a2 : q * d y u ≤ q * (c * F.e 1 3) + q * η := hi 1 3 hq
-    have a3 : p * (c * F.e 0 4) ≤ p * d x o + p * η := lo 0 4 hp
-    have a4 : q * (c * F.e 1 4) ≤ q * d y o + q * η := lo 1 4 hq
-    have a5 : p * (c * F.e 2 5) ≤ p * d v o' + p * η := lo 2 5 hp
-    have a6 : q * (c * F.e 3 5) ≤ q * d u o' + q * η := lo 3 5 hq
-    have a7 : z.1 * (c * F.e 4 5) ≤ z.1 * d o o' + z.1 * η := lo 4 5 hz1
-    have a8 : p * (c * F.e 0 6) ≤ p * d x w + p * η := lo 0 6 hp
-    have a9 : q * (c * F.e 3 6) ≤ q * d u w + q * η := lo 3 6 hq
-    have b1 : q * (c * F.e 1 7) ≤ q * d y w' + q * η := lo 1 7 hq
-    have b2 : p * (c * F.e 2 7) ≤ p * d v w' + p * η := lo 2 7 hp
-    have b3 : z.2 * (c * F.e 6 7) ≤ z.2 * d w w' + z.2 * η := lo 6 7 hz2
-    have c1 : z.1 * η ≤ (ρ + 1) * η := mul_le_mul_of_nonneg_right q1 hη0.le
-    have c2 : z.2 * η ≤ (ρ + 1) * η := mul_le_mul_of_nonneg_right q2 hη0.le
-    have hsum : 3 * (p * η) + 3 * (q * η) + (ρ + 1) * η = δ := by rw [← hηT, hT]; ring
-    rw [← min_add_add_right]
-    refine le_min ?_ ?_
-    · have h4 := mul_le_mul_of_nonneg_left (h.trans (min_le_left _ _)) hc
-      linarith
-    · have h4 := mul_le_mul_of_nonneg_left (h.trans (min_le_right _ _)) hc
-      linarith
-  exact ⟨z.1, z.2, h1, h2, h3, le_min_iff.1 h⟩
+    refine ⟨⟨fun a b => c * F.e a b, ⟨z, hz⟩⟩, ?_, rfl⟩
+    have hscaled := mul_le_mul_of_nonneg_left h hc
+    rw [mul_min_of_nonneg _ _ hc] at hscaled
+    dsimp [admissible]
+    simpa only [mul_add, mul_left_comm c] using hscaled)
+  obtain ⟨⟨_, z⟩, hz, rfl⟩ := h
+  exact ⟨z.val.1, z.val.2, z.property.1, z.property.2.1, z.property.2.2, le_min_iff.mp hz⟩
 
 /-- **Paper: Proposition prop:crossing.** "Let x, v, y, u, o, o′, w, w′ be points of a price and p, q ≥ 0. There are r, l ≥ 0 with
 r² + l² ≤ 2(p² + q²) such that p|xv| + q|yu| is at most each of p|xo| + q|yo| + p|vo′| + q|uo′| + r|oo′|, p|xw| + q|uw| + q|yw′| + p|vw′| + l|ww′|.
