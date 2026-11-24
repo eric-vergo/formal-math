@@ -53,7 +53,7 @@ unrelated arguments:
   pieces, a small circuit would then speed up all such computations, and a diagonal argument
   refutes the speed-up. This gives $`2^{c(\log m)^2/\log\log m}`.
 
-The theorem takes the weaker bound. It is not known which case holds, for any field.
+The theorem takes the weaker bound. It is not known which case holds, even over $`\mathbb{R}`.
 
 # The two hypotheses
 
@@ -95,8 +95,7 @@ hypotheses of Definition 2.1 holds, that is, one of the two cases occurs.” In 
 is Theorem D.2, presented in {ref "chapter-dichotomy"}[The two cases]. The paper continues: “We
 do not know which of the two hypotheses holds, even over $`\mathbb{R}`, nor do we show that the
 two are mutually exclusive.” The Lean proof of the theorem is by cases on whether the contracting
-hypothesis holds, so it is not constructive, and nothing in the development decides the case for
-any field.
+hypothesis holds, so it is not constructive, and the proofs of the main theorems use both cases.
 
 What the hypotheses mean geometrically, adapted from page 5: every price on
 $`\mathrm{Mat}_\mu(\mathbb{F}_2)` has $`D(\mu) \le \sqrt{\mu}\, D(1)`, because for $`W`, $`W'`

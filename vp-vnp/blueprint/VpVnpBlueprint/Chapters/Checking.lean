@@ -69,7 +69,7 @@ the five theorems of `Solution.lean`. For each it must print
 with the theorem's name, and no other axiom: these three are the axioms of Lean's standard logic,
 and the list is computed over everything the theorem depends on. An unproved statement anywhere
 below a theorem would appear in this list as `sorryAx`, and a proof by compiled evaluation
-(`native_decide`) as an axiom of its own.
+(`native_decide`) as a further axiom.
 
 {repoFile "vp-vnp/scripts/StatementSpelling.lean"}[`scripts/StatementSpelling.lean`] prints
 nothing when its proofs check. It is the machine-checked part of the argument that the one
