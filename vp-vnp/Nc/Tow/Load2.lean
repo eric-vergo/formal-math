@@ -304,6 +304,27 @@ theorem num_mid0 (j : Fin J) (e : T.Ed j) (hx : okR T R ch (.mid j e 0)) :
   intro ha
   exact hn (ha rfl)
 
+/-- Stage three of a middle relay receives its units from stage two. -/
+theorem num_mid3_le_mid2 (j : Fin J) (e : T.Ed j) (hx3 : okR T R ch (.mid j e 3))
+    (hx2 : okR T R ch (.mid j e 2)) :
+    num R ch FL lhat n o (.inl ⟨.mid j e 3, hx3⟩) ≤ num R ch FL lhat n o (.inl ⟨.mid j e 2, hx2⟩) := by
+  refine (num_inl hr hb _).trans ?_
+  refine (load_le_sum {(⟨.inl ⟨.mid j e 2, hx2⟩, true⟩ : NM R FL (ch := ch))} (bt_mid j e 3) ?_).trans ?_
+  · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
+    · obtain ⟨h1, h2⟩ := tgR_mid (x := x) (ν := ν) hν
+      have h3 : x = .mid j e 2 := by
+        rcases h2 with h2 | h2 | h2
+        · exact absurd h2.1 (by decide)
+        · exact absurd h2.1 (by decide)
+        · exact h2.2
+      subst h3
+      have h1 : ν = true := h1
+      subst h1
+      exact mem_singleton_self _
+    · simp [tgM] at hν
+  · rw [Finset.sum_singleton]
+    exact alv_le_num hr hb _ _
+
 /-- The relays of an edge are given at most what is on the edge. -/
 theorem num_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j e s)) :
     ∃ hx0 : okR T R ch (.mid j e 0), num R ch FL lhat n o (.inl ⟨.mid j e s, hx⟩) ≤
@@ -375,22 +396,7 @@ theorem num_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j
   · exact one hx
   · exact two hx
   · have hx2 : okR T R ch (.mid j e 2) := ⟨fun hh => absurd hh (by decide), fun hh => absurd hh (by decide)⟩
-    refine (num_inl hr hb _).trans ?_
-    refine (load_le_sum {(⟨.inl ⟨.mid j e 2, hx2⟩, true⟩ : NM R FL (ch := ch))} (bt_mid j e 3) ?_).trans ?_
-    · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
-      · obtain ⟨h1, h2⟩ := tgR_mid (x := x) (ν := ν) hν
-        have h3 : x = .mid j e 2 := by
-          rcases h2 with h2 | h2 | h2
-          · exact absurd h2.1 (by decide)
-          · exact absurd h2.1 (by decide)
-          · exact h2.2
-        subst h3
-        have h1 : ν = true := h1
-        subst h1
-        exact mem_singleton_self _
-      · simp [tgM] at hν
-    · rw [Finset.sum_singleton]
-      exact (alv_le_num hr hb _ _).trans (two hx2)
+    exact (num_mid3_le_mid2 hr hb j e hx hx2).trans (two hx2)
 
 theorem alv_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j e s)) (ν : Bool) :
     alv R ch FL lhat n o (⟨.inl ⟨.mid j e s, hx⟩, ν⟩ : NM R FL (ch := ch)) ≤ load R ch FL lhat n o (.edge j.castSucc e) ∧

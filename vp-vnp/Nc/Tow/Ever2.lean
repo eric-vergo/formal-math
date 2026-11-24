@@ -59,22 +59,7 @@ theorem nR_mid3 (j : Fin J) (e : T.Ed j) : nR R ch FL lhat n o (.mid j e 3) ≤ 
   unfold nR
   rw [dite_eq_left (ok_mid2 j e)]
   split_ifs with hx
-  · refine (num_inl hr hb _).trans ?_
-    refine (load_le_sum {(⟨.inl ⟨.mid j e 2, ok_mid2 j e⟩, true⟩ : NM R FL (ch := ch))} (bt_mid j e 3) ?_).trans ?_
-    · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
-      · obtain ⟨h1, h2⟩ := tgR_mid (x := x) (ν := ν) hν
-        have h3 : x = .mid j e 2 := by
-          rcases h2 with h2 | h2 | h2
-          · exact absurd h2.1 (by decide)
-          · exact absurd h2.1 (by decide)
-          · exact h2.2
-        subst h3
-        have h1 : ν = true := h1
-        subst h1
-        exact mem_singleton_self _
-      · simp [tgM] at hν
-    · rw [Finset.sum_singleton]
-      exact alv_le_num hr hb _ _
+  · exact num_mid3_le_mid2 hr hb j e hx (ok_mid2 j e)
   · exact Nat.zero_le _
 
 include hgR
