@@ -103,12 +103,12 @@ theorem cost9 {q : Fin (K + 1) → Q} {ρ : Option S → Fin (K + K) → RowData
           obtain ⟨cc, h1, h2⟩ := hst.cut id
           rw [DStep.cost, byPath_nm C.nm_inj, h1]
           by_cases hc : id ∈ cutUnits (G.hold0 M.np) (G.hold1 M.np) (grp n o) (P.cur n o E)
-          · rw [if_pos hc, if_neg (bit_ne_nil.2 (h2.2 hc))]
+          · rw [ite_eq_left hc, ite_eq_right (bit_ne_nil.2 (h2.2 hc))]
             omega
           · have : cc = false := by
               by_contra hcc
               exact hc (h2.1 (by simpa using hcc))
-            rw [if_neg hc, this, if_pos (show bit false = .nil from rfl)]
+            rw [ite_eq_right hc, this, ite_eq_left (show bit false = .nil from rfl)]
             omega
       _ = _ := by
           rw [Finset.sum_add_distrib, Finset.sum_const, smul_eq_mul, Finset.card_univ, Finset.sum_ite_mem,

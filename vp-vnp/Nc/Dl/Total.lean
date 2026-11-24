@@ -60,12 +60,12 @@ theorem exists_mid (q : Fin (K + 1) → Q) (ρ : Option S → Fin (K + K) → Ro
   have k5 : ∀ y, (∀ s p, y ≠ .row s p) → s5 y = s4 y := by
     intro y hy
     rw [hs5]
-    exact dif_neg fun ⟨a, ha⟩ => hy a.1 a.2 ha.symm
+    exact dite_eq_right fun ⟨a, ha⟩ => hy a.1 a.2 ha.symm
   have w5 : ∀ s p, s5 (.row s p) = bit (decide (ValidRow (ρ s) p)) := by
     intro s p
     have h : ∃ a : Option S × Fin (K + K), (Nm.row a.1 a.2 : NmT S M U0 U1 pS) = .row s p := ⟨(s, p), rfl⟩
     rw [hs5]
-    simp only [dif_pos h]
+    simp only [dite_eq_left h]
     have hinj : ∀ (s s' : Option S) (p p' : Fin (K + K)), (Nm.row s p : NmT S M U0 U1 pS) = .row s' p' → s = s' ∧ p = p' :=
       fun s s' p p' h => by simpa using h
     obtain ⟨h1, h2⟩ := hinj _ _ _ _ h.choose_spec
@@ -95,12 +95,12 @@ theorem exists_mid (q : Fin (K + 1) → Q) (ρ : Option S → Fin (K + K) → Ro
   have k7 : ∀ y, (∀ a, y ≠ nm7 a) → s7 y = s6 y := by
     intro y hy
     rw [hs7]
-    exact dif_neg fun ⟨a, ha⟩ => hy a ha.symm
+    exact dite_eq_right fun ⟨a, ha⟩ => hy a ha.symm
   have w7 : ∀ a, s7 (nm7 a) = v7 tab (n, o) a := by
     intro a
     have h : ∃ a' : Ix7 M U0 U1, (nm7 a' : NmT S M U0 U1 pS) = nm7 a := ⟨a, rfl⟩
     rw [hs7]
-    simp only [dif_pos h]
+    simp only [dite_eq_left h]
     rw [nm7_inj h.choose_spec]
   have old : ∀ y, (∀ s p, y ≠ .row s p) → (∀ k, y ≠ .slp k) → (∀ a, y ≠ nm7 a) → s7 y = s4 y := fun y h1 h2 h3 => by
     rw [k7 y h3, k6 y h2, k5 y h1]
