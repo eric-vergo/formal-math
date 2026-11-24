@@ -17,10 +17,6 @@ section Emit
 
 variable {Γ S J : Type*} [Fintype Γ] [DecidableEq Γ] [Fintype S] [DecidableEq S] [Fintype J] [DecidableEq J]
 
-theorem emit_appendR (o o' : List (Letter S J Γ)) (z : Ch S J) : emit (o ++ o') z = emit o z ++ emit o' z := by
-  unfold emit
-  rw [List.reduceOption_append, proj_append]
-
 @[simp] theorem emit_nil (z : Ch S J) : emit ([] : List (Letter S J Γ)) z = [] := rfl
 
 @[simp] theorem emit_none (z : Ch S J) : emit ([none] : List (Letter S J Γ)) z = [] := rfl
@@ -29,18 +25,6 @@ theorem emit_some (z z' : Ch S J) (γ : Γ) :
     emit ([some (z', γ)] : List (Letter S J Γ)) z = if z' = z then [γ] else [] := by
   unfold emit
   rw [List.reduceOption_cons_of_some, List.reduceOption_nil, proj_cons, proj_nil]
-
-theorem emit_length_le (o : List (Letter S J Γ)) (z : Ch S J) : (emit o z).length ≤ o.length := by
-  induction o with
-  | nil => simp
-  | cons a o ih =>
-    rw [← List.singleton_append, emit_appendR, List.length_append, List.length_append]
-    have : (emit [a] z).length ≤ 1 := by
-      rcases a with _ | ⟨z', γ⟩
-      · simp
-      · rw [emit_some]
-        split_ifs <;> simp
-    simpa using Nat.add_le_add this ih
 
 /-- The letter that is emitted at a step sits at the place counted before the step. -/
 theorem emit_getElem (o : List (Letter S J Γ)) (z : Ch S J) (τ : ℕ) (γ : Γ) (h : o[τ]? = some (some (z, γ))) :
@@ -51,7 +35,7 @@ theorem emit_getElem (o : List (Letter S J Γ)) (z : Ch S J) (τ : ℕ) (γ : Γ
     rw [(List.getElem?_eq_some_iff.1 h).2]
     rfl
   conv_lhs => rw [ho]
-  rw [emit_appendR, emit_appendR, emit_some, if_pos rfl, List.take_append_of_le_length (by simp; omega),
+  rw [emit_append, emit_append, emit_some, if_pos rfl, List.take_append_of_le_length (by simp; omega),
     List.take_take, min_self, List.getElem?_append_right le_rfl, Nat.sub_self]
   rfl
 
@@ -66,7 +50,7 @@ theorem exists_emit (o : List (Letter S J Γ)) (z : Ch S J) (p : ℕ) (hp : p < 
       refine ⟨τ, γ, by simp; omega, ?_, ?_⟩
       · rw [List.getElem?_append_left h1, h2]
       · rw [List.take_append_of_le_length h1.le, h3]
-    · rw [emit_appendR, List.length_append] at hp
+    · rw [emit_append, List.length_append] at hp
       rcases a with _ | ⟨z', γ⟩
       · simp at hp
         omega

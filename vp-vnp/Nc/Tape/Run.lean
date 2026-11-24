@@ -24,6 +24,15 @@ abbrev Letter (S J Γ : Type*) := Option (Ch S J × Γ)
 /-- What a run emits. -/
 def emit (o : List (Letter S J Γ)) : Ch S J → List Γ := proj o.reduceOption
 
+theorem emit_append (o₁ o₂ : List (Letter S J Γ)) (z : Ch S J) : emit (o₁ ++ o₂) z = emit o₁ z ++ emit o₂ z := by
+  simp [emit, List.reduceOption_append, proj_append]
+
+theorem length_emit_le (o : List (Letter S J Γ)) (z : Ch S J) : (emit o z).length ≤ o.length := by
+  have h1 := sum_length_proj o.reduceOption
+  have h2 := List.reduceOption_length_le o
+  exact (Finset.single_le_sum (f := fun z => (proj o.reduceOption z).length) (fun _ _ => Nat.zero_le _)
+    (Finset.mem_univ z)).trans (h1.le.trans h2)
+
 /-- The run is matched: both sides of every tape agree, and the inputs are `u`. -/
 def Matched (o : List (Letter S J Γ)) (u : J → List Γ) : Prop :=
   (∀ s, emit o (.tp s false) = emit o (.tp s true)) ∧ ∀ j, emit o (.inp j) = u j
