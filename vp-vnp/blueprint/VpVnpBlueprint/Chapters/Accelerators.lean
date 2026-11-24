@@ -792,10 +792,11 @@ circuit computes: the argument uses no bound on the degree of the output of the 
 
 # What the next chapter takes from this one
 
-{ref "chapter-assembly"}[All fields and approximate computation] takes, for a field `K` in the
-lowest universe with `Contracting K`: `Paper.thm_contracting` (the permanent, $`2 \neq 0`) and
-`Paper.contracting_complete` (any family complete for grid sums, used for the Hamiltonian cycle
-polynomial), and their analogue `Paper.contracting_approx_complete` for approximating circuits. The
+{ref "chapter-assembly"}[All fields and approximate computation] takes
+`Paper.contracting_approx_complete` for both families over a field `K` in the lowest universe
+with `Contracting K`. An exact circuit enters that bound as a constant-series circuit.
+`Paper.thm_contracting` and `Paper.contracting_complete` give separate exact-circuit proofs
+for the permanent and for arbitrary families complete for grid sums, respectively. These
 statements give no value for the constant $`c` of these bounds; it comes out of the laws and the
 cutting theorem for the field `K`. In {bpref "thm_allfields"}[Theorem M.3] the bound is weakened,
 for large $`m`, to that of the flat case, so that this constant does not enter the constant of

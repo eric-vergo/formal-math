@@ -94,11 +94,9 @@ E.5 and Theorem E.6, are formalized but are not used by the theorems of `Solutio
 (page 66): “The theorems of `Solution` are proved through them, with these exceptions, which are
 not on that route: Theorem L.2, Corollary L.3, the qualitative bound in the flat case
 (Proposition E.5 and Theorem E.6) and the definitions.” And (page 70): “Proposition E.10 uses the
-step `prop_flat_lower_sum` of the proof of Proposition E.5, not the proposition.” The route is
-therefore Lemma E.4, the step {bpref "prop_flat_lower_sum"}[], Lemmas E.7 and E.8, Propositions
-E.9 and E.10, and then {bpref "flat_rate_complete"}[] for the exact bound of both
-families, including the permanent. {bpref "thm_flat_rate"}[Theorem E.11] specializes the
-general bound to the permanent and supplies the qualitative Theorem E.6. The approximate
+step `prop_flat_lower_sum` of the proof of Proposition E.5, not the proposition.” The exact-circuit argument proceeds through Lemma E.4, the step {bpref "prop_flat_lower_sum"}[], Lemmas E.7 and E.8, Propositions
+E.9 and E.10, and then {bpref "flat_rate_complete"}[] for families complete for grid sums. {bpref "thm_flat_rate"}[Theorem E.11] specializes the
+general bound to the permanent and supplies the qualitative Theorem E.6. All five
 exports use {bpref "flat_rate_approx_complete"}[], with Lemma N.3 in place of Lemma E.7.
 {ref "chapter-table3"}[The paper's statements and their Lean names] records each export's
 dependence on the named theorems.
@@ -613,9 +611,8 @@ not on $`\varepsilon`).
 
 # What the rest of the proof takes from this chapter
 
-- {ref "chapter-assembly"}[All fields and approximate computation] takes, as the flat halves of
-  its theorems, {bpref "flat_rate_complete"}[] for both families in Theorem M.3 and
-  {bpref "flat_rate_approx_complete"}[] for Theorem N.5. Theorems L.1 and L.2 inherit their flat
+- {ref "chapter-assembly"}[All fields and approximate computation] takes
+  {bpref "flat_rate_approx_complete"}[] for both families in Theorems M.3 and N.5. Theorems L.1 and L.2 inherit their flat
   bound from Theorem M.3. The explicit constant $`1/1600^2` of this chapter
   becomes the absolute constant of the main theorem, because the bound of the contracting case
   exceeds it for large $`m`.

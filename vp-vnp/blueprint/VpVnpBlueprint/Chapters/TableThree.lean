@@ -416,7 +416,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.thm_flat_rate`
   * matches
   * no
-  * {ref "chapter-flat"}[The flat case]. The hypothesis $`2 \neq 0` is written out. Theorem M.3 uses the general form `flat_rate_complete` for both families. Theorem N.5 uses `flat_rate_approx_complete`.
+  * {ref "chapter-flat"}[The flat case]. The hypothesis $`2 \neq 0` is written out. Theorems M.3 and N.5 both use `flat_rate_approx_complete` for the two families.
 :::
 
 # Appendix F
@@ -656,7 +656,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.thm_contracting`
   * matches
   * no
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. The hypothesis $`2 \neq 0` is written out. Theorem M.3 uses the general form `contracting_complete` for both families.
+  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. The hypothesis $`2 \neq 0` is written out. Theorems M.3 and N.5 both use `contracting_approx_complete` for the two families.
 :::
 
 # Appendix L
