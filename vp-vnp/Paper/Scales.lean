@@ -9,6 +9,11 @@ import Paper.Cuts
 
 /-!
 # The paper, section "One scale is all scales"
+
+Definition def:acc of an accelerator, and the arithmetic of the proof of Theorem thm:contracting:
+the choice of the scale v for a circuit size M^a, and the passage from excluded exponents to the bound
+2^(c(log M)²/log log M). The theorem itself, for approximating and for exact circuits, is in
+Paper/BorderRate.lean.
 -/
 
 namespace Paper

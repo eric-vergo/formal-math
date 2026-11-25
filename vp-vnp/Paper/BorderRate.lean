@@ -16,6 +16,10 @@ import Nc.Rate.Circuit
 The field dichotomy and coefficientwise bound come from the original formalization of
 Appendices M and N by Claude (Anthropic). Eric Vergo and GPT-6.2 (OpenAI) extracted
 the quantitative bound for use by both the exact and approximate endpoints.
+
+The exact forms of Lemma lem:few, Proposition prop:flat-rate and Theorems thm:flat-rate,
+thm:flat-simple and thm:contracting are the approximate ones applied to an exact circuit, whose
+constants are read as constant Laurent series (`approximates_of_computes`).
 -/
 
 namespace Paper

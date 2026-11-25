@@ -10,6 +10,10 @@ import Nc.CaseI.Hub
 
 /-!
 # The paper, section "The main theorem", and the results of the introduction
+
+The steps of the proofs of Proposition prop:flat-rate and Theorem thm:flat-rate (the geometry of the
+hubs, the sums with few terms and the choice of k and ℓ), and the calculations shared by the
+theorems of the introduction. The flat-case bounds themselves are in Paper/BorderRate.lean.
 -/
 
 namespace Paper
