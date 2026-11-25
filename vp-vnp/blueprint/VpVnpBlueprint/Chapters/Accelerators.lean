@@ -513,8 +513,10 @@ Neither theorem mentions circuits or accelerators. `Paper.quasi_of_exponents` is
 arbitrary predicate $`P(M, s)` that is monotone in $`s`: if $`P(M, M^a)` fails whenever
 $`M \geq M_1` and $`(\lg M)^{Ca} \leq M`, then $`P(m, s)` implies
 $`2^{c(\log m)^2/\log\log m} < s` for all large $`m`, with $`c = 1/(4(C+1))`.
-`Paper.exists_scale` is described in the proof above. Both are used again, with `Approximates` for
-`Computes`, by {bpref "lem_circuit_approx"}[the approximate forms].
+`Paper.exists_scale` chooses the scale for the finite Laurent circuit in
+`Paper.contracting_approx_complete`. Then `Paper.contracting_approx_rate` applies
+`Paper.quasi_of_exponents` to `Nc.LaurentApproximates`. The exact K.7 conclusion
+specializes this bound by viewing each exact circuit as a constant Laurent circuit.
 :::
 
 # N.3. Approximate accelerators in the contracting case
@@ -594,8 +596,9 @@ stronger time estimate $`(u^α)^{16h-17}` already at the first transition.
 `NS1.InvA` records the program and trie sizes, height, bound on named powers, support span,
 thinness of powers and one spare power of the current scale in the running time. The first
 transition establishes the whole invariant. The step takes the fifth power of the scale and
-preserves it. Iteration gives arbitrarily large scales with common coefficients and preserves
-each rescaling-stable property of the input constants. This is where K.6 obtains a scale large
+preserves it. Fix any rescaling-stable property shared by the input constants. Iteration gives
+common bounds `U`, `Δ`, `cΔ` and `b₀` and, at arbitrarily large scales, a trie whose
+constants all have that property. This is where K.6 obtains a scale large
 enough for the chosen finite field's power period.
 :::
 
