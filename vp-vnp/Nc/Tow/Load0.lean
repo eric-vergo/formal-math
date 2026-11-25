@@ -89,29 +89,14 @@ theorem bt_start (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) :
 theorem tgR_start {x : RM T m AA} {ν : Bool} {a c : Fin AA} {γ : T.X 0} {s : Fin (2 * m)}
     (hx : tgR T R ch x ν = .nxt (.start a c γ s)) : ν = true ∧ ∃ s' : Fin (2 * m), x = .start a c γ s' ∧ s.1 = s'.1 + 1 := by
   rcases x with ⟨a', c', γ', s'⟩ | ⟨j', i', e'⟩ | ⟨j', e', s'⟩ | e'
-  · have this : ∀ e' : Option (T.Ed 0), (edgeO T e' : Tg T m AA) ≠ .nxt (.start a c γ s) := by
-      intro e' he
-      cases e' <;> simp [edgeO] at he
-    cases ν
-    · exact absurd hx (this _)
-    · simp only [tgR] at hx
-      split_ifs at hx with hs
-      · simp only [Tg.nxt.injEq, RM.start.injEq] at hx
-        obtain ⟨h1, h2, h3, h4⟩ := hx
-        subst h1 h2 h3
-        exact ⟨rfl, s', rfl, (congrArg Fin.val h4).symm⟩
-      · exact absurd hx (this _)
+  · rcases tgR_start_cases (R := R) (ch := ch) a' c' γ' s' ν with ⟨_, hν, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
+    · simp only [Tg.nxt.injEq, RM.start.injEq] at hx
+      obtain ⟨rfl, rfl, rfl, h4⟩ := hx
+      exact ⟨hν, s', rfl, (congrArg Fin.val h4).symm⟩
+    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;> rw [h'] at hx <;> simp at hx
   · simp [tgR] at hx
-  · cases ν
-    · fin_cases s' <;> simp [tgR] at hx
-    · fin_cases s'
-      · simp only [tgR, Fin.zero_eta, Matrix.cons_val_zero] at hx
-        split_ifs at hx <;> simp at hx
-      · simp [tgR] at hx
-      · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val] at hx
-        split_ifs at hx
-        simp at hx
-      · simp [tgR] at hx
+  · rcases tgR_mid_cases (R := R) (ch := ch) j' e' s' ν with he | ⟨_, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, he⟩ |
+      ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hx <;> simp at hx
   · simp [tgR] at hx
 
 section
@@ -329,20 +314,9 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
                 (R.path (ch a) (ch c) γ)[s.1 + 1]? = some e)]
               exact hB.trans (Nat.le_add_left _ _)
           · simp [tgR] at hν
-          · exfalso
-            cases ν
-            · fin_cases s'
-              · simp [tgR] at hν
-              · simp [tgR] at hν
-              · exact absurd (Tg.edge.inj hν).1 (Fin.succ_ne_zero _)
-              · simp [tgR] at hν
-            · fin_cases s'
-              · simp only [tgR, Fin.zero_eta, Matrix.cons_val_zero] at hν
-                split_ifs at hν
-              · simp [tgR] at hν
-              · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val] at hν
-                split_ifs at hν
-              · simp [tgR] at hν
+          · rcases tgR_mid_cases (R := R) (ch := ch) j' e' s' ν with he | ⟨_, _, he⟩ | ⟨_, _, he⟩ |
+              ⟨_, _, he⟩ | ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hν <;>
+              first | simp at hν | exact absurd (Tg.edge.inj hν).1 (Fin.succ_ne_zero _)
           · simp [tgR] at hν
         · exfalso
           exact absurd (Tg.edge.inj hν).1 (Fin.succ_ne_zero _)

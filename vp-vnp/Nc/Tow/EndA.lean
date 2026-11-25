@@ -34,36 +34,16 @@ theorem nxt_ok_R {x y : RM T m AA} (hx : okR T R ch x) {ν : Bool} (he : tgR T R
     refine ⟨hok, ?_, fun L h0 => absurd h0 hs⟩
     rw [inpR_mid, ite_eq_right hs]
   rcases x with ⟨a, c, γ, s⟩ | ⟨j, i, e⟩ | ⟨j, e, s⟩ | e
-  · cases ν
+  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with ⟨hs, _, h'⟩ | ⟨k, _, h'⟩ <;> rw [h'] at he
+    · obtain rfl := Tg.nxt.inj he
+      exact ⟨⟨hx.1, hs.2⟩, rfl, fun _ => trivial⟩
     · exact absurd he (hE _)
-    · simp only [tgR] at he
-      split_ifs at he with hs
-      · have he := Tg.nxt.inj he
-        subst he
-        exact ⟨⟨hx.1, hs.2⟩, rfl, fun _ => trivial⟩
-      · exact absurd he (hE _)
   · simp [tgR] at he
-  · cases ν
-    · fin_cases s <;> simp [tgR] at he
-    · fin_cases s
-      · simp only [tgR, Fin.zero_eta, Matrix.cons_val_zero] at he
-        split_ifs at he with hq
-        · have he := Tg.nxt.inj he
-          subst he
-          exact mid j e 1 (by decide) ⟨fun _ => hq, fun h3 => absurd h3 (by decide)⟩
-        · have he := Tg.nxt.inj he
-          subst he
-          exact mid j e 2 (by decide) ⟨fun h3 => absurd h3 (by decide), fun h3 => absurd h3 (by decide)⟩
-      · simp only [tgR, Fin.mk_one, Matrix.cons_val_one, Matrix.cons_val_zero] at he
-        have he := Tg.nxt.inj he
-        subst he
-        exact mid j e 2 (by decide) ⟨fun h3 => absurd h3 (by decide), fun h3 => absurd h3 (by decide)⟩
-      · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val] at he
-        split_ifs at he with hq
-        have he := Tg.nxt.inj he
-        subst he
-        exact mid j e 3 (by decide) ⟨fun h3 => absurd h3 (by decide), fun _ => hq⟩
-      · simp [tgR] at he
+  · rcases tgR_mid_cases (R := R) (ch := ch) j e s ν with h' | ⟨_, _, h'⟩ | ⟨_, _, h'⟩ | ⟨_, _, h'⟩ |
+      ⟨-, -, hq, h'⟩ | ⟨-, -, h'⟩ | ⟨-, -, hq, h'⟩ <;> rw [h'] at he <;> simp at he <;> subst he
+    · exact mid j e 1 (by decide) ⟨fun _ => hq, fun h3 => absurd h3 (by decide)⟩
+    · exact mid j e 2 (by decide) ⟨fun h3 => absurd h3 (by decide), fun h3 => absurd h3 (by decide)⟩
+    · exact mid j e 3 (by decide) ⟨fun h3 => absurd h3 (by decide), fun _ => hq⟩
   · simp [tgR] at he
 
 theorem nxt_ok_B {a c : Fin AA} {k : ℕ} {y : RM T m AA} (he : tgB T R ch a c k = .nxt y) :

@@ -90,39 +90,49 @@ theorem bt_mid (j : Fin J) (e : T.Ed j) (s : Fin 4) : bt R ch lhat n (.nxt (.mid
 
 section Targets
 
+/-- The targets of the two channels of a relay on a path of the start. -/
+theorem tgR_start_cases (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (ν : Bool) :
+    (∃ hs : s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ, ν = true ∧
+      tgR T R ch (.start a c γ s) ν = .nxt (.start a c γ ⟨s.1 + 1, hs.1⟩)) ∨
+    ∃ k, (ν = false ∧ k = s.1 ∨
+        ν = true ∧ ¬ (s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ) ∧ k = s.1 + 1) ∧
+      tgR T R ch (.start a c γ s) ν = edgeO T ((R.path (ch a) (ch c) γ)[k]?) := by
+  cases ν
+  · exact Or.inr ⟨s.1, Or.inl ⟨rfl, rfl⟩, rfl⟩
+  · by_cases hs : s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ
+    · exact Or.inl ⟨hs, rfl, by simp only [tgR, dite_eq_left hs]⟩
+    · exact Or.inr ⟨s.1 + 1, Or.inr ⟨rfl, hs, rfl⟩, by simp only [tgR, dite_eq_right hs]⟩
+
+/-- The targets of the two channels of the four relays on an edge. -/
+theorem tgR_mid_cases (j : Fin J) (e : T.Ed j) (s : Fin 4) (ν : Bool) :
+    tgR T R ch (.mid j e s) ν = .done ∨
+    (s = 1 ∧ ν = false ∧ tgR T R ch (.mid j e s) ν = .seg j (T.ty e) (T.πV (T.vx (T.ty e) (T.e0 e)))
+      s(T.co (T.ty e) (hst T (T.ty e) (T.e0 e)), T.co (T.ty e) (T.e0 e))) ∨
+    (s = 2 ∧ ν = false ∧ tgR T R ch (.mid j e s) ν = .edge j.succ (T.πE e)) ∨
+    (s = 3 ∧ ν = false ∧ tgR T R ch (.mid j e s) ν = .seg j (T.ty e) (T.πV (T.vx (T.ty e) (T.e1 e)))
+      s(T.co (T.ty e) (hst T (T.ty e) (T.e1 e)), T.co (T.ty e) (T.e1 e))) ∨
+    (s = 0 ∧ ν = true ∧ hst T (T.ty e) (T.e0 e) ≠ T.π (T.e0 e) ∧
+      tgR T R ch (.mid j e s) ν = .nxt (.mid j e 1)) ∨
+    ((s = 0 ∧ hst T (T.ty e) (T.e0 e) = T.π (T.e0 e) ∨ s = 1) ∧ ν = true ∧
+      tgR T R ch (.mid j e s) ν = .nxt (.mid j e 2)) ∨
+    (s = 2 ∧ ν = true ∧ T.π (T.e1 e) ≠ hst T (T.ty e) (T.e1 e) ∧
+      tgR T R ch (.mid j e s) ν = .nxt (.mid j e 3)) := by
+  cases ν <;> fin_cases s <;> simp [tgR] <;> tauto
+
 /-- Which channels of relays have a target of a given kind. -/
 theorem tgR_edge_succ {x : RM T m AA} {ν : Bool} {j : Fin J} {e' : T.Ed (j + 1)}
     (hx : tgR T R ch x ν = .edge j.succ e') : ∃ e, x = .mid j e 2 ∧ ν = false ∧ T.πE e = e' := by
   rcases x with ⟨a, c, γ, s⟩ | ⟨j', i, e⟩ | ⟨j', e, s⟩ | e
-  · exfalso
-    have : ∀ e : Option (T.Ed 0), (edgeO T e : Tg T m AA) ≠ .edge j.succ e' := by
-      intro e he
-      cases e
-      · simp [edgeO] at he
-      · exact absurd (Tg.edge.inj he).1.symm (Fin.succ_ne_zero j)
-    cases ν
-    · exact this _ hx
-    · simp only [tgR] at hx
-      split_ifs at hx
-      · exact this _ hx
+  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with ⟨_, _, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
+    · simp at hx
+    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;> rw [h'] at hx
+      · simp at hx
+      · exact absurd (Tg.edge.inj hx).1.symm (Fin.succ_ne_zero j)
   · simp [tgR] at hx
-  · cases ν
-    · fin_cases s
-      · simp [tgR] at hx
-      · simp [tgR] at hx
-      · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val, Tg.edge.injEq] at hx
-        obtain ⟨h1, h2⟩ := hx
-        have hj : j' = j := Fin.succ_injective _ h1
-        subst hj
-        exact ⟨e, rfl, rfl, eq_of_heq h2⟩
-      · simp [tgR] at hx
-    · fin_cases s
-      · simp only [tgR, Fin.zero_eta, Matrix.cons_val_zero] at hx
-        split_ifs at hx
-      · simp [tgR] at hx
-      · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val] at hx
-        split_ifs at hx
-      · simp [tgR] at hx
+  · rcases tgR_mid_cases (R := R) (ch := ch) j' e s ν with he | ⟨_, _, he⟩ | ⟨rfl, rfl, he⟩ |
+      ⟨_, _, he⟩ | ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hx <;> simp at hx
+    obtain ⟨rfl, h2⟩ := hx
+    exact ⟨e, rfl, rfl, eq_of_heq h2⟩
   · simp [tgR] at hx
 
 theorem tgR_seg {x : RM T m AA} {ν : Bool} {j : Fin J} {i : Fin h} {ω : T.V (j + 1) i} {q : Sym2 T.Fl}
@@ -130,37 +140,16 @@ theorem tgR_seg {x : RM T m AA} {ν : Bool} {j : Fin J} {i : Fin h} {ω : T.V (j
       ((x = .mid j e 1 ∧ (T.πV (T.vx i (T.e0 e)) : T.V (j + 1) i) = ω ∧ s(T.co i (hst T i (T.e0 e)), T.co i (T.e0 e)) = q) ∨
       (x = .mid j e 3 ∧ (T.πV (T.vx i (T.e1 e)) : T.V (j + 1) i) = ω ∧ s(T.co i (hst T i (T.e1 e)), T.co i (T.e1 e)) = q)) := by
   rcases x with ⟨a, c, γ, s⟩ | ⟨j', i', e⟩ | ⟨j', e, s⟩ | e
-  · exfalso
-    have : ∀ e : Option (T.Ed 0), (edgeO T e : Tg T m AA) ≠ .seg j i ω q := by
-      intro e he
-      cases e <;> simp [edgeO] at he
-    cases ν
-    · exact this _ hx
-    · simp only [tgR] at hx
-      split_ifs at hx
-      · exact this _ hx
+  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with ⟨_, _, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
+    · simp at hx
+    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;> rw [h'] at hx <;> simp at hx
   · simp [tgR] at hx
-  · cases ν
-    · fin_cases s
-      · simp [tgR] at hx
-      · simp only [tgR, Fin.mk_one, Matrix.cons_val_one, Matrix.cons_val_zero, Tg.seg.injEq] at hx
-        obtain ⟨h1, h2, h3, h4⟩ := hx
-        subst h1
-        subst h2
-        exact ⟨e, rfl, rfl, Or.inl ⟨rfl, eq_of_heq h3, h4⟩⟩
-      · simp [tgR] at hx
-      · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val, Tg.seg.injEq] at hx
-        obtain ⟨h1, h2, h3, h4⟩ := hx
-        subst h1
-        subst h2
-        exact ⟨e, rfl, rfl, Or.inr ⟨rfl, eq_of_heq h3, h4⟩⟩
-    · fin_cases s
-      · simp only [tgR, Fin.zero_eta, Matrix.cons_val_zero] at hx
-        split_ifs at hx
-      · simp [tgR] at hx
-      · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val] at hx
-        split_ifs at hx
-      · simp [tgR] at hx
+  · rcases tgR_mid_cases (R := R) (ch := ch) j' e s ν with he | ⟨rfl, rfl, he⟩ | ⟨_, _, he⟩ |
+      ⟨rfl, rfl, he⟩ | ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hx <;> simp at hx
+    · obtain ⟨rfl, rfl, h3, h4⟩ := hx
+      exact ⟨e, rfl, rfl, Or.inl ⟨rfl, eq_of_heq h3, h4⟩⟩
+    · obtain ⟨rfl, rfl, h3, h4⟩ := hx
+      exact ⟨e, rfl, rfl, Or.inr ⟨rfl, eq_of_heq h3, h4⟩⟩
   · simp [tgR] at hx
 
 theorem tgR_mid {x : RM T m AA} {ν : Bool} {j : Fin J} {e : T.Ed j} {s : Fin 4}
@@ -169,51 +158,23 @@ theorem tgR_mid {x : RM T m AA} {ν : Bool} {j : Fin J} {e : T.Ed j} {s : Fin 4}
       (s = 2 ∧ ((x = .mid j e 0 ∧ hst T (T.ty e) (T.e0 e) = T.π (T.e0 e)) ∨ x = .mid j e 1)) ∨
       (s = 3 ∧ x = .mid j e 2)) := by
   rcases x with ⟨a, c, γ, s'⟩ | ⟨j', i', e'⟩ | ⟨j', e', s'⟩ | e'
-  · exfalso
-    have : ∀ e' : Option (T.Ed 0), (edgeO T e' : Tg T m AA) ≠ .nxt (.mid j e s) := by
-      intro e' he
-      cases e' <;> simp [edgeO] at he
-    cases ν
-    · exact this _ hx
-    · simp only [tgR] at hx
-      split_ifs at hx
-      · simp at hx
-      · exact this _ hx
+  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s' ν with ⟨_, _, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
+    · simp at hx
+    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;> rw [h'] at hx <;> simp at hx
   · simp [tgR] at hx
-  · cases ν
-    · fin_cases s' <;> simp [tgR] at hx
-    · refine ⟨rfl, ?_⟩
-      fin_cases s'
-      · simp only [tgR, Fin.zero_eta, Matrix.cons_val_zero] at hx
-        split_ifs at hx with hh
-        · simp only [Tg.nxt.injEq, RM.mid.injEq] at hx
-          obtain ⟨h1, h2, h3⟩ := hx
-          subst h1
-          have := eq_of_heq h2
-          subst this
-          exact Or.inl ⟨h3.symm, rfl⟩
-        · simp only [Tg.nxt.injEq, RM.mid.injEq] at hx
-          obtain ⟨h1, h2, h3⟩ := hx
-          subst h1
-          have := eq_of_heq h2
-          subst this
-          rw [not_not] at hh
-          exact Or.inr (Or.inl ⟨h3.symm, Or.inl ⟨rfl, hh⟩⟩)
-      · simp only [tgR, Fin.mk_one, Matrix.cons_val_one, Matrix.cons_val_zero, Tg.nxt.injEq, RM.mid.injEq] at hx
-        obtain ⟨h1, h2, h3⟩ := hx
-        subst h1
-        have := eq_of_heq h2
-        subst this
-        exact Or.inr (Or.inl ⟨h3.symm, Or.inr rfl⟩)
-      · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val] at hx
-        split_ifs at hx with hh
-        simp only [Tg.nxt.injEq, RM.mid.injEq] at hx
-        obtain ⟨h1, h2, h3⟩ := hx
-        subst h1
-        have := eq_of_heq h2
-        subst this
-        exact Or.inr (Or.inr ⟨h3.symm, rfl⟩)
-      · simp [tgR] at hx
+  · rcases tgR_mid_cases (R := R) (ch := ch) j' e' s' ν with he | ⟨_, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, he⟩ |
+      ⟨rfl, rfl, -, he⟩ | ⟨hs, rfl, he⟩ | ⟨rfl, rfl, -, he⟩ <;> rw [he] at hx <;> simp at hx
+    · obtain ⟨rfl, h2, rfl⟩ := hx
+      obtain rfl := eq_of_heq h2
+      simp
+    · obtain ⟨rfl, h2, rfl⟩ := hx
+      obtain rfl := eq_of_heq h2
+      rcases hs with ⟨rfl, hh⟩ | rfl
+      · exact ⟨rfl, Or.inr (Or.inl ⟨rfl, Or.inl ⟨rfl, hh⟩⟩)⟩
+      · exact ⟨rfl, Or.inr (Or.inl ⟨rfl, Or.inr rfl⟩)⟩
+    · obtain ⟨rfl, h2, rfl⟩ := hx
+      obtain rfl := eq_of_heq h2
+      simp
   · simp [tgR] at hx
 
 end Targets
