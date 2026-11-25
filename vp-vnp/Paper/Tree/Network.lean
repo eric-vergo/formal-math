@@ -209,18 +209,8 @@ theorem posVal_start (tab : ∀ a, NodeTable R (fun a c => (n a c).1) ℓ a) :
 end Start
 
 open Classical in
-/-- The networks on trees of Theorem thm:tree, for networks on AA nodes with units of ℓ bits, at
-most N units at a node and at most M nodes, over R, with the exponent C, the gain γ and the integer
-G₁ of the test for good outcomes. The nodes are the parties 0, ..., AA + A' − 1. For numbers n of
-units and outcomes o the units of the tree are those that are current at the end, plan.cur. A unit
-from a node to itself is allowed; it stays at its node, whose value sums over it.
-
-The fields are the clauses of the theorem, except that the two bounds of (b) on the units of the
-tree, for one node and in all, are the theorems `ThinTrees.node_le` and `ThinTrees.total_le`, which
-follow from `edge`, `between_le`, `up_node` and `up_total`. The last sentence of (c), that the
-numbers of layers of the law moves at a node add up to at most the number of bits of all units that
-it ever holds, is not a field. -/
-structure ThinTrees (R : Type) [CommRing R] (laws : List (G.Law R)) (AA N ℓ M b G₁ C : ℕ) (γ : ℝ) where
+/-- The moves shared by a thin tree and its pieces, with their causal plan and outcome test. -/
+structure NetworkMoves (R : Type) [CommRing R] (AA N ℓ b G₁ : ℕ) where
   /-- the number of further nodes -/
   A' : ℕ
   /-- the number of moves -/
@@ -236,6 +226,30 @@ structure ThinTrees (R : Type) [CommRing R] (laws : List (G.Law R)) (AA N ℓ M 
   cap : ℕ
   /-- the plan is causal and gives only current units between the ends of their slots -/
   ok : plan.Ok cap
+  /-- is the move a law move? -/
+  isLaw : Fin E → Bool
+  /-- what good means -/
+  good_iff : ∀ n o x, plan.good n o x ↔ if isLaw x then
+      b * ∑ ν : (sys.kind x).Cn, (o ⟨x, ν⟩).val ^ 2 ≤ G₁ * plan.num n o x ^ 2 ∧
+        ∀ ν : (sys.kind x).Cn, plan.num n o x ≤ o ⟨x, ν⟩
+    else ∀ ν : (sys.kind x).Cn, (o ⟨x, ν⟩).val = plan.num n o x
+  /-- every possible outcome is good -/
+  poss_good : ∀ n o x, plan.Poss n o ℓ x → plan.good n o x
+
+open Classical in
+/-- The networks on trees of Theorem thm:tree, for networks on AA nodes with units of ℓ bits, at
+most N units at a node and at most M nodes, over R, with the exponent C, the gain γ and the integer
+G₁ of the test for good outcomes. The nodes are the parties 0, ..., AA + A' − 1. For numbers n of
+units and outcomes o the units of the tree are those that are current at the end, plan.cur. A unit
+from a node to itself is allowed; it stays at its node, whose value sums over it.
+
+The fields are the clauses of the theorem, except that the two bounds of (b) on the units of the
+tree, for one node and in all, are the theorems `ThinTrees.node_le` and `ThinTrees.total_le`, which
+follow from `edge`, `between_le`, `up_node` and `up_total`. The last sentence of (c), that the
+numbers of layers of the law moves at a node add up to at most the number of bits of all units that
+it ever holds, is not a field. -/
+structure ThinTrees (R : Type) [CommRing R] (laws : List (G.Law R)) (AA N ℓ M b G₁ C : ℕ) (γ : ℝ)
+    extends NetworkMoves R AA N ℓ b G₁ where
   /-- the stage of a node -/
   stage : Fin (AA + A') → ℕ
   /-- the depth of the tree -/
@@ -248,8 +262,6 @@ structure ThinTrees (R : Type) [CommRing R] (laws : List (G.Law R)) (AA N ℓ M 
   up : (Fin AA → Fin AA → Fin (N + 1)) → (sys.N → Fin U1) → Fin (AA + A') → ℕ
   /-- the dead units -/
   dead : (sys.N → Fin U1) → Finset (Uid AA N sys.N U1)
-  /-- is the move a law move? -/
-  isLaw : Fin E → Bool
   depth_le : depth ≤ lg M ^ C
   stage_le : ∀ p, stage p ≤ depth
   stage_given : ∀ a, stage (Fin.castAdd A' a) = 0
@@ -260,13 +272,6 @@ structure ThinTrees (R : Type) [CommRing R] (laws : List (G.Law R)) (AA N ℓ M 
   dead_le : ∀ o, (dead o).card ≤ M ^ C
   kinds : ∀ x, if isLaw x then sys.kind x ∈ laws else sys.kind x = relay R
   law_stage : ∀ r : sys.R, isLaw r.1 = true → 0 < stage (sys.rp r)
-  /-- what good means -/
-  good_iff : ∀ n o x, plan.good n o x ↔ if isLaw x then
-      b * ∑ ν : (sys.kind x).Cn, (o ⟨x, ν⟩).val ^ 2 ≤ G₁ * plan.num n o x ^ 2 ∧
-        ∀ ν : (sys.kind x).Cn, plan.num n o x ≤ o ⟨x, ν⟩
-    else ∀ ν : (sys.kind x).Cn, (o ⟨x, ν⟩).val = plan.num n o x
-  /-- every possible outcome is good -/
-  poss_good : ∀ n o x, plan.Poss n o ℓ x → plan.good n o x
   edge : ∀ n, (∀ a, ∑ c, ((n a c).1 + (n c a).1) ≤ N) → ∀ o, (∀ x, plan.good n o x) →
     ∀ u ∈ cutUnits (hold0 sys.np) (hold1 sys.np) id (plan.cur n o E \ dead o),
       ∃ p, p ≠ root ∧ s(hold0 sys.np u, hold1 sys.np u) = s(p, par n o p)

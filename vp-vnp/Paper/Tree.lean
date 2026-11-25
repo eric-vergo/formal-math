@@ -291,6 +291,24 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
     copies_le := fun n hv o hg p => ?_
     value := fun n hv tab => tree_value hH hℓ (capN_capB hC hm1 hUu hAX) (fun d => hC.len _ (hC.mem d)) hc hU1 tab
     computed := ?_ }⟩
+  · have e : ∀ ν : (kindM R ch FL (eE R FL x)).Cn, oo R FL Pl o ⟨eE R FL x, ν⟩ = (o ⟨x, ν⟩ : ℕ) := fun ν => by
+      unfold oo
+      have h1 : (eN R FL Pl).symm ⟨eE R FL x, ν⟩ = ⟨x, ν⟩ := by
+        rw [Equiv.symm_apply_eq]
+        rfl
+      rw [h1]
+    change GoodMv R ch FL N (nn n) (oo R FL Pl o) (eE R FL x) ↔ if (eE R FL x).isRight = true then
+      b * ∑ ν : (kindM R ch FL (eE R FL x)).Cn, (o ⟨x, ν⟩).val ^ 2 ≤
+          FL.G₁ * num R ch FL N (nn n) (oo R FL Pl o) (eE R FL x) ^ 2 ∧
+        ∀ ν : (kindM R ch FL (eE R FL x)).Cn, num R ch FL N (nn n) (oo R FL Pl o) (eE R FL x) ≤ (o ⟨x, ν⟩ : ℕ)
+      else ∀ ν : (kindM R ch FL (eE R FL x)).Cn, (o ⟨x, ν⟩).val = num R ch FL N (nn n) (oo R FL Pl o) (eE R FL x)
+    simp only [← e]
+    clear e
+    generalize eE R FL x = mv
+    rcases mv with y | l
+    · exact Iff.rfl
+    · simp only [Sum.isRight_inr, ite_true, GoodMv, GoodL, Nat.one_mul]
+      rfl
   · rcases Pl.pt.symm p with _ | ⟨j, x⟩
     · exact le_rfl
     · exact Nat.le_of_lt (show j.1 < J + 1 from j.2)
@@ -318,24 +336,6 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
       · simp at hl
       · exact Nat.succ_pos _
     exact key _ hr' _
-  · have e : ∀ ν : (kindM R ch FL (eE R FL x)).Cn, oo R FL Pl o ⟨eE R FL x, ν⟩ = (o ⟨x, ν⟩ : ℕ) := fun ν => by
-      unfold oo
-      have h1 : (eN R FL Pl).symm ⟨eE R FL x, ν⟩ = ⟨x, ν⟩ := by
-        rw [Equiv.symm_apply_eq]
-        rfl
-      rw [h1]
-    change GoodMv R ch FL N (nn n) (oo R FL Pl o) (eE R FL x) ↔ if (eE R FL x).isRight = true then
-      b * ∑ ν : (kindM R ch FL (eE R FL x)).Cn, (o ⟨x, ν⟩).val ^ 2 ≤
-          FL.G₁ * num R ch FL N (nn n) (oo R FL Pl o) (eE R FL x) ^ 2 ∧
-        ∀ ν : (kindM R ch FL (eE R FL x)).Cn, num R ch FL N (nn n) (oo R FL Pl o) (eE R FL x) ≤ (o ⟨x, ν⟩ : ℕ)
-      else ∀ ν : (kindM R ch FL (eE R FL x)).Cn, (o ⟨x, ν⟩).val = num R ch FL N (nn n) (oo R FL Pl o) (eE R FL x)
-    simp only [← e]
-    clear e
-    generalize eE R FL x = mv
-    rcases mv with y | l
-    · exact Iff.rfl
-    · simp only [Sum.isRight_inr, ite_true, GoodMv, GoodL, Nat.one_mul]
-      rfl
   · obtain ⟨hu, hl'⟩ := mem_filter.1 hu
     obtain ⟨hu, hd⟩ := mem_sdiff.1 hu
     obtain ⟨s, -, hs⟩ := cur_tree hH (valid_of n hv) hg hu hd hl'

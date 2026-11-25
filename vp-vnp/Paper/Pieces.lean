@@ -128,14 +128,8 @@ theorem prop_pieces_identity (hn : ∀ p, ∑ b, ((n p b).val + (n b p).val) ≤
 
 end Identity
 
-open Classical in
-/-- The pieces of Proposition prop:pieces for the scale v, K blocks of T steps and the parameter k, with the exponent
-C and the list kinds of roles that may occur in moves. An input word is cut into K consecutive parts of ℓ ≤ T symbols;
-ρ gives, for every node and side of a tape, the first and the last node that take the symbols of the node, n gives the
-numbers of units, o the outcomes, and grp says in which piece a node is. At the beginning a node holds at most load
-units. -/
-structure PieceCut (kinds : List (Σ L : G.Law A, L.Ro)) (mu : Nc.Letter S Unit Γ → Matrix Q Q A)
-    (b G₁ v K T k C : ℕ) where
+/-- The symbol code and the initial unit budget of a piece. -/
+structure PieceEncoding (Γ : Type) (v T C : ℕ) where
   /-- bits for a symbol -/
   c : ℕ
   /-- the code of symbols -/
@@ -151,37 +145,23 @@ structure PieceCut (kinds : List (Σ L : G.Law A, L.Ro)) (mu : Nc.Letter S Unit 
   load : ℕ
   /-- units have at most T bits, and a node starts with few of them -/
   unit_le : ub ≤ T ∧ load * ub ≤ T * lg v ^ C
-  /-- the number of further nodes -/
-  A' : ℕ
-  /-- the number of moves -/
-  E : ℕ
-  /-- a bound for outcomes -/
-  U1 : ℕ
-  U1_pos : 0 < U1
+
+open Classical in
+/-- The pieces of Proposition prop:pieces for the scale v, K blocks of T steps and the parameter k, with the exponent
+C and the list kinds of roles that may occur in moves. An input word is cut into K consecutive parts of ℓ ≤ T symbols;
+ρ gives, for every node and side of a tape, the first and the last node that take the symbols of the node, n gives the
+numbers of units, o the outcomes, and grp says in which piece a node is. At the beginning a node holds at most load
+units. -/
+structure PieceCut (kinds : List (Σ L : G.Law A, L.Ro)) (mu : Nc.Letter S Unit Γ → Matrix Q Q A)
+    (b G₁ v K T k C : ℕ) extends enc : PieceEncoding Γ v T C,
+      moves : NetworkMoves A (K + K) enc.U0 enc.ub b G₁ where
   /-- the number of pieces -/
   num : ℕ
   /-- the digits of the program -/
   D : ℕ
   /-- the steps of the program -/
   steps : ℕ
-  /-- the moves -/
-  sys : Sys A (K + K + A') E
-  /-- the plan -/
-  plan : G.Plan sys U0 U1
-  /-- a bound for the units of one move -/
-  cap : ℕ
-  /-- the plan is causal and gives only current units between the ends of their slots -/
-  ok : plan.Ok cap
-  /-- is the move a law move? -/
-  isLaw : Fin E → Bool
   relay_kind : ∀ x, isLaw x = false → sys.kind x = relay A
-  /-- what good means -/
-  good_iff : ∀ n o x, plan.good n o x ↔ if isLaw x then
-      b * ∑ ν : (sys.kind x).Cn, (o ⟨x, ν⟩).val ^ 2 ≤ G₁ * plan.num n o x ^ 2 ∧
-        ∀ ν : (sys.kind x).Cn, plan.num n o x ≤ o ⟨x, ν⟩
-    else ∀ ν : (sys.kind x).Cn, (o ⟨x, ν⟩).val = plan.num n o x
-  /-- every possible outcome is good -/
-  poss_good : ∀ n o x, plan.Poss n o ub x → plan.good n o x
   /-- the piece of a node -/
   grp : Dl.NN K U0 → (sys.N → Fin U1) → Fin (K + K + A') → Fin num
   /-- the program that computes units, moves, good outcomes and pieces from n and o -/
@@ -679,11 +659,10 @@ theorem prop_pieces {h : ℕ} [NeZero h] (VL : VLaws A (cNear (h := h)) (dNear (
   obtain ⟨σ, hσ⟩ : ∃ σ, σ = Fintype.card S + 1 := ⟨_, rfl⟩
   obtain ⟨bY, hbY⟩ : ∃ b, b = (e + a' + 2) * C₀ + 2 * e + a' + 8 := ⟨_, rfl⟩
   obtain ⟨Ee, hEe⟩ : ∃ x, x = (e + 2) ^ C₀ := ⟨_, rfl⟩
-  have hEe1 : 1 ≤ Ee := hEe ▸ Nat.one_le_pow _ _ (by omega)
   -- The exponent absorbs the coefficients of both piece bounds.
   let cutCoeff := 2 * (4 * c + 5) * Ee + 1
   let allCoeff := 8 * C₀ * (4 * c + 5) * Ee + 8 * (4 * c + 4) * Ee + 2 * C₀
-  set W := cutCoeff + allCoeff with hW
+  let W := cutCoeff + allCoeff
   obtain ⟨C, hC⟩ : ∃ C, C = W + C₀ + (1 + C₀ + 2 ^ ee h * Ee) + 16 * bY + c + 8 + (4 * c + 4) := ⟨_, rfl⟩
   refine ⟨C, 8 * c + 2 * σ + 16, fun v hv => ?_⟩
   have hv1 : 1 ≤ v := by omega
@@ -777,21 +756,11 @@ theorem prop_pieces {h : ℕ} [NeZero h] (VL : VLaws A (cNear (h := h)) (dNear (
     U0 := load
     load := load
     unit_le := ⟨b2, ?_⟩
-    A' := TT.A'
-    E := TT.E
-    U1 := TT.U1
-    U1_pos := TT.U1_pos
+    moves := TT.toNetworkMoves
     num := pieceNum TT k
     D := (v ^ bY) ^ 4
     steps := (v ^ bY) ^ 15
-    sys := TT.sys
-    plan := TT.plan
-    cap := TT.cap
-    ok := TT.ok
-    isLaw := TT.isLaw
     relay_kind := fun x hx => by simpa [hx] using TT.kinds x
-    good_iff := TT.good_iff
-    poss_good := TT.poss_good
     grp := fun n o => pieceFin TT k n o
     tab := tab
     tab_valid := htab
