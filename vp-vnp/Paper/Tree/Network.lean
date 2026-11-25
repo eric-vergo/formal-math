@@ -209,11 +209,17 @@ theorem posVal_start (tab : ∀ a, NodeTable R (fun a c => (n a c).1) ℓ a) :
 end Start
 
 open Classical in
-/-- The networks on trees of Theorem thm:tree, for networks on AA nodes with units of ℓ bits, at most N units at a
-node and at most M nodes, over R, with the exponent C, the gain γ and the integer G₁ of the test for good outcomes.
-The nodes are the parties 0, ..., AA + A' − 1. For numbers n of units and outcomes o the units of the tree are those
-that are current at the end, plan.cur. A unit from a node to itself is allowed; it stays at its node, whose value sums
-over it. -/
+/-- The networks on trees of Theorem thm:tree, for networks on AA nodes with units of ℓ bits, at
+most N units at a node and at most M nodes, over R, with the exponent C, the gain γ and the integer G₁
+of the test for good outcomes. The nodes are the parties 0, ..., AA + A' − 1. For numbers n of units
+and outcomes o the units of the tree are those that are current at the end, plan.cur. A unit from a
+node to itself is allowed; it stays at its node, whose value sums over it.
+
+The fields are the clauses of the theorem, except that the two bounds of (b) on the units of the
+tree, for one node and in all, are the theorems `ThinTrees.node_le` and `ThinTrees.total_le`, which
+follow from `edge`, `between_le`, `up_node` and `up_total`. The last sentence of (c), that the
+numbers of layers of the law moves at a node add up to at most the number of bits of all units that
+it ever holds, is not a field. -/
 structure ThinTrees (R : Type) [CommRing R] (laws : List (G.Law R)) (AA N ℓ M b G₁ C : ℕ) (γ : ℝ) where
   /-- the number of further nodes -/
   A' : ℕ
@@ -272,9 +278,6 @@ structure ThinTrees (R : Type) [CommRing R] (laws : List (G.Law R)) (AA N ℓ M 
       (lg M ^ C : ℕ) * (M : ℝ) ^ (1 - γ) * (N + (M : ℝ) ^ 2)
   up_total : ∀ n, (∀ a, ∑ c, ((n a c).1 + (n c a).1) ≤ N) → ∀ o, (∀ x, plan.good n o x) →
     ∑ p, up n o p ≤ lg M ^ C * M * (N + M ^ 2)
-  layers_le : ∀ n o, (∀ x, plan.good n o x) → ∀ p,
-    ∑ r ∈ univ.filter (fun r : sys.R => sys.rp r = p ∧ isLaw r.1 = true), plan.num n o r.1 ≤
-      ((Plan.seenAt n o E).filter (Holds (hold0 sys.np) (hold1 sys.np) p)).card
   /-- copies: what a node ever holds, with the zeros in slots and the counts of the moves, against the units that it
   has in the end -/
   copies_le : ∀ n, (∀ a, ∑ c, ((n a c).1 + (n c a).1) ≤ N) → ∀ o, (∀ x, plan.good n o x) → ∀ p,

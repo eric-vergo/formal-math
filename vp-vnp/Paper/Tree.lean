@@ -289,7 +289,6 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
     up_node := fun n hv o hg p => ?_
     up_total := fun n hv o hg => ?_
     copies_le := fun n hv o hg p => ?_
-    layers_le := fun n o hg p => layers_le_seen hH n o hg p
     value := fun n hv tab => tree_value hH hℓ (capN_capB hC hm1 hUu hAX) (fun d => hC.len _ (hC.mem d)) hc hU1 tab
     computed := ?_ }⟩
   · rcases Pl.pt.symm p with _ | ⟨j, x⟩
@@ -386,23 +385,27 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
       have : V ≤ V ^ 9 := Nat.le_self_pow (by norm_num) V
       omega
 
-/-- **Paper: Theorem thm:tree.** "There is a constant C with the following property. Let M ≥ 2, let ℓ, N ≥ 1, and let a
-network over an A-algebra have at most M nodes, no unit from a node to itself, and at most N units at each node. Its
-value is the sum, over a set of choices o (sequences of good outcomes), of values of networks with the following
-properties. Put Λ = (lg M)^C, where lg M = ⌊log M⌋+1, and γ = 1/log b. (a) The nodes form a rooted tree of depth at most
-Λ, by stages: the given nodes are of stage 0, every node but the root has its parent in the next stage and at most b
-children, and the root has at most C. (b) A set of at most M^C dead units may join any two nodes. All others join a node
-and its parent; their number is at most ΛM^(1−γ)(N+M²) for one node, its children included, and ΛM(N+M²) in all. (c)
-The table of a node is the given one (or 1) times the tables of the moves at it, summed over the units that they have
-used up. At stage 0 these are tests only; elsewhere they are tests and table entries of laws, and the numbers of
-layers of the law moves at a node add up to at most the number of bits of all units that it ever holds. (d) The parents,
-the units present, the units and numbers of the moves, and which outcomes are good are computed from o and the given
-numbers of units by a straight-line program with at most (MN)^C steps on numbers below (MN)^C. A step is an input, a
-constant, or an arbitrary function of two earlier results, given by its table (a binary operation). The program does not
-depend on the numbers of units, the outcomes or the tables." The tests are relays, and the laws are the fixed list, mapped to R. A move of num
-units uses num·ℓ layers, so (c) is stated as num summed over the law moves at a node against the units ever seen at it
-(seenAt). Units from a node to itself are also allowed: they stay, and their node sums over them (the printed formula is
-the case without them, cutUnits_id_cur). The operations of (d) are those of a straight-line program that may depend on M, N and ℓ. -/
+/-- **Paper: Theorem thm:tree.** "There is a constant C with the following property. Let M ≥ 2, let
+ℓ, N ≥ 1, and let a network over an A-algebra have at most M nodes, no unit from a node to itself,
+and at most N units at each node. Its value is the sum, over a set of choices o (sequences of good
+outcomes), of values of networks with the following properties. Put Λ = (lg M)^C, where lg M = ⌊log
+M⌋+1, and γ = 1/log b. (a) The nodes form a rooted tree of depth at most Λ, by stages: the given
+nodes are of stage 0, every node but the root has its parent in the next stage and at most b
+children, and the root has at most C. (b) A set of at most M^C dead units may join any two nodes.
+All others join a node and its parent; their number is at most ΛM^(1−γ)(N+M²) for one node, its
+children included, and ΛM(N+M²) in all. (c) The table of a node is the given one (or 1) times the
+tables of the moves at it, summed over the units that they have used up. At stage 0 these are tests
+only; elsewhere they are tests and table entries of laws, and the numbers of layers of the law moves
+at a node add up to at most the number of bits of all units that it ever holds. (d) The parents, the
+units present, the units and numbers of the moves, and which outcomes are good are computed from o
+and the given numbers of units by a straight-line program with at most (MN)^C steps on numbers below
+(MN)^C. A step is an input, a constant, or an arbitrary function of two earlier results, given by
+its table (a binary operation). The program does not depend on the numbers of units, the outcomes or
+the tables." The tests are relays, and the laws are the fixed list, mapped to R. The last sentence
+of (c), on the layers of the law moves at a node, is not formalized: Proposition prop:pieces does
+not use it. Units from a node to itself are also allowed: they stay, and their node sums over them
+(the printed formula is the case without them, cutUnits_id_cur). The operations of (d) are those of
+a straight-line program that may depend on M, N and ℓ. -/
 theorem thm_tree {A : Type} [CommRing A] {h : ℕ} [NeZero h]
     (VL : VLaws A (cNear (h := h)) (dNear (h := h)) 1 (2 ^ ee h)) (h3 : 3 ≤ h)
     (hgain : 1 + 8 * VL.C₁ ≤ (h : ℝ) / 4) :
