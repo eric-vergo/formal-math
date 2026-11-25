@@ -22,6 +22,19 @@ variable {A : Type} [CommRing A] {R : Type} [CommRing R] [Algebra A R]
 /-- The number of binary digits. -/
 def lg (n : ℕ) : ℕ := Nat.log 2 n + 1
 
+theorem lt_two_pow_lg (n : ℕ) : n < 2 ^ lg n := Nat.lt_pow_succ_log_self (by norm_num) n
+
+theorem lg_mono {a b : ℕ} (h : a ≤ b) : lg a ≤ lg b := Nat.succ_le_succ (Nat.log_mono_right h)
+
+theorem lg_pow_le {n k : ℕ} (hk : 1 ≤ k) : lg (n ^ k) ≤ k * lg n := by
+  have h1 : n ^ k < 2 ^ (k * lg n) := by
+    rw [Nat.mul_comm, pow_mul]
+    exact Nat.pow_lt_pow_left (lt_two_pow_lg n) (by omega)
+  unfold lg at h1 ⊢
+  refine Nat.succ_le_of_lt (Nat.log_lt_of_lt_pow' ?_ h1)
+  have : 1 * 1 ≤ k * (Nat.log 2 n + 1) := Nat.mul_le_mul hk (by omega)
+  omega
+
 /-- The program `z.hd` at the argument `z.tl`: all runs stop, the accepting ones within `T` steps and without named
 constants. -/
 def Plain (θ : List Bool → A) (T : ℕ) (z : Tree) : Prop :=
