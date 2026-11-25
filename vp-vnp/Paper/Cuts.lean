@@ -165,6 +165,35 @@ private theorem universal_block_budget {cost τ K L m : ℕ} (hτ : 1 ≤ τ) (h
     _ ≤ τ * m := Nat.mul_le_mul_left _ hm
 
 set_option maxHeartbeats 1200000 in
+/-- Unit names use at most three indices, and rows use two indices and a side.
+A single alphabet of the indicated power therefore fits both at every cut scale. -/
+private theorem onecut_index_capacity {v K e C b U₀ U₁ : ℕ} {N : Type} [Fintype N] [DecidableEq N]
+    (hv : 4 ≤ v) (hK : K ≤ v ^ (e + 1)) (hb : (C + e + 2) * 3 + 1 ≤ b)
+    (h₀ : U₀ ≤ v ^ C) (h₁ : U₁ ≤ v ^ C) (hN : Fintype.card N ≤ v ^ C) :
+    v ^ C + 1 ≤ v ^ b ∧ K + K + 1 ≤ v ^ b ∧ Fintype.card (Nc.G.Uid (K + K) U₀ N U₁) ≤ v ^ b ∧
+      Fintype.card (Nc.Cut.RowData (K + K)) ≤ v ^ b := by
+  let B := v ^ (C + e + 2)
+  have hCB : v ^ C ≤ B := Nat.pow_le_pow_right (by omega) (by omega)
+  have hKB : K + K ≤ B := by
+    have h := Nat.mul_le_mul (show 2 ≤ v by omega) hK
+    rw [← pow_succ', Nat.two_mul] at h
+    exact h.trans (Nat.pow_le_pow_right (by omega) (by omega))
+  have hB : 1 ≤ B := Nat.pow_pos (by omega)
+  have hBB : B * B ≤ B ^ 3 := by simpa [pow_two] using Nat.pow_le_pow_right hB (show 2 ≤ 3 by decide)
+  have hBX : 4 * B ^ 3 ≤ v ^ b := by
+    calc _ ≤ v * B ^ 3 := Nat.mul_le_mul_right _ hv
+      _ = v ^ ((C + e + 2) * 3 + 1) := by rw [pow_succ' v ((C + e + 2) * 3), pow_mul]
+      _ ≤ _ := Nat.pow_le_pow_right (by omega) hb
+  have := Nat.le_self_pow (show 3 ≠ 0 by decide) B
+  refine ⟨by omega, by omega, Nc.Dl.card_uid_le.trans ?_, ?_⟩
+  · have hInit : (K + K) * (K + K) * U₀ ≤ B ^ 3 := by
+      simpa only [pow_succ B 2, pow_two] using Nat.mul_le_mul (Nat.mul_le_mul hKB hKB) (h₀.trans hCB)
+    have := Nat.mul_le_mul (hN.trans hCB) (h₁.trans hCB)
+    omega
+  · rw [Nc.Dl.card_row]
+    have := Nat.mul_le_mul hKB hKB
+    omega
+
 /-- **Paper: Theorem thm:onecut.** "There are constants a₀, C, v₀ such that for all v ≥ v₀, all τ ≥ v^a₀ with
 4 lg τ ≤ (lg v)², all s ≤ τ and 2 ≤ k ≤ v^64, with Λ = (lg v)^C, a program of size at most v^a₀ cuts (τ,s) into
 (τΛ/k, (s/k + τ/v^256)Λ) with at most kΛ pieces, in (s + τk/v^256)Λ steps." The laws and the generators θ are the
@@ -180,7 +209,7 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
   classical
   obtain ⟨S, Γ, Q, i1, i2, i3, i4, i5, i6, mu, i, e', b0, b1, CU, hCU⟩ := prop_universal θ hθ.1
   obtain ⟨a, e, he, hpieces⟩ := prop_pieces VL h3 hgain
-  obtain ⟨Cp, v₁, hP⟩ := hpieces Γ S Q mu
+  obtain ⟨Cp, v₁, -, hP⟩ := hpieces Γ S Q mu
   -- All evaluator constants are fixed before choosing the scale.
   let kinds := Nc.Tow.kindList A ((univ : Finset VL.Di).toList.map VL.L)
   obtain ⟨Zg, hEval⟩ := uniform_evaluator hθ mu kinds Cp
@@ -219,13 +248,10 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
   have vpos : ∀ p, 0 < v ^ p := fun p => Nat.pow_pos (by omega)
   have vone : v ≤ v ^ 1 := (pow_one v).ge
   -- the number of blocks
-  obtain ⟨K, hKv, hKv', hP⟩ := hP v (by omega)
-  have hK0 : 0 < K := lt_of_lt_of_le (vpos e) hKv
-  have hvK : v ^ 300 ≤ K := (vpow he).trans hKv
-  have hKe : K ≤ v ^ (e + 1) := by
-    calc K ≤ Cp * v ^ e := hKv'
-      _ ≤ v * v ^ e := Nat.mul_le_mul_right _ (by omega)
-      _ = v ^ (e + 1) := (pow_succ' v e).symm
+  let K := v ^ e
+  have hK0 : 0 < K := vpos e
+  have hvK : v ^ 300 ≤ K := vpow he
+  have hKe : K ≤ v ^ (e + 1) := vpow (Nat.le_succ _)
   obtain ⟨X, hX⟩ : ∃ X, X = v ^ b₁ := ⟨_, rfl⟩
   have vX : ∀ p, p ≤ b₁ → v ^ p ≤ X := fun p hp => hX ▸ vpow hp
   have hX1 : 1 ≤ X := hX ▸ Nat.pow_pos hv1
@@ -257,7 +283,7 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
       _ ≤ v ^ (a + e + 6 * b₁ + 400) := vpow (by omega)
       _ ≤ K * T := hτ.trans (hτtU.trans hKTge)
       _ ≤ v ^ (e + 1) * T := Nat.mul_le_mul_right _ hKe
-  obtain ⟨pc⟩ := hP T k hTa hk hkv
+  obtain ⟨pc⟩ : Nonempty (PieceCut kinds mu _ _ v K T k Cp) := hP v (by omega) T k hTa hk hkv
   set ℓ := s / K + 1 with hℓ
   have hℓT : ℓ ≤ T := by
     rw [hℓ, hT]
@@ -265,29 +291,9 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
   have hsK : s ≤ K * ℓ := hℓ ▸ (Nat.lt_mul_div_succ s hK0).le
   -- numbers below X
   obtain ⟨hD, hst, hA', hE, hU0, hU1⟩ := pc.steps_le
-  -- Every index of a unit has size at most B. A unit name uses at most three indices.
-  set B := v ^ (Cp + e + 2) with hB
-  have hCB : v ^ Cp ≤ B := vpow (by omega)
-  have hKB : K + K ≤ B := by
-    have := Nat.mul_le_mul (show 2 ≤ v by omega) hKe
-    rw [← pow_succ'] at this
-    exact (Nat.two_mul K ▸ this).trans (vpow (by omega))
-  have hBpos : 1 ≤ B := vpos _
-  have hBB : B * B ≤ B ^ 3 := by simpa [pow_two] using
-    (Nat.pow_le_pow_right hBpos (show 2 ≤ 3 by decide))
-  have hBX : 4 * B ^ 3 ≤ X := by
-    calc 4 * B ^ 3 ≤ v * B ^ 3 := Nat.mul_le_mul_right _ (by omega)
-      _ = v ^ ((Cp + e + 2) * 3 + 1) := by rw [hB, ← pow_mul, pow_succ']
-      _ ≤ X := vX _ (by omega)
-  have hB3 := Nat.le_self_pow (show 3 ≠ 0 by decide) B
-  have hCX : v ^ Cp + 1 ≤ X := by omega
-  have hK2 : K + K + 1 ≤ X := by omega
-  have hcId : Fintype.card (Nc.G.Uid (K + K) pc.U0 pc.sys.N pc.U1) ≤ X := by
-    refine Nc.Dl.card_uid_le.trans ?_
-    have hInit : (K + K) * (K + K) * pc.U0 ≤ B ^ 3 := by
-      simpa only [pow_succ B 2, pow_two] using Nat.mul_le_mul (Nat.mul_le_mul hKB hKB) (hU0.trans hCB)
-    have hNew := Nat.mul_le_mul (pc.outcomes_le.trans hCB) (hU1.trans hCB)
-    omega
+  obtain ⟨hCX, hK2, hcId, hrow⟩ := onecut_index_capacity (b := b₁) (by omega : 4 ≤ v) hKe
+    (by omega) hU0 hU1 pc.outcomes_le
+  rw [← hX] at hCX hK2 hcId hrow
   have hkind : ∀ r : pc.sys.R, ∃ t : ℕ, kinds[t]? = some ⟨pc.sys.kind r.1, r.2⟩ := fun r =>
     List.mem_iff_getElem?.1 (pc.kinds_mem r)
   choose tg htg using hkind
@@ -302,10 +308,6 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
       _ ≤ v ^ Cp * v := Nat.mul_le_mul hE (by omega)
       _ = v ^ (Cp + 1) := (pow_succ v Cp).symm
       _ ≤ X := vX _ (by omega)
-  have hrow : Fintype.card (Nc.Cut.RowData (K + K)) ≤ X := by
-    rw [Nc.Dl.card_row]
-    have := Nat.mul_le_mul hKB hKB
-    omega
   have hSX : Fintype.card (Option S) ≤ X := by
     rw [Fintype.card_option]
     omega

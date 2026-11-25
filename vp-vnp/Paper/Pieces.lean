@@ -422,10 +422,16 @@ theorem slp_inputs {Inp ι : Type} [Fintype ι] {D p : ℕ} {inp : ι → Inp �
 variable {K N ℓ M b G₁ C : ℕ} {laws : List (G.Law A)} {γ : ℝ} (TT : ThinTrees A laws (K + K) N ℓ M b G₁ C γ)
 
 open Classical in
+/-- Each outcome has a unit name, obtained by choosing its first unit. -/
+private theorem outcomes_le_units {J : Type} [Fintype J] [DecidableEq J] {P N u : ℕ} (hu : 0 < u) :
+    Fintype.card J ≤ Fintype.card (Uid P N J u) :=
+  Fintype.card_le_of_injective (fun ν => (Uid.new ν ⟨0, hu⟩ : Uid P N J u))
+    fun _ _ e => (Uid.new.inj e).1
+
 /-- "The units, the pieces and what each table does are computed from the numbers of units and the outcomes": the
 program of Theorem thm:tree(d), extended by the pieces and by the check of the numbers. -/
-theorem prop_pieces_program (k : ℕ) {Y : ℕ} (hY : 16 ≤ Y) (hMY : (M * N) ^ C ≤ Y) (hKY : K + K ≤ Y) (hNY : N ≤ Y)
-    (hdY : TT.depth ≤ Y) (hin : (K + K) * (K + K) + Fintype.card TT.sys.N ≤ Y) :
+theorem prop_pieces_program (k : ℕ) {Y : ℕ} (hY : 16 ≤ Y) (hMY : (M * N) ^ C ≤ Y) (hNY : N ≤ Y)
+    (hdY : TT.depth ≤ Y) :
     N < Y ^ 4 ∧ TT.U1 ≤ Y ^ 4 ∧ pieceNum TT k ≤ Y ^ 4 ∧
     ∃ tab : SlpTab TT.plan (fun n o => pieceFin TT k n o) (Y ^ 4) (Y ^ 15),
       ∀ n, tab.valid n ↔ ∀ p, ∑ c, ((n p c).val + (n c p).val) ≤ N := by
@@ -436,6 +442,7 @@ theorem prop_pieces_program (k : ℕ) {Y : ℕ} (hY : 16 ≤ Y) (hMY : (M * N) ^
       _ < Y ^ 4 := Nat.pow_lt_pow_right (by omega) (by norm_num)
   have hDY : D₀ ≤ Y := d1.trans hMY
   have hP : K + K + TT.A' ≤ Y := d3.trans hMY
+  have hKY : K + K ≤ Y := by omega
   have hnum : pieceNum TT k ≤ Y := (min_le_right _ _).trans hP
   refine ⟨by omega, by omega, by omega, ?_⟩
   let inp : (Fin (K + K) × Fin (K + K)) ⊕ TT.sys.N → Dl.NN K N × (TT.sys.N → Fin TT.U1) → Fin (Y ^ 4) := fun i x =>
@@ -500,14 +507,17 @@ theorem prop_pieces_program (k : ℕ) {Y : ℕ} (hY : 16 ≤ Y) (hMY : (M * N) ^
       ∀ p, ∑ c, ((x.1 p c).val + (x.1 c p).val) ≤ N) (a := 2) (e := 1) (by rw [Fintype.card_unit, pow_one]; omega)
     (fun _ => (PY.forall_univ hA (by simpa using hKY) fun p => PY.base (f4 p) hA.pos).toCY) (by omega)
   have hsteps : p₀ + (0 + 2 * TT.depth + 9 + 1 + 1 + 1 + 1) * Y ^ 12 ≤ Y ^ 15 := by
-    have h1 : p₀ ≤ 2 * Y := by
+    have h1 : p₀ ≤ 3 * Y ^ 2 := by
       rw [hp₀, Fintype.card_sum, Fintype.card_prod, Fintype.card_fin]
-      have := d2.trans hMY
-      omega
+      have hOut := (outcomes_le_units TT.U1_pos).trans (d6.trans hMY)
+      have hSq := Nat.mul_le_mul hKY hKY
+      have hLin := Nat.le_self_pow (by decide : 2 ≠ 0) Y
+      nlinarith only [d2.trans hMY, hOut, hSq, hLin]
     have h2 : 0 + 2 * TT.depth + 9 + 1 + 1 + 1 + 1 ≤ 3 * Y := by omega
-    have h3 : 2 * Y ≤ 2 * Y * Y ^ 12 := Nat.le_mul_of_pos_right _ (Nat.pow_pos hA.pos)
-    calc _ ≤ 2 * Y * Y ^ 12 + 3 * Y * Y ^ 12 := Nat.add_le_add (h1.trans h3) (Nat.mul_le_mul_right _ h2)
-      _ = 5 * Y ^ 13 := by ring
+    have h3 : Y ^ 2 ≤ Y ^ 13 := Nat.pow_le_pow_right hA.pos (by decide)
+    calc _ ≤ 3 * Y ^ 13 + (3 * Y) * Y ^ 12 :=
+          Nat.add_le_add (h1.trans (Nat.mul_le_mul_left _ h3)) (Nat.mul_le_mul_right _ h2)
+      _ = 6 * Y ^ 13 := by ring
       _ ≤ Y * Y ^ 13 := Nat.mul_le_mul_right _ (by omega)
       _ = Y ^ 14 := by ring
       _ ≤ Y ^ 15 := Nat.pow_le_pow_right hA.pos (by norm_num)
@@ -627,7 +637,7 @@ numbers of units, good outcomes, and the contents of cut units, of products of t
 has at most CK/k blocks and parts, at most KTΛ/v^300 bits in cut units, and at most KTΛ/k bits in all. The units, the
 pieces and what each table does are computed from the numbers of units and the outcomes by v^C binary operations on
 numbers below v^C."
-Here Λ = (lg v)^C, e ≥ 300 (as chosen in the printed proof) and the bound on lg T is not needed; bits in all count every copy that the nodes of the piece ever
+Here K is exactly v^e, Λ = (lg v)^C, e ≥ 300, and the bound on lg T is not needed; bits in all count every copy that the nodes of the piece ever
 hold and the zeros in slots. What a table does is given by the units and the number of each move (cons and num),
 because the kind of each role is one of the fixed list of roles of the relay and the laws. A step is one binary
 operation on numbers below v^C, in a program that may depend on v, T and k. The proof applies Lemma lem:runnet, then
@@ -636,10 +646,9 @@ theorem prop_pieces {h : ℕ} [NeZero h] (VL : VLaws A (cNear (h := h)) (dNear (
     (hgain : 1 + 8 * VL.C₁ ≤ (h : ℝ) / 4) :
     ∃ a e : ℕ, 300 ≤ e ∧ ∀ (Γ S Q : Type) [Fintype Γ] [DecidableEq Γ] [Fintype S] [DecidableEq S] [Fintype Q] [DecidableEq Q]
       (mu : Nc.Letter S Unit Γ → Matrix Q Q A),
-      ∃ C v₀ : ℕ, ∀ v, v₀ ≤ v → ∃ K, v ^ e ≤ K ∧ K ≤ C * v ^ e ∧
-        ∀ T k, v ^ a ≤ T → 2 ≤ k → k ≤ v ^ 64 →
+      ∃ C v₀ : ℕ, 1 ≤ C ∧ ∀ v, v₀ ≤ v → ∀ T k, v ^ a ≤ T → 2 ≤ k → k ≤ v ^ 64 →
           Nonempty (PieceCut (kindList A ((univ : Finset VL.Di).toList.map VL.L)) mu (2 ^ ee h)
-            (goodBound VL.C₁ VL.a₁) v K T k C) := by
+            (goodBound VL.C₁ VL.a₁) v (v ^ e) T k C) := by
   classical
   obtain ⟨C₀, htree⟩ := thm_tree VL h3 hgain
   have hq : 0 < ee h := by
@@ -664,11 +673,9 @@ theorem prop_pieces {h : ℕ} [NeZero h] (VL : VLaws A (cNear (h := h)) (dNear (
   let allCoeff := 8 * C₀ * (4 * c + 5) * Ee + 8 * (4 * c + 4) * Ee + 2 * C₀
   let W := cutCoeff + allCoeff
   obtain ⟨C, hC⟩ : ∃ C, C = W + C₀ + (1 + C₀ + 2 ^ ee h * Ee) + 16 * bY + c + 8 + (4 * c + 4) := ⟨_, rfl⟩
-  refine ⟨C, 8 * c + 2 * σ + 16, fun v hv => ?_⟩
+  refine ⟨C, 8 * c + 2 * σ + 16, by omega, fun v hv T k hT hk hk' => ?_⟩
   have hv1 : 1 ≤ v := by omega
-  refine ⟨v ^ e, le_rfl, Nat.le_mul_of_pos_left _ (by omega), fun T k hT hk hk' => ?_⟩
-  obtain ⟨K, hK⟩ : ∃ K, K = v ^ e := ⟨_, rfl⟩
-  rw [← hK]
+  set K := v ^ e with hK
   have vp : ∀ {x y}, x ≤ y → v ^ x ≤ v ^ y := fun h => Nat.pow_le_pow_right hv1 h
   have hK0 : 0 < K := hK ▸ Nat.pow_pos hv1
   have hMv : K + K ≤ v ^ (e + 1) := by
@@ -702,14 +709,9 @@ theorem prop_pieces {h : ℕ} [NeZero h] (VL : VLaws A (cNear (h := h)) (dNear (
   have hPL : lg (K + K) ^ C₀ ≤ Ee * L ^ C₀ := by
     rw [hEe, ← mul_pow]
     refine Nat.pow_le_pow_left ?_ _
-    have h1 : K + K < 2 ^ ((e + 1) * L) := by
-      calc K + K ≤ v ^ (e + 1) := hMv
-        _ < (2 ^ L) ^ (e + 1) := Nat.pow_lt_pow_left (hL ▸ Nat.lt_pow_succ_log_self (by norm_num) v) (by omega)
-        _ = 2 ^ ((e + 1) * L) := by rw [← pow_mul, Nat.mul_comm]
-    have h2 : Nat.log 2 (K + K) < (e + 1) * L := Nat.log_lt_of_lt_pow (by omega) h1
-    have e1 : (e + 2) * L = (e + 1) * L + L := by ring
-    unfold lg
-    omega
+    rw [hL]
+    exact ((NS1.lg_mono hMv).trans (NS1.lg_pow_le (by omega))).trans
+      (Nat.mul_le_mul_right _ (by omega))
   have hWC : ∀ X, X ≤ W * L ^ C₀ * (K * T) → X ≤ K * T * lg v ^ C := fun X hX => by
     rw [← hL, Nat.mul_comm (K * T)]
     exact hX.trans (Nat.mul_le_mul_right _ (const_mul_pow_le hL2 (by omega)))
@@ -722,8 +724,7 @@ theorem prop_pieces {h : ℕ} [NeZero h] (VL : VLaws A (cNear (h := h)) (dNear (
   -- the program
   have hNc : Fintype.card TT.sys.N ≤ ((K + K) * load) ^ C₀ := by
     obtain ⟨-, -, -, -, -, -, -, -, -, d6, -⟩ := TT.computed
-    exact (Fintype.card_le_of_injective (fun ν => (Uid.new ν ⟨0, TT.U1_pos⟩ : Uid (K + K) load TT.sys.N TT.U1))
-      fun a b e => (Uid.new.inj e).1).trans d6
+    exact (outcomes_le_units TT.U1_pos).trans d6
   have hMN : ((K + K) * load) ^ C₀ ≤ v ^ ((e + a' + 2) * C₀) := by
     rw [pow_mul]
     refine Nat.pow_le_pow_left ((Nat.mul_le_mul hMv b6).trans ?_) _
@@ -734,18 +735,9 @@ theorem prop_pieces {h : ℕ} [NeZero h] (VL : VLaws A (cNear (h := h)) (dNear (
     refine TT.depth_le.trans (le_trans ?_ (hMN.trans (vp (by omega))))
     refine Nat.pow_le_pow_left ?_ _
     exact (Nat.succ_le_of_lt (Nat.log_lt_self 2 (by omega))).trans (Nat.le_mul_of_pos_right _ hload1)
-  have hin : (K + K) * (K + K) + Fintype.card TT.sys.N ≤ v ^ bY := by
-    have h1 : (K + K) * (K + K) ≤ v ^ (bY - 1) := by
-      refine (Nat.mul_le_mul hMv hMv).trans ?_
-      rw [← pow_add]
-      exact vp (by omega)
-    have h2 : Fintype.card TT.sys.N ≤ v ^ (bY - 1) := hNc.trans (hMN.trans (vp (by omega)))
-    calc _ ≤ v ^ (bY - 1) * 2 := by omega
-      _ ≤ v ^ (bY - 1) * v := Nat.mul_le_mul_left _ (by omega)
-      _ = v ^ bY := by rw [← pow_succ]; congr 1; omega
   obtain ⟨g1, g2, g3, tab, htab⟩ := prop_pieces_program TT k (Y := v ^ bY)
     (le_trans (by omega) (Nat.le_self_pow (show bY ≠ 0 by omega) v)) (hMN.trans (vp (by omega)))
-    (hMv.trans (vp (by omega))) (b6.trans (vp (by omega))) hdY hin
+    (b6.trans (vp (by omega))) hdY
   refine ⟨{
     c := c
     cb := cb
