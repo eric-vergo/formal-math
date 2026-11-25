@@ -473,6 +473,20 @@ theorem size_gt (ν : ℕ → ℕ) (J B : ℕ) (K : KT R) (pre : List Bool) (N :
     have e5 := h2.trans (Nat.mul_le_mul_left _ e2)
     nlinarith
 
+/-- The size of the guessing program at a scale `u`, when its trie has at most `u ^ k` nodes and
+`X` bounds all lengths, with `1000 X³ ≤ u`. -/
+theorem size_gt_le (ν : ℕ → ℕ) {J B N : ℕ} (K : KT R) (pre : List Bool) (hν : ∀ i < B + J, ν i ≤ N)
+    {u k X : ℕ} (hK : K.nds ≤ u ^ k) (hX : pre.length + K.ht + N ≤ X) (hJ : J + 1 ≤ X)
+    (hB : B + 1 ≤ X) (hX10 : 10 ≤ X) (hXu : 1000 * X ^ 3 ≤ u) :
+    (gt ν J B K pre).code.size ≤ 2 * u ^ (k + 1) := by
+  have hc := K.expand_cost_le (c := 18 * X) hK hB (by nlinarith)
+  calc (gt ν J B K pre).code.size
+      ≤ (K.expand B).nds * ((J + 1) * (4 * (pre.length + K.ht + N) + 100)) :=
+        size_gt ν J B K pre N hν
+    _ ≤ (K.expand B).nds * (X * (18 * X)) := Nat.mul_le_mul_left _ (Nat.mul_le_mul hJ (by omega))
+    _ = (K.expand B).nds * (18 * X * X) := by ring
+    _ ≤ _ := hc
+
 end Sizes
 
 end NS1

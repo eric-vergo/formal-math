@@ -325,19 +325,10 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
     have s1 := size_roundA K K' B B' J D G p
     rw [← hsW, ← hsU] at s1
     have s2 := hG.size
-    have s3 : ∀ (K₀ : KT E[T;T⁻¹]) (B₀ : ℕ) (pre : List Bool), K₀.nds ≤ u ^ (h * α) → pre.length ≤ 1 →
-        K₀.ht + B₀ + J + 1 ≤ X → (gt id J B₀ K₀ pre).code.size ≤ 2 * u ^ (h * α + 1) := by
-      intro K₀ B₀ pre h0 h1 h2
-      have s4 := K₀.expand_cost_le (B := B₀) (X := X) (c := 18 * X) h0 (by omega) (by
-        rw [show 18 * X * X ^ 2 = 18 * X ^ 3 by ring]
-        omega)
-      refine (size_gt id J B₀ K₀ pre (B₀ + J) (fun i hi => (show id i ≤ B₀ + J from hi.le))).trans ?_
-      refine le_trans (Nat.mul_le_mul_left _ (Nat.mul_le_mul (show J + 1 ≤ X by omega)
-        (show 4 * (pre.length + K₀.ht + (B₀ + J)) + 100 ≤ 18 * X by omega))) ?_
-      calc (K₀.expand B₀).nds * (X * (18 * X)) = (K₀.expand B₀).nds * (18 * X * X) := by ring
-        _ ≤ _ := s4
-    have sg := s3 K B [false] hK (by simp) (by omega)
-    have sg' := s3 K' B' [true] hK' (by simp) (by omega)
+    have sg := size_gt_le id K [false] (N := B + J) (fun _ hi => hi.le) hK (by simp; omega)
+      (by omega) (by omega) hX10 hXu
+    have sg' := size_gt_le id K' [true] (N := B' + J) (fun _ hi => hi.le) hK' (by simp; omega)
+      (by omega) (by omega) hX10 hXu
     have s5 : 2 * D.size ≤ 2 * u ^ (h * α) := Nat.mul_le_mul_left _ hDs
     have s6 : 2 * sW + sU + 2000 ≤ 3 * u ^ (16 * h) := by
       have : u ^ 1 ≤ u ^ (16 * h) := pow_le_pow hu1 (by omega)

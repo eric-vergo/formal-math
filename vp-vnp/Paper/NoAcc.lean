@@ -93,18 +93,9 @@ theorem thm_noacc_diagonal {h : ℕ} (hh : 17 ≤ h) [Nontrivial R] {v : ℕ} {K
   set g : Fm := gt red J B' K [] with hg
   set p : Tree := (diagF D g).code with hp
   have hps : p.size ≤ v ^ (4 * h + 1) := by
-    have s3 := size_gt red J B' K [] M (fun i _ => (hM i).le)
-    rw [List.length_nil] at s3
-    have s4 : g.code.size ≤ 2 * v ^ 2 := by
-      have := hnBX (14 * X) (by
-        rw [show 14 * X * X ^ 2 = 14 * X ^ 3 by ring]
-        omega)
-      calc g.code.size ≤ nB * ((J + 1) * (4 * (0 + K.ht + M) + 100)) := s3
-        _ ≤ nB * (X * (14 * X)) := Nat.mul_le_mul_left _ (Nat.mul_le_mul hJX (by
-            have := le_max_right B M
-            omega))
-        _ = nB * (14 * X * X) := by ring
-        _ ≤ 2 * v ^ 2 := this
+    have s4 : g.code.size ≤ 2 * v ^ 2 :=
+      size_gt_le red K [] (N := M) (fun i _ => (hM i).le) (k := 1) (by simpa using hK)
+        (by have := le_max_right B M; simp; omega) (by omega) (by omega) hX10 hXv
     have s5 : p.size ≤ D.size + g.code.size + sW + 500 := by
       simp only [hp, diagF, app, ZE, Fm.code, Tree.size, size_num, hsW]
       omega
