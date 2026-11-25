@@ -230,98 +230,58 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
       ∑ a, ∑ c, ∑ γ, ∑ s : Fin (2 * m), if a = c then 0 else Bt T ch lhat n a c γ *
         ((if s.1 + 1 < R.pl (ch a) (ch c) γ ∧ (R.path (ch a) (ch c) γ)[s.1]? = some e then 1 else 0) +
         if s.1 + 2 = R.pl (ch a) (ch c) γ ∧ (R.path (ch a) (ch c) γ)[s.1 + 1]? = some e then 1 else 0) := by
-    -- only the relays of the start
-    have h3 : ∀ ν : NM R FL (ch := ch), (if tgM R ch FL ν.1 ν.2 = .edge 0 e then alv R ch FL lhat n o ν else 0) ≤
-        ∑ a, ∑ c, ∑ γ, ∑ s : Fin (2 * m), ((if ∃ hx : okR T R ch (.start a c γ s), ν = ⟨.inl ⟨.start a c γ s, hx⟩, false⟩ ∧
-            (R.path (ch a) (ch c) γ)[s.1]? = some e then Bt T ch lhat n a c γ else 0) +
-          if ∃ hx : okR T R ch (.start a c γ s), ν = ⟨.inl ⟨.start a c γ s, hx⟩, true⟩ ∧ s.1 + 2 = R.pl (ch a) (ch c) γ ∧
-            (R.path (ch a) (ch c) γ)[s.1 + 1]? = some e then Bt T ch lhat n a c γ else 0) := by
-      intro ν
-      split_ifs with hν
-      · rcases ν with ⟨⟨x, hx⟩ | l, ν⟩
-        · change tgR T R ch x ν = .edge 0 e at hν
-          have hnum := alv_le_num (lhat := lhat) (n := n) (o := o) (FL := FL) ⟨x, hx⟩ ν
-          rcases x with ⟨a, c, γ, s⟩ | ⟨j', i', e'⟩ | ⟨j', e', s'⟩ | e'
-          · have hB := hnum.trans (num_start_le (FL := FL) (lhat := lhat) (n := n) (o := o) hr hb a c γ s hx)
-            refine le_trans ?_ (Finset.single_le_sum (f := fun a => ∑ c, ∑ γ, ∑ s : Fin (2 * m), _)
-              (fun _ _ => Nat.zero_le _) (mem_univ a))
-            refine le_trans ?_ (Finset.single_le_sum (f := fun c => ∑ γ, ∑ s : Fin (2 * m), _)
-              (fun _ _ => Nat.zero_le _) (mem_univ c))
-            refine le_trans ?_ (Finset.single_le_sum (f := fun γ => ∑ s : Fin (2 * m), _)
-              (fun _ _ => Nat.zero_le _) (mem_univ γ))
-            refine le_trans ?_ (Finset.single_le_sum (fun _ _ => Nat.zero_le _) (mem_univ s))
-            have hedge : ∀ e' : Option (T.Ed 0), (edgeO T e' : Tg T m AA) = .edge 0 e → e' = some e := by
-              intro e' he
-              cases e' with
-              | none => simp [edgeO] at he
-              | some e'' =>
-                have h6 : e'' = e := eq_of_heq (Tg.edge.inj he).2
-                rw [h6]
-            cases ν
-            · rw [ite_eq_left ⟨hx, rfl, hedge _ hν⟩]
-              exact hB.trans (Nat.le_add_right _ _)
-            · simp only [tgR] at hν
-              split_ifs at hν with hs
-              have h4 : s.1 + 2 = R.pl (ch a) (ch c) γ := by
-                obtain ⟨-, h5⟩ := hx
-                have h6 := (R.pl_le (ch a) (ch c) γ).trans (R.length_path _ _ _)
-                by_contra h7
-                exact hs ⟨by omega, by omega⟩
-              rw [ite_eq_left (⟨hx, rfl, h4, hedge _ hν⟩ : ∃ hx : okR T R ch (.start a c γ s),
-                (⟨.inl ⟨.start a c γ s, _⟩, true⟩ : NM R FL (ch := ch)) = ⟨.inl ⟨.start a c γ s, hx⟩, true⟩ ∧ s.1 + 2 = R.pl (ch a) (ch c) γ ∧
-                (R.path (ch a) (ch c) γ)[s.1 + 1]? = some e)]
-              exact hB.trans (Nat.le_add_left _ _)
-          · simp [tgR] at hν
-          · rcases tgR_mid_cases (R := R) (ch := ch) j' e' s' ν with he | ⟨_, _, he⟩ | ⟨_, _, he⟩ |
-              ⟨_, _, he⟩ | ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hν <;>
-              first | simp at hν | exact absurd (Tg.edge.inj hν).1 (Fin.succ_ne_zero _)
-          · simp [tgR] at hν
-        · exfalso
-          exact absurd (Tg.edge.inj hν).1 (Fin.succ_ne_zero _)
-      · exact Nat.zero_le _
-    refine (Finset.sum_le_sum fun ν _ => h3 ν).trans ?_
-    rw [Finset.sum_comm]
-    refine Finset.sum_le_sum fun a _ => ?_
-    rw [Finset.sum_comm]
-    refine Finset.sum_le_sum fun c _ => ?_
-    rw [Finset.sum_comm]
-    refine Finset.sum_le_sum fun γ _ => ?_
-    rw [Finset.sum_comm]
-    refine Finset.sum_le_sum fun s _ => ?_
-    rw [Finset.sum_add_distrib]
-    have sgl : ∀ (d : Bool) (P : Prop) [Decidable P] (v : ℕ), (∑ ν : NM R FL (ch := ch), if ∃ hx : okR T R ch (.start a c γ s),
-        ν = ⟨.inl ⟨.start a c γ s, hx⟩, d⟩ ∧ P then v else 0) ≤
-          if okR T R ch (.start a c γ s) ∧ P then v else 0 := by
-      intro d P _ v
-      by_cases hc : okR T R ch (.start a c γ s) ∧ P
-      · rw [ite_eq_left hc, Finset.sum_eq_single (⟨.inl ⟨.start a c γ s, hc.1⟩, d⟩ : NM R FL (ch := ch))]
-        · rw [ite_eq_left ⟨hc.1, rfl, hc.2⟩]
-        · intro ν _ hν
-          rw [ite_eq_right]
-          rintro ⟨hx', h3, -⟩
-          exact hν h3
-        · intro hn; exact absurd (mem_univ _) hn
-      · rw [Finset.sum_eq_zero]
-        · exact Nat.zero_le _
-        · intro ν _
-          rw [ite_eq_right]
-          rintro ⟨hx, -, h1⟩
-          exact hc ⟨hx, h1⟩
-    refine (add_le_add (sgl false _ _) (sgl true _ _)).trans ?_
-    by_cases hac : a = c
-    · rw [ite_eq_left hac, ite_eq_right (fun hh => hh.1.1 hac), ite_eq_right (fun hh => hh.1.1 hac)]
-    · rw [ite_eq_right hac, Nat.mul_add]
-      refine add_le_add ?_ ?_
-      · split_ifs with h4 h5 h5
-        · rw [Nat.mul_one]
-        · exact absurd ⟨h4.1.2, h4.2⟩ h5
-        · exact Nat.zero_le _
-        · exact Nat.zero_le _
-      · split_ifs with h4 h5 h5
-        · rw [Nat.mul_one]
-        · exact absurd h4.2 h5
-        · exact Nat.zero_le _
-        · exact Nat.zero_le _
+    let bound : RM T m AA → ℕ
+      | .start a c γ s => if a = c then 0 else Bt T ch lhat n a c γ *
+          ((if s.1 + 1 < R.pl (ch a) (ch c) γ ∧ (R.path (ch a) (ch c) γ)[s.1]? = some e then 1 else 0) +
+           if s.1 + 2 = R.pl (ch a) (ch c) γ ∧ (R.path (ch a) (ch c) γ)[s.1 + 1]? = some e then 1 else 0)
+      | _ => 0
+    have hed (v : Option (T.Ed 0)) (hv : (edgeO T v : Tg T m AA) = .edge 0 e) : v = some e := by
+      cases v with
+      | none => cases hv
+      | some f => exact congrArg some (eq_of_heq (Tg.edge.inj hv).2)
+    have hrelay (x : {x : RM T m AA // okR T R ch x}) :
+        (∑ ν : Bool, if tgR T R ch x.1 ν = .edge 0 e then alv R ch FL lhat n o ⟨.inl x, ν⟩ else 0) ≤ bound x.1 := by
+      obtain ⟨x, hx⟩ := x
+      rcases x with ⟨a, c, γ, s⟩ | ⟨j, i, f⟩ | ⟨j, f, s⟩ | f
+      · have hB (ν : Bool) := (alv_le_num (lhat := lhat) (n := n) (o := o) (FL := FL) ⟨.start a c γ s, hx⟩ ν).trans
+            (num_start_le hr hb a c γ s hx)
+        obtain ⟨hac, hs⟩ := hx
+        rw [Fintype.sum_bool, add_comm]
+        simp only [bound, ite_eq_right hac, Nat.mul_add]
+        apply add_le_add
+        · split_ifs with ht hpath hpath
+          · simpa using hB false
+          · exact (hpath ⟨hs, hed _ ht⟩).elim
+          all_goals exact Nat.zero_le _
+        · split_ifs with ht hpath hpath
+          · simpa using hB true
+          · simp only [tgR] at ht
+            split_ifs at ht with hlast
+            have hle := (R.pl_le (ch a) (ch c) γ).trans (R.length_path _ _ _)
+            exact (hpath ⟨by omega, hed _ ht⟩).elim
+          all_goals exact Nat.zero_le _
+      · simp [tgR, bound]
+      · apply Nat.le_of_eq
+        apply Finset.sum_eq_zero
+        intro ν _
+        apply ite_eq_right
+        intro ht
+        rcases tgR_mid_cases (R := R) (ch := ch) j f s ν with h | ⟨_, _, h⟩ | ⟨_, _, h⟩ |
+          ⟨_, _, h⟩ | ⟨_, _, _, h⟩ | ⟨_, _, h⟩ | ⟨_, _, _, h⟩ <;> rw [h] at ht <;>
+          first | simp at ht | exact absurd (Tg.edge.inj ht).1 (Fin.succ_ne_zero j)
+      · simp [tgR, bound]
+    rw [Fintype.sum_sigma, Fintype.sum_sum_type]
+    have hlaw (l : LMv T FL) (ν : (FL.L l.2.2.2).Cn) : tgM R ch FL (.inr l) ν ≠ .edge 0 e :=
+      fun he => (Fin.succ_ne_zero _) (Tg.edge.inj he).1
+    conv_lhs =>
+      rhs
+      equals 0 =>
+        exact Finset.sum_eq_zero fun l _ => Finset.sum_eq_zero fun ν _ => ite_eq_right (hlaw l ν)
+    rw [Nat.add_zero]
+    refine (Finset.sum_le_sum fun x _ => hrelay x).trans ?_
+    rw [← Finset.sum_subtype (univ.filter (okR T R ch)) (by simp) bound]
+    refine (Finset.sum_le_sum_of_subset (f := bound) (subset_univ _)).trans ?_
+    simp [sum_RM bound, bound]
   rw [load_def]
   refine (add_le_add h1 h2).trans ?_
   simp only [← Finset.sum_add_distrib]
