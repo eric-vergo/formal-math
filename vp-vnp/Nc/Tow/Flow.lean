@@ -58,6 +58,10 @@ def sqs (L : Tg T m AA → ℕ) (j : Fin (J + 1)) (i : Fin h) : ℕ :=
 def IsMin (L : Tg T m AA → ℕ) (j : Fin (J + 1)) (i : Fin h) : Prop :=
   (∀ i', sqs L j i ≤ sqs L j i') ∧ ∀ i' < i, ¬ ∀ i'', sqs L j i' ≤ sqs L j i''
 
+theorem isMin_unique {L : Tg T m AA → ℕ} {j : Fin (J + 1)} {i i' : Fin h}
+    (hi : IsMin L j i) (hi' : IsMin L j i') : i = i' :=
+  le_antisymm (le_of_not_gt fun hlt => hi.2 _ hlt hi'.1) (le_of_not_gt fun hlt => hi'.2 _ hlt hi.1)
+
 /-- The relay is active. -/
 def ActR (L : Tg T m AA → ℕ) : RM T m AA → Prop
   | .inn j i _ => IsMin L j.castSucc i
@@ -216,38 +220,15 @@ theorem tg_time (ν : NM R FL (ch := ch)) : timeM R ch FL ν.1 < tgTime (tgM R c
   rcases ν with ⟨⟨x, hx⟩ | l, ν⟩
   · change timeR T x < tgTime (tgR T R ch x ν)
     rcases x with ⟨a, c, γ, s⟩ | ⟨j, i, e⟩ | ⟨j, e, s⟩ | e
-    · have hs := s.2
-      cases ν
-      · refine lt_of_lt_of_le ?_ (edgeO_time _)
-        exact hs
-      · simp only [tgR]
-        split_ifs
-        · simp only [tgTime, timeR]; omega
-        · refine lt_of_lt_of_le ?_ (edgeO_time _)
-          exact hs
-    · have := j.2
-      simp only [tgR, tgTime, timeR, tend]; omega
-    · have := j.2
-      cases ν
-      · fin_cases s
-        · simp only [Fin.zero_eta, tgR, Matrix.cons_val_zero, tgTime, timeR, tend]
-          change 2 * m + 6 * j.1 + 0 < _
-          omega
-        · simp [tgR, tgTime, timeR]
-        · change 2 * m + 6 * j.1 + 2 < 2 * m + 6 * (j.1 + 1)
-          omega
-        · simp [tgR, tgTime, timeR]
-      · fin_cases s
-        · simp only [tgR, timeR, Fin.zero_eta, Matrix.cons_val_zero]
-          split_ifs <;> simp [tgTime, timeR]
-        · simp [tgR, tgTime, timeR]
-        · simp only [tgR, timeR, Fin.reduceFinMk, Matrix.cons_val]
-          split_ifs
-          · simp [tgTime, timeR]
-          · change 2 * m + 6 * j.1 + 2 < 2 * m + 6 * J + 1
-            omega
-        · change 2 * m + 6 * j.1 + 3 < 2 * m + 6 * J + 1
-          omega
+    · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with ⟨hs, _, ht⟩ | ⟨k, _, ht⟩ <;> rw [ht]
+      · exact Nat.lt_succ_self _
+      · exact lt_of_lt_of_le s.2 (edgeO_time _)
+    · simp only [tgR, tgTime, timeR, tend]; omega
+    · have hj := j.2
+      have hs := s.2
+      rcases tgR_mid_cases (R := R) (ch := ch) j e s ν with ht | ⟨rfl, _, ht⟩ | ⟨rfl, _, ht⟩ |
+        ⟨rfl, _, ht⟩ | ⟨rfl, _, _, ht⟩ | ⟨⟨rfl, _⟩ | rfl, _, ht⟩ | ⟨rfl, _, _, ht⟩ <;>
+        rw [ht] <;> simp [tgTime, timeR, tend] <;> omega
     · simp only [tgR, tgTime, timeR, tend]; omega
   · have := l.1.2
     simp only [tgM, tgTime, timeM, Fin.val_succ]

@@ -137,38 +137,13 @@ theorem tri_inj {x : RM T m AA} (hx : okR T R ch x) : Function.Injective (tri T 
     · rw [Ne, nd_inj]
       exact R.pn_ne _ _ _ h2
   · exact inj3 (nd_ne (by omega)) (by rw [Ne, nd_inj]; exact T.e_ne e) (nd_ne (by omega))
-  · refine inj3 ?_ ?_ ?_
-    · fin_cases s
-      · change nd T j j.2.le (T.e0 e) ≠ nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e))
-        exact nd_ne (by omega)
-      · change nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)) ≠ nd T (j + 1) j.2 (T.π (T.e0 e))
-        rw [Ne, nd_inj]
-        exact hx.1 rfl
-      · change nd T (j + 1) j.2 (T.π (T.e0 e)) ≠ nd T (j + 1) j.2 (T.π (T.e1 e))
-        rw [Ne, nd_inj]
-        exact π_ne j.2 e
-      · change nd T (j + 1) j.2 (T.π (T.e1 e)) ≠ nd T (j + 1) j.2 (hst T (T.ty e) (T.e1 e))
-        rw [Ne, nd_inj]
-        exact hx.2 rfl
-    · fin_cases s
-      · change nd T j j.2.le (T.e0 e) ≠ nd T j j.2.le (T.e1 e)
-        rw [Ne, nd_inj]
-        exact T.e_ne e
-      · change nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)) ≠ nd T j j.2.le (T.e1 e)
-        exact nd_ne (by omega)
-      · change nd T (j + 1) j.2 (T.π (T.e0 e)) ≠ nd T j j.2.le (T.e1 e)
-        exact nd_ne (by omega)
-      · change nd T (j + 1) j.2 (T.π (T.e1 e)) ≠ nd T j j.2.le (T.e1 e)
-        exact nd_ne (by omega)
-    · fin_cases s
-      · change nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)) ≠ nd T j j.2.le (T.e1 e)
-        exact nd_ne (by omega)
-      · change nd T (j + 1) j.2 (T.π (T.e0 e)) ≠ nd T j j.2.le (T.e1 e)
-        exact nd_ne (by omega)
-      · change nd T (j + 1) j.2 (T.π (T.e1 e)) ≠ nd T j j.2.le (T.e1 e)
-        exact nd_ne (by omega)
-      · change nd T (j + 1) j.2 (hst T (T.ty e) (T.e1 e)) ≠ nd T j j.2.le (T.e1 e)
-        exact nd_ne (by omega)
+  · have hj := j.2
+    fin_cases s <;> apply inj3
+    all_goals first
+      | solve | apply nd_ne <;> omega
+      | apply (not_congr nd_inj).2
+        first | exact hx.1 rfl | exact π_ne j.2 e | exact hx.2 rfl | exact T.e_ne e
+    all_goals omega
   · exact inj3 nd_ne_none (by rw [Ne, nd_inj]; exact T.e_ne e) nd_ne_none.symm
 
 variable (T R ch)
@@ -194,6 +169,39 @@ noncomputable def tgR : RM T m AA → Bool → Tg T m AA
     ![if hst T (T.ty e) (T.e0 e) ≠ T.π (T.e0 e) then .nxt (.mid j e 1) else .nxt (.mid j e 2),
       .nxt (.mid j e 2), if T.π (T.e1 e) ≠ hst T (T.ty e) (T.e1 e) then .nxt (.mid j e 3) else .done, .done] s
   | .fin _, _ => .done
+
+variable {T R ch}
+
+/-- The targets of the two channels of a relay on a path of the start. -/
+theorem tgR_start_cases (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (ν : Bool) :
+    (∃ hs : s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ, ν = true ∧
+      tgR T R ch (.start a c γ s) ν = .nxt (.start a c γ ⟨s.1 + 1, hs.1⟩)) ∨
+    ∃ k, (ν = false ∧ k = s.1 ∨
+        ν = true ∧ ¬ (s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ) ∧ k = s.1 + 1) ∧
+      tgR T R ch (.start a c γ s) ν = edgeO T ((R.path (ch a) (ch c) γ)[k]?) := by
+  cases ν
+  · exact Or.inr ⟨s.1, Or.inl ⟨rfl, rfl⟩, rfl⟩
+  · by_cases hs : s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ
+    · exact Or.inl ⟨hs, rfl, by simp only [tgR, dite_eq_left hs]⟩
+    · exact Or.inr ⟨s.1 + 1, Or.inr ⟨rfl, hs, rfl⟩, by simp only [tgR, dite_eq_right hs]⟩
+
+/-- The targets of the two channels of the four relays on an edge. -/
+theorem tgR_mid_cases (j : Fin J) (e : T.Ed j) (s : Fin 4) (ν : Bool) :
+    tgR T R ch (.mid j e s) ν = .done ∨
+    (s = 1 ∧ ν = false ∧ tgR T R ch (.mid j e s) ν = .seg j (T.ty e) (T.πV (T.vx (T.ty e) (T.e0 e)))
+      s(T.co (T.ty e) (hst T (T.ty e) (T.e0 e)), T.co (T.ty e) (T.e0 e))) ∨
+    (s = 2 ∧ ν = false ∧ tgR T R ch (.mid j e s) ν = .edge j.succ (T.πE e)) ∨
+    (s = 3 ∧ ν = false ∧ tgR T R ch (.mid j e s) ν = .seg j (T.ty e) (T.πV (T.vx (T.ty e) (T.e1 e)))
+      s(T.co (T.ty e) (hst T (T.ty e) (T.e1 e)), T.co (T.ty e) (T.e1 e))) ∨
+    (s = 0 ∧ ν = true ∧ hst T (T.ty e) (T.e0 e) ≠ T.π (T.e0 e) ∧
+      tgR T R ch (.mid j e s) ν = .nxt (.mid j e 1)) ∨
+    ((s = 0 ∧ hst T (T.ty e) (T.e0 e) = T.π (T.e0 e) ∨ s = 1) ∧ ν = true ∧
+      tgR T R ch (.mid j e s) ν = .nxt (.mid j e 2)) ∨
+    (s = 2 ∧ ν = true ∧ T.π (T.e1 e) ≠ hst T (T.ty e) (T.e1 e) ∧
+      tgR T R ch (.mid j e s) ν = .nxt (.mid j e 3)) := by
+  cases ν <;> fin_cases s <;> simp [tgR] <;> tauto
+
+variable (T R ch)
 
 /-- The target whose units are given in a relay. -/
 def inpR : RM T m AA → Tg T m AA

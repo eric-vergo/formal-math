@@ -18,13 +18,6 @@ open Finset Nc.G
 variable {F : Type} [CommRing F] {h b D J r m Uu AA A' U0 U1 : ℕ} {T : Tower h b D J r} {R : Routes T m Uu}
   {ch : Fin AA ↪ T.X 0} {FL : FlagLaws F T} {Pl : Place T ch A'} {lhat : ℕ}
 
-theorem isMin_unique {L : Tg T m AA → ℕ} {j : Fin (J + 1)} {i i' : Fin h} (h1 : IsMin L j i) (h2 : IsMin L j i') :
-    i = i' := by
-  rcases lt_trichotomy i i' with hlt | heq | hlt
-  · exact absurd h1.1 (h2.2 i hlt)
-  · exact heq
-  · exact absurd h2.1 (h1.2 i' hlt)
-
 theorem pick_unique {L : Tg T m AA → ℕ} {l : LMv T FL} {d : FL.Di} (h1 : Pick FL L l) (h2 : Pick FL L (withD FL l d)) :
     l.2.2.2 = d := by
   have e : tmin FL L (withD FL l d) = tmin FL L l := rfl
@@ -33,89 +26,36 @@ theorem pick_unique {L : Tg T m AA → ℕ} {l : LMv T FL} {d : FL.Di} (h1 : Pic
   · exact ((Fintype.equivFin FL.Di).injective heq).symm
   · exact absurd h1.1 (h2.2 l.2.2.2 hlt)
 
+private theorem edge_castSucc_inj {j k : Fin J} {e : T.Ed j} {f : T.Ed k}
+    (he : (Tg.edge j.castSucc e : Tg T m AA) = .edge k.castSucc f) : j = k ∧ HEq e f :=
+  ⟨Fin.castSucc_injective _ (Tg.edge.inj he).1, (Tg.edge.inj he).2⟩
+
 /-- Active relays are determined by their targets. -/
 theorem inpR_unique {L : Tg T m AA → ℕ} {x x' : RM T m AA} (hx : okR T R ch x) (hx' : okR T R ch x')
     (ha : ActR L x) (ha' : ActR L x') (he : inpR T x = inpR T x') : x = x' := by
   rcases x with ⟨a, c, γ, s⟩ | ⟨j, i, e⟩ | ⟨j, e, s⟩ | e <;>
     rcases x' with ⟨a', c', γ', s'⟩ | ⟨j', i', e'⟩ | ⟨j', e', s'⟩ | e'
-  · simpa [inpR] using he
-  · simp [inpR] at he
-  · rw [inpR_mid] at he
-    split_ifs at he <;> simp [inpR] at he
-  · simp [inpR] at he
-  · simp [inpR] at he
-  · simp only [inpR, Tg.edge.injEq] at he
-    obtain ⟨h1, h2⟩ := he
-    have hj : j = j' := Fin.castSucc_injective _ h1
-    subst hj
-    have := eq_of_heq h2
-    subst this
-    rw [isMin_unique ha ha']
-  · rw [inpR_mid] at he
-    split_ifs at he with hs
-    · simp only [inpR, Tg.edge.injEq] at he
-      obtain ⟨h1, h2⟩ := he
-      have hj : j = j' := Fin.castSucc_injective _ h1
-      subst hj
-      have := eq_of_heq h2
-      subst this
-      exact absurd (isMin_unique (ha' hs) ha) hx
-    · simp [inpR] at he
-  · simp only [inpR, Tg.edge.injEq] at he
-    exact absurd he.1 (Fin.castSucc_lt_last j).ne
-  · rw [inpR_mid] at he
-    split_ifs at he <;> simp [inpR] at he
-  · rw [inpR_mid] at he
-    split_ifs at he with hs
-    · simp only [inpR, Tg.edge.injEq] at he
-      obtain ⟨h1, h2⟩ := he
-      have hj : j = j' := Fin.castSucc_injective _ h1
-      subst hj
-      have := eq_of_heq h2
-      subst this
-      exact absurd (isMin_unique (ha hs) ha') hx'
-    · simp [inpR] at he
-  · rw [inpR_mid, inpR_mid] at he
-    split_ifs at he with hs hs' hs'
-    · simp only [Tg.edge.injEq] at he
-      obtain ⟨h1, h2⟩ := he
-      have hj : j = j' := Fin.castSucc_injective _ h1
-      subst hj
-      have := eq_of_heq h2
-      subst this
-      rw [hs, hs']
-    · simpa using he
-  · rw [inpR_mid] at he
-    split_ifs at he with hs
-    · simp only [inpR, Tg.edge.injEq] at he
-      exact absurd he.1 (Fin.castSucc_lt_last j).ne
-    · simp [inpR] at he
-  · simp [inpR] at he
-  · simp only [inpR, Tg.edge.injEq] at he
-    exact absurd he.1.symm (Fin.castSucc_lt_last j').ne
-  · rw [inpR_mid] at he
-    split_ifs at he with hs
-    · simp only [inpR, Tg.edge.injEq] at he
-      exact absurd he.1.symm (Fin.castSucc_lt_last j').ne
-    · simp [inpR] at he
-  · simpa [inpR] using he
+  all_goals simp only [inpR] at he
+  all_goals try split_ifs at he
+  all_goals try exact Tg.nxt.inj he
+  all_goals try solve | simp [Fin.castSucc_ne_last] at he
+  all_goals try exact ((Fin.castSucc_lt_last _).ne (Tg.edge.inj he).1.symm).elim
+  all_goals try solve | simpa using he
+  all_goals obtain ⟨rfl, he⟩ := edge_castSucc_inj he
+  all_goals cases eq_of_heq he
+  · rw [isMin_unique ha ha']
+  · exact (hx (isMin_unique (ha' (by assumption)) ha)).elim
+  · exact (hx' (isMin_unique (ha (by assumption)) ha')).elim
+  · congr 1; simp_all
 
 theorem inpR_ne_seg {x : RM T m AA} {j : Fin J} {i : Fin h} {ω : T.V (j + 1) i} {q : Sym2 T.Fl} :
     inpR T x ≠ .seg j i ω q := by
-  rcases x with ⟨a, c, γ, s⟩ | ⟨j', i', e⟩ | ⟨j', e, s⟩ | e
-  · simp [inpR]
-  · simp [inpR]
-  · rw [inpR_mid]
-    split_ifs <;> simp
-  · simp [inpR]
+  cases x <;> simp [inpR]
+  split <;> simp
 
 theorem inpR_ne_done {x : RM T m AA} : inpR T x ≠ .done := by
-  rcases x with ⟨a, c, γ, s⟩ | ⟨j', i', e⟩ | ⟨j', e, s⟩ | e
-  · simp [inpR]
-  · simp [inpR]
-  · rw [inpR_mid]
-    split_ifs <;> simp
-  · simp [inpR]
+  cases x <;> simp [inpR]
+  split <;> simp
 
 theorem su_inj {d : FL.Di} {e e' : (FL.L d).Sl} (hp : pr FL d e = pr FL d e') (hs : su FL d e = su FL d e') : e = e' :=
   rk_inj (fun _ _ hab => (Fintype.equivFin (FL.L d).Sl).injective (Fin.ext hab)) (mem_univ _)

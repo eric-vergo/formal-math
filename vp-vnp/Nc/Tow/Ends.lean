@@ -93,53 +93,29 @@ theorem hN_eq (ν : NM R FL (ch := ch)) (hd : tgM R ch FL ν.1 ν.2 ≠ .done) :
     rcases x with ⟨a, c, γ, s⟩ | ⟨j, i, e⟩ | ⟨j, e, s⟩ | e
     · obtain ⟨hac, hs⟩ := hx
       have hle := (R.pl_le (ch a) (ch c) γ).trans (R.length_path _ _ _)
-      cases ν
-      · simp only [tgR, Bool.false_eq_true, ite_false]
-        rw [(edgeO_hold (ch := ch) (AA := AA) (m := m) (by omega)).2]
+      rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with
+        ⟨_, rfl, ht⟩ | ⟨k, ⟨rfl, rfl⟩ | ⟨rfl, hlast, rfl⟩, ht⟩
+      · rw [ht]; rfl
+      · rw [ht, (edgeO_hold (ch := ch) (AA := AA) (m := m) (by omega)).2]; rfl
+      · rw [ht, (edgeO_hold (ch := ch) (AA := AA) (m := m) hs).2]
+        have hlen : R.pl (ch a) (ch c) γ = s.1 + 1 + 1 := by omega
+        have hend := R.pn_pl (ch a) (ch c) γ
+        rw [hlen] at hend
+        rw [hend]
         rfl
-      · simp only [tgR, ite_true]
-        by_cases hs2 : s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ
-        · rw [dite_eq_left hs2]
-          rfl
-        · rw [dite_eq_right hs2, (edgeO_hold (ch := ch) (AA := AA) (m := m) hs).2]
-          have h1 : R.pl (ch a) (ch c) γ = s.1 + 1 + 1 := by
-            by_contra h1
-            exact hs2 ⟨by omega, by omega⟩
-          have h2 := R.pn_pl (ch a) (ch c) γ
-          rw [h1] at h2
-          rw [h2]
-          rfl
     · exact absurd rfl hd
-    · cases ν
-      · simp only [Bool.false_eq_true, ite_false]
-        fin_cases s
-        · exact absurd rfl hd
-        · exact (seg_hold j.2 (T.ty e) (T.e0 e)).symm
-        · have h1 := T.π_ends j.2 e
-          have h2 := congrArg (Sym2.map (nd T (j + 1) j.2)) h1
-          simp only [Sym2.map_mk] at h2
-          exact h2.symm
-        · refine Eq.trans ?_ (seg_hold j.2 (T.ty e) (T.e1 e)).symm
-          exact Sym2.eq_swap
-      · simp only [ite_true]
-        fin_cases s
-        · simp only [Fin.zero_eta, tgR, Matrix.cons_val_zero]
-          by_cases hh : hst T (T.ty e) (T.e0 e) ≠ T.π (T.e0 e)
-          · rw [ite_eq_left hh]
-            rfl
-          · rw [ite_eq_right hh]
-            rw [not_not] at hh
-            change s(nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)), nd T j j.2.le (T.e1 e)) =
-              s(nd T (j + 1) j.2 (T.π (T.e0 e)), nd T j j.2.le (T.e1 e))
-            rw [hh]
-        · rfl
-        · simp only [tgR, Fin.reduceFinMk, Matrix.cons_val] at hd ⊢
-          by_cases hh : T.π (T.e1 e) ≠ hst T (T.ty e) (T.e1 e)
-          · rw [ite_eq_left hh]
-            rfl
-          · rw [ite_eq_right hh] at hd
-            exact absurd rfl hd
-        · exact absurd rfl hd
+    · rcases tgR_mid_cases (R := R) (ch := ch) j e s ν with ht | ⟨rfl, rfl, ht⟩ | ⟨rfl, rfl, ht⟩ |
+        ⟨rfl, rfl, ht⟩ | ⟨rfl, rfl, _, ht⟩ | ⟨⟨rfl, hh⟩ | rfl, rfl, ht⟩ | ⟨rfl, rfl, _, ht⟩
+      · exact (hd ht).elim
+      all_goals rw [ht]
+      · exact (seg_hold j.2 (T.ty e) (T.e0 e)).symm
+      · exact (congrArg (Sym2.map (nd T (j + 1) j.2)) (T.π_ends j.2 e)).symm
+      · exact Sym2.eq_swap.trans (seg_hold j.2 (T.ty e) (T.e1 e)).symm
+      · rfl
+      · change s(nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)), _) = s(nd T (j + 1) j.2 (T.π (T.e0 e)), _)
+        rw [hh]; rfl
+      · rfl
+      · rfl
     · exact absurd rfl hd
   · change s(nd T (l.1 + 1) l.1.2 (atv l.1.2 l.2.1 l.2.2.1 (FL.ro l.2.2.2 ((FL.L l.2.2.2).c ν))),
       nd T (l.1 + 1) l.1.2 (atv l.1.2 l.2.1 l.2.2.1 (FL.ro l.2.2.2 ((FL.L l.2.2.2).d ν)))) = _

@@ -90,35 +90,6 @@ theorem bt_mid (j : Fin J) (e : T.Ed j) (s : Fin 4) : bt R ch lhat n (.nxt (.mid
 
 section Targets
 
-/-- The targets of the two channels of a relay on a path of the start. -/
-theorem tgR_start_cases (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (ν : Bool) :
-    (∃ hs : s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ, ν = true ∧
-      tgR T R ch (.start a c γ s) ν = .nxt (.start a c γ ⟨s.1 + 1, hs.1⟩)) ∨
-    ∃ k, (ν = false ∧ k = s.1 ∨
-        ν = true ∧ ¬ (s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ) ∧ k = s.1 + 1) ∧
-      tgR T R ch (.start a c γ s) ν = edgeO T ((R.path (ch a) (ch c) γ)[k]?) := by
-  cases ν
-  · exact Or.inr ⟨s.1, Or.inl ⟨rfl, rfl⟩, rfl⟩
-  · by_cases hs : s.1 + 1 < 2 * m ∧ s.1 + 2 < R.pl (ch a) (ch c) γ
-    · exact Or.inl ⟨hs, rfl, by simp only [tgR, dite_eq_left hs]⟩
-    · exact Or.inr ⟨s.1 + 1, Or.inr ⟨rfl, hs, rfl⟩, by simp only [tgR, dite_eq_right hs]⟩
-
-/-- The targets of the two channels of the four relays on an edge. -/
-theorem tgR_mid_cases (j : Fin J) (e : T.Ed j) (s : Fin 4) (ν : Bool) :
-    tgR T R ch (.mid j e s) ν = .done ∨
-    (s = 1 ∧ ν = false ∧ tgR T R ch (.mid j e s) ν = .seg j (T.ty e) (T.πV (T.vx (T.ty e) (T.e0 e)))
-      s(T.co (T.ty e) (hst T (T.ty e) (T.e0 e)), T.co (T.ty e) (T.e0 e))) ∨
-    (s = 2 ∧ ν = false ∧ tgR T R ch (.mid j e s) ν = .edge j.succ (T.πE e)) ∨
-    (s = 3 ∧ ν = false ∧ tgR T R ch (.mid j e s) ν = .seg j (T.ty e) (T.πV (T.vx (T.ty e) (T.e1 e)))
-      s(T.co (T.ty e) (hst T (T.ty e) (T.e1 e)), T.co (T.ty e) (T.e1 e))) ∨
-    (s = 0 ∧ ν = true ∧ hst T (T.ty e) (T.e0 e) ≠ T.π (T.e0 e) ∧
-      tgR T R ch (.mid j e s) ν = .nxt (.mid j e 1)) ∨
-    ((s = 0 ∧ hst T (T.ty e) (T.e0 e) = T.π (T.e0 e) ∨ s = 1) ∧ ν = true ∧
-      tgR T R ch (.mid j e s) ν = .nxt (.mid j e 2)) ∨
-    (s = 2 ∧ ν = true ∧ T.π (T.e1 e) ≠ hst T (T.ty e) (T.e1 e) ∧
-      tgR T R ch (.mid j e s) ν = .nxt (.mid j e 3)) := by
-  cases ν <;> fin_cases s <;> simp [tgR] <;> tauto
-
 /-- Which channels of relays have a target of a given kind. -/
 theorem tgR_edge_succ {x : RM T m AA} {ν : Bool} {j : Fin J} {e' : T.Ed (j + 1)}
     (hx : tgR T R ch x ν = .edge j.succ e') : ∃ e, x = .mid j e 2 ∧ ν = false ∧ T.πE e = e' := by
@@ -250,26 +221,29 @@ theorem num_mid0 (j : Fin J) (e : T.Ed j) (hx : okR T R ch (.mid j e 0)) :
   intro ha
   exact hn (ha rfl)
 
+omit hr hb in
+/-- When a relay target has no initial units and a single possible incoming channel,
+its load is bounded by the number of units given to that channel's relay. -/
+theorem load_nxt_le_num {y p : RM T m AA} (hp : okR T R ch p)
+    (hbt : bt R ch lhat n (.nxt y) = 0)
+    (hpred : ∀ x, okR T R ch x → ∀ ν, tgR T R ch x ν = .nxt y → ν = true ∧ x = p) :
+    load R ch FL lhat n o (.nxt y) ≤ num R ch FL lhat n o (.inl ⟨p, hp⟩) := by
+  refine (load_le_sum {⟨.inl ⟨p, hp⟩, true⟩} hbt ?_).trans ?_
+  · rintro ⟨⟨x, hx⟩ | l, ν⟩ ht -
+    · obtain ⟨rfl, rfl⟩ := hpred x hx ν ht
+      exact mem_singleton_self _
+    · simp [tgM] at ht
+  · rw [Finset.sum_singleton]
+    exact alv_le_num _ _
+
 /-- Stage three of a middle relay receives its units from stage two. -/
 theorem num_mid3_le_mid2 (j : Fin J) (e : T.Ed j) (hx3 : okR T R ch (.mid j e 3))
     (hx2 : okR T R ch (.mid j e 2)) :
     num R ch FL lhat n o (.inl ⟨.mid j e 3, hx3⟩) ≤ num R ch FL lhat n o (.inl ⟨.mid j e 2, hx2⟩) := by
   refine (num_inl hr hb _).trans ?_
-  refine (load_le_sum {(⟨.inl ⟨.mid j e 2, hx2⟩, true⟩ : NM R FL (ch := ch))} (bt_mid j e 3) ?_).trans ?_
-  · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
-    · obtain ⟨h1, h2⟩ := tgR_mid (x := x) (ν := ν) hν
-      have h3 : x = .mid j e 2 := by
-        rcases h2 with h2 | h2 | h2
-        · exact absurd h2.1 (by decide)
-        · exact absurd h2.1 (by decide)
-        · exact h2.2
-      subst h3
-      have h1 : ν = true := h1
-      subst h1
-      exact mem_singleton_self _
-    · simp [tgM] at hν
-  · rw [Finset.sum_singleton]
-    exact alv_le_num _ _
+  apply load_nxt_le_num hx2 (bt_mid j e 3)
+  intro x _ ν ht
+  simpa using tgR_mid (x := x) (ν := ν) ht
 
 /-- The relays of an edge are given at most what is on the edge. -/
 theorem num_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j e s)) :
@@ -281,62 +255,24 @@ theorem num_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j
       num R ch FL lhat n o (.inl ⟨.mid j e 0, hx0⟩) := by
     intro hx1
     refine (num_inl hr hb _).trans ?_
-    refine (load_le_sum {(⟨.inl ⟨.mid j e 0, hx0⟩, true⟩ : NM R FL (ch := ch))} (bt_mid j e 1) ?_).trans ?_
-    · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
-      · obtain ⟨h1, h2⟩ := tgR_mid (x := x) (ν := ν) hν
-        have h3 : x = .mid j e 0 := by
-          rcases h2 with h2 | h2 | h2
-          · exact h2.2
-          · exact absurd h2.1 (by decide)
-          · exact absurd h2.1 (by decide)
-        subst h3
-        have h1 : ν = true := h1
-        subst h1
-        exact mem_singleton_self _
-      · simp [tgM] at hν
-    · rw [Finset.sum_singleton]
-      exact alv_le_num _ _
+    apply load_nxt_le_num hx0 (bt_mid j e 1)
+    intro x _ ν ht
+    simpa using tgR_mid (x := x) (ν := ν) ht
   have two : ∀ hx2 : okR T R ch (.mid j e 2), num R ch FL lhat n o (.inl ⟨.mid j e 2, hx2⟩) ≤
       num R ch FL lhat n o (.inl ⟨.mid j e 0, hx0⟩) := by
     intro hx2
     refine (num_inl hr hb _).trans ?_
     by_cases hh : hst T (T.ty e) (T.e0 e) = T.π (T.e0 e)
-    · refine (load_le_sum {(⟨.inl ⟨.mid j e 0, hx0⟩, true⟩ : NM R FL (ch := ch))} (bt_mid j e 2) ?_).trans ?_
-      · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
-        · obtain ⟨h1, h2⟩ := tgR_mid (x := x) (ν := ν) hν
-          have h3 : x = .mid j e 0 := by
-            rcases h2 with h2 | h2 | h2
-            · exact h2.2
-            · rcases h2.2 with h3 | h3
-              · exact h3.1
-              · subst h3
-                exact absurd hh (hx'.1 rfl)
-            · exact absurd h2.1 (by decide)
-          subst h3
-          have h1 : ν = true := h1
-          subst h1
-          exact mem_singleton_self _
-        · simp [tgM] at hν
-      · rw [Finset.sum_singleton]
-        exact alv_le_num _ _
+    · apply load_nxt_le_num hx0 (bt_mid j e 2)
+      intro x hx' ν ht
+      obtain ⟨hν, hx' | rfl⟩ : ν = true ∧ (x = .mid j e 0 ∨ x = .mid j e 1) := by
+        simpa [hh] using tgR_mid (x := x) (ν := ν) ht
+      · exact ⟨hν, hx'⟩
+      · exact (hx'.1 rfl hh).elim
     · have hx1 : okR T R ch (.mid j e 1) := ⟨fun _ => hh, fun h3 => absurd h3 (by decide)⟩
-      refine (load_le_sum {(⟨.inl ⟨.mid j e 1, hx1⟩, true⟩ : NM R FL (ch := ch))} (bt_mid j e 2) ?_).trans ?_
-      · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
-        · obtain ⟨h1, h2⟩ := tgR_mid (x := x) (ν := ν) hν
-          have h3 : x = .mid j e 1 := by
-            rcases h2 with h2 | h2 | h2
-            · exact absurd h2.1 (by decide)
-            · rcases h2.2 with h3 | h3
-              · exact absurd h3.2 hh
-              · exact h3
-            · exact absurd h2.1 (by decide)
-          subst h3
-          have h1 : ν = true := h1
-          subst h1
-          exact mem_singleton_self _
-        · simp [tgM] at hν
-      · rw [Finset.sum_singleton]
-        exact (alv_le_num _ _).trans (one hx1)
+      refine (load_nxt_le_num hx1 (bt_mid j e 2) ?_).trans (one hx1)
+      intro x _ ν ht
+      simpa [hh] using tgR_mid (x := x) (ν := ν) ht
   fin_cases s
   · exact le_rfl
   · exact one hx

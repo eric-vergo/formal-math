@@ -112,13 +112,7 @@ theorem num_start_le (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (hx : okR T R
   obtain ⟨s, hs⟩ := s
   induction s with
   | zero =>
-    have h1 : num R ch FL lhat n o (.inl ⟨.start a c γ ⟨0, hs⟩, hx⟩) ≤
-        load R ch FL lhat n o (.nxt (.start a c γ ⟨0, hs⟩)) := by
-      rw [num_eq, numF]
-      split_ifs
-      · exact le_rfl
-      · exact Nat.zero_le _
-    refine h1.trans ?_
+    refine (num_inl (hr := hr) (hb := hb) _).trans ?_
     rw [load_def, Finset.sum_eq_zero]
     · exact (bt_start a c γ ⟨0, hs⟩).trans (by simp)
     · rintro ⟨⟨x, hx'⟩ | l, ν⟩ _
@@ -128,36 +122,22 @@ theorem num_start_le (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (hx : okR T R
         simp at h3
       · rw [ite_eq_right]
         intro hν
-        simp [tgM] at hν
+        simp [tgM, inpR] at hν
   | succ s ih =>
     have hs0 : s < 2 * m := by omega
     have hx0 : okR T R ch (.start a c γ ⟨s, hs0⟩) := by
       obtain ⟨h1, h2⟩ := hx
       exact ⟨h1, by simp only at h2 ⊢; omega⟩
-    have h1 : num R ch FL lhat n o (.inl ⟨.start a c γ ⟨s + 1, hs⟩, hx⟩) ≤
-        load R ch FL lhat n o (.nxt (.start a c γ ⟨s + 1, hs⟩)) := by
-      rw [num_eq, numF]
-      split_ifs
-      · exact le_rfl
-      · exact Nat.zero_le _
-    refine h1.trans ?_
+    refine (num_inl (hr := hr) (hb := hb) _).trans ?_
     have hbt : bt R ch lhat n (.nxt (.start a c γ ⟨s + 1, hs⟩) : Tg T m AA) = 0 := by
       have := bt_start (R := R) (ch := ch) (lhat := lhat) (n := n) a c γ ⟨s + 1, hs⟩
       rw [ite_eq_right (by simp)] at this
       omega
-    refine (load_le_sum {(⟨.inl ⟨.start a c γ ⟨s, hs0⟩, hx0⟩, true⟩ : NM R FL (ch := ch))} hbt ?_).trans ?_
-    · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
-      · obtain ⟨h2, s', h3, h4⟩ := tgR_start (x := x) (ν := ν) hν
-        have h2 : ν = true := h2
-        subst h2
-        have h4 : s + 1 = s'.1 + 1 := h4
-        have h5 : s' = ⟨s, hs0⟩ := Fin.ext (by change s'.1 = s; omega)
-        subst h5
-        subst h3
-        exact mem_singleton_self _
-      · simp [tgM] at hν
-    · rw [Finset.sum_singleton]
-      exact (alv_le_num _ _).trans (ih hs0 hx0)
+    refine (load_nxt_le_num hx0 hbt ?_).trans (ih hs0 hx0)
+    intro x _ ν ht
+    obtain ⟨hν, s', rfl, hstep⟩ := tgR_start (x := x) (ν := ν) ht
+    have hs' : s' = ⟨s, hs0⟩ := Fin.ext (Nat.succ.inj hstep).symm
+    exact ⟨hν, by rw [hs']⟩
 
 end
 
@@ -185,43 +165,19 @@ theorem steps_le {α : Type*} [DecidableEq α] (l : List α) (e : α) (L M : ℕ
   · have h2 : ∀ s ∈ range M, (if s + 1 < L' + 1 ∧ l[s]? = some e then 1 else 0) =
         if s ∈ range L' then (if l[s]? = some e then 1 else 0) else 0 := by
       intro s _
-      by_cases hs : s < L'
-      · simp [hs]
-      · simp [hs]
+      by_cases hs : s < L' <;> simp [hs]
     rw [Finset.sum_congr rfl h2, ← Finset.sum_filter]
     refine Finset.sum_le_sum_of_subset fun s hs => (mem_filter.1 hs).2
-  · by_cases hc : l[L']? = some e
-    · rw [ite_eq_left hc]
-      by_cases h0 : L' = 0
-      · subst h0
-        rw [Finset.sum_eq_zero]
-        · simp [hc]
-        · intro s _
-          rw [ite_eq_right]
-          omega
-      · rw [ite_eq_right (by omega : ¬ (L' + 1 ≤ 1 ∧ l[0]? = some e)), add_zero]
-        have h3 : ∀ s ∈ range M, (if s + 2 = L' + 1 ∧ l[s + 1]? = some e then 1 else 0) ≤ if s = L' - 1 then 1 else 0 := by
-          intro s _
-          split_ifs with h4 h5 h5
-          · exact le_rfl
-          · omega
-          · exact Nat.zero_le _
-          · exact le_rfl
-        refine (Finset.sum_le_sum h3).trans ?_
-        rw [Finset.sum_ite_eq']
-        split_ifs <;> omega
-    · rw [ite_eq_right hc, Nat.le_zero, Nat.add_eq_zero_iff]
-      constructor
-      · refine Finset.sum_eq_zero fun s _ => ite_eq_right ?_
-        rintro ⟨h4, h5⟩
-        have : s + 1 = L' := by omega
-        rw [this] at h5
-        exact hc h5
-      · rw [ite_eq_right]
-        rintro ⟨h4, h5⟩
-        have : L' = 0 := by omega
-        rw [this] at hc
-        exact hc h5
+  · cases L' with
+    | zero => simp
+    | succ k =>
+      have hlast (s : ℕ) : (if s + 2 = k + 1 + 1 ∧ l[s + 1]? = some e then 1 else 0) =
+          if s = k then (if l[k + 1]? = some e then 1 else 0) else 0 := by
+        by_cases hs : s = k <;> simp [hs]
+      simp_rw [hlast]
+      rw [Finset.sum_ite_eq']
+      split_ifs <;> simp_all
+
 
 section
 
