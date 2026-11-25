@@ -101,31 +101,16 @@ theorem tree_nums {c M N X J m : ℕ} (hc : 1 ≤ c) (hM : 2 ≤ M) (hN : 1 ≤ 
   refine ⟨by omega, hm8.trans (q 8 9 (by norm_num)), by omega, by omega,
     (Nat.pow_le_pow_left hG0G 9).trans (p 9 30 (by norm_num)), by omega, ?_⟩
   have hm8' : m ≤ G ^ 8 := hm8.trans (Nat.pow_le_pow_left hG0G 8)
-  have h1 : kapB c m X N ≤ G ^ 15 := by
-    unfold kapB
-    calc c * (m * X * (N + 2 * X ^ 2)) ≤ G * (G ^ 8 * G * (G + G * G ^ 2)) := by
-          gcongr <;> omega
-      _ = G ^ 11 + G ^ 13 := by ring
-      _ ≤ G ^ 13 + G ^ 13 := Nat.add_le_add_right (p 11 13 (by norm_num)) _
-      _ = 2 * G ^ 13 := by ring
-      _ ≤ G * G ^ 13 := Nat.mul_le_mul_right _ (by omega)
-      _ = G ^ 14 := by ring
-      _ ≤ G ^ 15 := p 14 15 (by norm_num)
-  have h2 : capB c m X N N ≤ G ^ 18 := by
-    unfold capB
-    have e1 : G ≤ G ^ 17 := Nat.le_self_pow (by norm_num) _
-    calc N + 2 + 3 * c * kapB c m X N ≤ G + G + G * G * G ^ 15 := by gcongr <;> omega
-      _ = G + G + G ^ 17 := by ring
-      _ ≤ G ^ 17 + G ^ 17 + G ^ 17 := by omega
-      _ = 3 * G ^ 17 := by ring
-      _ ≤ G * G ^ 17 := Nat.mul_le_mul_right _ (by omega)
-      _ = G ^ 18 := by ring
-  calc capB c m X N N * (c + c) + 1 ≤ G ^ 18 * (G + G) + G ^ 19 := by
-        gcongr <;> first | omega | exact Nat.one_le_pow _ _ (by omega)
-    _ = 3 * G ^ 19 := by ring
-    _ ≤ G * G ^ 19 := Nat.mul_le_mul_right _ (by omega)
-    _ = G ^ 20 := by ring
-    _ ≤ G ^ 30 := p 20 30 (by norm_num)
+  unfold capB kapB
+  calc
+    _ ≤ (G + 2 + 3 * G * (G * (G ^ 8 * G * (G + 2 * G ^ 2)))) * (G + G) + 1 := by
+      gcongr <;> omega
+    _ ≤ G ^ 17 := by
+      obtain ⟨r, hr⟩ := Nat.exists_eq_add_of_le (show 4 ≤ G by omega)
+      rw [hr]
+      ring_nf
+      omega
+    _ ≤ G ^ 30 := p 17 30 (by decide)
 
 open Classical in
 /-- The children of a node are few. -/
