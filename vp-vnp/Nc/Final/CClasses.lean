@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import Nc.LowDegree
+import Mathlib.Algebra.MvPolynomial.Degrees
 
 /-!
 # The classes VP and VNP

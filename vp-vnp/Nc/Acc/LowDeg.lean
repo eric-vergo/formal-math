@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import Paper.LowDegChains
+import Mathlib.RingTheory.Polynomial.Basic
+import Mathlib.RingTheory.PowerSeries.Basic
 
 /-!
 # Low degree is fast, over commutative rings
