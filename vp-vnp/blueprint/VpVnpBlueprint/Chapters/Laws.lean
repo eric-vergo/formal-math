@@ -272,6 +272,11 @@ _In Lean._ The steps are `Paper.thm_laws_loads` (the inequality between loads),
 subring). Section Q.3 (page 70): “The proof of Theorem G.2, for example, uses all loads of bounded
 norm where the text uses the rounded ones”. The theorem depends on Theorem F.6 only through
 {bpref "thm_laws_poincare"}[its form over pairs and edges].
+
+The finite family is chosen before the demand. For positive integer scale $`d=qt`,
+round each coordinate of $`n/d` upwards. This costs at most the norm of the all-ones vector.
+At $`d=0` the norm hypothesis forces every coordinate to vanish. Thus the same finite
+family covers every demand at every permitted scale.
 :::
 
 :::lemma_ "exists_laws" (lean := "Paper.exists_laws, Nc.Tow.VLaws") (parent := "part-contracting")
@@ -604,6 +609,10 @@ the proof below only describes the straight-line program and accounts for its si
 program computes exactly what is claimed is proved in the Lean development (Appendix Q), and so
 are the details of the count in part (e).”
 
+The last sentence of part (c), bounding the total number of law layers at one node, is
+paper-only. The checked tree retains the value identity, the rules for good outcomes and
+the per-node packet and copy bounds.
+
 *The Lean statement.* Section Q.3 (page 68): “Theorem H.2 and Proposition J.2 state their clauses
 as the fields of structures.” The theorem `thm_tree` states: for a commutative ring `A`, a number
 $`h \ge 3`, and laws `VL : VLaws A cNear dNear 1 (2 ^ ee h)` with $`1 + 8C_1 \le h/4`
@@ -662,7 +671,7 @@ packets of the tree, written $`\mathcal{T}(n, o)` here, are the current packets 
 `dead o` and whose two holders are different nodes
 (`cutUnits … id (plan.cur n o E \ dead o)`). “`p` holds `u`” is `Holds … p u`. The clauses that
 bound numbers of packets assume that every given node has at most `N` packets and that all moves
-are good (`dead_le` assumes neither, `layers_le` only the second); this is not repeated.
+are good (`dead_le` assumes neither); this is not repeated.
 
 *Clause (a).* `depth_le`: `depth` $`\le (\lg M)^C`. `stage_le`, `stage_root`: every stage is at
 most `depth`, with equality exactly at the root. `stage_given`: the given nodes have stage $`0`.
@@ -702,10 +711,8 @@ of the packets `new ν k` on its channels are exactly the $`o_\nu + 1` packets o
 present, and is $`0` unless the packets given at its slots are present. This is read from these
 four definitions; no theorem of the development states it. `kinds`: the law of a move `x` is in the list `laws`
 if `isLaw x`, and is the law `relay` otherwise. `law_stage`: the nodes of a law move have positive
-stage; with `stage_given` this is “At stage $`0` these are tests only”. `layers_le`: for every
-node $`p`, the numbers `num` of the law moves in which $`p` has a role add up to at most the
-number of packets in `Plan.seenAt n o E` that $`p` holds; multiplied by $`\ell` this is the last
-sentence of (c). `good_iff`: a law move is good if $`b \sum_\nu o_\nu^2 \le G_1 t^2` and
+stage; with `stage_given` this is “At stage $`0` these are tests only”. The final sentence of printed H.2(c) bounds the total number of law layers at one node
+by the packet count there, in bits. This separate inequality is paper-only. `good_iff`: a law move is good if $`b \sum_\nu o_\nu^2 \le G_1 t^2` and
 $`t \le o_\nu` for all its channels, and a relay if $`o_\nu = t` on both channels, $`t` being
 `plan.num n o x`. `poss_good`: every possible outcome (`Plan.Poss`) is good.
 
@@ -919,18 +926,18 @@ the tower plan, and `thm_tree_start_units` is the bound $`4m(N + |V_0|^2)` for t
 edge after the start, the paper's $`n_0`. `kap_le` has no hypothesis on the outcomes: by the definition
 of alive packets, a law move whose outcome is not good has at most $`t` of them on each channel.
 
-The fields `node_le`, `total_le`, `up_node` and `up_total` follow from these through
+The load bounds `up_node` and `up_total` follow through
 `Nc.Tow.bet_le_bhat` and `Nc.Tow.sum_bet_le_kbar` (a node and a whole stage) and the arithmetic of
 `Paper.exists_thinTrees`, where the factor $`M^{-\gamma}` appears as `Paper.gain_rpow`, from
 $`\rho^{q} D \le 1` with $`\rho = 1/2`, $`D = b` and $`q = \log_2 b`.
 :::
 
-:::lemma_ "cur_tree" (lean := "Paper.cur_tree, Paper.tree_between, Paper.layers_le_seen") (parent := "part-contracting")
+:::lemma_ "cur_tree" (lean := "Paper.cur_tree, Paper.tree_between") (parent := "part-contracting")
 *An unnumbered step of the proof of Theorem H.2: the packets at the end* (gloss). `cur_tree`:
 under the tower plan, with at most `N` packets at every given node and all moves good, every
 current packet that is not in `dead o` and has two different holders joins an element of some
 stage and its parent, and is an alive packet of a channel at that element; this gives the field
-`edge`. `tree_between` is the field `between_le`, and `layers_le_seen` the field `layers_le`.
+`edge`. `tree_between` supplies `between_le`. Together with the load bounds these imply the per-node and total packet bounds `ThinTrees.node_le` and `ThinTrees.total_le`.
 :::
 
 :::lemma_ "thm_tree_copies" (lean := "Paper.thm_tree_copies") (parent := "part-contracting")
@@ -1046,7 +1053,6 @@ standing hypothesis {bpref "exists_laws"}[`VLaws`] and applies {bpref "thm_tree"
 to the networks that {bpref "lem_runnet"}[Lemma I.2] attaches to a tape automaton.
 {bpref "prop_pieces"}[Proposition J.2] uses the tree to cut a computation into pieces, and its last claim, the paper says (page 52), “rests on Theorem H.2(d)
 and (e), whose printed proofs only describe the program in question”. The Lean file of that
-proposition, {repoFile "vp-vnp/Paper/Pieces.lean"}[`Paper/Pieces.lean`], refers to the fields of
-`ThinTrees` by name, among them `value`, the tree of clause (a), `edge`, `node_le`, `up_node`,
+proposition, {repoFile "vp-vnp/Paper/Pieces.lean"}[`Paper/Pieces.lean`], uses the tree data and their consequences, among them `value`, the tree of clause (a), `edge`, `node_le`, `up_node`,
 `up_total`, `copies_le` and `computed`. Section Q.3 (page 69) adds that “Proposition J.2 uses only
 the total $`M^C`” of the dead packets.

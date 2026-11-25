@@ -225,6 +225,10 @@ $`o_1` and at $`o_2` of the wires from the parties. When $`o_1` applies
 $`\sum_i \alpha_i \otimes e_i^*` and $`o_2` applies $`\sum_i \beta_i \otimes e_i^*`, where
 $`e_i^*` acts on the wire between the hubs, the result is $`t`. The last statement follows by
 push-forward along the map that sends $`o_1` and $`o_2` to the given parties.”
+
+The local tables and finite sums in A.3 work over every commutative semiring. In the flat
+case this permits the same hub restriction over finite Laurent polynomials. The spectral
+inequalities are applied over a field.
 :::
 
 *From ranks to lengths.* The paper notes after the proof (page 19) that, together with Lemma A.2,
@@ -325,7 +329,7 @@ $`p_f = p`, hence $`p(t) \leq p(tf)/p(f)`, and with submultiplicativity $`p(tf) 
 $`p(f) = 0` then $`p(tf) = 0`. So $`p` is multiplicative.
 
 In Lean the steps are theorems about a function on a commutative monoid with a covering relation
-(`Ov.Cover`, `Ov.IsPre` in {repoFile "vp-vnp/Ov/Duality/Abstract.lean"}[`Ov/Duality/Abstract.lean`]):
+(`Ov.Duality.Cover`, `Ov.Duality.IsPre` in {repoFile "vp-vnp/Ov/Duality/Abstract.lean"}[`Ov/Duality/Abstract.lean`]):
 `Paper.prop_gauge_chain` and `Paper.prop_gauge_minimal` (the infimum of a chain and the minimal
 element), `Paper.prop_gauge_radius` and `Paper.prop_gauge_radius_pow` (the function $`r` and
 $`p(t^n) = p(t)^n`), `Paper.prop_gauge_localize` (the function $`p_f`), and
@@ -451,10 +455,12 @@ $`\langle 2 \rangle_e`, gives $`d_{\phi'}(e) \leq \sum_i \theta_i\, d_\phi(\pi_i
 distance. On $`Y` this reads $`d_{\phi'} \leq d_\phi`, and by the second conclusion the sums over
 all pairs in $`Y` are equal, so equality holds for each pair.
 
-The Lean steps: `Paper.prop_random_spectral` (the statement for one spectral point),
-`Paper.prop_random_limit` (finite sets, any price), `Paper.prop_random_compact` (the compactness
-step) and `Paper.prop_random_values` (a random map with finitely many values on a finite set of
-new points is a finite convex combination of maps).
+On each finite set of new points, use their *joint* law: one outcome chooses all their
+locations together. `Paper.prop_random_limit` constructs the finite price and
+`Paper.prop_random_compact` glues these restrictions. The finite theorem uses the given
+weights directly. For the full measurable statement, `Paper.prop_random_values` pushes
+the probability measure forward to the finite set of joint values; integration there
+is a weighted sum. The fan uses the finite theorem.
 :::
 
 The role of the tensor $`C` in Proposition A.7 is visible here: the condition

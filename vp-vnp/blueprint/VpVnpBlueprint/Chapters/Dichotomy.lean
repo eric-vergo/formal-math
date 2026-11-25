@@ -281,6 +281,8 @@ price is the one that Section D.3 calls not Euclidean.
 The Lean proof uses the identities (D.1) and (D.2) of Step 3, the additivity (D.3) of Step 4 and
 the vanishing of $`B_a` on transversal pairs of rank one from Steps 5 and 6, as in the quoted
 argument.
+The earlier compactness argument controls every matrix distance by the mean on its rank
+class. The final price gives the exact squared distance as the rank of the difference.
 :::
 
 :::lemma_ "thm_alt_euclidean" (lean := "Paper.thm_alt_euclidean, Paper.thm_alt_cube, Paper.thm_alt_fill, Paper.thm_alt_vertices") (parent := "part-common")

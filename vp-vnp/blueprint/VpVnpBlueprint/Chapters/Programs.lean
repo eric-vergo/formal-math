@@ -530,6 +530,12 @@ decomposition {bpref "thin_trees"}[`ThinTrees`] of {bpref "thm_tree"}[Theorem H.
 over good outcomes and contents of cut packets of products of values of pieces, for an arbitrary
 assignment `grp` of nodes to pieces. Its proof uses the field `value` of `ThinTrees` and the
 regrouping identity `Nc.posVal_groups`.
+
+Lean chooses $`a,e` before the automaton and $`C,v₀` before the scale. At every admissible
+$`v`, the same block count $`K=v^e` works for all allowed $`T,k`. Since $`1≤C`,
+this gives both printed inequalities on $`K`. The quadratic input table fits within the
+existing program budget. Helen Kwok's proof contributions to the cut and piece constructions
+are credited in the source and NOTICE.
 :::
 
 :::proof "prop_pieces"
@@ -748,7 +754,7 @@ needs.”
 {ref "chapter-accelerators"}[Accelerators and the diagonal argument] uses of Appendices F to J
 the property `NS1.CutHyp θ (16 * h) C₀ v₀` with $`h \geq 17` ({bpref "thm_cut"}[Theorem J.4]), for
 a commutative ring $`A` with a table `θ` of named elements, together with the program model of
-Section I.1, in {bpref "lem_circuit"}[Lemma K.3] the universal automaton of
+Section I.1, in {bpref "lem_circuit_approx"}[the checked approximate form of K.3] the universal automaton of
 {bpref "prop_universal"}[Proposition I.1], and in {bpref "thm_noacc"}[Theorem K.6] that $`A` is
 finitely generated as a ring. Section Q.3 (page 69): “Proposition K.5,
 Theorem K.6 and Proposition N.4 do not assume the contracting case. They take the conclusion of

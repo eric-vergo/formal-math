@@ -89,15 +89,10 @@ $`k` bits that name a balanced set, and the scaled exponent $`c\, g_\phi(P)` of 
 all ends, which Proposition E.9 bounds by about $`\sqrt{k}`. We do not know whether the bound in
 the flat case can be improved.”
 
-*The route of the Lean proof.* Two of the numbered statements of this chapter, Proposition
-E.5 and Theorem E.6, are formalized but are not used by the theorems of `Solution`. Appendix Q.3
-(page 66): “The theorems of `Solution` are proved through them, with these exceptions, which are
-not on that route: Theorem L.2, Corollary L.3, the qualitative bound in the flat case
-(Proposition E.5 and Theorem E.6) and the definitions.” And (page 70): “Proposition E.10 uses the
-step `prop_flat_lower_sum` of the proof of Proposition E.5, not the proposition.” The exact-circuit argument proceeds through Lemma E.4, the step {bpref "prop_flat_lower_sum"}[], Lemmas E.7 and E.8, Propositions
-E.9 and E.10, and then {bpref "flat_rate_complete"}[] for families complete for grid sums. {bpref "thm_flat_rate"}[Theorem E.11] specializes the
-general bound to the permanent and supplies the qualitative Theorem E.6. All five
-exports use {bpref "flat_rate_approx_complete"}[], with Lemma N.3 in place of Lemma E.7.
+*The route of the Lean proof.* The balanced decomposition in E.5 is checked over a commutative
+semiring. Its finite Laurent specialization supplies the local maps for N.3. The resulting
+rate gives E.10 and E.11 for exact circuits by using constant coefficients. E.6 follows from
+E.11. The separate geometric estimate with coefficient $`1/6` in printed E.5 remains paper-only.
 {ref "chapter-table3"}[The paper's statements and their Lean names] records each export's
 dependence on the named theorems.
 
@@ -193,18 +188,15 @@ page 70, quoted above).
 
 # E.3. A first lower bound (not on the route to the main theorems)
 
-:::proposition "prop_flat_lower" (lean := "Paper.prop_flat_lower, Paper.prop_flat_lower_printed, Paper.prop_flat_lower_lengths") (parent := "part-flat")
+:::proposition "prop_flat_lower" (parent := "part-flat")
 *Proposition E.5 of the paper* (a first lower bound for the network polynomial; page 33), quoted:
 “In the flat case, for every $`k \geq 2` there is $`\ell_0` such that for $`\ell \geq \ell_0`
 every circuit over $`\Bbbk` for $`f_{k,\ell}` has at least $`2^{\ell k^{3/2}/6}` gates.”
 
-`Paper.prop_flat_lower` is this statement for the Lean polynomial `fkl`, and
-`Paper.prop_flat_lower_printed` for the printed polynomial `fklExact` (see {bpref "fkl"}[] for
-the two polynomials and the quotation of Appendix Q.3, page 68). Both hold for every field `K` in
-`Type` with `Flat K`; the flat case is the hypothesis `hK`. Neither is used by the theorems of
-`Solution` (Appendix Q.3, page 66, quoted above). The paper keeps the proposition because it
-“shows the method” (page 31: “Section E.3 proves a first bound with an unspecified threshold on
-$`\ell`, which shows the method, and Sections E.4 to E.6 make the threshold explicit”).
+Lean verifies the balanced hub decomposition {bpref "prop_flat_lower_sum"}[] used here.
+For the same network polynomial it proves the quantitative E.10 estimate with coefficient
+$`1/16` once $`ℓ ≥ 100√k`. The coefficient $`1/6` and the explicit two-hub configuration in
+this proof are the additional content of printed E.5.
 :::
 
 :::proof "prop_flat_lower"
@@ -219,16 +211,16 @@ $`\|w_S\|^2 = \tfrac12 k|S|(k - |S|) \geq k^3/9`. The hubs are
 $`\pm o_S = \pm \eta\, w_S/\|w_S\|` with $`\eta = \tfrac{1}{6\sqrt{k}}`, “regarded as different
 parties for different $`S`”. Since $`\|\tfrac12 u - o\| \leq \tfrac12 - u \cdot o + \|o\|^2` for
 a unit vector $`u`, the distances from the ends to their hubs add up to at most
-$`N - 2\eta\|w_S\| + k^2\eta^2 \leq N - \tfrac{k}{12}`. (Lean: `Paper.prop_flat_lower_lengths`.)
+$`N - 2\eta\|w_S\| + k^2\eta^2 \leq N - \tfrac{k}{12}`.
 
-Lean writes $`Q = k|S|(k-|S|)` and sums the signed projections before estimating their gain.
+The historical calculation writes $`Q = k|S|(k-|S|)` and sums the signed projections before estimating their gain.
 The gain is nonnegative and its square is $`2\eta^2 Q`. Substituting $`Q \geq 2k^3/9` and
 $`\eta^2 = 1/(36k)` gives a gain of at least $`k/9`. The quadratic cost is $`k^2\eta^2 = k/36`,
 leaving a saving of $`k/12`.
 
 A related argument in OpenAI's [VP and VNP are different, §2](https://github.com/openai/math/blob/e07100d36b22bcf8bb759f2f1abc7976ba472e47/preprints/VP-and-VNP-are-different-November-23-2026/build/Paper.tex#L261-L275)
 moves one hub in the direction of an expander cut's resultant. That comparison prompted the
-calculation by squares above. The complete graph and the two symmetric hubs here are the
+calculation by squares in the earlier Lean treatment of this printed alternative. The current E.10 proof uses the cube configuration. The complete graph and the two symmetric hubs here are the
 construction in the original formalization.
 
 _The spectral point._ Let $`\delta = \tfrac{1}{150k}`. “Because we are in the flat case, there
@@ -308,7 +300,9 @@ the gain is the exponent $`g_\phi(P)`, which can be much smaller than $`1` after
 paid for a sum of $`J` terms is a unit tensor of size $`J` on $`P`, not $`J` itself.
 :::
 
-:::proof "lem_few"
+:::proof "lem_few" (uses := "lem_few_approx")
+The checked proof embeds each exact local map as a constant Laurent polynomial and applies N.3.
+
 *The paper's proof* (page 35), quoted: “We expand a high power $`t^n` by words with $`n` letters
 in $`[J]`, and group the words by their _type_ $`\tau = (\tau_1, \ldots, \tau_J)`, in which
 $`\tau_j` is the number of places with the letter $`j`. We number the $`M_\tau \leq J^n` words of
@@ -422,7 +416,7 @@ on the characteristic is needed. The bound is `(2 : ℝ) ^ (ℓ * k ^ (3/2) / 16
 with `Computes (fkl K k ℓ) s`.
 :::
 
-:::proof "prop_flat_rate" (uses := "prop_flat_rate_steps")
+:::proof "prop_flat_rate" (uses := "prop_flat_rate_steps, lem_few_approx, prop_flat_lower_sum")
 *The paper's proof* (pages 36–37), summarised; “The steps and the notation are those of the proof
 of Proposition E.5.”
 
@@ -459,10 +453,9 @@ $`\tfrac32\delta k^2\ell = 0.0015\, \ell k`. Hence $`(2\eta + \delta)\log L \geq
 since $`2\eta + \delta \leq 0.446\, k^{-1/2}`, it follows that
 $`\log L \geq \ell k^{3/2}/14`, which implies the claim.”
 
-The Lean proof follows these steps; they are the next node. Because the Lean form of Lemma E.7
-takes a cover as its hypothesis, the sentence “By the proof of Lemma A.3 this restriction applies
-a functional at $`o_S` … and nothing at the ends” is not needed there: the cover of
-{bpref "prop_flat_lower_sum"}[] is passed to `Paper.lem_few` as it is.
+Lean proves the estimate first for a finite Laurent circuit. Its hub decomposition passes to
+{bpref "lem_few_approx"}[N.3], and the resulting spectral inequality enters the same numerical
+bound. An exact circuit gives a finite Laurent witness at the same size.
 :::
 
 :::lemma_ "prop_flat_rate_steps" (lean := "Paper.prop_flat_rate_lengths, Paper.SomeSetPays, Paper.someSetPays_of_few, Paper.rate_of_someSetPays, Paper.rate_numbers14, Paper.rate_pow") (parent := "part-flat")
@@ -577,7 +570,7 @@ coefficient is covered by $`(2n\Delta + 1)^{|V|}` copies of the same tensor as b
 subexponential number.”
 :::
 
-:::theorem "flat_rate_approx_complete" (lean := "Paper.flat_rate_approximating, Paper.flat_rate_approx_complete, Paper.exists_cut_off, Paper.hubs_series") (parent := "part-flat")
+:::theorem "flat_rate_approx_complete" (lean := "Paper.flat_rate_approximating, Paper.flat_rate_approx_complete, Paper.hubs_laurent, Nc.laurentApproximates_iff") (parent := "part-flat")
 *A paragraph of the paper after Lemma N.3* (page 62), quoted: “It follows that Proposition E.10,
 and with it Theorem E.11, holds for approximating circuits. Indeed, we apply Lemma E.4, which
 holds over every commutative ring, over $`\Bbbk((\varepsilon))`, cut the functionals off at a
@@ -589,7 +582,7 @@ These Lean theorems have no number in the paper.
 - `Paper.flat_rate_approximating` is Proposition E.10 for approximating circuits, with a
   different explicit number. Appendix Q.3 (page 68): “The flat bound for approximating circuits
   has 14 where Proposition E.10 has 16.” Its conclusion is
-  $`\ell k\sqrt{k}/14 \leq \log s` for every `s` with `Approximates (fkl K k ℓ) s`, under
+  $`\ell k\sqrt{k}/14 \leq \log s` for every `s` with a finite Laurent witness for `fkl K k ℓ` of size `s`, under
   `Flat K`, $`k \geq 2` and $`\ell \geq 100\sqrt{k}`. This is the intermediate inequality of the
   printed proof of Proposition E.10 and implies the bound $`2^{\ell k^{3/2}/16} \leq s` of that
   proposition by `Paper.rate_pow`; no theorem of the development states Proposition E.10 for
@@ -598,10 +591,9 @@ These Lean theorems have no number in the paper.
   family that is complete for grid sums, with the same bound $`2^{(\log m)^{4/3}/1600^2} < s`
   and the same uniformity as {bpref "flat_rate_complete"}[]. It is the flat half of the proof of
   Theorem N.5 ({ref "chapter-assembly"}[All fields and approximate computation]).
-- `Paper.hubs_series` is the hub decomposition for a circuit over the Laurent series (Lemma E.4
-  over the ring `LaurentSeries K`, and Lemma A.3), and `Paper.exists_cut_off` is the cut: for
-  finitely many Laurent series there are Laurent polynomials such that every product of $`|V|`
-  of them, one per party, has the same coefficients of $`\varepsilon^i` for all $`i \leq 0`.
+- `Paper.hubs_laurent` applies the balanced circuit decomposition and A.3 over Laurent
+  polynomials. All the local functionals already have finite support. The truncation of series
+  constants occurs at the circuit boundary; N.3 then clears the finitely many denominators.
 
 In the proof of `Paper.flat_rate_approx_complete` the approximating circuit for $`G_m` is turned
 into one for $`f_{k,\ell}` with five times as many gates by substituting affine polynomials over

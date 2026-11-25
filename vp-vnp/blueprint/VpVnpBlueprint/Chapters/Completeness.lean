@@ -49,6 +49,11 @@ $`f_{k,\ell}` of the flat case is defined below; $`\Phi` belongs to
 (page 5) says of these two steps that they “are the only steps that use the permanent; they use
 the circuit too, but only by substituting into it.”
 
+In the checked contracting route the projection acts on a finite Laurent circuit and
+preserves all negative coefficients and the target at degree zero. Its cost is at most five
+gates per original gate. The printed exact K.3 is discussed in
+{bpref "lem_circuit"}[Accelerators]; the checked circuit statement is {bpref "lem_circuit_approx"}[].
+
 _Background (not from the paper's proofs)._ That the permanent is complete for VNP over every
 field in which $`2 \neq 0`, and the Hamiltonian cycle polynomial over every field, is cited by
 the paper (page 1, footnote 1, and page 4: “this is a theorem of Valiant \[Val79\]”; L. G.

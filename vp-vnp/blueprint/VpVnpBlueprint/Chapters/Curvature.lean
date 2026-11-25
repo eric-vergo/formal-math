@@ -282,7 +282,10 @@ $`\mathbb{E} f` of a bounded sequence of functions is “the limit, along a fixe
 on the indices $`n`, of the mean of $`f_n` over the $`n`th box”, which is “linear, positive and
 invariant under translations, because the boundary of a box is negligible”. Then
 $$`\nu(g) = \bigl(\mathbb{E}\, W(P, P+g)^2\bigr)^{1/2}, \qquad N(g) = \lim_{S \to \infty} \nu(Sg)/S = \inf_S \nu(Sg)/S,`
-and $`N` is a seminorm on $`\mathbb{Z}^2`.
+and $`N` is a seminorm on $`\mathbb{Z}^2`. To see why translation preserves the mean, shift
+the box by one lattice step. On each sheet the interior cancels. The two exposed faces have
+length at most $`n^2`, and each summand is uniformly bounded for fixed displacement. Dividing
+by the total number $`2n^3` of points gives an error of order $`1/n` in either coordinate.
 
 :::lemma_ "lem_means" (lean := "Paper.lem_means, Paper.meanLength, Paper.meanLength_eq, Paper.meanNorm") (parent := "part-common")
 *Lemma C.2 of the paper* (parallelogram law for the seminorm $`N`; page 26), quoted: “Let $`W_n`,
@@ -355,6 +358,10 @@ says that such a `d` exists whenever $`|xm|, |vm| \leq D`.
 :::proof "thm_cn_fan" (uses := "prop_random")
 The fan is obtained from {bpref "prop_random"}[Proposition A.8], applied as in the quotation:
 once for the points $`\gamma_i` and once for the points $`G(i, j)`.
+For a pair of thresholds, only outcomes between them move one point without moving the
+other. Their fraction is the absolute difference of the thresholds divided by the number
+of choices. This gives the row and column bounds directly for every pair of indices,
+including the adjacent indices in (C.3).
 :::
 
 :::lemma_ "thm_cn_estimates" (lean := "Paper.thm_cn_i, Paper.thm_cn_ii, Paper.thm_cn_iii, Paper.thm_cn_iv, Paper.thm_cn_end") (parent := "part-common")
@@ -430,6 +437,9 @@ The Lean steps: `Paper.prop_space_step` and `Paper.prop_space_midpoints` (the po
 terms built from $`V` with a binary operation), `Paper.prop_space_cauchy`,
 `Paper.prop_space_completion` (a complete space with a dense subset in which the CN inequality
 holds is CAT(0)), and `Paper.prop_space_limit` (the completion of a price is a price).
+The local CN inequality bounds the squared distance between two candidate midpoints by
+a continuous expression in the endpoint distances. That expression tends to zero as both
+endpoint pairs converge, so the midpoint sequence is Cauchy.
 :::
 
 # C.5 and Appendix O. Standard facts on CAT(0) spaces
@@ -499,6 +509,9 @@ _(f)_: with $`\Phi(p, p'; r, r') = |pr'|^2 + |p'r|^2 - |pr|^2 - |p'r'|^2 \leq 2|
 (b)), the value $`\Phi(x, u; y, v) = 2h^2` splits into four terms whose bounds add up to
 $`2h^2`, so all four bounds are equalities; the first, with the case $`s = t` treated by (a) and
 (b), gives the claim.
+For the minimizer, choose a sequence of points whose energies tend to the infimum.
+Uniform convexity forces the points to be Cauchy; closedness and continuity give a point
+attaining the infimum.
 :::
 
 The paper attributes the parts (page 28): “Part (b) is Reshetnyak's comparison for quadrilaterals

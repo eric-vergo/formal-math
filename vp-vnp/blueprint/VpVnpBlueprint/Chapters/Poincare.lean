@@ -358,6 +358,9 @@ In Lean the steps are the theorems `Paper.thm_poincare_size` (the choice of $`u`
 `Paper.thm_poincare_far` and `Paper.thm_poincare_pairs` (the claim (F.3) and its sum over pairs),
 `Paper.thm_poincare_step`, `Paper.thm_poincare_limit`, `Paper.thm_poincare_windows`, and the
 statement for an arbitrary action that follows.
+Inside the window argument an isometry preserves distance to a point it fixes: apply the
+isometry to both endpoints and use the fixed-point equality. This identity holds for any
+isometric action and is used both in the initial window estimate and at the limit.
 :::
 
 :::theorem "thm_poincare_action" (lean := "Paper.thm_poincare_action") (uses := "lem_angle, lem_first, lem_toolkit") (parent := "part-contracting")
