@@ -36,10 +36,7 @@ theorem cat_succ (A : Fin (K + 1) → List Γ) : cat A = A 0 ++ cat fun i => A i
   simp [cat, List.ofFn_succ]
 
 theorem cat_eq_nil {A : Fin K → List Γ} : cat A = [] ↔ ∀ i, A i = [] := by
-  induction K with
-  | zero => simp [cat]
-  | succ K ih =>
-    rw [cat_succ, List.append_eq_nil_iff, ih, Fin.forall_fin_succ]
+  simp [cat]
 
 theorem cat_eq_cons {A : Fin K → List Γ} {a : Γ} {W : List Γ} (h : cat A = a :: W) :
     ∃ i l, (∀ j < i, A j = []) ∧ A i = a :: l ∧ cat (Function.update A i l) = W := by

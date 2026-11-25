@@ -102,12 +102,7 @@ def headOk : List (Rc n B) → Prop
 
 theorem chk_same (k : Fin n → B) (g l : List (Rc n B)) (hg : ∀ r ∈ g, r.2 = k) :
     chk (some k) (g ++ l) ↔ chk (some k) l := by
-  induction g with
-  | nil => rfl
-  | cons r g ih =>
-    have : r.2 = k := hg r (by simp)
-    rw [List.cons_append, chk, this]
-    simp [ih fun r hr => hg r (by simp [hr])]
+  induction g <;> simp_all [chk]
 
 theorem chk_groups (K : List (Fin n → B)) (hK : K.Nodup) (g : (Fin n → B) → List (Rc n B))
     (hg : ∀ k, ∀ r ∈ g k, r.2 = k) (p : Option (Fin n → B)) (hp : ∀ k ∈ K, p ≠ some k) :
@@ -204,18 +199,11 @@ theorem chk_table {bs : List B} (hbs : ∀ b, b ∈ bs) (hn : bs.Nodup) (T L : L
 
 theorem sum_filter [Fintype B] (j : Fin n) (l : List (Rc n B)) :
     ∑ b, (l.filter fun r => r.2 j = b).length = l.length := by
+  simp_rw [← List.countP_eq_length_filter]
   induction l with
   | nil => simp
   | cons r l ih =>
-    have : ∀ b, ((r :: l).filter fun r => r.2 j = b).length =
-        (if r.2 j = b then 1 else 0) + (l.filter fun r => r.2 j = b).length := by
-      intro b
-      rw [List.filter_cons]
-      by_cases h : r.2 j = b
-      · simp [h, add_comm]
-      · simp [h]
-    simp only [this, Finset.sum_add_distrib, ih]
-    simp [add_comm]
+    simp [List.countP_cons, Finset.sum_add_distrib, ih]
 
 theorem length_pass [Fintype B] {bs : List B} (hbs : ∀ b, b ∈ bs) (hn : bs.Nodup) (j : Fin n)
     (l : List (Rc n B)) : (pass bs j l).length = l.length := by
