@@ -65,18 +65,6 @@ theorem card_cutUnits_le {n : NN K U0} {o : M.N → Fin U1} {bd : ℕ}
   refine (Finset.sum_le_sum fun g _ => h g).trans ?_
   rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, smul_eq_mul]
 
-theorem card_cutAt_le {n : NN K U0} {o : M.N → Fin U1} {bd : ℕ} {g : Fin mm}
-    (h : ((P.cur n o E).filter (Nc.Plus.OneIn (G.hold0 M.np) (G.hold1 M.np) (grp n o) g)).card ≤ bd) :
-    (cutAt P n o (grp n o) g).card ≤ bd := by
-  classical
-  refine (Finset.card_le_card fun id hid => ?_).trans h
-  unfold cutAt at hid
-  obtain ⟨-, h1, h2, h3⟩ := Finset.mem_filter.1 hid
-  refine Finset.mem_filter.2 ⟨h1, ?_⟩
-  rcases h3 with h3 | h3
-  · exact Or.inl ⟨h3, fun h4 => h2 (h3.trans h4.symm)⟩
-  · exact Or.inr ⟨fun h4 => h2 (h4.trans h3.symm), h3⟩
-
 open Classical in
 /-- **Paper: Theorem thm:onecut, the program G.** "Every choice in the formula is guessed exactly once"; script
 size and time: G cuts, with numbers. -/
@@ -174,7 +162,7 @@ theorem _root_.Paper.thm_onecut_program {i e : Q} {b0 b1 : Γ} {τ s cap bd ιb 
           simpa using hκ
         · intro κ _ κ' _ h
           simpa using h
-      have hcut := card_cutAt_le (hbdle n o hn ho g)
+      have hcut : (cutAt P n o (grp n o) g).card ≤ bd := hbdle n o hn ho g
       have e1 := Nat.mul_le_mul_right (4 * c + 2) hparts
       have e2 := Nat.mul_le_mul_right (4 * Grp.bval bub) hcut
       simp only [Tree.size]

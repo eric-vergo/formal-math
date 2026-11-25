@@ -222,8 +222,9 @@ theorem size_roleIns (hU : Fintype.card (G.Uid (K + K) U0 M.N U1) ≤ X) (hU1 : 
 noncomputable def cutAt (P : G.Plan M U0 U1) (n : Fin (K + K) → Fin (K + K) → Fin (U0 + 1)) (o : M.N → Fin U1)
     (grp : Fin (K + K + A') → Gr) (g : Gr) : Finset (G.Uid (K + K) U0 M.N U1) :=
   open Classical in
-  univ.filter fun id => id ∈ P.cur n o E ∧ grp (G.hold0 M.np id) ≠ grp (G.hold1 M.np id) ∧
-    (grp (G.hold0 M.np id) = g ∨ grp (G.hold1 M.np id) = g)
+  (P.cur n o E).filter fun id =>
+    (grp (G.hold0 M.np id) = g ∧ grp (G.hold1 M.np id) ≠ g) ∨
+    (grp (G.hold0 M.np id) ≠ g ∧ grp (G.hold1 M.np id) = g)
 
 theorem size_endIns (hU : Fintype.card (G.Uid (K + K) U0 M.N U1) ≤ X) (hkey : ∀ a, (key a).length ≤ Lc)
     (b : G.Uid (K + K) U0 M.N U1 → UW ub) :
@@ -252,27 +253,13 @@ theorem size_endIns (hU : Fintype.card (G.Uid (K + K) U0 M.N U1) ≤ X) (hkey : 
         have s1 := size_ofBits (key (G.hold1 M.np id, id))
         have sw := size_ofBits (uwBits (b id))
         have lw := length_uwBits_le (b id)
-        by_cases h0 : grp (G.hold0 M.np id) = g
-        · by_cases h1 : grp (G.hold1 M.np id) = g
-          · simp only [h0, h1, ite_true, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num]
-            omega
-          · have hcut : id ∈ cutAt P n o grp g := by
-              refine mem_filter.2 ⟨mem_univ _, hc, ?_, Or.inl h0⟩
-              rw [h0]
-              exact fun h => h1 h.symm
-            simp only [h0, h1, ite_true, ite_false, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num,
-              ite_eq_left hcut]
-            omega
-        · by_cases h1 : grp (G.hold1 M.np id) = g
-          · have hcut : id ∈ cutAt P n o grp g := by
-              refine mem_filter.2 ⟨mem_univ _, hc, ?_, Or.inr h1⟩
-              rw [h1]
-              exact h0
-            simp only [h0, h1, ite_true, ite_false, List.map_cons, List.sum_cons, Ins.tree, Tree.size, NS1.size_num,
-              ite_eq_left hcut]
-            omega
-          · simp only [h0, h1, ite_false]
-            omega
+        have hcut : id ∈ cutAt P n o grp g ↔
+            (grp (G.hold0 M.np id) = g ∧ grp (G.hold1 M.np id) ≠ g) ∨
+            (grp (G.hold0 M.np id) ≠ g ∧ grp (G.hold1 M.np id) = g) := by simp [cutAt, hc]
+        by_cases h0 : grp (G.hold0 M.np id) = g <;> by_cases h1 : grp (G.hold1 M.np id) = g <;>
+          simp only [hcut, ne_eq, h0, h1, not_true_eq_false, not_false_eq_true, and_self, and_false,
+            false_and, or_self, true_or, or_true, ite_true, ite_false, List.map_cons,
+            List.sum_cons, Ins.tree, Tree.size, NS1.size_num] <;> omega
       · rw [List.filter_cons_of_neg (by simpa using hc)]
         omega
   have h1 := key1 (G.allIds (K + K) U0 M.N U1)
