@@ -81,17 +81,21 @@ open Classical in
 /-- Units between the children of a chamber and their parent. -/
 noncomputable def chs (j : ℕ) (x : T.X (j + 1)) : ℕ := ∑ c : T.X j, if hostj hh Lf c = x then fb Lf j c else 0
 
+/-- Splitting the weight of a non-loop edge over its two distinct endpoints counts it once
+at each incident chamber, independently of the orientation. -/
+theorem endpoint_weight {X : Type*} [DecidableEq X] {u v a b : X} (he : s(u, v) = s(a, b))
+    (hne : a ≠ b) (c : X) (w : ℕ) :
+    (if a = c then w else 0) + (if b = c then w else 0) = if u = c ∨ v = c then w else 0 := by
+  rcases Sym2.eq_iff.1 he with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+    by_cases ha : u = c <;> by_cases hb : v = c <;> simp_all
+
 open Classical in
 theorem fb_eq (j : ℕ) (c : T.X j) : fb Lf j c = (∑ e, if T.e0 e = c then Lf j e else 0) +
     ∑ e, if T.e1 e = c then Lf j e else 0 := by
   unfold fb Tower.bet
   rw [← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun e _ => ?_
-  have hne := T.e_ne e
-  by_cases h0 : T.e0 e = c
-  · have h1 : ¬ T.e1 e = c := fun hc => hne (h0.trans hc.symm)
-    simp [h0, h1]
-  · by_cases h1 : T.e1 e = c <;> simp [h0, h1]
+  exact (endpoint_weight rfl (T.e_ne e) c (Lf j e)).symm
 
 open Classical in
 theorem chs_eq (j : ℕ) (x : T.X (j + 1)) : chs hh Lf j x =

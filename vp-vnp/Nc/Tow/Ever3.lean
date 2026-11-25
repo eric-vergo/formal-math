@@ -67,21 +67,9 @@ theorem paths_at (x : T.X 0) :
     rintro ⟨a, c, γ, s⟩
     by_cases hx : okR T R ch (stR (a, c, γ, s))
     · obtain ⟨e, h2, h3, h4⟩ := R.exists_edge (ch a) (ch c) γ (s := s) (by have := hx.2; simp only at this; omega)
-      have h6 : (T.e0 e = x ∨ T.e1 e = x) ↔ (R.pn (ch a) (ch c) γ s = x ∨ R.pn (ch a) (ch c) γ (s + 1) = x) := by
-        have h7 : ∀ y z : T.X 0, (y = x ∨ z = x) ↔ x ∈ s(y, z) := fun y z => by
-          rw [Sym2.mem_iff]
-          exact or_congr eq_comm eq_comm
-        rw [h7, h7, h3]
-      by_cases h0 : R.pn (ch a) (ch c) γ s = x
-      · have h8 : ¬ R.pn (ch a) (ch c) γ (s + 1) = x := fun hc => h4 (h0.trans hc.symm)
-        simp only [ite_eq_left h0, ite_eq_right h8, Nat.add_zero]
-        refine le_trans ?_ (Finset.single_le_sum (fun _ _ => Nat.zero_le _) (mem_univ e))
-        rw [ite_eq_left (h6.2 (Or.inl h0)), ite_eq_left ⟨hx, h2⟩]
-      · simp only [ite_eq_right h0, Nat.zero_add]
-        split_ifs with h8
-        · refine le_trans ?_ (Finset.single_le_sum (fun _ _ => Nat.zero_le _) (mem_univ e))
-          rw [ite_eq_left (h6.2 (Or.inr h8)), ite_eq_left ⟨hx, h2⟩]
-        · exact Nat.zero_le _
+      rw [endpoint_weight h3 h4 x]
+      refine le_trans ?_ (Finset.single_le_sum (fun _ _ => Nat.zero_le _) (mem_univ e))
+      simp [hx, h2]
     · have h5 : nR R ch FL lhat n o (stR (a, c, γ, s)) = 0 := by
         unfold nR
         rw [dite_eq_right hx]

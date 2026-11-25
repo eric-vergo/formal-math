@@ -98,24 +98,7 @@ theorem sum_mid2 (j : Fin J) (c : T.X (j + 1)) :
       rw [dite_eq_left (ok_mid2 j e)]
       exact (alv_relay hgR ⟨.mid j e 2, ok_mid2 j e⟩ false).symm
     rw [h2]
-    have hne := π_ne j.2 e
-    have h3 := T.π_ends j.2 e
-    have h4 : (T.e0 (T.πE e) = c ∨ T.e1 (T.πE e) = c) ↔ (T.π (T.e0 e) = c ∨ T.π (T.e1 e) = c) := by
-      have h5 : ∀ x y : T.X (j + 1), (x = c ∨ y = c) ↔ c ∈ s(x, y) := fun x y => by
-        rw [Sym2.mem_iff]
-        exact or_congr eq_comm eq_comm
-      rw [h5, h5, h3]
-    by_cases h0 : T.π (T.e0 e) = c
-    · have h5 : ¬ T.π (T.e1 e) = c := fun hc => hne (h0.trans hc.symm)
-      rw [ite_eq_left h0, ite_eq_right h5, ite_eq_left (h4.2 (Or.inl h0)), Nat.add_zero]
-    · rw [ite_eq_right h0, Nat.zero_add]
-      by_cases h5 : T.π (T.e1 e) = c
-      · rw [ite_eq_left h5, ite_eq_left (h4.2 (Or.inr h5))]
-      · rw [ite_eq_right h5, ite_eq_right]
-        rw [h4]
-        rintro (hc | hc)
-        · exact h0 hc
-        · exact h5 hc
+    exact endpoint_weight (T.π_ends j.2 e) (π_ne j.2 e) c _
   rw [← Finset.sum_add_distrib, Finset.sum_congr rfl fun e _ => h1 e,
     sum_end (fun e => T.πE e) (fun ē => T.e0 ē = c ∨ T.e1 ē = c)]
   unfold fb Tower.bet
@@ -158,10 +141,23 @@ include hh hr hb hgR
 local notation "Lf" => ldL R ch FL lhat n o
 
 omit hh hr hb hgR in
+/-- Sum a chamberwise bound on the two endpoints over any chosen set of chambers. -/
+private theorem sum_end_pair_le {E X : Type*} [Fintype E] [Fintype X] [DecidableEq X]
+    {u v : E → X} {w : E → ℕ} {f : X → ℕ} (p : X → Prop) [DecidablePred p]
+    (bound : ∀ x, (∑ e, if u e = x then w e else 0) +
+      (∑ e, if v e = x then w e else 0) ≤ f x) :
+    (∑ e, if p (u e) then w e else 0) + (∑ e, if p (v e) then w e else 0) ≤
+      ∑ x, if p x then f x else 0 := by
+  rw [sum_end u p, sum_end v p, ← Finset.sum_add_distrib]
+  exact Finset.sum_le_sum fun x _ => by by_cases hx : p x <;> simp [hx, bound]
+
+omit hh hr hb hgR in
 open Classical in
 private theorem sum_fb_node (j : ℕ) (hj : j ≤ J) (P : Nd T) : (∑ x : T.X j, if nd T j hj x = P then fb Lf j x else 0) =
-    (∑ x : T.X j, if nd T j hj x = P then (∑ e, if T.e0 e = x then Lf j e else 0) else 0) +
-    ∑ x : T.X j, if nd T j hj x = P then (∑ e, if T.e1 e = x then Lf j e else 0) else 0 := by
+    (∑ e, if nd T j hj (T.e0 e) = P then Lf j e else 0) +
+    ∑ e, if nd T j hj (T.e1 e) = P then Lf j e else 0 := by
+  rw [sum_end (fun e => T.e0 e) (fun x => nd T j hj x = P),
+    sum_end (fun e => T.e1 e) (fun x => nd T j hj x = P)]
   rw [← Finset.sum_add_distrib]
   refine Finset.sum_congr rfl fun x _ => ?_
   split_ifs
@@ -208,8 +204,7 @@ private theorem innerRelayBound (P : Nd T) : ∀ j : Fin J, (∑ i, ∑ e : T.Ed
       · omega
       · rfl
   refine (Finset.sum_le_sum fun i _ => h1 i).trans ?_
-  rw [Finset.sum_ite_eq', ite_eq_left (mem_univ _), Finset.sum_add_distrib, Finset.sum_add_distrib,
-    sum_end (fun e => T.e0 e) (fun x => nd T j j.2.le x = P), sum_end (fun e => T.e1 e) (fun x => nd T j j.2.le x = P)]
+  rw [Finset.sum_ite_eq', ite_eq_left (mem_univ _), Finset.sum_add_distrib, Finset.sum_add_distrib]
   have h3 := sum_fb_node (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) j j.2.le P
   rw [h3]
   omega
@@ -296,24 +291,8 @@ private theorem middleRelayBound (P : Nd T) : ∀ j : Fin J, (∑ e : T.Ed j, �
     omega
   refine (Finset.sum_le_sum fun e _ => h1 e).trans ?_
   simp only [Finset.sum_add_distrib, ← Finset.mul_sum]
-  have e0 := sum_end (fun e : T.Ed j => T.e0 e) (fun x => nd T j j.2.le x = P) (fun e => Lf j e)
-  have e1 := sum_end (fun e : T.Ed j => T.e1 e) (fun x => nd T j j.2.le x = P) (fun e => Lf j e)
-  have e2 := sum_end (fun e : T.Ed j => T.π (T.e0 e)) (fun x => nd T (j + 1) j.2 x = P)
-    (fun e => nR R ch FL lhat n o (.mid j e 2))
-  have e3 := sum_end (fun e : T.Ed j => T.π (T.e1 e)) (fun x => nd T (j + 1) j.2 x = P)
-    (fun e => nR R ch FL lhat n o (.mid j e 2))
-  have h3 := sum_fb_node (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) j j.2.le P
-  have h4 : (∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then
-        (∑ e, if T.π (T.e0 e) = x then nR R ch FL lhat n o (.mid j e 2) else 0) else 0) +
-      (∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then
-        (∑ e, if T.π (T.e1 e) = x then nR R ch FL lhat n o (.mid j e 2) else 0) else 0) ≤
-      ∑ x : T.X (j + 1), if nd T (j + 1) j.2 x = P then fb Lf (j + 1) x else 0 := by
-    rw [← Finset.sum_add_distrib]
-    refine Finset.sum_le_sum fun x _ => ?_
-    split_ifs
-    · exact sum_mid2 hr hb hgR j x
-    · exact le_rfl
-  rw [e0, e1, e2, e3, h3]
+  have hmid := sum_end_pair_le (fun x => nd T (j + 1) j.2 x = P) (sum_mid2 hr hb hgR j)
+  rw [sum_fb_node (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) j j.2.le P]
   omega
 
 omit hh hgR in
@@ -341,8 +320,7 @@ private theorem finalRelayBound (P : Nd T) : (∑ e : T.Ed J, ∑ q : Fin 3, if 
       · exact h2
       · exact le_rfl
   refine (Finset.sum_le_sum fun e _ => h1 e).trans ?_
-  rw [Finset.sum_add_distrib, Finset.sum_add_distrib, sum_end (fun e => T.e0 e) (fun x => nd T J le_rfl x = P),
-    sum_end (fun e => T.e1 e) (fun x => nd T J le_rfl x = P)]
+  rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
   have h3 := sum_fb_node (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) J le_rfl P
   have h4 : (∑ _e : T.Ed J, if none = P then Lf J _e else 0) = if none = P then ∑ e : T.Ed J, Lf J e else 0 := by
     split_ifs
