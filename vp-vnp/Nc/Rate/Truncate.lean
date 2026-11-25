@@ -143,29 +143,16 @@ theorem OrdGe.mul {m n : ℤ} {u v : MvPolynomial X (LaurentSeries F)} (hu : Ord
 /-- The poles of the coefficients of finitely many polynomials over the Laurent series have bounded order. -/
 theorem exists_ordGe (l : ℕ → MvPolynomial X (LaurentSeries F)) (s : ℕ) :
     ∃ B : ℤ, 0 ≤ B ∧ ∀ k < s, OrdGe (-B) (l k) := by
-  have one : ∀ u : MvPolynomial X (LaurentSeries F), ∃ B : ℤ, 0 ≤ B ∧ OrdGe (-B) u := by
-    intro u
-    induction u using MvPolynomial.induction_on' with
-    | monomial e a =>
-      refine ⟨|a.order|, abs_nonneg _, fun d i hi => ?_⟩
-      classical
-      rw [coeff_monomial]
-      split_ifs
-      · exact HahnSeries.coeff_eq_zero_of_lt_order (lt_of_lt_of_le hi (neg_abs_le _))
-      · rfl
-    | add p q hp hq =>
-      obtain ⟨B, hB, h⟩ := hp
-      obtain ⟨B', hB', h'⟩ := hq
-      exact ⟨B + B', by omega, (h.mono (by omega)).add (h'.mono (by omega))⟩
-  induction s with
-  | zero => exact ⟨0, le_rfl, fun k hk => absurd hk (Nat.not_lt_zero k)⟩
-  | succ t ih =>
-    obtain ⟨B, hB, h⟩ := ih
-    obtain ⟨B', hB', h'⟩ := one (l t)
-    refine ⟨B + B', by omega, fun k hk => ?_⟩
-    rcases Nat.lt_succ_iff_lt_or_eq.1 hk with hk | rfl
-    · exact (h k hk).mono (by omega)
-    · exact h'.mono (by omega)
+  classical
+  let bound (k : Fin s) := (l k).support.sup fun d => ((l k).coeff d).order.natAbs
+  refine ⟨((Finset.univ.sup bound : ℕ) : ℤ), by positivity, fun k hk d i hi => ?_⟩
+  by_cases hd : d ∈ (l k).support
+  · have hkB := Finset.le_sup (f := bound) (Finset.mem_univ (⟨k, hk⟩ : Fin s))
+    have hdB := Finset.le_sup (f := fun d => ((l k).coeff d).order.natAbs) hd
+    have := hdB.trans hkB
+    exact HahnSeries.coeff_eq_zero_of_lt_order (by omega)
+  · rw [notMem_support_iff.1 hd]
+    rfl
 
 end Order
 
