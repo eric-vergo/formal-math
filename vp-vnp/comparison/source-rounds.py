@@ -60,7 +60,7 @@ def main():
           "The umbrella column counts direct imports of the module named Mathlib. "
           "The last column compares consecutive rows.\n")
     table(["Stage", "Revision", "Files", "Physical", "Code", "Comment", "Mixed", "Blank", "Bytes",
-           "Declaration commands", "Imports", "Umbrella", "Physical Δ"], rows)
+           "Declaration commands", "Imports", "Umbrella", "Physical Δ"], rows, trailing_blank=False)
 
 
 if __name__ == "__main__":
