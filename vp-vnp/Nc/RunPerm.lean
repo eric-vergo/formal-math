@@ -18,17 +18,8 @@ open Finset MvPolynomial
 section Count
 
 theorem card_ChN (S : Type) [Fintype S] (n : ℕ) : Fintype.card (Ch S (Fin n)) = 2 * Fintype.card S + n := by
-  have e : Ch S (Fin n) ≃ (S × Bool) ⊕ Fin n :=
-    { toFun := fun z => match z with
-        | .tp s b => .inl (s, b)
-        | .inp j => .inr j
-      invFun := fun y => match y with
-        | .inl (s, b) => .tp s b
-        | .inr j => .inp j
-      left_inv := fun z => by cases z <;> rfl
-      right_inv := fun y => by rcases y with ⟨s, b⟩ | j <;> rfl }
-  rw [Fintype.card_congr e, Fintype.card_sum, Fintype.card_prod, Fintype.card_bool, Fintype.card_fin]
-  omega
+  rw [Fintype.card_congr (chSumEquiv S (Fin n))]
+  simp [Nat.mul_comm]
 
 variable {Γ S Q : Type} [Fintype Γ] [Fintype S] [Fintype Q] {n t M N B : ℕ}
 
@@ -83,18 +74,14 @@ theorem card_RH_le (hΓ : Fintype.card Γ + 1 ≤ B) (hS : Fintype.card S ≤ B)
     (hn : n ≤ B) (ht : t ≤ B) (hM : M ≤ B) (hB : 1 ≤ B) : Fintype.card (RH Γ S n t M) ≤ 25 * B ^ 5 := by
   have hL := card_letter_le (Γ := Γ) (S := S) (n := n) (by omega) hS hn hB
   have hΓ' : Fintype.card Γ ≤ B := by omega
-  have h (k : ℕ) (hk : k ≤ 5) : B ^ k ≤ B ^ 5 := Nat.pow_le_pow_right hB hk
-  have h0 := h 0 (by omega)
-  have h1 := h 1 (by omega)
-  have h2 := h 2 (by omega)
-  have h3 := h 3 (by omega)
-  have h4 := h 4 (by omega)
   simp only [Fintype.card_sum, Fintype.card_prod, Fintype.card_fin, Fintype.card_bool]
   rw [card_ChN]
   calc _ ≤ 2 + ((2 * B + B) + ((2 * B + B) * (B * (B * (4 * B ^ 2))) + (B * (B * B) +
         (B * (2 * (B * (B * B))) + (B * (2 * (B * B)) + (B * (B * (B * B)) + B * B)))))) := by gcongr
-    _ = 2 * B ^ 0 + 3 * B ^ 1 + 12 * B ^ 5 + 3 * B ^ 3 + 3 * B ^ 4 + B ^ 2 := by ring
-    _ ≤ 25 * B ^ 5 := by omega
+    _ ≤ 25 * B ^ 5 := by
+      obtain ⟨b, rfl⟩ := Nat.exists_eq_add_of_le hB
+      ring_nf
+      omega
 
 end Count
 

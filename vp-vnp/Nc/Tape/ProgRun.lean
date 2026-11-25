@@ -67,6 +67,25 @@ theorem RatLe.idle {n : ℕ} {P : Series F Ω} (hP : RatLe n P) : RatLe (n + 1) 
     rw [Rep.series, key]
     by_cases h : o.all Option.isNone <;> simp [h]
 
+/-- A nonzero term in the idle convolution splits into a data prefix and a padding suffix. -/
+private theorem idle_parts (P : Series F Ω) (l r : List (Option Ω))
+    (h : (if l.all Option.isSome then P l.reduceOption else 0) *
+        (if r.all Option.isNone then 1 else 0) ≠ 0) :
+    l.reduceOption.map some = l ∧ List.replicate r.length none = r := by
+  by_cases hl : l.all Option.isSome = true
+  swap
+  · simp [hl] at h
+  by_cases hr : r.all Option.isNone = true
+  swap
+  · simp [hr] at h
+  constructor
+  · clear h
+    induction l with
+    | nil => rfl
+    | cons a l ih => cases a <;> simp_all
+  · symm
+    exact List.eq_replicate_iff.2 ⟨rfl, fun a ha => by simpa using List.all_eq_true.1 hr a ha⟩
+
 theorem idle_apply (P : Series F Ω) (w : List Ω) (j : ℕ) :
     Series.idle P (w.map some ++ List.replicate j none) = P w := by
   rw [Series.idle, Series.mul, Finset.sum_eq_single w.length]
@@ -74,29 +93,16 @@ theorem idle_apply (P : Series F Ω) (w : List Ω) (j : ℕ) :
     simp [List.reduceOption]
   · intro k hk hne
     rw [mem_range, List.length_append, List.length_map, List.length_replicate] at hk
-    rcases lt_or_gt_of_ne hne with h | h
-    · have hmem : some w[k] ∈ (w.map some ++ List.replicate j none).drop k := by
-        rw [List.drop_append_of_le_length (by simp; omega), List.mem_append, ← List.map_drop]
-        left
-        rw [List.mem_map]
-        refine ⟨w[k], ?_, rfl⟩
-        rw [List.drop_eq_getElem_cons h]
-        exact List.mem_cons_self
-      have : ¬ ((w.map some ++ List.replicate j none).drop k).all Option.isNone = true := by
-        intro hall
-        have := List.all_eq_true.1 hall _ hmem
-        simp at this
-      rw [ite_eq_right this, mul_zero]
-    · have hmem : none ∈ (w.map some ++ List.replicate j none).take k := by
-        rw [List.take_append, List.mem_append]
-        right
-        rw [List.length_map, List.take_replicate, List.mem_replicate]
-        exact ⟨by omega, rfl⟩
-      have : ¬ ((w.map some ++ List.replicate j none).take k).all Option.isSome = true := by
-        intro hall
-        have := List.all_eq_true.1 hall _ hmem
-        simp at this
-      rw [ite_eq_right this, zero_mul]
+    by_contra h
+    obtain ⟨hp, hs⟩ := idle_parts P _ _ h
+    have cut := List.take_append_drop k (w.map some ++ List.replicate j none)
+    rw [← hp, ← hs] at cut
+    have data : ((w.map some ++ List.replicate j none).take k).reduceOption = w := by
+      simpa [List.reduceOption] using congrArg List.reduceOption cut
+    have hlen := congrArg List.length hp
+    rw [data] at hlen
+    simp at hlen
+    omega
   · intro h
     exfalso
     apply h
@@ -107,51 +113,13 @@ theorem idle_ne_zero (P : Series F Ω) (o : List (Option Ω)) (h : Series.idle P
     ∃ (w : List Ω) (j : ℕ), o = w.map some ++ List.replicate j none := by
   unfold Series.idle Series.mul at h
   obtain ⟨k, -, hk⟩ := Finset.exists_ne_zero_of_sum_ne_zero h
-  beta_reduce at hk
-  have h1 : (o.take k).all Option.isSome = true := by
-    by_contra hn
-    rw [ite_eq_right hn, zero_mul] at hk
-    exact hk rfl
-  have h2 : (o.drop k).all Option.isNone = true := by
-    by_contra hn
-    rw [ite_eq_right hn, mul_zero] at hk
-    exact hk rfl
-  refine ⟨(o.take k).reduceOption, (o.drop k).length, ?_⟩
-  have e1 : ∀ l : List (Option Ω), l.all Option.isSome = true → l.reduceOption.map some = l := by
-    intro l
-    induction l with
-    | nil => simp
-    | cons a l ih =>
-      intro hl
-      cases a with
-      | none => simp at hl
-      | some a =>
-        simp only [List.all_cons, Option.isSome_some, Bool.true_and] at hl
-        rw [List.reduceOption_cons_of_some, List.map_cons, ih hl]
-  have e2 : ∀ l : List (Option Ω), l.all Option.isNone = true → List.replicate l.length none = l := by
-    intro l hl
-    symm
-    rw [List.eq_replicate_iff]
-    refine ⟨rfl, fun a ha => ?_⟩
-    have := List.all_eq_true.1 hl a ha
-    simpa using this
-  rw [e1 _ h1, e2 _ h2, List.take_append_drop]
+  obtain ⟨hl, hr⟩ := idle_parts P _ _ hk
+  exact ⟨_, _, by rw [hl, hr, List.take_append_drop]⟩
 
 end Idle
 
 variable {Γ S J : Type*} [Fintype Γ] [DecidableEq Γ] [Fintype S] [DecidableEq S]
   [Fintype J] [DecidableEq J]
-
-/-- Channels as a sum. -/
-def chSumEquiv (S J : Type*) : Ch S J ≃ (S × Bool) ⊕ J where
-  toFun z := match z with
-    | .tp s b => Sum.inl (s, b)
-    | .inp j => Sum.inr j
-  invFun x := match x with
-    | Sum.inl (s, b) => .tp s b
-    | Sum.inr j => .inp j
-  left_inv z := by cases z <;> rfl
-  right_inv x := by rcases x with ⟨s, b⟩ | j <;> rfl
 
 theorem sum_length_tup (W : S → List Γ) (u : J → List Γ) :
     ∑ z, (tup W u z).length = 2 * ∑ s, (W s).length + ∑ j, (u j).length := by

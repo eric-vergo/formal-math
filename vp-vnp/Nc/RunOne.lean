@@ -21,15 +21,8 @@ variable {S J J' Γ : Type} [Fintype Γ] [DecidableEq Γ] [Fintype S] [Decidable
   [Fintype J'] [DecidableEq J']
 
 /-- Renaming the inputs. -/
-def chEquiv (S : Type) (φ : J ≃ J') : Ch S J ≃ Ch S J' where
-  toFun z := match z with
-    | .tp s b => .tp s b
-    | .inp j => .inp (φ j)
-  invFun z := match z with
-    | .tp s b => .tp s b
-    | .inp j => .inp (φ.symm j)
-  left_inv z := by cases z <;> simp
-  right_inv z := by cases z <;> simp
+def chEquiv (S : Type) (φ : J ≃ J') : Ch S J ≃ Ch S J' :=
+  (chSumEquiv S J).trans (((Equiv.refl _).sumCongr φ).trans (chSumEquiv S J').symm)
 
 /-- Renaming the inputs in letters. -/
 def letterEquiv (S Γ : Type) (φ : J ≃ J') : Letter S J Γ ≃ Letter S J' Γ :=
@@ -66,21 +59,11 @@ theorem runVal_rename (φ : J ≃ J') (mu : Letter S J' Γ → Matrix Q Q F) (i 
       have h2 := emit_rename φ (List.ofFn o) (.tp s true)
       rw [← h1, ← h2]
       rfl
-    · constructor
-      · intro h j
-        have h1 := emit_rename φ (List.ofFn o) (.inp (φ.symm j))
-        have h2 : chEquiv S φ (.inp (φ.symm j)) = .inp j := by simp [chEquiv]
-        have h3 := h (φ.symm j)
-        rw [h2] at h1
-        rw [h1, h3]
-        exact congrArg u (φ.apply_symm_apply j)
-      · intro h j
-        exact (emit_rename φ (List.ofFn o) (.inp j)).symm.trans (h (φ j))
+    · refine φ.forall_congr fun j => ?_
+      change _ ↔ emit _ (chEquiv S φ (.inp j)) = _
+      rw [emit_rename]
   rw [hl]
-  by_cases h : Matched (List.ofFn o) (fun j => u (φ j))
-  · rw [ite_eq_left h, ite_eq_left (hm.1 h), List.map_map]
-    rfl
-  · rw [ite_eq_right h, ite_eq_right fun h' => h (hm.2 h')]
+  exact if_congr hm (by rw [List.map_map]; rfl) rfl
 
 end Rename
 

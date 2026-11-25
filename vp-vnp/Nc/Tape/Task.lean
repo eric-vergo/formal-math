@@ -31,6 +31,10 @@ inductive Ch (S J : Type*) where
   | inp (j : J)
   deriving DecidableEq, Fintype
 
+/-- Channels as a choice between a tape side and an input. -/
+def chSumEquiv (S J : Type*) : Ch S J ≃ (S × Bool) ⊕ J :=
+  (proxy_equiv% Ch S J).symm.trans ((Equiv.sigmaEquivProd S Bool).sumCongr (Equiv.refl J))
+
 /-- The words on the channels for given contents of the tapes and given inputs. -/
 def tup (W : S → List Γ) (u : J → List Γ) : Ch S J → List Γ
   | .tp s _ => W s
