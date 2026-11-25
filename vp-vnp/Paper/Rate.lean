@@ -5,7 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 -/
 import Paper.Flat
 import Paper.Convex
-import Nc.Final.CClasses
 import Nc.CaseI.Hub
 
 /-!
