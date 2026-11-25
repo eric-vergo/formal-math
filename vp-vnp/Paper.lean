@@ -26,5 +26,4 @@ import Paper.Rate
 import Paper.HcGrid
 import Paper.Transfer
 import Paper.Fields
-import Paper.Ryser
 import Paper.Approximate
