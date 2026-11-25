@@ -485,22 +485,13 @@ theorem size_bodyTm (p : Fin (K + K)) : (bodyTm C p).tree.size ≤ 75 * (X * Lc)
     refine (size_listTm_le hl hb).trans ?_
     have : X * (4 * Lc + 5 + 7) = 4 * (X * Lc) + 12 * X := by ring
     omega
-  have h1 := h ((univ : Finset (Option S)).toList.map fun s => gN C (.flag s p)) (by
-    rw [List.length_map, Finset.length_toList, Finset.card_univ]; exact H.hS) (by
-      intro t ht
-      rw [List.mem_map] at ht
-      obtain ⟨s, -, rfl⟩ := ht
-      exact size_gN H _)
-  have h2 := h (List.ofFn fun b => gN C (.kR p b)) (by rw [List.length_ofFn]; exact H.hK2) (by
-      intro t ht
-      rw [List.mem_ofFn] at ht
-      obtain ⟨s, rfl⟩ := ht
-      exact size_gN H _)
-  have h3 := h (List.ofFn fun b => gN C (.kC b p)) (by rw [List.length_ofFn]; exact H.hK2) (by
-      intro t ht
-      rw [List.mem_ofFn] at ht
-      obtain ⟨s, rfl⟩ := ht
-      exact size_gN H _)
+  have flags := h ((univ : Finset (Option S)).toList.map fun s => gN C (.flag s p))
+    (by simpa using H.hS) (List.forall_mem_map.2 fun _ _ => size_gN H _)
+  have keys (f : Fin (K + K) → NmT S M U0 U1 pS) :=
+    h (List.ofFn fun b => gN C (f b)) (by simpa using H.hK2)
+      (List.forall_mem_ofFn_iff.2 fun _ => size_gN H _)
+  have rows := keys (.kR p ·)
+  have cols := keys (.kC · p)
   rw [bodyTm, size_tmCons, size_tmCons]
   omega
 

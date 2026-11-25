@@ -362,23 +362,10 @@ theorem size_scriptT (hX : 1 ≤ X) (hLc : 1 ≤ Lc) (hK : K + K ≤ X) (hU0 : U
     List.sum_append]
   have f1 : X * (X * X * (8 * Lc + 10) + 10 * X + 12 + X * (8 * Lc + 10)) +
       X * (X * X * (8 * Lc + 4) + 8 * X + 16) + X * (8 * Lc + 12) + 8 * Lc + 6 ≤ 200 * X ^ 3 * Lc := by
-    have g1 : X ≤ X ^ 3 * Lc := by
-      calc X = X ^ 1 * 1 := by ring
-        _ ≤ X ^ 3 * Lc := Nat.mul_le_mul (Nat.pow_le_pow_right hX (by omega)) hLc
-    have g2 : X ^ 2 ≤ X ^ 3 * Lc := by
-      calc X ^ 2 = X ^ 2 * 1 := by ring
-        _ ≤ X ^ 3 * Lc := Nat.mul_le_mul (Nat.pow_le_pow_right hX (by omega)) hLc
-    have g3 : X ^ 3 ≤ X ^ 3 * Lc := Nat.le_mul_of_pos_right _ hLc
-    have g4 : X ^ 2 * Lc ≤ X ^ 3 * Lc := Nat.mul_le_mul_right _ (Nat.pow_le_pow_right hX (by omega))
-    have g5 : X * Lc ≤ X ^ 3 * Lc := by
-      calc X * Lc = X ^ 1 * Lc := by ring
-        _ ≤ _ := Nat.mul_le_mul_right _ (Nat.pow_le_pow_right hX (by omega))
-    have g6 : Lc ≤ X ^ 3 * Lc := Nat.le_mul_of_pos_left _ (by positivity)
-    have g7 : 1 ≤ X ^ 3 * Lc := Nat.one_le_iff_ne_zero.2 (by positivity)
-    have e : X * (X * X * (8 * Lc + 10) + 10 * X + 12 + X * (8 * Lc + 10)) +
-      X * (X * X * (8 * Lc + 4) + 8 * X + 16) + X * (8 * Lc + 12) + 8 * Lc + 6 =
-      16 * (X ^ 3 * Lc) + 14 * X ^ 3 + 28 * X ^ 2 + 8 * (X ^ 2 * Lc) + 40 * X + 8 * (X * Lc) + 8 * Lc + 6 := by ring
-    rw [e, mul_assoc]
+    obtain ⟨x, hx⟩ := Nat.exists_eq_add_of_le hX
+    obtain ⟨l, hl⟩ := Nat.exists_eq_add_of_le hLc
+    rw [hx, hl]
+    ring_nf
     omega
   omega
 
