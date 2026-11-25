@@ -33,13 +33,8 @@ timed lake env lean --run blueprint/scripts/GenerateNodes.lean
 # The site, with the kernel replay of the compiled modules by con-leche and con-ron.
 timed lake exe vbp build
 
-# The consistency check of the generated site prints a JSON report with "ok": true or false.
-report=$(lake exe vbp check | tail -n 1)
-echo "$report"
-case "$report" in
-  *'"ok":true'*) ;;
-  *) echo "vbp check reported problems" >&2; exit 1 ;;
-esac
+# The checker prints its JSON report and exits unsuccessfully for inconsistent site data.
+lake exe vbp check
 
 test -f _out/site/html-multi/index.html
 test -f _out/site/html-multi/-verso-data/blueprint-manifest.json

@@ -45,7 +45,7 @@ rev = "94cea086b880f61f5b3847d30151b8e5f80e1259"
 [[require]]
 name = "VersoBlueprint"
 git = "https://github.com/eric-vergo/verso-blueprint"
-rev = "8a5a5c5eb37979d4304589cad2cd2504ea2d88ba"
+rev = "cc82fb88974659b6890997a1975d21f7cd4d280c"
 
 # The blueprint document (not a default target: `lake build` does not build it). Its chapters
 # under `blueprint/VpVnpBlueprint/Generated/` are written by
