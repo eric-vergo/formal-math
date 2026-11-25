@@ -237,6 +237,19 @@ theorem All.map {P : R → Prop} {Q : R' → Prop} {f : R → R'} (hPQ : ∀ c, 
   | leaf c => exact hPQ c h
   | node l r ihl ihr => exact ⟨ihl h.1, ihr h.2⟩
 
+theorem all_true (K : KT R) : K.All fun _ => True := by
+  induction K with
+  | none => trivial
+  | leaf _ => trivial
+  | node _ _ ihl ihr => exact ⟨ihl, ihr⟩
+
+theorem All.and {P Q : R → Prop} {K : KT R} (hP : K.All P) (hQ : K.All Q) :
+    K.All fun c => P c ∧ Q c := by
+  induction K with
+  | none => trivial
+  | leaf _ => exact ⟨hP, hQ⟩
+  | node _ _ ihl ihr => exact ⟨ihl hP.1 hQ.1, ihr hP.2 hQ.2⟩
+
 theorem exists_map_of_all {f : R → R'} {K : KT R'} (h : K.All (· ∈ Set.range f)) :
     ∃ K₀ : KT R, K₀.map f = K := by
   induction K with
