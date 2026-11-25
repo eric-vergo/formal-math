@@ -331,44 +331,4 @@ theorem thm_noacc_all_scales {h : ℕ} (hh : 17 ≤ h) {C₀ v₀ : ℕ} (hcut :
         _ = u ^ 5 := by ring
     exact ⟨u ^ 5, B'', D'', by omega, hu.trans (Nat.le_self_pow (by norm_num) u), hI'⟩
 
-set_option maxHeartbeats 2000000 in
-/-- **Paper: Theorem thm:noacc.** "There are C and v₁ such that for all integers a ≥ 0 and v ≥ v₁ with (lg v)^(Ca) ≤ v no
-nonzero commutative A-algebra has an accelerator of size v^a at scale v." -/
-theorem thm_noacc {h : ℕ} (hh : 17 ≤ h) [Algebra.FiniteType ℤ A] {C₀ v₀ : ℕ} (hcut : CutHyp θ (16 * h) C₀ v₀) :
-    ∃ C v₁ : ℕ, ∀ v, v₁ ≤ v → ∀ a, lg v ^ (C * a) ≤ v → ∀ (R : Type) [CommRing R] [Nontrivial R] [Algebra A R],
-      ¬ HasAcc θ R (16 * h) v (v ^ a) := by
-  obtain ⟨C, v₁, hall⟩ := thm_noacc_all_scales hh hcut
-  obtain ⟨n9, hn9⟩ := poly_lg (1000 * (3 * (100000 * h ^ 3)) ^ 3) 9
-  refine ⟨C, v₁, fun v hv a ha R _ _ _ hacc => ?_⟩
-  obtain ⟨K, B, D, hD, hKn, hDs, hKh, hB⟩ := hacc
-  obtain ⟨E, _, _, _, K', hD', hn', hh'⟩ := thm_noacc_finite_field hD
-  obtain ⟨M, red, hM, hred⟩ := thm_noacc_periodic E
-  obtain ⟨u, B', D', hu, hI⟩ := hall E v hv a ha K' B D hD' (hn'.trans_le hKn) hDs (hh'.trans_le hKh) hB
-    (2 ^ (M + 2000 * h) + cst + n9)
-  obtain ⟨cs, hcs⟩ : ∃ cs, cs = cst := ⟨_, rfl⟩
-  rw [← hcs] at hu
-  have hp : 1 ≤ 2 ^ (M + 2000 * h) := Nat.one_le_two_pow
-  have hu1 : 1 ≤ u := by omega
-  have hl : M + 2000 * h + 1 ≤ lg u := le_lg_of_two_pow_le (by omega)
-  have hlt := lt_two_pow_lg u
-  have hsmall := hn9 u (by omega)
-  have a1 := hI.ht
-  have a2 := hI.B_le
-  obtain ⟨L, hL⟩ : ∃ L, L = lg u := ⟨_, rfl⟩
-  rw [← hL] at hl hlt hsmall a1 a2
-  refine thm_noacc_diagonal hh hI.acc (by omega) hI.nds hI.size hM hred (J := 16 * h * L)
-    (X := K'.ht + max B' M + 16 * h * L + 10) ?_ (by omega) (by omega) ?_
-  · rw [Nat.mul_comm (16 * h) L, pow_mul]
-    calc u ^ (16 * h - 15) ≤ u ^ (16 * h) := pow_le_pow hu1 (by omega)
-      _ < (2 ^ L) ^ (16 * h) := Nat.pow_lt_pow_left hlt (by omega)
-  · refine le_trans (Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (m := 3 * (100000 * h ^ 3) * L ^ 3) ?_ 3)) (le_trans (le_of_eq ?_) hsmall)
-    · have h1 : 17 * (h * L) ≤ 100000 * (h ^ 3 * L ^ 3) :=
-        Nat.mul_le_mul (by norm_num) (Nat.mul_le_mul (Nat.le_self_pow (by norm_num) h) (Nat.le_self_pow (by norm_num) L))
-      have h2 : L ≤ h * L := Nat.le_mul_of_pos_left _ (by omega)
-      have e1 : 16 * h * L = 16 * (h * L) := by ring
-      have e2 : 3 * (100000 * h ^ 3) * L ^ 3 = 3 * (100000 * (h ^ 3 * L ^ 3)) := by ring
-      have e3 : 100000 * h ^ 3 * L ^ 3 = 100000 * (h ^ 3 * L ^ 3) := by ring
-      omega
-    · ring
-
 end Paper
