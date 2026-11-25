@@ -190,6 +190,23 @@ theorem UF_preA (θ : List Bool → A) (H v : ℕ) (B : ℕ) :
   rw [h.val z hz hp, sub_self]
   exact OrdGE.zero 1
 
+/-- An exact accelerator with constants in E[ε,ε⁻¹] is an approximate one. -/
+theorem IsAccT.isAccA {H v t : ℕ} {K : KT E[T;T⁻¹]} {B : ℕ} {D : Tree}
+    (h : IsAccT θ H v t K B D) : IsAccA θ H v t K B D :=
+  ⟨h.run, fun z hz hp => by rw [h.val z hz hp, sub_self]; exact OrdGE.zero 1⟩
+
+/-- An approximate accelerator whose constants are constant Laurent polynomials is an exact
+accelerator with the same constants: its value is the coefficient of ε⁰. -/
+theorem IsAccA.isAccT_of_map {H v t : ℕ} {K : KT E} {B : ℕ} {D : Tree}
+    (h : IsAccA θ H v t (K.map (laurentConst A E)) B D) : IsAccT θ H v t K B D := by
+  refine ⟨fun z hz => ⟨(h.run z hz).1, fun r hr => ⟨((h.run z hz).2 r hr).1, fun p hp =>
+    (KT.inB_map _ B K p).1 (((h.run z hz).2 r hr).2 p hp)⟩⟩, fun z hz hp => ?_⟩
+  have h0 := h.val z hz hp 0 one_pos
+  rw [val_map, ← AlgHom.commutes (laurentConst A E), ← map_sub] at h0
+  simp only [IsScalarTower.coe_toAlgHom'] at h0
+  rw [coeff_algebraMap (A := E), ite_eq_left rfl, Algebra.algebraMap_self, RingHom.id_apply] at h0
+  exact sub_eq_zero.1 h0
+
 /-- The program of a round: outer budgets with the names that begin with 0, inner ones with those that begin with 1. -/
 def roundA {R : Type} (K : KT R) (B : ℕ) (K' : KT R) (B' J : ℕ) (D G p : Tree) : Fm :=
   stepA (rebF (gt id J B' K' [true]) (LP D).code) (LP D).code G p (gt id J B K [false])

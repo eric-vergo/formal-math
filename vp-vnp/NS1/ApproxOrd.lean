@@ -184,6 +184,36 @@ theorem Thin.rescale {Δ : ℕ} {P : E[T;T⁻¹]} (h : Thin Δ P) (r : ℕ) : Th
   rw [← map_pow]
   exact (card_support_rescale r _).trans (h n)
 
+variable (A) in
+/-- A property of Laurent polynomials that every rescaling ε ↦ ε^r keeps. The rounds of the
+approximate scale-up rescale the constants of the inner program, so they keep every such property of
+all constants: having few terms (`Thin`), or being constant (`laurentConst`). -/
+def RescaleStable (Q : E[T;T⁻¹] → Prop) : Prop :=
+  ∀ (r : ℕ) (c : E[T;T⁻¹]), Q c → Q (rescale A r c)
+
+theorem rescaleStable_thin (Δ : ℕ) : RescaleStable A (Thin (E := E) Δ) :=
+  fun r _ hc => hc.rescale r
+
+theorem RescaleStable.and {Q Q' : E[T;T⁻¹] → Prop} (hQ : RescaleStable A Q)
+    (hQ' : RescaleStable A Q') : RescaleStable A fun c => Q c ∧ Q' c :=
+  fun r c hc => ⟨hQ r c hc.1, hQ' r c hc.2⟩
+
+variable (A E) in
+/-- The constant Laurent polynomials: `E` as an `A`-subalgebra of E[ε,ε⁻¹]. -/
+noncomputable abbrev laurentConst : E →ₐ[A] E[T;T⁻¹] :=
+  IsScalarTower.toAlgHom A E E[T;T⁻¹]
+
+theorem rescale_laurentConst (r : ℕ) (a : E) :
+    rescale A r (laurentConst A E a) = laurentConst A E a := by
+  simp only [IsScalarTower.coe_toAlgHom', rescale, AddMonoidAlgebra.coe_algebraMap,
+    Function.comp_apply, AddMonoidAlgebra.mapDomainAlgHom_apply, AddMonoidHom.coe_mulLeft,
+    Algebra.algebraMap_self, RingHom.id_apply]
+  rw [AddMonoidAlgebra.mapDomain_single, mul_zero]
+
+theorem rescaleStable_laurentConst : RescaleStable A (· ∈ Set.range (laurentConst A E)) := by
+  rintro r _ ⟨a, rfl⟩
+  exact ⟨a, (rescale_laurentConst r a).symm⟩
+
 namespace KT
 
 variable {R R' : Type} [CommRing R] [CommRing R']
@@ -206,6 +236,18 @@ theorem All.map {P : R → Prop} {Q : R' → Prop} {f : R → R'} (hPQ : ∀ c, 
   | none => trivial
   | leaf c => exact hPQ c h
   | node l r ihl ihr => exact ⟨ihl h.1, ihr h.2⟩
+
+theorem exists_map_of_all {f : R → R'} {K : KT R'} (h : K.All (· ∈ Set.range f)) :
+    ∃ K₀ : KT R, K₀.map f = K := by
+  induction K with
+  | none => exact ⟨none, rfl⟩
+  | leaf c =>
+    obtain ⟨a, rfl⟩ := h
+    exact ⟨leaf a, rfl⟩
+  | node l r ihl ihr =>
+    obtain ⟨l', rfl⟩ := ihl h.1
+    obtain ⟨r', rfl⟩ := ihr h.2
+    exact ⟨node l' r', rfl⟩
 
 theorem All.expand {P Q : R → Prop} {B : ℕ} (hPQ : ∀ c, P c → ∀ b < B, Q (c ^ 2 ^ b)) {K : KT R} (h : K.All P) :
     (K.expand B).All Q := by
