@@ -284,8 +284,8 @@ open Nc.Acc LaurentPolynomial in
 proofs of Lemmas lem:lowdeg and lem:circuit work over this ring and give approximate accelerators:
 the output Φ + εg may have a large degree, but the program gives the part of degree at most d,
 which is Φ plus ε times that part of g." -/
-theorem lem_circuit_approx (hθ : (Function.support θ).Finite) {H : ℕ} (hH : 32 ≤ H)
-    (κ : ℕ) :
+theorem lem_circuit_approx (hθ : (Function.support θ).Finite) {H : ℕ}
+    (hH : 32 ≤ H) (κ : ℕ) :
     ∃ B₀ C v₀ : ℕ, 0 < B₀ ∧ ∀ (F : Type) [Field F] [Algebra A F]
       (G : ∀ S, MvPolynomial (Fin S × Fin S) F), Nc.GridComplete F G κ →
       ∀ v, v₀ ≤ v → ∀ a, lg v ^ (C * a) ≤ v → ∀ m, v ^ B₀ ≤ m →

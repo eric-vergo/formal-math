@@ -33,7 +33,8 @@ variable (mu : Nc.Letter S Unit Γ → Matrix Q Q A) {T c ub K N M b G₁ C : �
   {laws : List (G.Law A)} {γ : ℝ}
 
 /-- The contents of the units at a node, as copies of all units. -/
-def yOf {AA U1 : ℕ} {sysN : Type} [Fintype sysN] [DecidableEq sysN] (n : Fin AA → Fin AA → Fin (N + 1)) (a : Fin AA)
+def yOf {AA U1 : ℕ} {sysN : Type} [Fintype sysN] [DecidableEq sysN]
+    (n : Fin AA → Fin AA → Fin (N + 1)) (a : Fin AA)
     (w : {u : NetUnit (fun a c => (n a c).1) // u.1 = a ∨ u.2.1 = a} → Fin ub → Bool) :
     Uid AA N sysN U1 → UW ub
   | .init p q k => if h : k.1 < (n p q).1 ∧ (p = a ∨ q = a) then some (w ⟨⟨p, q, ⟨k.1, h.1⟩⟩, h.2⟩) else none

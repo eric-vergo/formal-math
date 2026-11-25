@@ -118,7 +118,8 @@ theorem inpR_ne_done {x : RM T m AA} : inpR T x ≠ .done := by
   · simp [inpR]
 
 theorem su_inj {d : FL.Di} {e e' : (FL.L d).Sl} (hp : pr FL d e = pr FL d e') (hs : su FL d e = su FL d e') : e = e' :=
-  rk_inj (fun _ _ hab => (Fintype.equivFin (FL.L d).Sl).injective (Fin.ext hab)) (mem_univ _) (mem_univ _) hp hs
+  rk_inj (fun _ _ hab => (Fintype.equivFin (FL.L d).Sl).injective (Fin.ext hab)) (mem_univ _)
+    (mem_univ _) hp hs
 
 section Plan
 

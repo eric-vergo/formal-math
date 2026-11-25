@@ -217,7 +217,8 @@ variable {Inp ι : Type} {Dd Y p : ℕ} {inp : ι → Inp → Fin Dd} {H : Set (
 variable {nI : Inp → Fin AA → Fin AA → Fin (U0 + 1)} {oI : Inp → (sys R FL Pl).N → Fin U1}
 
 /-- The program of the tower plan, with the parents and the loads. -/
-theorem tree_slp (hA : Alph Dd Y) (hB : Bnd R ch FL U0 U1 Y) (hB2 : Bnd2 R FL Pl U0 U1 Y) (hh : 0 < h) (hb : 0 < b)
+theorem tree_slp (hA : Alph Dd Y) (hB : Bnd R ch FL U0 U1 Y) (hB2 : Bnd2 R FL Pl U0 U1 Y)
+    (hh : 0 < h) (hb : 0 < b)
     (hS : SlpN inp p H) (hn : ∀ a c, (fun x => ((nI x a c : Fin (U0 + 1)) : ℕ)) ∈ H)
     (ho : ∀ ν, (fun x => ((oI x ν : Fin U1) : ℕ)) ∈ H) (lhat : ℕ) :
     ∃ H', SlpN inp (p + Y ^ 16) H' ∧ Units nI oI lhat H' ∧

@@ -18,6 +18,8 @@ open MvPolynomial Nc
 
 universe u
 
+section Transfer
+
 variable {F : Type*} {KK : Type} [Field F] [Field KK] [IsAlgClosed KK] {X : Type*}
 
 /-- **Paper: Lemma lem:transfer.** "Let a polynomial with integer coefficients have a circuit with S gates over a field
@@ -75,6 +77,8 @@ theorem lem_transfer_approx (p : ℕ) [CharP F p] [CharP KK p] (q : MvPolynomial
     split_ifs <;> simp
   rw [coeff_map, AddMonoidAlgebra.coeff_mapRingHom, e1, coeff_map]
   split_ifs <;> simp
+
+end Transfer
 
 /-- An exact circuit gives a coefficientwise approximation of the same size by
 viewing its constants as constant Laurent series. -/

@@ -313,10 +313,10 @@ theorem uf {z : Tree} {T : ℕ} (pl : Plain θ T z) :
 
 end KV
 
-/-- Runs that give values with weights, then a formula at the values. -/
+/-- Runs that give values with weights, then the program `P` applied to each value. -/
 theorem KV.app_rel {R : Type} [CommRing R] [Algebra A R] {κ : List Bool → R} {S : Set (List Bool)} {β : Type*}
-    {P : Tree} {e : Fm} {x : Tree} {le : List (Run A)} {Q : List β} {c : β → R} {o : β → Tree} {w : β → R}
-    {ce d : ℕ} (he : Ev θ e x le)
+    {P : Tree} {e : Fm} {x : Tree} {le : List (Run A)} {Q : List β} {c : β → R} {o : β → Tree}
+    {w : β → R} {ce d : ℕ} (he : Ev θ e x le)
     (rel : List.Forall₂ (fun r q => wt κ r = c q ∧ r.out = o q ∧ (∀ p ∈ r.bill, p ∈ S) ∧ r.cost ≤ ce) le Q)
     (hF : ∀ q ∈ Q, KV θ κ S (Fm.ofTree P) (o q) (w q) d) :
     KV θ κ S (NS1.app P e) x (Q.map fun q => c q * w q).sum (ce + d + 2) := by

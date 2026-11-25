@@ -89,14 +89,16 @@ theorem bt_start (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) :
 theorem tgR_start {x : RM T m AA} {ν : Bool} {a c : Fin AA} {γ : T.X 0} {s : Fin (2 * m)}
     (hx : tgR T R ch x ν = .nxt (.start a c γ s)) : ν = true ∧ ∃ s' : Fin (2 * m), x = .start a c γ s' ∧ s.1 = s'.1 + 1 := by
   rcases x with ⟨a', c', γ', s'⟩ | ⟨j', i', e'⟩ | ⟨j', e', s'⟩ | e'
-  · rcases tgR_start_cases (R := R) (ch := ch) a' c' γ' s' ν with ⟨_, hν, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
+  · rcases tgR_start_cases (R := R) (ch := ch) a' c' γ' s' ν with
+      ⟨_, hν, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
     · simp only [Tg.nxt.injEq, RM.start.injEq] at hx
       obtain ⟨rfl, rfl, rfl, h4⟩ := hx
       exact ⟨hν, s', rfl, (congrArg Fin.val h4).symm⟩
-    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;> rw [h'] at hx <;> simp at hx
+    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;>
+        rw [h'] at hx <;> simp at hx
   · simp [tgR] at hx
-  · rcases tgR_mid_cases (R := R) (ch := ch) j' e' s' ν with he | ⟨_, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, he⟩ |
-      ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hx <;> simp at hx
+  · rcases tgR_mid_cases (R := R) (ch := ch) j' e' s' ν with he | ⟨_, _, he⟩ | ⟨_, _, he⟩ |
+      ⟨_, _, he⟩ | ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hx <;> simp at hx
   · simp [tgR] at hx
 
 section

@@ -108,7 +108,8 @@ variable {Inp ι : Type} {Dd Y p c : ℕ} {inp : ι → Inp → Fin Dd} {H : Set
 variable {nI : Inp → Fin AA → Fin AA → Fin (U0 + 1)} {oI : Inp → (sys R FL Pl).N → Fin U1}
 
 /-- More bounds. -/
-structure Bnd2 (R : Routes T m Uu) (FL : FlagLaws F T) (Pl : Place T ch A') (U0 U1 Y : ℕ) : Prop where
+structure Bnd2 (R : Routes T m Uu) (FL : FlagLaws F T) (Pl : Place T ch A') (U0 U1 Y : ℕ) :
+    Prop where
   zm : Fintype.card (ZM R FL (ch := ch)) ≤ Y
   un : Fintype.card (Un R FL Pl U0 U1) ≤ Y
 
@@ -124,15 +125,17 @@ theorem rng : Rng (nX nI) (oX oI : Inp → NM R FL (ch := ch) → ℕ) U0 U1 whe
 
 /-- What is known about units: membership of the consumptions and of the current units, the numbers
 of the moves, and whether they are good. -/
-structure Units (nI : Inp → Fin AA → Fin AA → Fin (U0 + 1)) (oI : Inp → (sys R FL Pl).N → Fin U1) (lhat : ℕ)
-    (H : Set (Inp → ℕ)) : Prop where
+structure Units (nI : Inp → Fin AA → Fin AA → Fin (U0 + 1)) (oI : Inp → (sys R FL Pl).N → Fin U1)
+    (lhat : ℕ) (H : Set (Inp → ℕ)) : Prop where
   cons : ∀ z u, ind (fun x => u ∈ consM R FL Pl lhat (nI x) (oI x) z) ∈ H
   num : ∀ mv : Mv T R ch FL, (fun x => num R ch FL lhat (nn (nI x)) (oo R FL Pl (oI x)) mv) ∈ H
   cur : ∀ u, ind (fun x => u ∈ (plan R FL Pl lhat U0 U1).cur (nI x) (oI x) (Fintype.card (Mv T R ch FL))) ∈ H
   good : ∀ mv : Mv T R ch FL, ind (fun x => GoodMv R ch FL lhat (nn (nI x)) (oo R FL Pl (oI x)) mv) ∈ H
 
-theorem Units.weaken {H H' : Set (Inp → ℕ)} (hu : Units nI oI lhat H) (hH : H ⊆ H') : Units nI oI lhat H' :=
-  ⟨fun z u => hH (hu.cons z u), fun mv => hH (hu.num mv), fun u => hH (hu.cur u), fun mv => hH (hu.good mv)⟩
+theorem Units.weaken {H H' : Set (Inp → ℕ)} (hu : Units nI oI lhat H) (hH : H ⊆ H') :
+    Units nI oI lhat H' :=
+  ⟨fun z u => hH (hu.cons z u), fun mv => hH (hu.num mv), fun u => hH (hu.cur u),
+    fun mv => hH (hu.good mv)⟩
 
 variable (hA : Alph Dd Y) (hB : Bnd R ch FL U0 U1 Y) (hB2 : Bnd2 R FL Pl U0 U1 Y)
 include hA hB hB2

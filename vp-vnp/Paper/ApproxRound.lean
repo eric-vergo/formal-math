@@ -34,7 +34,8 @@ theorem round_plain_bounds {u h α B J X e ht nB ps : ℕ}
     (he : h * α + 2 ≤ e + 8) (hd : h * α + 2 ≤ α * (16 * h - 32))
     (hnBX : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * u ^ (h * α + 1)) :
     MM (ht + B + J + 1) * u ^ (e + 8) + 40 * (nB * (J + 1)) + 40 ≤ u ^ (e + 9) ∧
-      WF.code.size + ps + (u ^ α) ^ (16 * h - 32) + 4 * (nB * (J + 1)) + 3 ≤ u ^ (α * (16 * h - 32) + 1) := by
+      WF.code.size + ps + (u ^ α) ^ (16 * h - 32) + 4 * (nB * (J + 1)) + 3 ≤
+        u ^ (α * (16 * h - 32) + 1) := by
   have hu1 : 1 ≤ u := by omega
   have hJX : J + 1 ≤ X := by omega
   have pu := pow_succ' u
@@ -340,13 +341,15 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
     omega
 
 set_option maxHeartbeats 1000000 in
-/-- **Paper: proof of Proposition prop:approx-acc, from one scale to the next.** An approximate accelerator at the scale `u ^ H` gives
-one at the scale `(u ^ α) ^ H`; its constants are rescaled copies of the given ones, so they keep every property `Q` of
-the given constants that rescaling keeps. -/
+/-- **Paper: proof of Proposition prop:approx-acc, from one scale to the next.** An approximate
+accelerator at the scale `u ^ H` gives one at the scale `(u ^ α) ^ H`; its constants are rescaled
+copies of the given ones, so they keep every property `Q` of the given constants that rescaling
+keeps. -/
 theorem prop_approx_acc_next {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤ α) (hC : CutAt θ (16 * h) u (2 * α)) (hcst : cst ≤ u)
     {K' : KT E[T;T⁻¹]} {B' : ℕ} {D : Tree} (hD : IsAccA θ (16 * h) u (u ^ (16 * h - 16)) K' B' D)
     (hK : K'.nds * (4 * α + 5) ≤ u ^ (h * α)) (hDs : D.size ≤ u ^ (h * α))
-    {M' : ℕ} (hM : K'.All (Span M')) (hM1 : 1 ≤ M') {Q : E[T;T⁻¹] → Prop} (hQ : RescaleStable A Q) (hT : K'.All Q)
+    {M' : ℕ} (hM : K'.All (Span M')) (hM1 : 1 ≤ M') {Q : E[T;T⁻¹] → Prop} (hQ : RescaleStable A Q)
+    (hT : K'.All Q)
     {J : ℕ} (hJ : u ^ (16 * h * α + 1) < 2 ^ J) {X : ℕ} (hX : B' + (2 * α + 2) * (J + 1) + K'.ht + K'.ht + 10 ≤ X)
     (hXu : 1000 * X ^ 3 ≤ u) :
     ∃ (K : KT E[T;T⁻¹]) (p : Tree), IsAccA θ (16 * h) (u ^ α) (u ^ (16 * h * α + 1 - 8 * (2 * α + 1))) K (B' + (2 * α + 1) * J) p ∧
@@ -439,7 +442,8 @@ theorem prop_approx_acc_next {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤
         (lt_of_le_of_lt (pow_le_pow hu1 g1) hJ) g2 hX10 hXu g3 g4
       obtain ⟨r, p', hr, hp', hps'⟩ := hres
       rw [hmax, show B' + n * J + J = B' + (n + 1) * J by omega] at hp'
-      refine ⟨_, p', hp'.pre, ?_, ?_, ?_, ⟨?_, ?_⟩, ⟨hk4, hT.map fun c hc => hQ r c hc⟩, fun _ => hp'⟩
+      refine ⟨_, p', hp'.pre, ?_, ?_, ?_, ⟨?_, ?_⟩, ⟨hk4, hT.map fun c hc => hQ r c hc⟩,
+        fun _ => hp'⟩
       · have e3 : (n + 1) * (u ^ (h * α + 2) + u ^ (16 * h + 1)) = n * (u ^ (h * α + 2) + u ^ (16 * h + 1)) +
             (u ^ (h * α + 2) + u ^ (16 * h + 1)) := by ring
         omega
