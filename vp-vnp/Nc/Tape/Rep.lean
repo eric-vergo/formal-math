@@ -3,7 +3,7 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-import Mathlib
+import Mathlib.Data.Matrix.Block
 
 /-!
 # Linear representations of series on words
@@ -36,7 +36,9 @@ def kstar (f : Series F Ω) : Series F Ω
   | [] => 1
   | a :: o => ∑ k ∈ range (o.length + 1), f (a :: o.take k) * kstar f (o.drop k)
   termination_by o => o.length
-  decreasing_by simp
+  decreasing_by
+    simp
+    omega
 
 theorem kstar_nil (f : Series F Ω) : kstar f [] = 1 := by rw [kstar]
 

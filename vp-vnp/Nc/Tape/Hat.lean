@@ -3,6 +3,7 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
+import Mathlib.Data.Set.Finite.List
 import Nc.Tape.Rat
 
 /-!
@@ -70,7 +71,8 @@ theorem mem_anti {v : Z → List Γ} {p : (Z → List Γ) × (Z → List Γ)} :
     simp
   · intro h
     refine ⟨fun z => (p.1 z).length, fun z => ?_, ?_⟩
-    · rw [← h z]; simp
+    · rw [← h z, List.length_append]
+      exact Nat.lt_succ_of_le (Nat.le_add_right _ _)
     · ext1
       · funext z; simp only; rw [← h z]; simp
       · funext z; simp only; rw [← h z]; simp

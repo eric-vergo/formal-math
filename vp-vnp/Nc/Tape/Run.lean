@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import Nc.Tape.Task
+import Mathlib.Algebra.BigOperators.Fin
+import Mathlib.Data.List.ReduceOption
 
 /-!
 # Runs of automata
