@@ -147,11 +147,6 @@ theorem le_lg_pow {n k : ℕ} (hn : n ≠ 0) : k * (lg n - 1) + 1 ≤ lg (n ^ k)
 theorem le_lg_of_two_pow_le {n k : ℕ} (h : 2 ^ k ≤ n) : k + 1 ≤ lg n :=
   Nat.succ_le_succ (Nat.le_log_of_pow_le (by norm_num) h)
 
-theorem two_pow_lg_le {n : ℕ} (hn : n ≠ 0) : 2 ^ (lg n - 1) ≤ n := by
-  unfold lg
-  rw [Nat.add_sub_cancel]
-  exact Nat.pow_log_le_self 2 hn
-
 theorem two_pow_lg_le_double {n : ℕ} (hn : n ≠ 0) : 2 ^ lg n ≤ 2 * n := by
   rw [lg, pow_succ']
   exact Nat.mul_le_mul_left _ (Nat.pow_log_le_self 2 hn)
@@ -167,18 +162,12 @@ theorem poly_lg (c k : ℕ) : ∃ n₀, ∀ n, n₀ ≤ n → c * lg n ^ k ≤ n
   have hn0 : n ≠ 0 := by omega
   have hL : L₀ ≤ lg n := (Nat.le_succ _).trans (le_lg_of_two_pow_le (by omega))
   have h3 := hL₀ (lg n) hL
-  have h4 := two_pow_lg_le hn0
-  have hlg : 1 ≤ lg n := by unfold lg; omega
   rw [div_lt_div_iff₀ (by positivity) (by positivity)] at h3
-  have h5 : (c : ℝ) * (lg n : ℝ) ^ k ≤ 2 ^ (lg n - 1) := by
-    have e : (2 : ℝ) ^ lg n = 2 * 2 ^ (lg n - 1) := by
-      have : lg n = lg n - 1 + 1 := by omega
-      conv_lhs => rw [this, pow_succ']
-    rw [e] at h3
-    have : (0 : ℝ) ≤ (lg n : ℝ) ^ k := by positivity
-    nlinarith
-  have h6 : c * lg n ^ k ≤ 2 ^ (lg n - 1) := by exact_mod_cast h5
-  exact h6.trans h4
+  have hb : 2 * (c * lg n ^ k) ≤ 2 ^ lg n := by
+    exact_mod_cast (show 2 * ((c : ℝ) * (lg n : ℝ) ^ k) ≤ 2 ^ lg n by
+      nlinarith [show 0 ≤ (lg n : ℝ) ^ k by positivity])
+  have := two_pow_lg_le_double hn0
+  omega
 
 end Logs
 

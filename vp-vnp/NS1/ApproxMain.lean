@@ -27,11 +27,11 @@ def HasAccA (θ : List Bool → A) (E : Type) [CommRing E] [Algebra A E] (H v s 
   ∃ (K : KT E[T;T⁻¹]) (B : ℕ) (D : Tree), IsAccA θ H v (v ^ (H - 16)) K B D ∧ K.nds ≤ s ∧ D.size ≤ s ∧
     K.ht ≤ lg (max (v ^ H) s) ^ 2 ∧ B ≤ lg (max (v ^ H) s) ^ 3
 
-/-- **Paper: proof of Proposition prop:approx-acc, the invariant.** An approximate program at a scale, small; the exponents of its
+/-- **Paper: proof of Proposition prop:approx-acc, the invariant.** An approximate program with one power of the scale to spare. The exponents of its
 constants are at most 2 to a power that is polylogarithmic in the scale; the numbers b₀, Δ and cΔ may depend on the
 first program, not on the scale. -/
 structure InvA (θ : List Bool → A) (h cB U Δ cΔ b₀ : ℕ) (u : ℕ) (K : KT E[T;T⁻¹]) (B : ℕ) (D : Tree) : Prop where
-  acc : IsAccA θ (16 * h) u (u ^ (16 * h - 16)) K B D
+  acc : IsAccA θ (16 * h) u (u ^ (16 * h - 17)) K B D
   big : U ≤ u
   nds : K.nds ≤ u
   size : D.size ≤ u ^ (4 * h)

@@ -60,7 +60,6 @@ theorem thm_noacc_periodic (R : Type) [CommRing R] [Finite R] :
   intro c i
   exact congrFun (show f (repr ⟨f i, i, rfl⟩) = f i from (show ∃ j, f j = f i from ⟨i, rfl⟩).choose_spec) c
 
-set_option maxHeartbeats 1000000 in
 /-- **Paper: proof of Theorem thm:noacc, the diagonal.** "Let v be large against E and the number of constants": the
 program P guesses a bit, and for one value accepts with weight 1, for the other guesses exponents e, names λ^e and runs D
 on the instance z_e of P applied to P; so its value V satisfies V = 1 + V, "impossible in E". -/
@@ -81,14 +80,13 @@ theorem thm_noacc_diagonal {h : ℕ} (hh : 17 ≤ h) [Nontrivial R] {v : ℕ} {K
   rw [← hsU, ← hsW] at hcst
   have hv4 : 2000 ≤ v := by omega
   have hv1 : 1 ≤ v := by omega
-  have pu : ∀ a, v ^ (a + 1) = v * v ^ a := fun a => by rw [pow_succ]; ring
+  have pu := pow_succ' v
   have pbig : ∀ a, 2000 * v ^ a ≤ v ^ (a + 1) := fun a => by rw [pu]; exact Nat.mul_le_mul_right _ hv4
   have ppos : ∀ a, 1 ≤ v ^ a := fun a => Nat.one_le_pow _ _ (by omega)
   set nB := (K.expand B').nds with hnB
-  have hnBX : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * v ^ 2 := by
-    intro c hc
-    exact K.expand_cost_le (k := 1) (by simpa using hK) (by omega) (hc.trans hXv)
-  have hJX : J + 1 ≤ X := by omega
+  have charge (w : ℕ) (hw : w ≤ 40 * X) : w * nB ≤ 2 * v ^ 2 :=
+    K.expand_charge_le (k := 1) (by simpa using hK) (by omega : B' + 1 ≤ X)
+      ((by omega : 40 * X ^ 2 ≤ 1000 * X ^ 3).trans hXv) hw
   -- the program
   set g : Fm := gt red J B' K [] with hg
   set p : Tree := (diagF D g).code with hp
@@ -100,9 +98,7 @@ theorem thm_noacc_diagonal {h : ℕ} (hh : 17 ≤ h) [Nontrivial R] {v : ℕ} {K
       simp only [hp, diagF, app, ZE, Fm.code, Tree.size, size_num, hsW]
       omega
     have s6 : v ^ 2 ≤ v ^ (4 * h) := pow_le_pow hv1 (by omega)
-    have s7 : sW + 500 ≤ v ^ (4 * h) := by
-      calc sW + 500 ≤ v ^ 1 := by rw [pow_one]; omega
-        _ ≤ _ := pow_le_pow hv1 (by omega)
+    have s7 := Nat.le_self_pow (by omega : 4 * h ≠ 0) v
     have := pbig (4 * h)
     omega
   have hgev : ∀ z : Tree, ∃ l, Ev θ g z l ∧ List.Forall₂ (RelG K.lk (K.InB B') ((8 * J + 10) * nB)) l
@@ -112,29 +108,17 @@ theorem thm_noacc_diagonal {h : ℕ} (hh : 17 ≤ h) [Nontrivial R] {v : ℕ} {K
     · obtain ⟨c, hc⟩ := hq.lk
       rw [List.nil_append, hc, hc, hred]
     · exact hq.inB (lt_of_lt_of_le (hM i) (le_max_right _ _))
-  have hqs : ∀ q ∈ (K.expand B').budg J, q.1.ht ≤ K.ht + B' + J + 1 ∧ q.1.nds ≤ nB * (J + 1) := by
-    intro q hq
-    have h1 := KT.ht_budg hq
-    have h2 := KT.ht_expand B' K
-    exact ⟨by omega, KT.nds_budg hq⟩
   have hn4 : 4 * (nB * (J + 1)) ≤ 2 * v ^ 2 := by
-    have := hnBX 4 (by omega)
-    calc 4 * (nB * (J + 1)) ≤ 4 * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
-      _ = nB * (4 * X) := by ring
-      _ ≤ _ := this
+    rw [Nat.mul_comm nB (J + 1), ← Nat.mul_assoc]
+    exact charge _ (by omega)
   have hsz : ∀ q ∈ (K.expand B').budg J, (zq p p q.1).size ≤ v ^ (16 * h - 32) := by
     intro q hq
-    have h1 := Bt.size_enc q.1
-    have h2 := (hqs q hq).2
-    have s1 : v ^ 2 ≤ v ^ (4 * h + 1) := pow_le_pow hv1 (by omega)
-    have s2 : sW + 10 ≤ v ^ (4 * h + 1) := by
-      calc sW + 10 ≤ v ^ 1 := by rw [pow_one]; omega
-        _ ≤ _ := pow_le_pow hv1 (by omega)
-    have s3 := pbig (4 * h + 1)
-    have s4 : v ^ (4 * h + 1 + 1) ≤ v ^ (16 * h - 32) := pow_le_pow hv1 (by omega)
-    simp only [zq, Tree.size]
-    rw [← hsW]
-    omega
+    refine (size_zq_of_budget K hq).trans ?_
+    rw [← hsW, ← hnB]
+    have := Nat.le_self_pow (by omega : 4 * h + 1 ≠ 0) v
+    have := pow_le_pow hv1 (by omega : 2 ≤ 4 * h + 1)
+    have := pbig (4 * h + 1)
+    exact le_trans (by omega : _ ≤ v ^ (4 * h + 1 + 1)) (pow_le_pow hv1 (by omega))
   -- its runs
   obtain ⟨lg, eg, rg⟩ := hgev p
   obtain ⟨l, e, hl, hval⟩ := diagF_ev (D := D) eg rg (tD := v ^ (16 * h - 16)) fun q hq => by
@@ -145,20 +129,13 @@ theorem thm_noacc_diagonal {h : ℕ} (hh : 17 ≤ h) [Nontrivial R] {v : ℕ} {K
   have hT : ∀ r ∈ l, r.cost ≤ v ^ (16 * h - 15) := by
     intro r hr
     refine (hl r hr).1.trans ?_
-    have m1 : (8 * J + 10) * nB ≤ 2 * v ^ 2 := by
-      have := hnBX 9 (by omega)
-      calc (8 * J + 10) * nB ≤ 9 * X * nB := Nat.mul_le_mul_right _ (by omega)
-        _ = nB * (9 * X) := by ring
-        _ ≤ _ := this
+    have m1 : (8 * J + 10) * nB ≤ 2 * v ^ 2 := charge _ (by omega)
     have m2 : v ^ 2 ≤ v ^ (16 * h - 16) := pow_le_pow hv1 (by omega)
     have m3 := pbig (16 * h - 16)
     have m4 := ppos (16 * h - 16)
     have m5 : 16 * h - 15 = 16 * h - 16 + 1 := by omega
     rw [m5]
     omega
-  have hJ' : ∀ r ∈ l, r.bill.length < 2 ^ J := fun r hr =>
-    lt_of_le_of_lt ((bill_le ep r hr).trans (hT r hr)) hJ
-  -- Lemma lem:postpone for the program applied to itself
   have hbill : ∀ r ∈ l, ∀ n ∈ r.bill, K.lk n = (K.expand B').lookup n := fun r hr n hn => KT.lookup_expand ((hl r hr).2 n hn)
   obtain ⟨hsum, hze⟩ := lem_postpone p p (T := v ^ (16 * h - 15)) hJ ep.hl (by rw [ep.evl]; exact hT)
     (K.expand B') K.lk (by rw [ep.evl]; exact hbill)

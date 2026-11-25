@@ -8,7 +8,7 @@ import Nc.End.PermThm
 /-!
 # The paper, section "One scale is all scales"
 
-Definition def:acc of an accelerator, and the arithmetic of the proof of Theorem thm:contracting:
+The arithmetic of the proof of Theorem thm:contracting:
 the choice of the scale v for a circuit size M^a, and the passage from excluded exponents to the
 bound 2^(c(log M)²/log log M). The theorem itself, for approximating and for exact circuits, is in
 Paper/BorderRate.lean.
@@ -18,25 +18,6 @@ namespace Paper
 
 open Finset NS1
 open _root_.NS1.Tree
-
-/-- **Paper: Definition def:acc.** "An accelerator at scale v with Q constants from R and exponent bound B is a program
-D with two properties. On every instance z with |z| ≤ v^(H−32) all its runs halt, the accepting ones within v^(H−16) steps, and every name
-in their bills stands for a power κ_l^(2^i) with i < B. If moreover z is v^H-plain, its value, the sum over accepting
-runs of the weight times the named powers, is pv(z). The constants sit at the leaves of a binary trie with Q nodes, and
-their names are paths. It is of size s if Q and the size of D are at most s and, with L = lg(max(v^H, s)), the height of
-the trie is at most L² and B ≤ L³." -/
-theorem def_acc {A : Type} [CommRing A] (θ : List Bool → A) (R : Type) [CommRing R] [Algebra A R] (H v s : ℕ) :
-    HasAcc θ R H v s ↔ ∃ (K : KT R) (B : ℕ) (D : Tree),
-      (∀ z, z.size ≤ v ^ (H - 32) → Hl θ (Fm.ofTree D) z ∧
-        ∀ r ∈ evl θ (Fm.ofTree D) z, r.cost ≤ v ^ (H - 16) ∧ ∀ p ∈ r.bill, K.InB B p) ∧
-      (∀ z, z.size ≤ v ^ (H - 32) → Plain θ (v ^ H) z →
-        ((evl θ (Fm.ofTree D) z).map fun r => algebraMap A R r.th * (r.bill.map K.lk).prod).sum = algebraMap A R (pv θ z)) ∧
-      K.nds ≤ s ∧ D.size ≤ s ∧ K.ht ≤ lg (max (v ^ H) s) ^ 2 ∧ B ≤ lg (max (v ^ H) s) ^ 3 := by
-  constructor
-  · rintro ⟨K, B, D, ⟨h1, h2⟩, h3, h4, h5, h6⟩
-    exact ⟨K, B, D, h1, h2, h3, h4, h5, h6⟩
-  · rintro ⟨K, B, D, h1, h2, h3, h4, h5, h6⟩
-    exact ⟨K, B, D, ⟨h1, h2⟩, h3, h4, h5, h6⟩
 
 /-- If circuits with M^a gates are impossible whenever (lg M)^(Ca) ≤ M, then more than 2^(c(log M)²/log log M) gates
 are needed. -/

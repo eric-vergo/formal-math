@@ -32,7 +32,7 @@ theorem round_plain_bounds {u h α B J X e ht nB ps : ℕ}
     (hX3 : 10 * X ^ 2 ≤ X ^ 3) (hXu : 1000 * X ^ 3 ≤ u) (hX : ht + B + J + 1 ≤ X)
     (hps : ps ≤ u ^ (4 * h * α)) (hp : 4 * h * α ≤ α * (16 * h - 32))
     (he : h * α + 2 ≤ e + 8) (hd : h * α + 2 ≤ α * (16 * h - 32))
-    (hnBX : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * u ^ (h * α + 1)) :
+    (hnBX : ∀ w ≤ 40 * X, w * nB ≤ u ^ (h * α + 2)) :
     MM (ht + B + J + 1) * u ^ (e + 8) + 40 * (nB * (J + 1)) + 40 ≤ u ^ (e + 9) ∧
       WF.code.size + ps + (u ^ α) ^ (16 * h - 32) + 4 * (nB * (J + 1)) + 3 ≤
         u ^ (α * (16 * h - 32) + 1) := by
@@ -41,13 +41,10 @@ theorem round_plain_bounds {u h α B J X e ht nB ps : ℕ}
   have pu := pow_succ' u
   have pbig (a : ℕ) : 2000 * u ^ a ≤ u ^ (a + 1) := by rw [pu]; exact Nat.mul_le_mul_right _ hu4
   have ppos (a : ℕ) : 1 ≤ u ^ a := Nat.one_le_pow _ _ hu1
-  have budget_le (c d : ℕ) (hc : c * X ^ 2 ≤ 1000 * X ^ 3) (hd : h * α + 2 ≤ d) :
+  have budget_le (c d : ℕ) (hc : c ≤ 40) (hd : h * α + 2 ≤ d) :
       c * (nB * (J + 1)) ≤ u ^ d := by
-    calc c * (nB * (J + 1)) ≤ c * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
-      _ = nB * (c * X) := by ring
-      _ ≤ 2 * u ^ (h * α + 1) := hnBX c hc
-      _ ≤ u ^ (h * α + 2) := (Nat.mul_le_mul_right _ (by decide : 2 ≤ 2000)).trans (pbig _)
-      _ ≤ u ^ d := pow_le_pow hu1 hd
+    rw [Nat.mul_comm nB (J + 1), ← Nat.mul_assoc]
+    exact (hnBX _ (Nat.mul_le_mul hc hJX)).trans (pow_le_pow hu1 hd)
   constructor
   · -- time of the plain instances
     have m1 : MM (ht + B + J + 1) + 2 ≤ u := by
@@ -196,7 +193,6 @@ theorem prop_approx_acc_round {H u v : ℕ} {K' : KT E[T;T⁻¹]} {B' : ℕ} {D 
     obtain ⟨q, hq, rfl⟩ := hP
     exact diff q hq
 
-set_option maxHeartbeats 1000000 in
 /-- **Paper: proof of Proposition prop:approx-acc, one round with numbers.** -/
 theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤ α) (hC : CutAt θ (16 * h) u (2 * α)) (hcst : cst ≤ u)
     {K' : KT E[T;T⁻¹]} {B' : ℕ} {D : Tree} (hD : IsAccA θ (16 * h) u (u ^ (16 * h - 16)) K' B' D)
@@ -232,9 +228,14 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
   -- the tries of powers
   obtain ⟨nB, hnB⟩ : ∃ n, n = (K.expand B).nds := ⟨_, rfl⟩
   obtain ⟨nB', hnB'⟩ : ∃ n, n = (K'.expand B').nds := ⟨_, rfl⟩
-  have hb : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * u ^ (h * α + 1) ∧ nB' * (c * X) ≤ 2 * u ^ (h * α + 1) :=
-    fun _ hc => ⟨hnB ▸ K.expand_cost_le hK (by omega) (hc.trans hXu),
-      hnB' ▸ K'.expand_cost_le hK' (by omega) (hc.trans hXu)⟩
+  have charge (K₀ : KT E[T;T⁻¹]) {B₀ : ℕ} (hk : K₀.nds ≤ u ^ (h * α)) (hl : B₀ + 1 ≤ X)
+      (w : ℕ) (hw : w ≤ 40 * X) : w * (K₀.expand B₀).nds ≤ u ^ (h * α + 2) :=
+    (K₀.expand_charge_le hk hl ((by omega : 40 * X ^ 2 ≤ 1000 * X ^ 3).trans hXu) hw).trans
+      ((Nat.mul_le_mul_right _ (by decide : 2 ≤ 2000)).trans (pbig _))
+  have hb := charge K (B₀ := B) hK (by omega)
+  have hb' := charge K' (B₀ := B') hK' (by omega)
+  rw [← hnB] at hb
+  rw [← hnB'] at hb'
   -- the cut
   obtain ⟨G, hG⟩ := hC (u ^ (e + 9)) (u ^ (α * (16 * h - 32) + 1)) (pow_le_pow hu1 hH)
     (pow_le_pow hu1 he2) (by
@@ -260,16 +261,14 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
     (by omega : K.ht + B + J + 1 ≤ X) hps (by
       rw [Nat.mul_assoc]
       omega)
-    (by omega) (by omega) (fun c hc => (hb c hc).1)
+    (by omega) (by omega) hb
   rw [hnB] at hplain
   refine ⟨_, _, ?_, prop_approx_acc_round hD hp hJ hn hG (tG := u ^ f) (Ln := u ^ g) (t := u ^ e) ?_ ?_ ?_ ?_ ?_ ?_, ?_⟩
   · -- the exponent of the rescaling
     have h1 : nB ≤ 2 ^ J := by
-      calc nB ≤ nB * (1 * X) := Nat.le_mul_of_pos_right _ (by omega)
-        _ ≤ 2 * u ^ (h * α + 1) := (hb 1 (by omega)).1
-        _ ≤ u ^ (h * α + 1 + 1) := by have := pbig (h * α + 1); omega
-        _ ≤ u ^ (e + 8) := pow_le_pow hu1 (by omega)
-        _ ≤ 2 ^ J := hJ.le
+      have h := hb 1 (by omega)
+      rw [one_mul] at h
+      exact (h.trans (pow_le_pow hu1 (by omega))).trans hJ.le
     calc nB * 2 ^ J * (2 ^ B * M) + 1 ≤ 2 ^ J * 2 ^ J * (2 ^ B * M) + 2 ^ J * 2 ^ J * (2 ^ B * M) := by
           refine Nat.add_le_add (Nat.mul_le_mul_right _ (Nat.mul_le_mul_right _ h1)) ?_
           exact Nat.mul_pos (Nat.mul_pos (Nat.two_pow_pos J) (Nat.two_pow_pos J))
@@ -288,23 +287,11 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
     exact lt_of_le_of_lt (hLP.trans (pow_le_pow hu1 (by omega))) hJ
   · -- time
     rw [← hnB, ← hnB']
-    have m1 : (8 * J + 10) * nB ≤ u ^ e' ∧ (8 * J + 10) * nB' ≤ u ^ e' ∧ 40 * (nB' * (J + 1)) ≤ u ^ e' := by
-      have h9 := hb 9 (by omega)
-      have h40 := (hb 40 (by omega)).2
-      have h3 : 2 * u ^ (h * α + 1) ≤ u ^ e' := by
-        have := pbig (h * α + 1)
-        exact le_trans (by omega : _ ≤ u ^ (h * α + 1 + 1)) (pow_le_pow hu1 (by omega))
-      have e8 : (8 * J + 10) ≤ 9 * X := by omega
-      refine ⟨?_, ?_, ?_⟩
-      · refine (Nat.mul_le_mul_right _ e8).trans ?_
-        rw [Nat.mul_comm]
-        exact h9.1.trans h3
-      · refine (Nat.mul_le_mul_right _ e8).trans ?_
-        rw [Nat.mul_comm]
-        exact h9.2.trans h3
-      · refine le_trans ?_ (h40.trans h3)
-        calc 40 * (nB' * (J + 1)) ≤ 40 * (nB' * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
-          _ = nB' * (40 * X) := by ring
+    have hscale : u ^ (h * α + 2) ≤ u ^ e' := pow_le_pow hu1 (by omega)
+    have h1 := (hb (8 * J + 10) (by omega)).trans hscale
+    have h2 := (hb' (8 * J + 10) (by omega)).trans hscale
+    have h3 := (hb' (40 * (J + 1)) (by omega)).trans hscale
+    rw [Nat.mul_right_comm 40 (J + 1), Nat.mul_assoc] at h3
     have m2 : u ^ f ≤ u ^ e' := pow_le_pow hu1 (by omega)
     have m3 : MM (K'.ht + B' + J + 1) * ((u ^ (16 * h - 16) + 30) * u ^ g + 10) ≤ u ^ e' := by
       calc MM (K'.ht + B' + J + 1) * ((u ^ (16 * h - 16) + 30) * u ^ g + 10) ≤ u * u ^ (e - 4) := by
@@ -313,12 +300,7 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
             omega
         _ = u ^ (e - 4 + 1) := (pu _).symm
         _ ≤ u ^ e' := pow_le_pow hu1 (by omega)
-    have m4 : 80 ≤ u ^ e' := by
-      obtain ⟨e'', he''⟩ : ∃ e'', e' = e'' + 1 := ⟨e' - 1, by omega⟩
-      have := pbig e''
-      have := ppos e''
-      rw [he'']
-      omega
+    have m4 : 80 ≤ u ^ e' := (by omega : 80 ≤ u).trans (Nat.le_self_pow (by omega) _)
     have := pbig e'
     rw [he']
     omega
@@ -340,21 +322,20 @@ theorem prop_approx_acc_round_num {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 
     have s9 : u ^ (h * α) ≤ u ^ (h * α + 1) := pow_le_pow hu1 (Nat.le_succ _)
     omega
 
-set_option maxHeartbeats 1000000 in
 /-- **Paper: proof of Proposition prop:approx-acc, from one scale to the next.** An approximate
 accelerator at the scale `u ^ H` gives one at the scale `(u ^ α) ^ H`; its constants are rescaled
-copies of the given ones, so they keep every property `Q` of the given constants that rescaling
-keeps. -/
+copies of the given ones. Each of the `3 * α` rounds saves eight powers of `u`, leaving one
+whole power of the new scale to pay for coefficient extraction. -/
 theorem prop_approx_acc_next {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤ α) (hC : CutAt θ (16 * h) u (2 * α)) (hcst : cst ≤ u)
     {K' : KT E[T;T⁻¹]} {B' : ℕ} {D : Tree} (hD : IsAccA θ (16 * h) u (u ^ (16 * h - 16)) K' B' D)
-    (hK : K'.nds * (4 * α + 5) ≤ u ^ (h * α)) (hDs : D.size ≤ u ^ (h * α))
+    (hK : K'.nds * (6 * α + 1) ≤ u ^ (h * α)) (hDs : D.size ≤ u ^ (h * α))
     {M' : ℕ} (hM : K'.All (Span M')) (hM1 : 1 ≤ M') {Q : E[T;T⁻¹] → Prop} (hQ : RescaleStable A Q)
     (hT : K'.All Q)
-    {J : ℕ} (hJ : u ^ (16 * h * α + 1) < 2 ^ J) {X : ℕ} (hX : B' + (2 * α + 2) * (J + 1) + K'.ht + K'.ht + 10 ≤ X)
+    {J : ℕ} (hJ : u ^ (16 * h * α + 1) < 2 ^ J) {X : ℕ} (hX : B' + (3 * α + 1) * (J + 1) + K'.ht + K'.ht + 10 ≤ X)
     (hXu : 1000 * X ^ 3 ≤ u) :
-    ∃ (K : KT E[T;T⁻¹]) (p : Tree), IsAccA θ (16 * h) (u ^ α) (u ^ (16 * h * α + 1 - 8 * (2 * α + 1))) K (B' + (2 * α + 1) * J) p ∧
-      p.size ≤ (u ^ α) ^ (4 * h) ∧ K.nds ≤ K'.nds * (4 * α + 5) ∧ K.ht ≤ K'.ht + (2 * α + 1) ∧
-      K.All (Span ((2 ^ (3 * X) * M') ^ (2 * α + 1))) ∧ K.All Q := by
+    ∃ (K : KT E[T;T⁻¹]) (p : Tree), IsAccA θ (16 * h) (u ^ α) ((u ^ α) ^ (16 * h - 17)) K (B' + (3 * α) * J) p ∧
+      p.size ≤ (u ^ α) ^ (4 * h) ∧ K.nds ≤ K'.nds * (6 * α + 1) ∧ K.ht ≤ K'.ht + (3 * α) ∧
+      K.All (Span ((2 ^ (3 * X) * M') ^ (3 * α))) ∧ K.All Q := by
   have hX10 : 10 ≤ X := by omega
   have hXu' : X ≤ u := by
     have : X ≤ X ^ 3 := Nat.le_self_pow (by norm_num) X
@@ -368,14 +349,14 @@ theorem prop_approx_acc_next {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤
   have hu1 : 1 ≤ u := by omega
   have pu := pow_succ' u
   have pbig : ∀ a, 2000 * u ^ a ≤ u ^ (a + 1) := fun a => by rw [pu]; exact Nat.mul_le_mul_right _ hu4
-  have hαX : 2 * α + 2 ≤ X := by
-    have : (2 * α + 2) * 1 ≤ (2 * α + 2) * (J + 1) := Nat.mul_le_mul_left _ (by omega)
+  have hαX : 3 * α + 1 ≤ X := by
+    have : (3 * α + 1) * 1 ≤ (3 * α + 1) * (J + 1) := Nat.mul_le_mul_left _ (by omega)
     omega
   obtain ⟨hh1, hαh, hα32⟩ := round_exponent_bounds hh hα
   have e16 : 16 * h * α = 16 * (h * α) := by ring
   have e4 : 4 * h * α = 4 * (h * α) := by ring
   have e17 : 16 * h * (2 * α) = 32 * (h * α) := by ring
-  have hsize : ∀ n ≤ 2 * α + 1, u + n * (u ^ (h * α + 2) + u ^ (16 * h + 1)) ≤ u ^ (4 * h * α) := by
+  have hsize : ∀ n ≤ 3 * α, u + n * (u ^ (h * α + 2) + u ^ (16 * h + 1)) ≤ u ^ (4 * h * α) := by
     intro n hn
     obtain ⟨a, ha⟩ : ∃ a, 4 * h * α = a + 1 := ⟨4 * h * α - 1, by omega⟩
     have t1 : n * (u ^ (h * α + 2) + u ^ (16 * h + 1)) ≤ u * (u ^ (h * α + 2) + u ^ (16 * h + 1)) :=
@@ -389,18 +370,17 @@ theorem prop_approx_acc_next {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤
     rw [pow_one] at t5
     rw [ha]
     omega
-  have hnds : ∀ n ≤ 2 * α + 1, n * (K'.nds + 1) + 1 ≤ K'.nds * (4 * α + 5) := by
+  have hnds : ∀ n ≤ 3 * α, n * (K'.nds + 1) + 1 ≤ K'.nds * (6 * α + 1) := by
     intro n hn
     have h1 := KT.nds_pos K'
-    calc n * (K'.nds + 1) + 1 ≤ (2 * α + 1) * (K'.nds + K'.nds) + K'.nds :=
+    calc n * (K'.nds + 1) + 1 ≤ (3 * α) * (K'.nds + K'.nds) + K'.nds :=
           Nat.add_le_add (Nat.mul_le_mul hn (by omega)) h1
-      _ = K'.nds * (4 * α + 3) := by ring
-      _ ≤ _ := Nat.mul_le_mul_left _ (by omega)
+      _ = K'.nds * (6 * α + 1) := by ring
   have hK' : K'.nds ≤ u ^ (h * α) := (Nat.le_mul_of_pos_right _ (by omega)).trans hK
   obtain ⟨Γ, hΓ⟩ : ∃ Γ, Γ = 2 ^ (3 * X) * M' := ⟨_, rfl⟩
   rw [← hΓ]
   have hΓ1 : 1 ≤ Γ := hΓ ▸ Nat.mul_pos (Nat.two_pow_pos _) hM1
-  have rounds : ∀ n ≤ 2 * α + 1, ∃ (K : KT E[T;T⁻¹]) (p : Tree), IsPreA θ (16 * h) (u ^ α) (u ^ (16 * h * α + 1 - 8 * n)) K (B' + n * J) p ∧
+  have rounds : ∀ n ≤ 3 * α, ∃ (K : KT E[T;T⁻¹]) (p : Tree), IsPreA θ (16 * h) (u ^ α) (u ^ (16 * h * α + 1 - 8 * n)) K (B' + n * J) p ∧
       p.size ≤ u + n * (u ^ (h * α + 2) + u ^ (16 * h + 1)) ∧ K.nds ≤ n * (K'.nds + 1) + 1 ∧ K.ht ≤ K'.ht + n ∧
       K.All (Span (Γ ^ n)) ∧ K.All Q ∧
       (1 ≤ n → IsAccA θ (16 * h) (u ^ α) (u ^ (16 * h * α + 1 - 8 * n)) K (B' + n * J) p) := by
@@ -421,11 +401,11 @@ theorem prop_approx_acc_next {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤
         exact hUF
     | succ n ih =>
       intro hn
-      have hn' : n ≤ 2 * α + 1 := by omega
+      have hn' : n ≤ 3 * α := by omega
       obtain ⟨K, p, hp, hps, hk1, hk2, hk3, hk4, -⟩ := ih hn'
       clear ih
-      have hnJ : n * J ≤ 2 * α * J := Nat.mul_le_mul_right _ (by omega)
-      have e1 : (2 * α + 2) * (J + 1) = 2 * α * J + 2 * J + 2 * α + 2 := by ring
+      have hnJ : n * J ≤ 3 * α * J := Nat.mul_le_mul_right _ (by omega)
+      have e1 : (3 * α + 1) * (J + 1) = 3 * α * J + J + 3 * α + 1 := by ring
       have e2 : (n + 1) * J = n * J + J := by ring
       have hmax : max (B' + n * J) B' = B' + n * J := max_eq_left (Nat.le_add_right _ _)
       have hp8 : IsPreA θ (16 * h) (u ^ α) (u ^ (16 * h * α + 1 - 8 * (n + 1) + 8)) K (B' + n * J) p := by
@@ -435,7 +415,6 @@ theorem prop_approx_acc_next {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤
       have g2 : K.ht + K'.ht + max (B' + n * J) B' + J + 1 ≤ X := by omega
       have g3 : α * (16 * h - 32) + 40 ≤ 16 * h * α + 1 - 8 * (n + 1) := by omega
       have g4 : 16 * h * α + 1 - 8 * (n + 1) + 9 ≤ 16 * h * (2 * α) := by omega
-      have hn2 : n ≤ 2 * α + 1 := hn'
       have hres := prop_approx_acc_round_num hh hα hC hcst hD hK' hDs (K := K) (p := p) (B := B' + n * J)
         (J := J) (X := X) (M := Γ ^ n) (e := 16 * h * α + 1 - 8 * (n + 1)) hp8
         ((hk1.trans (hnds n hn')).trans hK) hk3 (Nat.one_le_pow _ _ hΓ1) (hps.trans (hsize n hn'))
@@ -456,10 +435,12 @@ theorem prop_approx_acc_next {h : ℕ} (hh : 17 ≤ h) {u α : ℕ} (hα : 5 ≤
       · refine hM.map fun c hc => (hc.rescale r).mono ?_
         calc r * M' ≤ 2 ^ (3 * X) * Γ ^ n * M' := Nat.mul_le_mul_right _ hr
           _ = Γ ^ (n + 1) := by rw [pow_succ, hΓ]; ring
-  obtain ⟨K, p, -, hps, hk1, hk2, hk3, hk4, hp⟩ := rounds (2 * α + 1) le_rfl
-  refine ⟨K, p, hp (by omega), ?_, hk1.trans (hnds _ le_rfl), hk2, hk3, hk4⟩
-  rw [← pow_mul, show α * (4 * h) = 4 * h * α by ring]
-  exact hps.trans (hsize _ le_rfl)
+  obtain ⟨K, p, -, hps, hk1, hk2, hk3, hk4, hp⟩ := rounds (3 * α) le_rfl
+  refine ⟨K, p, (hp (by omega)).mono ?_ le_rfl, ?_, hk1.trans (hnds _ le_rfl), hk2, hk3, hk4⟩
+  · rw [← pow_mul, Nat.mul_sub, Nat.mul_comm α (16 * h)]
+    exact pow_le_pow hu1 (by omega)
+  · rw [← pow_mul, show α * (4 * h) = 4 * h * α by ring]
+    exact hps.trans (hsize _ le_rfl)
 
 /-- **Paper: proof of Proposition prop:approx-acc, back to exact values.** "Its value is the coefficient of ε⁰ in the
 value of D, that is, pv(z) on plain instances": the coefficients of the powers are new constants with B = 1. -/
