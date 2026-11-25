@@ -512,7 +512,7 @@ theorem prop_approx_acc_setting {K : Type} [Field K] (hK : Contracting K) :
 /-- The contracting case for approximating circuits of a family that is complete for grid sums. -/
 theorem contracting_approx_complete {K : Type} [Field K] (hK : Contracting K)
     {G : ∀ S, MvPolynomial (Fin S × Fin S) K} {κ : ℕ} (hG : Nc.GridComplete K G κ) :
-    ∃ C M₁ : ℕ, ∀ M ≥ M₁, ∀ a : ℕ, lg M ^ (C * a) ≤ M → ¬ Nc.Approximates (G M) (M ^ a) := by
+    ∃ C M₁ : ℕ, ∀ M ≥ M₁, ∀ a : ℕ, lg M ^ (C * a) ≤ M → ¬ Nc.LaurentApproximates (G M) (M ^ a) := by
   obtain ⟨A, hA, θ, h, C₀, v₀, hθ, hh, -, C₂, v₂, hno⟩ := prop_approx_acc_setting hK
   obtain ⟨B₀, C₁, v₁, hB₀, hacc⟩ := lem_circuit_approx hθ.1 (H := 16 * h) (by omega) κ
   obtain ⟨C, M₁, hscale⟩ := exists_scale B₀ ((C₂ + 1) * C₁) (v₁ + v₂ + 4) hB₀

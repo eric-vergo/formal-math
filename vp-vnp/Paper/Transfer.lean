@@ -47,13 +47,7 @@ field of characteristic p, gives one of the same size with constants in KK[ε,ε
 constants are cut off, and the argument of Lemma lem:transfer is applied to their coefficients. -/
 theorem lem_transfer_approx (p : ℕ) [CharP F p] [CharP KK p] (q : MvPolynomial X ℤ) {s : ℕ}
     (h : Approximates (MvPolynomial.map (Int.castRingHom F) q) s) :
-    ∃ P : MvPolynomial X (LaurentPolynomial KK), Computes P s ∧
-      ∀ d : X →₀ ℕ, (∀ i : ℤ, i < 0 → (P.coeff d).coeff i = 0) ∧
-        (P.coeff d).coeff 0 = (MvPolynomial.map (Int.castRingHom KK) q).coeff d := by
-  suffices main : ∃ P : MvPolynomial X (LaurentPolynomial KK), Computes P s ∧ ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 →
-      (P.coeff d).coeff i = if i = 0 then (MvPolynomial.map (Int.castRingHom KK) q).coeff d else 0 by
-    obtain ⟨P, hP, hc⟩ := main
-    exact ⟨P, hP, fun d => (coeff_nonpos_iff _ _).1 (hc d)⟩
+    LaurentApproximates (MvPolynomial.map (Int.castRingHom KK) q) s := by
   obtain ⟨T, _, _, ⟨f⟩, ⟨g⟩⟩ := exists_common_ring F KK p
   obtain ⟨P₀, hP₀, hc₀⟩ := h.exists_laurentPolynomial
   obtain ⟨l, hl, k, hk, e⟩ := Computes.map (AddMonoidAlgebra.mapRingHom ℤ f) hP₀
@@ -80,11 +74,15 @@ theorem lem_transfer_approx (p : ℕ) [CharP F p] [CharP KK p] (q : MvPolynomial
 
 end
 
-/-- An exact circuit gives a coefficientwise approximation of the same size by
-viewing its constants as constant Laurent series. -/
+/-- An exact circuit is a Laurent polynomial circuit with constant coefficients in ε. -/
+theorem laurentApproximates_of_computes {F : Type u} [Field F] {V : Type} {f : MvPolynomial V F}
+    {s : ℕ} (h : Computes f s) : LaurentApproximates f s := by
+  refine ⟨_, h.map (algebraMap F (LaurentPolynomial F)), fun d i _ => ?_⟩
+  by_cases hi : i = 0 <;> simp [coeff_map, AddMonoidAlgebra.coe_algebraMap, hi]
+
+/-- An exact circuit gives a coefficientwise approximation of the same size. -/
 theorem approximates_of_computes {F : Type u} [Field F] {V : Type} {f : MvPolynomial V F}
-    {s : ℕ} (h : Computes f s) : Approximates f s := by
-  refine ⟨_, h.map (HahnSeries.C : F →+* LaurentSeries F), fun d i _ => ?_⟩
-  by_cases hi : i = 0 <;> simp [coeff_map, HahnSeries.C_apply, hi]
+    {s : ℕ} (h : Computes f s) : Approximates f s :=
+  laurentApproximates_iff.mp (laurentApproximates_of_computes h)
 
 end Paper

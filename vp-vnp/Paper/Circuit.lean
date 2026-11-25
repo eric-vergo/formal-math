@@ -289,7 +289,7 @@ theorem lem_circuit_approx (hθ : (Function.support θ).Finite) {H : ℕ}
     ∃ B₀ C v₀ : ℕ, 0 < B₀ ∧ ∀ (F : Type) [Field F] [Algebra A F]
       (G : ∀ S, MvPolynomial (Fin S × Fin S) F), Nc.GridComplete F G κ →
       ∀ v, v₀ ≤ v → ∀ a, lg v ^ (C * a) ≤ v → ∀ m, v ^ B₀ ≤ m →
-        Nc.Approximates (G m) (v ^ a) → HasAccA θ F H v (v ^ (C * (a + 1))) := by
+        Nc.LaurentApproximates (G m) (v ^ a) → HasAccA θ F H v (v ^ (C * (a + 1))) := by
   obtain ⟨B₀, Z, hB₀, hproj⟩ := lem_circuit_universal hθ hH κ
   obtain ⟨c, hc⟩ := lem_circuit_program H hH
   obtain ⟨n₀, hn₀⟩ := poly_lg (c * (H + 7)) 1
@@ -302,7 +302,7 @@ theorem lem_circuit_approx (hθ : (Function.support θ).Finite) {H : ℕ}
   have hgates : 5 * v ^ a ≤ v ^ (a + 5) := by
     rw [pow_add, Nat.mul_comm]
     exact Nat.mul_le_mul_left _ (le_trans (by omega : 5 ≤ v) (Nat.le_self_pow (by norm_num) v))
-  obtain ⟨p, hp', hpf⟩ := (hs.aeval Mat hMat).exists_laurentPolynomial
+  obtain ⟨p, hp', hpf⟩ := hs.aeval Mat hMat
   obtain ⟨K, D, hD, hn, hsz, hht⟩ :=
     hc v (a + 5) (by omega) hcv A F[T;T⁻¹] θ (5 * v ^ a) p hgates hp'
   have hle : v ^ (3 * (a + 5) + H + 20) ≤ v ^ ((H + 35) * (a + 1)) :=
