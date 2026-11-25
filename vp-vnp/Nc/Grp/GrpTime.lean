@@ -42,6 +42,16 @@ theorem putCost_le {ub Lc : ℕ} (kss : List (List (List Bool))) (h : ∀ ks ∈
     rw [List.map_cons, List.sum_cons, List.map_cons, List.sum_cons, List.length_cons, add_mul]
     omega
 
+private theorem putCost_map {ι : Type*} {ub Lc : ℕ} (xs : List ι) (rows : ι → List (List Bool)) (count : ι → ℕ)
+    (hlen : ∀ i, (rows i).length ≤ count i) (hk : ∀ i k, k ∈ rows i → k.length ≤ Lc) :
+    putCost ub (xs.map rows) ≤ (xs.map count).sum * (330 * (ub + Lc + 1)) + 200 * xs.length := by
+  refine (putCost_le (Lc := Lc) _ ?_).trans ?_
+  · rintro ks hks k hk'
+    obtain ⟨i, _, rfl⟩ := List.mem_map.1 hks
+    exact hk i k hk'
+  · rw [List.map_map, List.length_map]
+    exact Nat.add_le_add_right (Nat.mul_le_mul_right _ (List.sum_le_sum fun i _ => hlen i)) _
+
 theorem length_filter_lt (U m : ℕ) : ((List.finRange U).filter fun k => k.1 < m).length ≤ m := by
   have hnd : ((List.finRange U).filter fun k => k.1 < m).Nodup := (List.nodup_finRange U).filter _
   rw [← List.toFinset_card_of_nodup hnd]
@@ -53,13 +63,7 @@ theorem length_filter_lt (U m : ℕ) : ((List.finRange U).filter fun k => k.1 < 
 
 theorem length_filterMap_le {α β : Type*} (f : α → Option β) (l : List α) :
     (l.filterMap f).length = (l.filter fun a => (f a).isSome).length := by
-  induction l with
-  | nil => rfl
-  | cons a l ih =>
-    rw [List.filterMap_cons, List.filter_cons]
-    cases h : f a with
-    | none => simp [ih]
-    | some b => simp [ih]
+  rw [List.length_filterMap_eq_countP, List.countP_eq_length_filter]
 
 end lists
 
@@ -183,49 +187,22 @@ theorem cost_role {cap T Lc X : ℕ} (hP : P.Ok cap) (hk : ∀ c, (key c).length
         ∑ ν : (M.kind r.1).CnAt r.2, ((o ⟨r.1, ν.1⟩).1 + 1)) * (330 * (ub + Lc + 1)) + 400 * X + 1 := by
   unfold roleIns
   simp only [insCost]
-  have h1 := putCost_le (ub := ub) (Lc := Lc) ((univ : Finset ((M.kind r.1).SlAt r.2)).toList.map fun e =>
-      ((P.ids n o ⟨r.1, e.1⟩).map fun id => key (M.rp r, id)).reverse) (by
-    intro ks hks k hk'
-    obtain ⟨e, -, rfl⟩ := List.mem_map.1 hks
-    rw [List.mem_reverse] at hk'
-    obtain ⟨id, -, rfl⟩ := List.mem_map.1 hk'
-    exact hk _)
-  have h2 := putCost_le (ub := ub) (Lc := Lc) ((univ : Finset ((M.kind r.1).CnAt r.2)).toList.map fun ν =>
-      ((List.finRange U1).filter fun k => k ≤ o ⟨r.1, ν.1⟩).map fun k => key (M.rp r, .new ⟨r.1, ν.1⟩ k)) (by
-    intro ks hks k hk'
-    obtain ⟨e, -, rfl⟩ := List.mem_map.1 hks
-    obtain ⟨id, -, rfl⟩ := List.mem_map.1 hk'
-    exact hk _)
-  have h3 : (((univ : Finset ((M.kind r.1).SlAt r.2)).toList.map fun e =>
-      ((P.ids n o ⟨r.1, e.1⟩).map fun id => key (M.rp r, id)).reverse).map List.length).sum ≤
-      Fintype.card ((M.kind r.1).SlAt r.2) * P.num n o r.1 := by
-    rw [List.map_map]
-    refine (sum_le_length_mul _ _ (P.num n o r.1) fun e _ => ?_).trans (le_of_eq ?_)
-    · simp only [Function.comp, List.length_reverse, List.length_map]
-      rw [G.Plan.length_ids]
-      exact hP.card n o ⟨r.1, e.1⟩
-    · rw [Finset.length_toList, Finset.card_univ]
-  have h4 : (((univ : Finset ((M.kind r.1).CnAt r.2)).toList.map fun ν =>
-      ((List.finRange U1).filter fun k => k ≤ o ⟨r.1, ν.1⟩).map fun k => key (M.rp r, .new ⟨r.1, ν.1⟩ k)).map List.length).sum ≤
-      ∑ ν : (M.kind r.1).CnAt r.2, ((o ⟨r.1, ν.1⟩).1 + 1) := by
-    rw [List.map_map, ← Finset.sum_map_toList]
-    refine List.sum_le_sum fun ν _ => ?_
-    simp only [Function.comp, List.length_map]
-    have h5 : ((List.finRange U1).filter fun k => k ≤ o ⟨r.1, ν.1⟩) =
-        (List.finRange U1).filter fun k => k.1 < (o ⟨r.1, ν.1⟩).1 + 1 := by
-      refine List.filter_congr fun k _ => ?_
-      rw [decide_eq_decide, Nat.lt_succ_iff]
-      rfl
-    rw [h5]
-    exact length_filter_lt _ _
-  rw [List.length_map, Finset.length_toList, Finset.card_univ] at h1 h2
+  have h1 := putCost_map (ub := ub) (Lc := Lc) (univ : Finset ((M.kind r.1).SlAt r.2)).toList
+    (fun e => ((P.ids n o ⟨r.1, e.1⟩).map fun id => key (M.rp r, id)).reverse) (fun _ => P.num n o r.1)
+    (fun e => by rw [List.length_reverse, List.length_map, G.Plan.length_ids]; exact hP.card n o ⟨r.1, e.1⟩)
+    (fun _ _ hm => by obtain ⟨_, _, rfl⟩ := List.mem_map.1 (List.mem_reverse.1 hm); exact hk _)
+  have h2 := putCost_map (ub := ub) (Lc := Lc) (univ : Finset ((M.kind r.1).CnAt r.2)).toList
+    (fun ν => ((List.finRange U1).filter fun k => k ≤ o ⟨r.1, ν.1⟩).map fun k => key (M.rp r, .new ⟨r.1, ν.1⟩ k))
+    (fun ν => (o ⟨r.1, ν.1⟩).val + 1)
+    (fun ν => by simpa only [List.length_map, Nat.lt_succ_iff, Fin.le_def] using length_filter_lt U1 ((o ⟨r.1, ν.1⟩).val + 1))
+    (fun _ _ hm => by obtain ⟨_, _, rfl⟩ := List.mem_map.1 hm; exact hk _)
+  simp only [List.map_const', List.sum_replicate, smul_eq_mul, Finset.length_toList, Finset.card_univ] at h1
+  rw [Finset.sum_map_toList, Finset.length_toList, Finset.card_univ] at h2
   set sl := Fintype.card ((M.kind r.1).SlAt r.2)
   set W := 330 * (ub + Lc + 1) with hW
   set t := P.num n o r.1
   set cs := ∑ ν : (M.kind r.1).CnAt r.2, ((o ⟨r.1, ν.1⟩).1 + 1)
   have h6 : t * (ub + 1) ≤ t * W := Nat.mul_le_mul_left _ (by omega)
-  have h7 := Nat.mul_le_mul_right W h3
-  have h8 := Nat.mul_le_mul_right W h4
   have h9 : ((1 + sl) * t + cs) * W = t * W + sl * t * W + cs * W := by ring
   rw [h9]
   omega
@@ -248,37 +225,28 @@ theorem cost_roles {cap T Lc X : ℕ} (hP : P.Ok cap) (hk : ∀ c, (key c).lengt
         refine Nat.add_le_add (Nat.mul_le_mul_right _ (Nat.add_le_add le_rfl sum_cn_le)) (Nat.mul_le_mul_right _ ?_)
         exact (Finset.card_filter_le _ _).trans (by rw [Finset.card_univ]; exact hR)
 
+/-- Writing bounded keys for the first entries in each row. -/
+private theorem putCost_rows {N U ub Lc : ℕ} (count : Fin N → ℕ) (key : Fin N → Fin U → List Bool)
+    (hk : ∀ b k, (key b k).length ≤ Lc) :
+    putCost ub (List.ofFn fun b => ((List.finRange U).filter fun k => k.val < count b).map (key b)) ≤
+      (∑ b, count b) * (330 * (ub + Lc + 1)) + 200 * N := by
+  rw [List.ofFn_eq_map]
+  simpa [← List.ofFn_eq_map, List.sum_ofFn] using
+    putCost_map (ub := ub) (Lc := Lc) (List.finRange N)
+      (fun b => ((List.finRange U).filter fun k => k.val < count b).map (key b)) count
+      (fun b => by simpa using length_filter_lt U (count b))
+      (fun b _ hm => by obtain ⟨i, _, rfl⟩ := List.mem_map.1 hm; exact hk b i)
+
 theorem cost_body {Lc X : ℕ} (hk : ∀ c, (key c).length ≤ Lc) (hd : ∀ c, (dkey c).length ≤ Lc)
     (hS : Fintype.card (Option S) ≤ X) (hA : K + K ≤ X) (p : Fin (K + K)) :
     bodyCost ub (bodyOf ρ n key dkey p) ≤ inN n p * (330 * (ub + Lc + 1)) + X * X + 401 * X + 1 := by
   unfold bodyCost bodyOf
   simp only
-  have h1 := putCost_le (ub := ub) (Lc := Lc) (List.ofFn fun b => ((List.finRange U0).filter fun k => k.1 < (n p b).1).map
-      fun k => key (Fin.castAdd A' p, .init p b k)) (by
-    intro ks hks k hk'
-    obtain ⟨b, rfl⟩ := List.mem_ofFn.1 hks
-    obtain ⟨id, -, rfl⟩ := List.mem_map.1 hk'
-    exact hk _)
-  have h2 := putCost_le (ub := ub) (Lc := Lc) (List.ofFn fun b => ((List.finRange U0).filter fun k => k.1 < (n b p).1).map
-      fun k => if b = p then dkey (p, k) else key (Fin.castAdd A' p, .init b p k)) (by
-    intro ks hks k hk'
-    obtain ⟨b, rfl⟩ := List.mem_ofFn.1 hks
-    obtain ⟨id, -, rfl⟩ := List.mem_map.1 hk'
-    split_ifs
-    · exact hd _
-    · exact hk _)
-  have h3 : ((List.ofFn fun b => ((List.finRange U0).filter fun k => k.1 < (n p b).1).map
-      fun k => key (Fin.castAdd A' p, .init p b k)).map List.length).sum ≤ ∑ b, (n p b).1 := by
-    rw [List.map_ofFn, List.sum_ofFn]
-    refine Finset.sum_le_sum fun b _ => ?_
-    simp only [Function.comp, List.length_map]
-    exact length_filter_lt _ _
-  have h4 : ((List.ofFn fun b => ((List.finRange U0).filter fun k => k.1 < (n b p).1).map
-      fun k => if b = p then dkey (p, k) else key (Fin.castAdd A' p, .init b p k)).map List.length).sum ≤ ∑ b, (n b p).1 := by
-    rw [List.map_ofFn, List.sum_ofFn]
-    refine Finset.sum_le_sum fun b _ => ?_
-    simp only [Function.comp, List.length_map]
-    exact length_filter_lt _ _
+  have h1 := putCost_rows (ub := ub) (Lc := Lc) (fun b => (n p b).val)
+    (fun b k => key (Fin.castAdd A' p, .init p b k)) fun _ _ => hk _
+  have h2 := putCost_rows (ub := ub) (Lc := Lc) (fun b => (n b p).val)
+    (fun b k => if b = p then dkey (p, k) else key (Fin.castAdd A' p, .init b p k))
+    (fun b k => by split <;> first | exact hd _ | exact hk _)
   have h5 : flen ((univ : Finset (Option S)).toList.map fun s => (List.ofFn fun b => rowFlag (ρ s p) b).reverse) ≤ X * X := by
     unfold flen
     rw [List.map_map]
@@ -286,14 +254,7 @@ theorem cost_body {Lc X : ℕ} (hk : ∀ c, (key c).length ≤ Lc) (hd : ∀ c, 
     · simp
     · rw [Finset.length_toList, Finset.card_univ]
       exact Nat.mul_le_mul hS hA
-  rw [List.length_ofFn] at h1 h2 ⊢
-  set W := 330 * (ub + Lc + 1) with hW
-  have h6 := Nat.mul_le_mul_right W h3
-  have h7 := Nat.mul_le_mul_right W h4
-  have h8 : inN n p * W = (∑ b, (n p b).1) * W + (∑ b, (n b p).1) * W := by
-    unfold inN
-    rw [Finset.sum_add_distrib, add_mul]
-  rw [h8]
+  rw [List.length_ofFn, inN, Finset.sum_add_distrib, add_mul]
   omega
 
 theorem diag_le (p : Fin (K + K)) : ((List.finRange U0).filter fun k => k.1 < (n p p).1).length ≤ inN n p := by

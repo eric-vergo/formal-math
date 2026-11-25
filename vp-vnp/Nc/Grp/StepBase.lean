@@ -34,21 +34,13 @@ def StepOK (I : List Ins) (s : WStep A (Cell M U0 U1) (UW ub)) : Prop :=
 theorem mem_kRl {p b : Fin (K + K)} {k : List Bool} :
     k ∈ kRl n key p b ↔ ∃ i : Fin U0, i.1 < (n p b).1 ∧ k = key (Fin.castAdd A' p, .init p b i) := by
   simp only [kRl, List.mem_map, List.mem_filter, List.mem_finRange, true_and, decide_eq_true_eq]
-  constructor
-  · rintro ⟨i, hi, rfl⟩
-    exact ⟨i, hi, rfl⟩
-  · rintro ⟨i, hi, rfl⟩
-    exact ⟨i, hi, rfl⟩
+  simp only [eq_comm]
 
 theorem mem_kCl {p b : Fin (K + K)} {k : List Bool} :
     k ∈ kCl n key dkey p b ↔ ∃ i : Fin U0, i.1 < (n b p).1 ∧
       k = if b = p then dkey (p, i) else key (Fin.castAdd A' p, .init b p i) := by
   simp only [kCl, List.mem_map, List.mem_filter, List.mem_finRange, true_and, decide_eq_true_eq]
-  constructor
-  · rintro ⟨i, hi, rfl⟩
-    exact ⟨i, hi, rfl⟩
-  · rintro ⟨i, hi, rfl⟩
-    exact ⟨i, hi, rfl⟩
+  simp only [eq_comm]
 
 theorem getElem_map_filter {U d : ℕ} (h : d ≤ U) (f : Fin U → List Bool) (i : Fin U) (hi : i.1 < d) :
     (((List.finRange U).filter fun k => k.1 < d).map f)[i.1]? = some (f i) := by
@@ -73,53 +65,37 @@ theorem key_ne_dkey (a : Cell M U0 U1) (b : Fin (K + K) × Fin U0) : key a ≠ d
   have := hkey (a₁ := Sum.inl a) (a₂ := Sum.inr b) h
   simp at this
 
+omit hkey in
+/-- Distinct row and slot indices label distinct keys in the concatenated table. -/
+private theorem nodup_rows {B U : ℕ} (count : Fin B → ℕ) (label : Fin B → Fin U → List Bool)
+    (hinj : ∀ b i b' i', label b i = label b' i' → b = b' ∧ i = i') :
+    ((List.finRange B).flatMap fun b => ((List.finRange U).filter fun i => i.val < count b).map (label b)).Nodup := by
+  rw [List.nodup_flatMap]
+  refine ⟨fun b _ => ((List.nodup_finRange _).filter _).map fun i j he => (hinj b i b j he).2,
+    (List.nodup_finRange _).imp fun {b b'} hb => ?_⟩
+  rw [Function.onFun, List.disjoint_left]
+  rintro k hk hk'
+  obtain ⟨i, _, rfl⟩ := List.mem_map.1 hk
+  obtain ⟨i', _, he⟩ := List.mem_map.1 hk'
+  exact hb (hinj _ _ _ _ he.symm).1
+
 theorem nodup_PR (p : Fin (K + K)) (R : Option S → Fin (K + K) → List Γ) :
     ((PR n key cb p R).flatMap Prod.fst).Nodup := by
-  have hk := key_injective hkey
-  rw [PR, List.ofFn_eq_map, List.flatMap_map, List.nodup_flatMap]
-  refine ⟨fun b _ => ?_, (List.nodup_finRange _).imp fun {b b'} hb => ?_⟩
-  · refine ((List.nodup_finRange _).filter _).map fun i j h => ?_
-    have := hk h
-    simpa using this
-  · rw [Function.onFun, List.disjoint_left]
-    intro k hk1 hk2
-    obtain ⟨i, -, rfl⟩ := mem_kRl.1 hk1
-    obtain ⟨j, -, h⟩ := mem_kRl.1 hk2
-    have := hk h
-    simp only [Prod.mk.injEq, true_and, G.Uid.init.injEq] at this
-    exact hb this.1
+  rw [PR, List.ofFn_eq_map, List.flatMap_map]
+  apply nodup_rows (fun b => (n p b).val) (fun b i => key (Fin.castAdd A' p, .init p b i))
+  intro b i b' i' he
+  simpa using key_injective hkey he
 
 theorem nodup_PC (p : Fin (K + K)) (C : Option S → Fin (K + K) → List Γ) :
     ((PC n key dkey cb p C).flatMap Prod.fst).Nodup := by
-  have hk := key_injective hkey
-  have hd := dkey_injective hkey
-  rw [PC, List.ofFn_eq_map, List.flatMap_map, List.nodup_flatMap]
-  refine ⟨fun b _ => ?_, (List.nodup_finRange _).imp fun {b b'} hb => ?_⟩
-  · refine ((List.nodup_finRange _).filter _).map fun i j h => ?_
-    by_cases hbp : b = p
-    · simp only [hbp, ite_true] at h
-      have := hd h
-      simpa using this
-    · simp only [hbp, ite_false] at h
-      have := hk h
-      simpa using this
-  · rw [Function.onFun, List.disjoint_left]
-    intro k hk1 hk2
-    obtain ⟨i, -, h1⟩ := mem_kCl.1 hk1
-    obtain ⟨j, -, h2⟩ := mem_kCl.1 hk2
-    rw [h1] at h2
-    by_cases hbp : b = p
-    · have hbp' : b' ≠ p := fun h => hb (hbp.trans h.symm)
-      rw [ite_eq_left hbp, ite_eq_right hbp'] at h2
-      exact key_ne_dkey hkey _ _ h2.symm
-    · rw [ite_eq_right hbp] at h2
-      by_cases hbp' : b' = p
-      · rw [ite_eq_left hbp'] at h2
-        exact key_ne_dkey hkey _ _ h2
-      · rw [ite_eq_right hbp'] at h2
-        have := hk h2
-        simp only [Prod.mk.injEq, true_and, G.Uid.init.injEq] at this
-        exact hb this.1
+  rw [PC, List.ofFn_eq_map, List.flatMap_map]
+  apply nodup_rows (fun b => (n b p).val) (fun b i => if b = p then dkey (p, i) else key (Fin.castAdd A' p, .init b p i))
+  intro b i b' i' he
+  split_ifs at he with h h' h'
+  · exact ⟨h.trans h'.symm, congrArg Prod.snd (dkey_injective hkey he)⟩
+  · exact (key_ne_dkey hkey _ _ he.symm).elim
+  · exact (key_ne_dkey hkey _ _ he).elim
+  · simpa using key_injective hkey he
 
 theorem mem_PR {p : Fin (K + K)} {R : Option S → Fin (K + K) → List Γ} {k : List Bool} :
     k ∈ (PR n key cb p R).flatMap Prod.fst ↔ ∃ b, ∃ i : Fin U0, i.1 < (n p b).1 ∧

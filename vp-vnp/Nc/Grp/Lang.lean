@@ -156,36 +156,8 @@ theorem _root_.NS1.Does.lettE {F G : Fm} {x : Tree} {l : List (A × β)} {enc : 
 
 /-- The first of two formulas has the empty value: go on with the second one. -/
 theorem _root_.NS1.Does.ite_nil {F G H : Fm} {x : Tree} {a : A} {Q : List (A × Tree)} {c d : ℕ} (hF : Does θ F x [(a, .nil)] c)
-    (hH : Does θ H x Q d) : Does θ (.ite F G H) x (Q.map fun r => (a * r.1, r.2)) (c + d + 1) := by
-  obtain ⟨l, e1, e2, e3⟩ := hF
-  obtain ⟨l', f1, f2, f3⟩ := hH
-  have hout : ∀ r ∈ l, r.out = .nil := by
-    intro r hr
-    obtain ⟨-, -, q, hq, h⟩ := e2 r hr
-    rw [List.mem_singleton] at hq
-    subst hq
-    exact h.symm
-  refine ⟨_, Ev.ite (L := fun _ => l') e1 (fun r hr h => absurd (hout r hr) h) (fun r _ _ => f1), ?_, fun φ => ?_⟩
-  · intro u hu
-    simp only [List.mem_flatMap, List.mem_map] at hu
-    obtain ⟨r, hr, s, hs, rfl⟩ := hu
-    obtain ⟨a1, a2, -⟩ := e2 r hr
-    obtain ⟨b1, b2, q, hq, b3⟩ := f2 s hs
-    refine ⟨by simp [Run.seq, Run.tick, a1, b1], ?_, (a * q.1, q.2), List.mem_map.2 ⟨q, hq, rfl⟩, b3⟩
-    simp only [Run.seq, Run.tick]
-    omega
-  · rw [sum_flatMap_map]
-    have h1 : ∀ r ∈ l, ((l'.map fun s => (r.seq s).tick s.out).map fun u => u.th * φ u.out).sum = r.th * wsum Q φ := by
-      intro r _
-      rw [List.map_map, ← f3 φ, ← List.sum_map_mul_left]
-      congr 1
-      refine List.map_congr_left fun t _ => ?_
-      simp only [Function.comp_apply, Run.seq, Run.tick, mul_assoc]
-    rw [List.map_congr_left h1]
-    have := e3 fun _ => wsum Q φ
-    rw [this]
-    simp only [wsum_cons, wsum_nil, add_zero]
-    exact (sumL_map_mul a Q φ).symm
+    (hH : Does θ H x Q d) : Does θ (.ite F G H) x (Q.map fun r => (a * r.1, r.2)) (c + d + 1) :=
+  Does.branch_singleton hF (by simpa using hH)
 
 /-- `let`, with the argument kept, typed values. -/
 theorem _root_.NS1.Does.letkT {F G : Fm} {x : Tree} {l : List (A × β)} {enc : β → Tree} {f : β → List (A × Tree)}

@@ -253,73 +253,57 @@ theorem run {p y : Tree} {R : List (A × Tree)} {e : ℕ} (hF : Gives θ F x p c
   · rw [← sumF_unit, sumF_run, ← e1.evl, ← f1.evl, hprog, harg, sumF_unit]
     exact h.evl.2 φ
 
-private theorem ite_of_gives {o : Tree} (hF : Gives θ F x o c)
-    (hbranch : Does θ (if o = .nil then H else G) x Q d) :
-    Does θ (.ite F G H) x Q (c + d + 1) := by
-  obtain ⟨l, e1, e2, e3⟩ := hF
-  obtain ⟨l', f1, f2, f3⟩ := hbranch
-  have hout : ∀ r ∈ l, r.out = o := Gives.output_of_mem e2
-  refine ⟨_, Ev.ite (L := fun _ => l') e1 (fun r hr hn => ?_) (fun r hr hn => ?_), ?_,
-    fun φ => ?_⟩
-  · simpa [show o ≠ .nil from fun h => hn ((hout r hr).trans h)] using f1
-  · simpa [show o = .nil from (hout r hr).symm.trans hn] using f1
+/-- A conditional binds the test's weighted outputs to the branch they select. -/
+theorem branch {L : Tree → List (A × Tree)} (hF : Does θ F x Q c)
+    (hbranch : ∀ q ∈ Q, Does θ (if q.2 = .nil then H else G) x (L q.2) d) :
+    Does θ (.ite F G H) x (bindW Q L) (c + d + 1) := by
+  obtain ⟨l, ev, hr, hsum⟩ := hF
+  let arm (o : Tree) := if o = .nil then H else G
+  have hb (r : Run A) (hm : r ∈ l) : Does θ (arm r.out) x (L r.out) d := by
+    obtain ⟨q, hq, he⟩ := (hr r hm).2.2
+    rw [← he]; exact hbranch q hq
+  refine ⟨_, Ev.ite (L := fun r => NS1.evl θ (arm r.out) x) ev
+    (fun r hm hn => by simpa [arm, hn] using (hb r hm).hl.ev)
+    (fun r hm hn => by simpa [arm, hn] using (hb r hm).hl.ev), ?_, fun φ => ?_⟩
   · intro u hu
     simp only [List.mem_flatMap, List.mem_map] at hu
-    obtain ⟨r, hr, s, hs, rfl⟩ := hu
-    obtain ⟨a1, a2, -⟩ := e2 r hr
-    obtain ⟨b1, b2, b3⟩ := f2 s hs
-    refine ⟨by simp [Run.seq, Run.tick, a1, b1], ?_, b3⟩
-    simp only [Run.seq, Run.tick]
-    omega
-  · rw [sum_flatMap_map]
-    have h1 : ∀ r ∈ l, ((l'.map fun s => (r.seq s).tick s.out).map fun u => u.th * φ u.out).sum = r.th * wsum Q φ := by
-      intro r _
-      rw [List.map_map, ← f3 φ, ← List.sum_map_mul_left]
-      congr 1
-      refine List.map_congr_left fun t _ => ?_
-      simp only [Function.comp_apply, Run.seq, Run.tick, mul_assoc]
-    rw [List.map_congr_left h1]
-    have := e3 fun _ => wsum Q φ
-    rw [this]
-    simp [wsum]
+    obtain ⟨r, hr', s, hs, rfl⟩ := hu
+    obtain ⟨br, cr, q, hq, he⟩ := hr r hr'
+    obtain ⟨bs, cs, p, hp, hout⟩ := (hb r hr').evl.1 s hs
+    rw [← he] at hp
+    exact ⟨by simp [Run.tick, Run.seq, br, bs], by simp only [Run.tick, Run.seq]; omega,
+      (q.1 * p.1, p.2), mem_bindW_of hq hp, hout⟩
+  · rw [wsum_bindW, ← hsum, sum_flatMap_map]
+    congr 1
+    refine List.map_congr_left fun r hm => ?_
+    rw [← (hb r hm).evl.2 φ]
+    simp only [List.map_map, Function.comp_def, Run.tick, Run.seq, ← List.sum_map_mul_left, mul_assoc]
+
+/-- A singleton test scales the selected branch by its weight. -/
+theorem branch_singleton {o : Tree} {a : A} (hF : Does θ F x [(a, o)] c)
+    (hbranch : Does θ (if o = .nil then H else G) x Q d) :
+    Does θ (.ite F G H) x (Q.map fun q => (a * q.1, q.2)) (c + d + 1) := by
+  simpa [bindW] using hF.branch (L := fun _ => Q) (by simpa using hbranch)
 
 theorem ite_true {o : Tree} (hF : Gives θ F x o c) (ho : o ≠ .nil) (hG : Does θ G x Q d) :
-    Does θ (.ite F G H) x Q (c + d + 1) :=
-  ite_of_gives hF (by simpa [ho] using hG)
+    Does θ (.ite F G H) x Q (c + d + 1) := by
+  simpa using branch_singleton hF (H := H) (G := G) (by simpa [ho] using hG)
 
-theorem ite_false (hF : Gives θ F x .nil c) (hH : Does θ H x Q d) : Does θ (.ite F G H) x Q (c + d + 1) :=
-  ite_of_gives hF (by simpa using hH)
+theorem ite_false (hF : Gives θ F x .nil c) (hH : Does θ H x Q d) : Does θ (.ite F G H) x Q (c + d + 1) := by
+  simpa using branch_singleton hF (H := H) (G := G) (by simpa using hH)
 
 /-- Guess between two formulas. -/
 theorem either {R : List (A × Tree)} (hG : Does θ G x Q c) (hH : Does θ H x R d) :
     Does θ (.ite .guess G H) x (Q ++ R) (max c d + 2) := by
-  obtain ⟨l, e1, e2, e3⟩ := hG
-  obtain ⟨l', f1, f2, f3⟩ := hH
-  refine ⟨_, Ev.ite (L := fun r => if r.out = .nil then l' else l) (Ev.guess x) (fun r _ h => by rw [ite_eq_right h]; exact e1)
-    (fun r _ h => by rw [ite_eq_left h]; exact f1), ?_, fun φ => ?_⟩
-  · intro u hu
-    simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.mem_append, List.mem_map, Run.det, Tree.one,
-      _root_.ite_true, reduceCtorEq, _root_.ite_false] at hu
-    rcases hu with ⟨s, hs, rfl⟩ | ⟨s, hs, rfl⟩
-    · obtain ⟨a1, a2, q, hq, a3⟩ := f2 s hs
-      refine ⟨by simp [Run.seq, Run.tick, a1], ?_, q, List.mem_append_right _ hq, a3⟩
-      simp only [Run.seq, Run.tick]
-      omega
-    · obtain ⟨a1, a2, q, hq, a3⟩ := e2 s hs
-      refine ⟨by simp [Run.seq, Run.tick, a1], ?_, q, List.mem_append_left _ hq, a3⟩
-      simp only [Run.seq, Run.tick]
-      omega
-  · rw [wsum_append, ← e3 φ, ← f3 φ]
-    simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, List.map_append, List.sum_append, List.map_map,
-      Run.det, Tree.one, _root_.ite_true, reduceCtorEq, _root_.ite_false]
-    rw [add_comm]
-    congr 1
-    · congr 1
-      refine List.map_congr_left fun t _ => ?_
-      simp only [Function.comp_apply, Run.seq, Run.tick, one_mul]
-    · congr 1
-      refine List.map_congr_left fun t _ => ?_
-      simp only [Function.comp_apply, Run.seq, Run.tick, one_mul]
+  have hg : Does θ .guess x [(1, Tree.one), (1, .nil)] 1 := by
+    refine ⟨_, Ev.guess x, ?_, fun φ => ?_⟩
+    · intro r hr
+      simp only [List.mem_cons, List.not_mem_nil, or_false] at hr
+      rcases hr with rfl | rfl <;> simp [Run.det, Tree.one]
+    · simp [Run.det, wsum, add_comm]
+  have hh := hg.branch (G := G) (H := H) (d := max c d) (L := fun o => if o = .nil then R else Q) (by
+    simp [Tree.one, hG.mono (le_max_left _ _), hH.mono (le_max_right _ _)])
+  simpa [bindW, Tree.one, Nat.add_comm 1, Nat.add_assoc] using hh
 
 theorem fail (x : Tree) : Does θ .fail x [] 0 := ⟨[], .fail x, by simp, by simp⟩
 
