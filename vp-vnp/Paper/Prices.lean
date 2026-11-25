@@ -362,58 +362,49 @@ theorem prop_random_values {Y Q Ω : Type} [MeasurableSpace Ω] (μ : Measure Ω
     rw [this]
     exact MeasurableSet.iInter fun κ => hmeas _ _
   let e : Fin V.card ≃ V := V.equivFin.symm
-  have hmean : ∀ f : (T → Y) → ℝ, ∫ ω, f (fun κ : T => σ κ ω) ∂μ =
-      ∑ l : Fin V.card, μ.real {ω | (fun κ : T => σ κ ω) = (e l : T → Y)} * f (e l) := by
-    intro f
-    have h1 : ∀ ω, f (fun κ : T => σ κ ω) = ∑ g ∈ V,
-        ({ω | (fun κ : T => σ κ ω) = g}).indicator (fun _ => f g) ω := by
-      intro ω
-      rw [Finset.sum_eq_single (fun κ : T => σ κ ω)]
-      · rw [Set.indicator_of_mem]; rfl
-      · intro g _ hg
-        rw [Set.indicator_of_notMem]
-        exact fun h => hg h.symm
-      · intro h
-        exact absurd (hV ω) h
-    simp only [h1]
-    rw [integral_finsetSum]
-    · rw [← Finset.sum_coe_sort V]
-      refine (Fintype.sum_equiv e _ _ fun l => ?_).symm
-      rw [integral_indicator (hmeas' _), setIntegral_const, smul_eq_mul]
-    · intro g _
-      exact (integrable_const _).indicator (hmeas' g)
-  refine ⟨V.card, fun l => μ.real {ω | (fun κ : T => σ κ ω) = (e l : T → Y)}, fun l => e l,
-    fun l => measureReal_nonneg, ?_, hmean⟩
+  let atom (ω : Ω) : Fin V.card := e.symm ⟨_, hV ω⟩
+  have hatom : Measurable atom := measurable_to_countable fun ω => by
+    convert hmeas' (fun κ : T => σ κ ω) using 1
+    ext u
+    simp [atom, Subtype.ext_iff]
+  let ν := μ.map atom
+  have hmean (f : (T → Y) → ℝ) : (∫ ω, f (fun κ : T => σ κ ω) ∂μ) =
+      ∑ l, ν.real {l} * f (e l) := by
+    have hi : Integrable (fun l => f (e l)) ν := Integrable.of_finite
+    calc _ = ∫ l, f (e l) ∂ν := by
+          simpa [ν, atom] using (integral_map hatom.aemeasurable hi.aestronglyMeasurable).symm
+      _ = _ := by simpa only [smul_eq_mul] using integral_fintype hi
+  refine ⟨V.card, fun l => ν.real {l}, fun l => e l, fun l => measureReal_nonneg, ?_, hmean⟩
   have := hmean fun _ => 1
   simp only [mul_one, integral_const, probReal_univ, smul_eq_mul] at this
   exact this.symm
 
 end Random
 
-/-- **Paper: Proposition prop:random.** "Let w be a price on Y, let Q be a set disjoint from Y, and let σ be a random
-map Y ∪ Q → Y that is the identity on Y, each σ(o) having finitely many values. Then a price on Y ∪ Q extends w and
-satisfies |oo′| ≤ E |σ(o)σ(o′)| for all o, o′." -/
-theorem prop_random {Y Q : Type} {w : Y → Y → ℝ} (hw : IsPrice K w) {Ω : Type} [MeasurableSpace Ω] (μ : Measure Ω)
-    [IsProbabilityMeasure μ] (σ : Q → Ω → Y) (hfin : ∀ κ, (Set.range (σ κ)).Finite)
-    (hmeas : ∀ κ y, MeasurableSet (σ κ ⁻¹' {y})) :
-    ∃ w' : Y ⊕ Q → Y ⊕ Q → ℝ, IsPrice K w' ∧ (∀ y y', w' (Sum.inl y) (Sum.inl y') = w y y') ∧
-      ∀ o o', w' o o' ≤
-        ∫ ω, w (Sum.elim id (fun κ => σ κ ω) o) (Sum.elim id (fun κ => σ κ ω) o') ∂μ := by
+/-- Finite joint laws on every finite set of new points suffice to extend the price.
+The expectation need only preserve constants and agree with those laws. -/
+private theorem price_of_finite_joint_laws {Y Q Ω : Type} {w : Y → Y → ℝ} (hw : IsPrice K w)
+    (σ : Q → Ω → Y) (mean : (Ω → ℝ) → ℝ) (hconst : ∀ c, mean (fun _ => c) = c)
+    (hlaw : ∀ T : Finset Q, ∃ (m : ℕ) (θ : Fin m → ℝ) (π : Fin m → T → Y),
+      (∀ l, 0 ≤ θ l) ∧ ∑ l, θ l = 1 ∧
+        ∀ f : (T → Y) → ℝ, mean (fun ω => f (fun κ : T => σ κ ω)) = ∑ l, θ l * f (π l)) :
+    ∃ w' : Y ⊕ Q → Y ⊕ Q → ℝ, IsPrice K w' ∧ (∀ y y', w' (.inl y) (.inl y') = w y y') ∧
+      ∀ o o', w' o o' ≤ mean (fun ω => w (Sum.elim id (fun κ => σ κ ω) o) (Sum.elim id (fun κ => σ κ ω) o')) := by
   classical
   -- the two properties: at least w on Y, and at most the expectation
   let A : Y ⊕ Q → Y ⊕ Q → ℝ := fun o o' => match o, o' with
     | Sum.inl y, Sum.inl y' => w y y'
     | _, _ => 0
   let E : Y ⊕ Q → Y ⊕ Q → ℝ := fun o o' =>
-    ∫ ω, w (Sum.elim id (fun κ => σ κ ω) o) (Sum.elim id (fun κ => σ κ ω) o') ∂μ
+    mean fun ω => w (Sum.elim id (fun κ => σ κ ω) o) (Sum.elim id (fun κ => σ κ ω) o')
   suffices hS : ∀ S : Finset (Y ⊕ Q), ∃ d : S → S → ℝ, IsPrice K d ∧ ∀ a b : S, A a b ≤ d a b ∧ d a b ≤ E a b by
     obtain ⟨w', hw', h⟩ := prop_random_compact A E hS
     refine ⟨w', hw', fun y y' => le_antisymm ?_ (h (Sum.inl y) (Sum.inl y')).1, fun o o' => (h o o').2⟩
-    simpa [E] using (h (Sum.inl y) (Sum.inl y')).2
+    simpa [E, hconst] using (h (Sum.inl y) (Sum.inl y')).2
   intro S
   -- Q₀: the new points of S; Y₀: the old points of S and all values of σ on Q₀
   let T : Finset Q := S.preimage Sum.inr Sum.inr_injective.injOn
-  obtain ⟨m, θ, π, hθ, hθ1, hmean⟩ := prop_random_values μ σ hfin hmeas T
+  obtain ⟨m, θ, π, hθ, hθ1, hmean⟩ := hlaw T
   let R : Finset Y := S.preimage Sum.inl Sum.inl_injective.injOn ∪
     Finset.univ.biUnion fun κ : T => Finset.univ.image fun l => π l κ
   have hR : ∀ l κ, π l κ ∈ R := fun l κ => Finset.mem_union_right _
@@ -436,9 +427,21 @@ theorem prop_random {Y Q : Type} {w : Y → Y → ℝ} (hw : IsPrice K w) {Ω : 
     · exact (hv1 ⟨y, _⟩ ⟨y', _⟩).ge
     all_goals exact hv.nonneg _ _
   · refine (hv2 (g a) (g b)).trans (le_of_eq ?_)
-    show _ = ∫ ω, w (Sum.elim id (fun κ => σ κ ω) a.1) (Sum.elim id (fun κ => σ κ ω) b.1) ∂μ
+    show _ = mean (fun ω => w (Sum.elim id (fun κ => σ κ ω) a.1) (Sum.elim id (fun κ => σ κ ω) b.1))
     simp only [hg, hσ]
     exact (hmean fun f => w (place f a) (place f b)).symm
+
+/-- **Paper: Proposition prop:random.** "Let w be a price on Y, let Q be a set disjoint from Y, and let σ be a random
+map Y ∪ Q → Y that is the identity on Y, each σ(o) having finitely many values. Then a price on Y ∪ Q extends w and
+satisfies |oo′| ≤ E |σ(o)σ(o′)| for all o, o′." -/
+theorem prop_random {Y Q : Type} {w : Y → Y → ℝ} (hw : IsPrice K w) {Ω : Type} [MeasurableSpace Ω] (μ : Measure Ω)
+    [IsProbabilityMeasure μ] (σ : Q → Ω → Y) (hfin : ∀ κ, (Set.range (σ κ)).Finite)
+    (hmeas : ∀ κ y, MeasurableSet (σ κ ⁻¹' {y})) :
+    ∃ w' : Y ⊕ Q → Y ⊕ Q → ℝ, IsPrice K w' ∧ (∀ y y', w' (Sum.inl y) (Sum.inl y') = w y y') ∧
+      ∀ o o', w' o o' ≤
+        ∫ ω, w (Sum.elim id (fun κ => σ κ ω) o) (Sum.elim id (fun κ => σ κ ω) o') ∂μ := by
+  exact price_of_finite_joint_laws hw σ (fun f => ∫ ω, f ω ∂μ) (fun _ => by simp)
+    (prop_random_values μ σ hfin hmeas)
 
 /-- Proposition prop:random for a random map with finitely many values σ_l, taken with probabilities θ_l. -/
 theorem prop_random_finite {Y Q : Type} {w : Y → Y → ℝ} (hw : IsPrice K w) {Λ : Type} [Fintype Λ] (θ : Λ → ℝ)
@@ -446,16 +449,12 @@ theorem prop_random_finite {Y Q : Type} {w : Y → Y → ℝ} (hw : IsPrice K w)
     ∃ w' : Y ⊕ Q → Y ⊕ Q → ℝ, IsPrice K w' ∧ (∀ y y', w' (Sum.inl y) (Sum.inl y') = w y y') ∧
       ∀ o o', w' o o' ≤ ∑ l, θ l * w (Sum.elim id (σ l) o) (Sum.elim id (σ l) o') := by
   classical
-  let _ : MeasurableSpace Λ := ⊤
-  have : MeasurableSingletonClass Λ := ⟨fun _ => trivial⟩
-  let p : PMF Λ := PMF.ofFintype (fun l => ENNReal.ofReal (θ l))
-    (by rw [← ENNReal.ofReal_sum_of_nonneg fun l _ => hθ l, hθ1, ENNReal.ofReal_one])
-  obtain ⟨w', h1, h2, h3⟩ := prop_random hw p.toMeasure (fun κ l => σ l κ) (fun κ => Set.toFinite _)
-    fun κ y => trivial
-  refine ⟨w', h1, h2, fun o o' => (h3 o o').trans (le_of_eq ?_)⟩
-  rw [PMF.integral_eq_sum]
-  refine Finset.sum_congr rfl fun l _ => ?_
-  rw [PMF.ofFintype_apply, ENNReal.toReal_ofReal (hθ l), smul_eq_mul]
+  let e := (Fintype.equivFin Λ).symm
+  apply price_of_finite_joint_laws hw (fun κ l => σ l κ) (fun f => ∑ l, θ l * f l)
+    (fun c => by rw [← Finset.sum_mul, hθ1, one_mul])
+  intro T
+  exact ⟨_, fun i => θ (e i), fun i κ => σ (e i) κ, fun i => hθ _, (e.sum_comp θ).trans hθ1,
+    fun f => (e.sum_comp fun l => θ l * f (fun κ : T => σ l κ)).symm⟩
 
 /-- **Paper: Lemma lem:hubs.** "Let I = I₁ ⊔ I₂, let a tensor t on I be a sum of r products of a tensor on I₁ and one
 on I₂, and let n_p be its index sizes. For two further parties o₁, o₂ it is a restriction of
