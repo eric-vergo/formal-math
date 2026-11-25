@@ -11,6 +11,12 @@ import Paper.ApproxRound
 
 /-!
 # The paper, appendix "Approximate computation": no approximate accelerators
+
+The approximate scale-up (`prop_approx_acc_scales`) carries an approximate accelerator to
+arbitrarily large scales; rescaling keeps every property of the constants in `RescaleStable`.
+Theorem thm:noacc (`thm_noacc`) runs it on an exact accelerator whose constants are read as
+constant Laurent polynomials, which stay constant, and Proposition prop:approx-acc
+(`prop_approx_acc`) runs it on an approximate accelerator and returns to exact values.
 -/
 
 set_option linter.unusedSectionVars false

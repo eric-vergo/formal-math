@@ -6,7 +6,10 @@ SPDX-License-Identifier: Apache-2.0
 import Paper.Postpone
 
 /-!
-# One round: guess exponents, postpone, cut, accelerate
+# Scales
+
+The cut at one scale (`CutAt`), the constant `cst` that bounds the fixed programs, and the sizes of
+the budgets and plain instances of a round.
 -/
 
 set_option linter.unusedSectionVars false

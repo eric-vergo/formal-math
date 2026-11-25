@@ -8,7 +8,10 @@ import NS1.Diag
 import NS1.Finite
 
 /-!
-# The paper, section "One scale is all scales": no small accelerators
+# The paper, section "One scale is all scales": the steps of Theorem thm:noacc
+
+The finite field, the number m_E, and the diagonal. The theorem itself, which reaches a scale that
+is large against E through the approximate scale-up, is `thm_noacc` in Paper/ApproxScales.lean.
 -/
 
 namespace Paper

@@ -6,10 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 import NS1.Guess
 
 /-!
-# One round
+# The parts of a round
 
-A program that guesses budgets, multiplies by the powers of the constants, forms a plain instance, cuts it into
-pieces, and applies a given program to every piece.
+Weights of runs, a program applied to the outputs of another (`app`), the loop `LP` that applies a
+program to every piece of a list, and the plain instance `zq` formed from a guessed budget (`ZE`).
+The round of the approximate scale-up, `stepA`, is assembled from them.
 -/
 
 set_option linter.unusedSectionVars false
