@@ -122,19 +122,20 @@ theorem mean_place : mean place = 1 / 2 := by
   push_cast
   field_simp
 
-/-- A sequence f with second differences at most `2ω`, where `φ` stands for the value f(−1): then
-f(A) ≤ f(0) + A(f(0) − φ + ω) + A²ω. For ψ(l) = f(l) − l²ω this says ψ(A) ≤ ψ(0) + A(ψ(0) − ψ(−1)). -/
-theorem conc {f : ℕ → ℝ} {φ ω : ℝ} (h0 : f 1 + φ ≤ 2 * f 0 + 2 * ω)
-    (h : ∀ j, f (j + 2) + f j ≤ 2 * f (j + 1) + 2 * ω) (A : ℕ) :
-    f A ≤ f 0 + A * (f 0 - φ + ω) + A ^ 2 * ω := by
-  have key : ∀ j, f (j + 1) - f j ≤ (f 0 - φ + ω) + (2 * j + 1) * ω := by
-    intro j
+/-- A bound on the second differences gives a quadratic upper bound from values at −1 and 0. -/
+theorem conc {f : ℤ → ℝ} {ω : ℝ} (h : ∀ j : ℕ, f (j + 1) + f (j - 1 : ℤ) ≤ 2 * f j + 2 * ω)
+    (A : ℕ) : f A ≤ f 0 + A * (f 0 - f (-1) + ω) + (A : ℝ) ^ 2 * ω := by
+  have slope (j : ℕ) : f (j + 1) - f j ≤ f 0 - f (-1) + ω + (2 * (j : ℝ) + 1) * ω := by
     induction j with
-    | zero => norm_num; linarith
-    | succ j ih => have := h j; push_cast; linarith
+    | zero => have h0 := h 0; norm_num at h0 ⊢; linarith
+    | succ j ih =>
+      have hj := h (j + 1)
+      push_cast at hj ⊢
+      rw [add_sub_cancel_right] at hj
+      linarith
   induction A with
   | zero => simp
-  | succ A ih => have := key A; push_cast; nlinarith
+  | succ A ih => have hA := slope A; push_cast at ih ⊢; nlinarith only [ih, hA]
 
 /-- Squaring |rn²(L′ − L) + aL′| ≤ W, with 2L′(L′ − L) ≥ L′² − L², 1 − r ≤ 2θ and n²(L′² − L²) ≤ K:
 W² ≥ a²L′² + a·n²(L′² − L²) − 2aθK. -/

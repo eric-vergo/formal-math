@@ -48,44 +48,28 @@ theorem lem_toolkit_minimization (C : Set Y) (hC : IsClosed C) (hne : C.Nonempty
   set I := sInf (Θ '' C) with hI
   have hbdd : BddBelow (Θ '' C) := ⟨0, by rintro _ ⟨x, -, rfl⟩; exact hF0 x⟩
   have hle : ∀ y ∈ C, I ≤ Θ y := fun y hy => csInf_le hbdd ⟨y, hy, rfl⟩
-  have hseq : ∀ n : ℕ, ∃ y ∈ C, Θ y < I + 1 / ((n : ℝ) + 1) := by
-    intro n
-    obtain ⟨_, ⟨y, hy, rfl⟩, h⟩ := Real.lt_sInf_add_pos (hne.image Θ)
-      (show (0 : ℝ) < 1 / ((n : ℝ) + 1) by positivity)
-    exact ⟨y, hy, h⟩
-  choose u huC hu using hseq
+  obtain ⟨v, -, hv, hvC⟩ := exists_seq_tendsto_sInf (hne.image Θ) hbdd
+  choose u huC hu using hvC
+  have huΘ : Tendsto (fun n => Θ (u n)) atTop (𝓝 I) := by simpa only [hu] using hv
   have hcauchy : CauchySeq u := by
     rw [Metric.cauchySeq_iff]
     intro ε hε
-    obtain ⟨N, hN⟩ := exists_nat_one_div_lt (show 0 < c / 4 * ε ^ 2 by positivity)
+    have hδ : I < I + c / 4 * ε ^ 2 := lt_add_of_pos_right _ (by positivity)
+    obtain ⟨N, hN⟩ := eventually_atTop.1 (huΘ.eventually_lt_const hδ)
     refine ⟨N, fun m hm n hn => ?_⟩
     have h1 := hconv _ (huC m) _ (huC n)
     have h2 := hle _ (hmem _ (huC m) _ (huC n))
-    have hmono : ∀ k : ℕ, N ≤ k → 1 / ((k : ℝ) + 1) ≤ 1 / ((N : ℝ) + 1) := by
-      intro k hk
-      apply one_div_le_one_div_of_le (by positivity)
-      have : (N : ℝ) ≤ k := by exact_mod_cast hk
-      linarith
-    have h3 := hu m
-    have h4 := hu n
-    have h5 := hmono m hm
-    have h6 := hmono n hn
-    have h7 : c / 4 * dist (u m) (u n) ^ 2 < c / 4 * ε ^ 2 := by linarith
-    have h8 : dist (u m) (u n) ^ 2 < ε ^ 2 := lt_of_mul_lt_mul_left h7 (by positivity)
-    exact lt_of_pow_lt_pow_left₀ 2 hε.le h8
+    apply lt_of_pow_lt_pow_left₀ 2 hε.le
+    apply lt_of_mul_lt_mul_left (a := c / 4) _ (by positivity)
+    linarith [hN m hm, hN n hn]
   obtain ⟨b, hb⟩ := cauchySeq_tendsto_of_complete hcauchy
-  have hbC : b ∈ C := hC.mem_of_tendsto hb (Eventually.of_forall huC)
-  have hFb : Θ b ≤ I := by
-    have h1 : Tendsto (fun n => Θ (u n)) atTop (𝓝 (Θ b)) := (hF.tendsto b).comp hb
-    have h2 : Tendsto (fun n : ℕ => I + 1 / ((n : ℝ) + 1)) atTop (𝓝 (I + 0)) :=
-      tendsto_const_nhds.add tendsto_one_div_add_atTop_nhds_zero_nat
-    rw [add_zero] at h2
-    exact le_of_tendsto_of_tendsto' h1 h2 fun n => (hu n).le
+  have hbC := hC.mem_of_tendsto hb (Eventually.of_forall huC)
+  have hFb : Θ b = I := tendsto_nhds_unique ((hF.tendsto b).comp hb) huΘ
   refine ⟨b, hbC, ?_⟩
   have key : ∀ k : ℕ, ∀ y ∈ C, Θ b + c * (1 - (1 / 2) ^ k) * dist y b ^ 2 ≤ Θ y := by
     intro k
     induction k with
-    | zero => intro y hy; simpa using hFb.trans (hle y hy)
+    | zero => intro y hy; simpa using hFb.le.trans (hle y hy)
     | succ k ih =>
       intro y hy
       have h1 := ih _ (hmem b hbC y hy)

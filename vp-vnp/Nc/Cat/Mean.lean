@@ -145,74 +145,53 @@ theorem mean_eq_of_sub {f g : Fn} (hf : Bd f) (hg : Bd g)
   have h2 := tendsto_nhds_unique h1 (h.mono_left Nat.hyperfilter_le_atTop)
   linarith
 
+/-- A boundary strip of at most `n²` bounded entries on each sheet has vanishing
+contribution to the normalized window of size `2 n³`. -/
+private theorem mean_eq_of_strip {f g : Fn} (hf : Bd f) (hg : Bd g) (M : ℕ → ℕ)
+    (hM : ∀ n, M n ≤ n ^ 2) (edge : ℕ → Bool → ℕ → ℝ) {C : ℝ} (hC : 0 ≤ C)
+    (he : ∀ n b k, |edge n b k| ≤ C)
+    (h : ∀ n, avg n (f n) - avg n (g n) = (∑ b, ∑ k ∈ range (M n), edge n b k) / (2 * n ^ 3)) :
+    mean f = mean g := by
+  apply mean_eq_of_sub hf hg
+  apply squeeze_zero_norm' (a := fun n : ℕ => C * (1 / (n : ℝ)))
+  · filter_upwards [eventually_ne_atTop 0] with n hn
+    have hn' : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
+    rw [h, Real.norm_eq_abs, abs_div, abs_of_pos (by positivity : (0 : ℝ) < 2 * n ^ 3), div_le_iff₀ (by positivity)]
+    calc |∑ b, ∑ k ∈ range (M n), edge n b k| ≤ ∑ b : Bool, ∑ k ∈ range (M n), C :=
+          (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum fun b _ =>
+            (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum fun k _ => he n b k))
+      _ = 2 * ((M n : ℝ) * C) := by simp
+      _ ≤ 2 * ((n : ℝ) ^ 2 * C) := by gcongr; exact_mod_cast hM n
+      _ = _ := by field_simp
+  · simpa using tendsto_one_div_atTop_nhds_zero_nat.const_mul C
+
 theorem mean_shift_one {f : Fn} (hf : Bd f) :
     mean (fun n b i k => f n b (i + 1) k) = mean f := by
   obtain ⟨C, hC⟩ := id hf
-  have hC0 : 0 ≤ C := (abs_nonneg _).trans (hC 0 true 0 0)
-  refine mean_eq_of_sub (by simpa using hf.shift 1 0) hf ?_
-  refine squeeze_zero_norm' (a := fun n : ℕ => 2 * C * (1 / (n : ℝ))) ?_ ?_
-  · filter_upwards [eventually_ne_atTop 0] with n hn
-    have hn' : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-    have h1 : (avg n fun b i k => f n b (i + 1) k) - avg n (f n) =
-        (∑ b, ∑ k ∈ range n, (f n b ((n ^ 2 : ℕ) : ℤ) k - f n b 0 k)) / (2 * n ^ 3) := by
-      rw [avg, avg, ← sub_div, ← Finset.sum_sub_distrib]
-      congr 1
-      refine Finset.sum_congr rfl fun b _ => ?_
-      rw [Finset.sum_comm, Finset.sum_comm (s := range (n ^ 2)), ← Finset.sum_sub_distrib]
-      refine Finset.sum_congr rfl fun k _ => ?_
-      rw [sum_shift (fun i => f n b i k)]
-      ring
-    rw [h1, Real.norm_eq_abs, abs_div, abs_of_pos (show (0 : ℝ) < 2 * n ^ 3 by positivity),
-      div_le_iff₀ (by positivity)]
-    have h2 : |∑ b, ∑ k ∈ range n, (f n b ((n ^ 2 : ℕ) : ℤ) k - f n b 0 k)| ≤
-        ∑ b : Bool, ∑ k ∈ range n, 2 * C := by
-      refine (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum fun b _ => ?_)
-      refine (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum fun k _ => ?_)
-      refine (abs_sub _ _).trans ?_
-      linarith [hC n b ((n ^ 2 : ℕ) : ℤ) k, hC n b 0 k]
-    refine h2.trans ?_
-    simp only [Finset.sum_const, Finset.card_univ, Fintype.card_bool, Finset.card_range,
-      nsmul_eq_mul]
-    have h3 : (1 : ℝ) ≤ n := by exact_mod_cast Nat.pos_of_ne_zero hn
-    have h4 : 2 * C * (1 / (n : ℝ)) * (2 * n ^ 3) = 4 * C * n ^ 2 := by field_simp; ring
-    rw [h4]
-    push_cast
-    nlinarith [mul_nonneg hC0 hn'.le]
-  · simpa using tendsto_one_div_atTop_nhds_zero_nat.const_mul (2 * C)
+  apply mean_eq_of_strip (by simpa using hf.shift 1 0) hf id (fun n => Nat.le_self_pow (by decide) n)
+    (fun n b k => f n b ((n ^ 2 : ℕ) : ℤ) k - f n b 0 k) (C := C + C)
+    (by linarith [(abs_nonneg _).trans (hC 0 true 0 0)])
+    (fun n b k => (abs_sub _ _).trans (add_le_add (hC ..) (hC ..)))
+  intro n
+  rw [avg, avg, ← sub_div, ← Finset.sum_sub_distrib]
+  congr 1
+  refine Finset.sum_congr rfl fun b _ => ?_
+  rw [Finset.sum_comm, Finset.sum_comm (s := range (n ^ 2)), ← Finset.sum_sub_distrib]
+  exact Finset.sum_congr rfl fun k _ => by rw [sum_shift (fun i => f n b i k)]; ring
 
 theorem mean_shift_one' {f : Fn} (hf : Bd f) :
     mean (fun n b i k => f n b i (k + 1)) = mean f := by
   obtain ⟨C, hC⟩ := id hf
-  have hC0 : 0 ≤ C := (abs_nonneg _).trans (hC 0 true 0 0)
-  refine mean_eq_of_sub (by simpa using hf.shift 0 1) hf ?_
-  refine squeeze_zero_norm' (a := fun n : ℕ => 2 * C * (1 / (n : ℝ))) ?_ ?_
-  · filter_upwards [eventually_ne_atTop 0] with n hn
-    have hn' : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-    have h1 : (avg n fun b i k => f n b i (k + 1)) - avg n (f n) =
-        (∑ b, ∑ i ∈ range (n ^ 2), (f n b i (n : ℕ) - f n b i 0)) / (2 * n ^ 3) := by
-      rw [avg, avg, ← sub_div, ← Finset.sum_sub_distrib]
-      congr 1
-      refine Finset.sum_congr rfl fun b _ => ?_
-      rw [← Finset.sum_sub_distrib]
-      refine Finset.sum_congr rfl fun i _ => ?_
-      rw [sum_shift (fun k => f n b i k)]
-      ring
-    rw [h1, Real.norm_eq_abs, abs_div, abs_of_pos (show (0 : ℝ) < 2 * n ^ 3 by positivity),
-      div_le_iff₀ (by positivity)]
-    have h2 : |∑ b, ∑ i ∈ range (n ^ 2), (f n b i (n : ℕ) - f n b i 0)| ≤
-        ∑ b : Bool, ∑ k ∈ range (n ^ 2), 2 * C := by
-      refine (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum fun b _ => ?_)
-      refine (Finset.abs_sum_le_sum_abs _ _).trans (Finset.sum_le_sum fun i _ => ?_)
-      refine (abs_sub _ _).trans ?_
-      linarith [hC n b i (n : ℕ), hC n b i 0]
-    refine h2.trans ?_
-    simp only [Finset.sum_const, Finset.card_univ, Fintype.card_bool, Finset.card_range,
-      nsmul_eq_mul]
-    have h4 : 2 * C * (1 / (n : ℝ)) * (2 * n ^ 3) = 4 * C * n ^ 2 := by field_simp; ring
-    rw [h4]
-    push_cast
-    nlinarith
-  · simpa using tendsto_one_div_atTop_nhds_zero_nat.const_mul (2 * C)
+  apply mean_eq_of_strip (by simpa using hf.shift 0 1) hf (fun n => n ^ 2) (fun _ => le_rfl)
+    (fun n b i => f n b i n - f n b i 0) (C := C + C)
+    (by linarith [(abs_nonneg _).trans (hC 0 true 0 0)])
+    (fun n b i => (abs_sub _ _).trans (add_le_add (hC ..) (hC ..)))
+  intro n
+  rw [avg, avg, ← sub_div, ← Finset.sum_sub_distrib]
+  congr 1
+  refine Finset.sum_congr rfl fun b _ => ?_
+  rw [← Finset.sum_sub_distrib]
+  exact Finset.sum_congr rfl fun i _ => by rw [sum_shift (fun k => f n b i k)]; ring
 
 theorem mean_shift_left {f : Fn} (hf : Bd f) (a : ℤ) :
     mean (fun n b i k => f n b (i + a) k) = mean f := by
