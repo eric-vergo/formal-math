@@ -35,17 +35,9 @@ namespace Vtx
 variable {I G : Type*}
 
 /-- The vertices as a disjoint union. -/
-def equivSum : Vtx I G ≃ I ⊕ (G × Bool) ⊕ G where
-  toFun
-    | head i => .inl i
-    | tip g s => .inr (.inl (g, s))
-    | mid g => .inr (.inr g)
-  invFun
-    | .inl i => head i
-    | .inr (.inl (g, s)) => tip g s
-    | .inr (.inr g) => mid g
-  left_inv := by rintro (_ | _ | _) <;> rfl
-  right_inv := by rintro (_ | ⟨_, _⟩ | _) <;> rfl
+def equivSum : Vtx I G ≃ I ⊕ (G × Bool) ⊕ G :=
+  (proxy_equiv% Vtx I G).symm.trans
+    (Equiv.sumCongr (Equiv.refl I) ((Equiv.sigmaEquivProd G Bool).sumCongr (Equiv.refl G)))
 
 instance [Fintype I] [Fintype G] : Fintype (Vtx I G) := Fintype.ofEquiv _ equivSum.symm
 

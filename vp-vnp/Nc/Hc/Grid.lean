@@ -29,33 +29,9 @@ inductive Seg (N V K P : Type) where
   | right (n : N)
   | tab (n : N) (t : Bool × Bool)
   | pad (p : P)
-  deriving DecidableEq
+  deriving DecidableEq, Fintype
 
 variable {N V K P : Type}
-
-/-- The segments as a disjoint union. -/
-def Seg.equivSum : Seg N V K P ≃ V ⊕ K ⊕ N ⊕ N ⊕ N ⊕ (N × Bool × Bool) ⊕ P where
-  toFun
-    | .var a => .inl a
-    | .row b => .inr (.inl b)
-    | .edge n => .inr (.inr (.inl n))
-    | .left n => .inr (.inr (.inr (.inl n)))
-    | .right n => .inr (.inr (.inr (.inr (.inl n))))
-    | .tab n t => .inr (.inr (.inr (.inr (.inr (.inl (n, t))))))
-    | .pad p => .inr (.inr (.inr (.inr (.inr (.inr p)))))
-  invFun
-    | .inl a => .var a
-    | .inr (.inl b) => .row b
-    | .inr (.inr (.inl n)) => .edge n
-    | .inr (.inr (.inr (.inl n))) => .left n
-    | .inr (.inr (.inr (.inr (.inl n)))) => .right n
-    | .inr (.inr (.inr (.inr (.inr (.inl (n, t)))))) => .tab n t
-    | .inr (.inr (.inr (.inr (.inr (.inr p))))) => .pad p
-  left_inv := by rintro (_ | _ | _ | _ | _ | _ | _) <;> rfl
-  right_inv := by rintro (_ | _ | _ | _ | _ | _ | _) <;> rfl
-
-instance [Fintype N] [Fintype V] [Fintype K] [Fintype P] : Fintype (Seg N V K P) :=
-  Fintype.ofEquiv _ Seg.equivSum.symm
 
 /-- The options of a segment. -/
 abbrev Opt : Seg N V K P → Type
@@ -197,8 +173,8 @@ omit [DecidableEq N] [DecidableEq V] [DecidableEq K] [DecidableEq P] in
 theorem card_gridVtx :
     Fintype.card (Vtx (Seg N V K P) (Gad N)) =
       Fintype.card V + Fintype.card K + 37 * Fintype.card N + Fintype.card P := by
-  rw [Vtx.card_eq, Fintype.card_congr (Seg.equivSum (N := N) (V := V) (K := K) (P := P))]
-  simp only [Fintype.card_sum, Fintype.card_prod, Fintype.card_bool, Fintype.card_option]
+  rw [Vtx.card_eq, ← Fintype.card_congr (proxy_equiv% Seg N V K P)]
+  simp [Fintype.card_sigma]
   ring
 
 /-- Renaming the points does not change the sum over the cycles. -/
@@ -212,15 +188,10 @@ theorem hcSum_equiv {R : Type*} [CommSemiring R] {A B : Type*} [Fintype A] [Deci
       intro m a
       have h : e.permCongr σ ^ m = e.permCongr (σ ^ m) := (map_zpow e.permCongrHom σ m).symm
       rw [h, Equiv.permCongr_apply, Equiv.symm_apply_apply]
-    constructor
-    · refine fun h => ⟨Set.bijOn_univ.2 (Equiv.bijective _), fun a _ b _ => ?_⟩
-      obtain ⟨m, hm⟩ := h.2 (Set.mem_univ (e.symm a)) (Set.mem_univ (e.symm b))
-      refine ⟨m, ?_⟩
-      have := hz m (e.symm a)
-      rwa [hm, Equiv.apply_symm_apply, Equiv.apply_symm_apply] at this
-    · refine fun h => ⟨Set.bijOn_univ.2 (Equiv.bijective _), fun a _ b _ => ?_⟩
-      obtain ⟨m, hm⟩ := h.2 (Set.mem_univ (e a)) (Set.mem_univ (e b))
-      exact ⟨m, e.injective ((hz m a).symm.trans hm)⟩
+    simp only [Equiv.Perm.IsCycleOn, Set.bijOn_univ, Equiv.bijective, Set.mem_univ,
+      true_and, forall_const]
+    exact e.forall_congr fun a => e.forall_congr fun b =>
+      exists_congr fun m => by rw [hz, e.injective.eq_iff]
   · exact Fintype.prod_equiv e _ _ fun a => by rw [Equiv.permCongr_apply, Equiv.symm_apply_apply]
 
 /-- Substitution in the Hamiltonian cycle polynomial gives the sum over the cycles. -/
