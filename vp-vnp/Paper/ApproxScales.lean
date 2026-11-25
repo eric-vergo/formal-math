@@ -44,7 +44,6 @@ structure LargeScale (h cB U : ℕ) : Prop where
   two : 4 ≤ U
   cst_le : cst ≤ U
   poly : ∀ u, U ≤ u → 1000 * (3 * cB) ^ 3 * lg u ^ 9 ≤ u
-  cB_ge : 2000 * h ≤ cB
 
 /-- The bound of all logarithmic quantities. -/
 theorem cube_le {h cB U u X : ℕ} (hL : LargeScale h cB U) (hu : U ≤ u) (hX : X ≤ 3 * cB * lg u ^ 3) :
@@ -407,7 +406,7 @@ theorem prop_approx_acc [Algebra.FiniteType ℤ A] {h : ℕ} (hh : 17 ≤ h)
   obtain ⟨cs, hcs⟩ : ∃ n, n = cst := ⟨_, rfl⟩
   obtain ⟨U, hU⟩ : ∃ U, U = v₀ + n1 + n2 + cs + 4 := ⟨_, rfl⟩
   have hh3 : h ≤ h ^ 3 := Nat.le_self_pow (by norm_num) h
-  have hL : LargeScale h (2 * cB) U := ⟨by omega, by rw [← hcs]; omega, fun u hu => hn2 u (by omega), by omega⟩
+  have hL : LargeScale h (2 * cB) U := ⟨by omega, by rw [← hcs]; omega, fun u hu => hn2 u (by omega)⟩
   obtain ⟨C, hCdef⟩ : ∃ n, n = 2 * C₀ + 40 := ⟨_, rfl⟩
   obtain ⟨n3, hn3⟩ := poly_lg 1 (C * 10)
   obtain ⟨cc, hcc⟩ : ∃ n, n = 1000 * (7000 * h ^ 3) ^ 3 := ⟨_, rfl⟩
