@@ -52,8 +52,9 @@ theorem rebF_kv {g : Fm} {P z : Tree} {cg T H n : ℕ} {lg l : List (Run A)} {Q 
       (Q.map fun q => q.2 * algebraMap A R (l.map fun r => if ok q.1 r.bill = true then r.th else 0).sum).sum
       (cg + MM H * T + 40 * n + 60) := by
   obtain ⟨lZ, eZ, rZ⟩ := ZE_ev (Dt.quote P z) hg rg
-  refine (KV.app_rel (F := UF) (c := Prod.snd) (o := fun q => zq P z q.1) eZ rZ
+  refine (KV.app_rel (P := UF.code) (c := Prod.snd) (o := fun q => zq P z q.1) eZ rZ
     (d := MM H * T + 40 * n + 45) fun q hq => ?_).mono (by omega)
+  rw [Fm.ofTree_code]
   obtain ⟨hht, hnds⟩ := hQ q hq
   obtain ⟨pl, pe, -⟩ := zq_plain hP hT hht (τ := MM H * T + 40 * n + 40) (by omega)
   exact (KV.uf pl).congr (congrArg (algebraMap A R) pe)

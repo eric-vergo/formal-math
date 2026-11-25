@@ -315,20 +315,20 @@ end KV
 
 /-- Runs that give values with weights, then a formula at the values. -/
 theorem KV.app_rel {R : Type} [CommRing R] [Algebra A R] {κ : List Bool → R} {S : Set (List Bool)} {β : Type*}
-    {F e : Fm} {x : Tree} {le : List (Run A)} {Q : List β} {c : β → R} {o : β → Tree} {w : β → R} {ce d : ℕ}
-    (he : Ev θ e x le)
+    {P : Tree} {e : Fm} {x : Tree} {le : List (Run A)} {Q : List β} {c : β → R} {o : β → Tree} {w : β → R}
+    {ce d : ℕ} (he : Ev θ e x le)
     (rel : List.Forall₂ (fun r q => wt κ r = c q ∧ r.out = o q ∧ (∀ p ∈ r.bill, p ∈ S) ∧ r.cost ≤ ce) le Q)
-    (hF : ∀ q ∈ Q, KV θ κ S F (o q) (w q) d) :
-    KV θ κ S (NS1.app F.code e) x (Q.map fun q => c q * w q).sum (ce + d + 2) := by
-  have eU := Ev.app (p := F.code) he fun s hs => by
+    (hF : ∀ q ∈ Q, KV θ κ S (Fm.ofTree P) (o q) (w q) d) :
+    KV θ κ S (NS1.app P e) x (Q.map fun q => c q * w q).sum (ce + d + 2) := by
+  have eU := Ev.app (p := P) he fun s hs => by
     obtain ⟨q, hq, -, h, -⟩ := forall₂_exists rel hs
-    rw [Fm.ofTree_code, h]
+    rw [h]
     exact (hF q hq).hl
   refine ⟨_, eU, ?_, ?_⟩
   · intro u hu
     obtain ⟨s, hs, t, ht, h1, h2, -, -⟩ := mem_app hu
     obtain ⟨q, hq, -, h4, h5, h6⟩ := forall₂_exists rel hs
-    rw [Fm.ofTree_code, h4] at ht
+    rw [h4] at ht
     obtain ⟨c1, c2⟩ := (hF q hq).evl.1 t ht
     refine ⟨by omega, fun p hp => ?_⟩
     rw [h2, List.mem_append] at hp
@@ -336,6 +336,6 @@ theorem KV.app_rel {R : Type} [CommRing R] [Algebra A R] {κ : List Bool → R} 
   · rw [val_eq_sumF, sumF_app, sum_rel (c := c) (o := o) (rel.imp fun r q hr => ⟨hr.1, hr.2.1⟩)]
     congr 1
     refine List.map_congr_left fun q hq => ?_
-    rw [Fm.ofTree_code, ← val_eq_sumF, (hF q hq).evl.2]
+    rw [← val_eq_sumF, (hF q hq).evl.2]
 
 end NS1

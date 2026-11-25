@@ -99,7 +99,7 @@ theorem extF_kv {κ : List Bool → E} {S : Set (List Bool)} {P z : Tree} {g : F
       (cg + 40 * (W + 1) + MM H * T + 40 * n + 110) := by
   have ec := Ev.cons (Dt.id (θ := θ) z) hg
   rw [List.flatMap_cons, List.flatMap_nil, List.append_nil] at ec
-  refine (KV.app_rel (F := finF P) (Q := Q) (c := fun q => q.2.1)
+  refine (KV.app_rel (P := (finF P).code) (Q := Q) (c := fun q => q.2.1)
     (o := fun q => .cons z (.cons q.1.enc (ofBits q.2.2))) ec (ce := cg + 2)
     ?_ (d := 40 * (W + 1) + MM H * T + 40 * n + 90) fun q hq => ?_).mono (by omega)
   · rw [List.forall₂_map_left_iff]
@@ -111,6 +111,7 @@ theorem extF_kv {κ : List Bool → E} {S : Set (List Bool)} {P z : Tree} {g : F
       simp only [Run.seq, Run.tick, Run.det]
       omega
   · obtain ⟨q1, q2, q3⟩ := hQ q hq
+    rw [Fm.ofTree_code]
     refine (finF_kv hP hT q1).mono ?_
     rw [q3]
     omega
