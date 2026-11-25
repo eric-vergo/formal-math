@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import NS1.Scale
+import Mathlib.Algebra.Algebra.Subalgebra.Basic
+import Mathlib.Analysis.SpecificLimits.Normed
 
 /-!
 # Accelerators and changes of the ring of constants

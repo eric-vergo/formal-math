@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import NS1.Comp
+import Mathlib.Algebra.Order.BigOperators.Group.List
 
 /-!
 # Lists, equality, tries

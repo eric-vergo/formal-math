@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0
 import NS1.ApproxScale
 import NS1.ApproxAdd
 import Nc.Acc.Trie
+import Mathlib.Data.List.GetD
+import Mathlib.Data.ZMod.Basic
 
 /-!
 # Back to equality

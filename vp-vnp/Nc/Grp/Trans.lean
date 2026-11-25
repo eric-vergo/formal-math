@@ -4,6 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import Nc.Grp.Lang
+import Mathlib.Data.List.GetD
+import Mathlib.Data.Fintype.Pi
+import Mathlib.Data.Fintype.Prod
 
 /-!
 # Finite transducers

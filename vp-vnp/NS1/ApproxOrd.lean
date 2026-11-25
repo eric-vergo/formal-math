@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import NS1.Main
+import Mathlib.Algebra.Polynomial.Laurent
 
 /-!
 # Laurent polynomials in ε: orders, spans, rescaling

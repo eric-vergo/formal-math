@@ -4,6 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import NS1.EvalThm
+import Mathlib.Algebra.Algebra.Basic
+import Mathlib.Algebra.BigOperators.Ring.Finset
+import Mathlib.Algebra.BigOperators.Ring.List
+import Mathlib.Tactic.Abel
 
 /-!
 # Constants are postponed
