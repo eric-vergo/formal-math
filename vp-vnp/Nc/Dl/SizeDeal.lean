@@ -32,16 +32,9 @@ theorem size_mapF (step s l : Fm) : (mapF step s l).code.size ≤ 2 * step.code.
 
 theorem sum_le {α : Type*} {l : List α} {f : α → ℕ} {n b : ℕ} (hl : l.length ≤ n) (hb : ∀ t ∈ l, f t ≤ b) :
     (l.map f).sum ≤ n * b := by
-  have h : (l.map f).sum ≤ l.length * b := by
-    clear hl
-    induction l with
-    | nil => simp
-    | cons t l ih =>
-      have h1 := hb t List.mem_cons_self
-      have h2 := ih fun t ht => hb t (List.mem_cons_of_mem _ ht)
-      rw [List.map_cons, List.sum_cons, List.length_cons, add_mul, one_mul]
-      omega
-  exact h.trans (Nat.mul_le_mul_right _ hl)
+  have h := List.sum_le_length_nsmul (l.map f) b (List.forall_mem_map.2 hb)
+  simpa only [List.length_map, smul_eq_mul] using
+    h.trans (Nat.mul_le_mul_right b (by simpa using hl : (l.map f).length ≤ n))
 
 theorem size_c (t : Tree) : (Tm.c t).tree.size = t.size + 2 := by
   simp only [Tm.tree, Tree.size, size_num]; ring
@@ -85,6 +78,16 @@ theorem size_catTm_le {ts : List Tm} {n b : ℕ} (hl : ts.length ≤ n) (hb : �
   have h := sum_le hl hb
   rw [size_catTm, mul_add]
   omega
+
+private theorem size_catTm_append (xs ys : List Tm) :
+    (catTm (xs ++ ys)).tree.size ≤ (catTm xs).tree.size + (catTm ys).tree.size := by
+  simp only [size_catTm, List.map_append, List.sum_append, List.length_append, mul_add]
+  omega
+
+private theorem size_catTm_map_le {α : Type} {xs : List α} (f : α → Tm) {n b : ℕ}
+    (hl : xs.length ≤ n) (hf : ∀ x ∈ xs, (f x).tree.size ≤ b) :
+    (catTm (xs.map f)).tree.size ≤ n * (b + 11) + 3 :=
+  size_catTm_le (by simpa using hl) (List.forall_mem_map.2 hf)
 
 theorem size_bits {w : List Bool} {L : ℕ} (h : w.length ≤ L) : (ofBits w).size ≤ 4 * L + 1 :=
   (size_ofBits w).trans (by omega)
@@ -612,46 +615,30 @@ theorem size_scriptTm (g : Fin mm) : (scriptTm C tab tg bT bub gt d1 g).tree.siz
     exact Nat.mul_le_mul_left _ f1
   have k1 := size_bits hbT
   have k2 := size_bits hbub
-  have h1 := sum_le (l := (List.finRange (K + K)).map fun p =>
-      ifTm (C.nm (.slp (tab.kgrp (Fin.castAdd A' p)))) (gt g) (basesTm C p)) (f := fun t => t.tree.size) (n := X)
-      (b := 170 * (X * Lc)) (by rw [List.length_map, List.length_finRange]; exact H.hK2) (by
-        intro t ht
-        rw [List.mem_map] at ht
-        obtain ⟨p, -, rfl⟩ := ht
+  have h1 := size_catTm_map_le (xs := List.finRange (K + K)) (fun p =>
+      ifTm (C.nm (.slp (tab.kgrp (Fin.castAdd A' p)))) (gt g) (basesTm C p))
+    (b := 170 * (X * Lc)) (by simpa using H.hK2) (fun p _ => by
         have a1 := size_bits (H.nm (.slp (tab.kgrp (Fin.castAdd A' p))))
         have a2 := size_basesTm H p
         have a3 := hgt g
         rw [size_ifTm]
         omega)
-  have h2 := sum_le (l := (Grp.allRoles M).map fun r =>
-      ifTm (C.nm (.slp (tab.kgrp (M.rp r)))) (gt g) (listTm [roleTm C tab tg d1 r])) (f := fun t => t.tree.size) (n := X)
-      (b := 160 * (X * Lc) ^ 2) (by rw [List.length_map]; exact length_allRoles H) (by
-        intro t ht
-        rw [List.mem_map] at ht
-        obtain ⟨r, -, rfl⟩ := ht
+  have h2 := size_catTm_map_le (xs := Grp.allRoles M) (fun r =>
+      ifTm (C.nm (.slp (tab.kgrp (M.rp r)))) (gt g) (listTm [roleTm C tab tg d1 r]))
+    (b := 160 * (X * Lc) ^ 2) (length_allRoles H) (fun r _ => by
         have a1 := size_bits (H.nm (.slp (tab.kgrp (M.rp r))))
         have a2 := size_roleTm tab H hd1 r
         have a3 := hgt g
         rw [size_ifTm, size_listTm]
         simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, List.length_singleton]
         omega)
-  have h3 := sum_le (l := (G.allIds (K + K) U0 M.N U1).map (endTm C tab gt d1 g)) (f := fun t => t.tree.size) (n := X)
-      (b := 300 * (X * Lc)) (by rw [List.length_map]; exact length_allIds H) (by
-        intro t ht
-        rw [List.mem_map] at ht
-        obtain ⟨id, -, rfl⟩ := ht
-        exact size_endTm tab H hd1 hgt g id)
-  have l1 : ((List.finRange (K + K)).map fun p =>
-      ifTm (C.nm (.slp (tab.kgrp (Fin.castAdd A' p)))) (gt g) (basesTm C p)).length ≤ X := by
-    rw [List.length_map, List.length_finRange]; exact H.hK2
-  have l2 : ((Grp.allRoles M).map fun r =>
-      ifTm (C.nm (.slp (tab.kgrp (M.rp r)))) (gt g) (listTm [roleTm C tab tg d1 r])).length ≤ X := by
-    rw [List.length_map]; exact length_allRoles H
-  have l3 : ((G.allIds (K + K) U0 M.N U1).map (endTm C tab gt d1 g)).length ≤ X := by
-    rw [List.length_map]; exact length_allIds H
-  rw [scriptTm, size_tmCons, size_c, size_catTm, List.map_append, List.map_append, List.sum_append, List.sum_append,
-    List.length_append, List.length_append]
+  have h3 := size_catTm_map_le (endTm C tab gt d1 g) (length_allIds H)
+    (fun id _ => size_endTm tab H hd1 hgt g id)
+  rw [scriptTm, size_tmCons, size_c]
   simp only [Tree.size]
+  apply le_trans (Nat.add_le_add_right (Nat.add_le_add_left
+    ((size_catTm_append _ _).trans (Nat.add_le_add_right (size_catTm_append _ _) _)) _) _)
+  rw [mul_add] at h1 h2 h3
   have e1 : X * (170 * (X * Lc)) = 170 * (X * (X * Lc)) := by ring
   have e2 : X * (160 * (X * Lc) ^ 2) = 160 * (X * (X * Lc) ^ 2) := by ring
   have e3 : X * (300 * (X * Lc)) = 300 * (X * (X * Lc)) := by ring
