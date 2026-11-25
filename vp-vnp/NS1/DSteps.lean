@@ -88,20 +88,21 @@ def dstepF (n : List Bool) : Fm := .ite (.hd (.hd .id))
 def UnitImage {β : Type*} (Q : List (A × Tree)) (g : Tree → β) (L : List β) : Prop :=
   Q.map (fun q => (q.1, g q.2)) = L.map ((1 : A), ·)
 
-theorem UnitImage.mem {β : Type*} {Q : List (A × Tree)} {g : Tree → β} {L : List β} (h : UnitImage Q g L)
-    {q : A × Tree} (hq : q ∈ Q) : g q.2 ∈ L := by
+theorem UnitImage.mem {β : Type*} {Q : List (A × Tree)} {g : Tree → β} {L : List β}
+    (h : UnitImage Q g L) {q : A × Tree} (hq : q ∈ Q) : g q.2 ∈ L := by
   have : (q.1, g q.2) ∈ L.map ((1 : A), ·) := h ▸ List.mem_map_of_mem hq
   obtain ⟨b, hb, e⟩ := List.mem_map.1 this
   simp only [Prod.mk.injEq] at e
   exact e.2 ▸ hb
 
-theorem UnitImage.wsum {β : Type*} {Q : List (A × Tree)} {g : Tree → β} {L : List β} (h : UnitImage Q g L)
-    (Φ : β → A) : wsum Q (fun o => Φ (g o)) = (L.map Φ).sum := by
+theorem UnitImage.wsum {β : Type*} {Q : List (A × Tree)} {g : Tree → β} {L : List β}
+    (h : UnitImage Q g L) (Φ : β → A) : wsum Q (fun o => Φ (g o)) = (L.map Φ).sum := by
   have := congrArg (fun l : List (A × β) => (l.map fun p => p.1 * Φ p.2).sum) h
   simpa [NS1.wsum, Function.comp_def] using this
 
-theorem UnitImage.bindW {β : Type*} {Q : List (A × Tree)} {R : Tree → List (A × Tree)} {g : Tree → β}
-    {L : List β} {M : β → List β} (hQ : UnitImage Q g L) (hR : ∀ q ∈ Q, UnitImage (R q.2) g (M (g q.2))) :
+theorem UnitImage.bindW {β : Type*} {Q : List (A × Tree)} {R : Tree → List (A × Tree)}
+    {g : Tree → β} {L : List β} {M : β → List β} (hQ : UnitImage Q g L)
+    (hR : ∀ q ∈ Q, UnitImage (R q.2) g (M (g q.2))) :
     UnitImage (bindW Q R) g (L.flatMap M) := by
   induction Q generalizing L with
   | nil =>
@@ -117,8 +118,8 @@ theorem UnitImage.bindW {β : Type*} {Q : List (A × Tree)} {R : Tree → List (
       have hr := hR q (List.mem_cons_self ..)
       have ht := ih h3 fun q' hq' => hR q' (List.mem_cons_of_mem _ hq')
       unfold UnitImage at hr ht ⊢
-      simp only [NS1.bindW, List.flatMap_cons, List.map_append, List.map_map, Function.comp_def, h1, one_mul]
-        at hr ht ⊢
+      simp only [NS1.bindW, List.flatMap_cons, List.map_append, List.map_map, Function.comp_def, h1,
+        one_mul] at hr ht ⊢
       rw [ht, ← h2, hr]
 
 /-- One step: its outcomes are exactly the states after the step, each with weight one. -/
@@ -175,7 +176,8 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
       · simp only [DStep.cost, gets, h, ite_false]
         omega
       · have hW : gets W p ≠ .nil := h
-        simp [UnitImage, bindW, DStep.exec, gets_tset, hW, Function.comp_def, List.flatMap_map, ← List.map_eq_flatMap]
+        simp [UnitImage, bindW, DStep.exec, gets_tset, hW, Function.comp_def, List.flatMap_map,
+          ← List.map_eq_flatMap]
   | op p q dst φ =>
     have hp : Gives θ (getF (.hd (.tl (.hd .id))) (.tl .id)) (.cons (DStep.op p q dst φ).tree W) (tget p W)
         (4 + 2 + 30 * p.length + 20) := by
@@ -194,8 +196,9 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
       (by simp [num]) (Does.ite_false (Gives.id _).hd.hd.tl hs)).mono ?_, ?_⟩
     · simp only [DStep.cost, gets]
       omega
-    · simp [UnitImage, DStep.exec, gets_tset]
-      simp [gets]
+    · simp only [UnitImage, List.map_cons, gets_tset, List.map_nil, DStep.exec, List.cons.injEq,
+        Prod.mk.injEq, true_and, and_true]
+      simp only [gets]
   | pick p tab =>
     have hp : Gives θ (getF (.hd (.tl (.hd .id))) (.tl .id)) (.cons (DStep.pick p tab).tree W) (tget p W)
         (4 + 2 + 30 * p.length + 20) := by
@@ -224,7 +227,8 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
       (Does.letk (R := fun o => [(1, assignT W o)]) hpk hs)).mono ?_, ?_⟩
     · simp only [DStep.cost, gets, ← ho]
       omega
-    · simp [UnitImage, bindW, DStep.exec, gets_assign, Function.comp_def, List.flatMap_map, ← List.map_eq_flatMap]
+    · simp only [UnitImage, bindW, List.map_cons, mul_one, List.map_nil, List.flatMap_map,
+        ← List.map_eq_flatMap, List.map_map, Function.comp_def, gets_assign, DStep.exec]
       rw [ho]
       rfl
 
@@ -291,7 +295,8 @@ theorem dstepsF_does (n : List Bool) (sts : List DStep) {wf : Fm} {x W : Tree} {
         obtain ⟨rfl, rfl⟩ := h1
         obtain ⟨h3, h4⟩ := hI st sts' _ h2
         rw [hF', hd]
-        exact ⟨(hf1 st W).mono h3, fun q hq => ⟨sts', rfl, h4 _ ((hf2 st W).mem hq)⟩⟩) ⟨sts, rfl, hW⟩
+        exact ⟨(hf1 st W).mono h3, fun q hq => ⟨sts', rfl, h4 _ ((hf2 st W).mem hq)⟩⟩)
+    ⟨sts, rfl, hW⟩
   refine ⟨_, hfold.mono ?_, fun q hq => (himg sts W).mem hq, (himg sts W).wsum⟩
   rw [List.map_map]
   have e : (sts.map ((fun x => d x + 30) ∘ DStep.tree)) = sts.map fun st => c st + 30 :=

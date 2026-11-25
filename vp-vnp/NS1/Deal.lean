@@ -75,7 +75,8 @@ def bitsB : Fm := .ite (app nzB.code (.cons (.quote nzB.code) (.hd (.tl .id))))
 /-- The bit lists of length `n`, each once, with the accumulated bits `acc` appended. -/
 theorem bitsB_does (n : ℕ) : ∀ (w : List Bool) (acc : List Bool), KT.val w = n →
     Does θ bitsB (.cons bitsB.code (.cons (ofBits w) (ofBits acc)))
-      ((allBits n).map fun u => ((1 : A), ofBits (u.reverse ++ acc))) ((n + 1) * (60 * w.length + 100)) := by
+      ((allBits n).map fun u => ((1 : A), ofBits (u.reverse ++ acc)))
+      ((n + 1) * (60 * w.length + 100)) := by
   induction n with
   | zero =>
     intro w acc hw
@@ -105,10 +106,12 @@ theorem bitsB_does (n : ℕ) : ∀ (w : List Bool) (acc : List Bool), KT.val w =
     have d1 := ih w' (true :: acc) (by omega)
     have d0 := ih w' (false :: acc) (by omega)
     rw [hl] at d1 d0
-    have d1' : Does θ (Fm.ofTree bitsB.code) (.cons bitsB.code (.cons (ofBits w') (.cons one (ofBits acc))))
+    have d1' : Does θ (Fm.ofTree bitsB.code)
+        (.cons bitsB.code (.cons (ofBits w') (.cons one (ofBits acc))))
         ((allBits n).map fun u => ((1 : A), ofBits (u.reverse ++ true :: acc)))
         ((n + 1) * (60 * w.length + 100)) := by rw [Fm.ofTree_code]; exact d1
-    have d0' : Does θ (Fm.ofTree bitsB.code) (.cons bitsB.code (.cons (ofBits w') (.cons .nil (ofBits acc))))
+    have d0' : Does θ (Fm.ofTree bitsB.code)
+        (.cons bitsB.code (.cons (ofBits w') (.cons .nil (ofBits acc))))
         ((allBits n).map fun u => ((1 : A), ofBits (u.reverse ++ false :: acc)))
         ((n + 1) * (60 * w.length + 100)) := by rw [Fm.ofTree_code]; exact d0
     have r1 := Does.run (Gives.id (θ := θ) (.cons bitsB.code (.cons (ofBits w) (ofBits acc)))).hd
@@ -121,11 +124,9 @@ theorem bitsB_does (n : ℕ) : ∀ (w : List Bool) (acc : List Bool), KT.val w =
       simp [allBits, Function.comp_def]
     rw [hQ]
     refine (Does.ite_true hnz e (Does.either r1 r0)).mono ?_
-    have : max (2 + (2 + (1 + 3 + 1 + 20 * w.length + 2 + (1 + 3 + 1) + 1) + 1) + (n + 1) * (60 * w.length + 100) + 1)
-        (2 + (2 + (1 + 3 + 1 + 20 * w.length + 2 + (1 + 3 + 1) + 1) + 1) + (n + 1) * (60 * w.length + 100) + 1) =
-        2 + (2 + (1 + 3 + 1 + 20 * w.length + 2 + (1 + 3 + 1) + 1) + 1) + (n + 1) * (60 * w.length + 100) + 1 :=
-      max_self _
-    have e2 : (n + 1 + 1) * (60 * w.length + 100) = (n + 1) * (60 * w.length + 100) + (60 * w.length + 100) := by ring
+    have e2 : (n + 1 + 1) * (60 * w.length + 100) =
+        (n + 1) * (60 * w.length + 100) + (60 * w.length + 100) := by ring
+    rw [max_self]
     omega
 
 /-- Guess a bit list whose length is a fixed binary number. -/
@@ -144,7 +145,7 @@ theorem bitsF_does (n : List Bool) (x : Tree) :
       rw [Fm.ofTree_code]
       exact bitsB_does (KT.val n) n [] rfl)
   simp only [bindW, List.flatMap_cons, List.flatMap_nil, List.append_nil, List.map_map, one_mul,
-    List.append_nil, Function.comp_def] at h
+    Function.comp_def] at h
   exact h.mono (by omega)
 
 end Bits

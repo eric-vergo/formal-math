@@ -34,13 +34,15 @@ theorem nxt_ok_R {x y : RM T m AA} (hx : okR T R ch x) {ν : Bool} (he : tgR T R
     refine ⟨hok, ?_, fun L h0 => absurd h0 hs⟩
     rw [inpR_mid, ite_eq_right hs]
   rcases x with ⟨a, c, γ, s⟩ | ⟨j, i, e⟩ | ⟨j, e, s⟩ | e
-  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with ⟨hs, _, h'⟩ | ⟨k, _, h'⟩ <;> rw [h'] at he
+  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with
+      ⟨hs, _, h'⟩ | ⟨k, _, h'⟩ <;> rw [h'] at he
     · obtain rfl := Tg.nxt.inj he
       exact ⟨⟨hx.1, hs.2⟩, rfl, fun _ => trivial⟩
     · exact absurd he (hE _)
   · simp [tgR] at he
-  · rcases tgR_mid_cases (R := R) (ch := ch) j e s ν with h' | ⟨_, _, h'⟩ | ⟨_, _, h'⟩ | ⟨_, _, h'⟩ |
-      ⟨-, -, hq, h'⟩ | ⟨-, -, h'⟩ | ⟨-, -, hq, h'⟩ <;> rw [h'] at he <;> simp at he <;> subst he
+  · rcases tgR_mid_cases (R := R) (ch := ch) j e s ν with h' | ⟨_, _, h'⟩ | ⟨_, _, h'⟩ |
+      ⟨_, _, h'⟩ | ⟨-, -, hq, h'⟩ | ⟨-, -, h'⟩ | ⟨-, -, hq, h'⟩ <;> rw [h'] at he <;>
+        simp only [Fin.isValue, reduceCtorEq, Tg.nxt.injEq] at he <;> subst he
     · exact mid j e 1 (by decide) ⟨fun _ => hq, fun h3 => absurd h3 (by decide)⟩
     · exact mid j e 2 (by decide) ⟨fun h3 => absurd h3 (by decide), fun h3 => absurd h3 (by decide)⟩
     · exact mid j e 3 (by decide) ⟨fun h3 => absurd h3 (by decide), fun _ => hq⟩

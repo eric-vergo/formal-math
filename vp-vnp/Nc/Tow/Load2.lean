@@ -123,14 +123,16 @@ theorem tgR_mid_cases (j : Fin J) (e : T.Ed j) (s : Fin 4) (ν : Bool) :
 theorem tgR_edge_succ {x : RM T m AA} {ν : Bool} {j : Fin J} {e' : T.Ed (j + 1)}
     (hx : tgR T R ch x ν = .edge j.succ e') : ∃ e, x = .mid j e 2 ∧ ν = false ∧ T.πE e = e' := by
   rcases x with ⟨a, c, γ, s⟩ | ⟨j', i, e⟩ | ⟨j', e, s⟩ | e
-  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with ⟨_, _, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
+  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with
+      ⟨_, _, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
     · simp at hx
     · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;> rw [h'] at hx
       · simp at hx
       · exact absurd (Tg.edge.inj hx).1.symm (Fin.succ_ne_zero j)
   · simp [tgR] at hx
   · rcases tgR_mid_cases (R := R) (ch := ch) j' e s ν with he | ⟨_, _, he⟩ | ⟨rfl, rfl, he⟩ |
-      ⟨_, _, he⟩ | ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hx <;> simp at hx
+      ⟨_, _, he⟩ | ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hx <;>
+        simp only [Fin.isValue, reduceCtorEq, Tg.edge.injEq, Fin.succ_inj] at hx
     obtain ⟨rfl, h2⟩ := hx
     exact ⟨e, rfl, rfl, eq_of_heq h2⟩
   · simp [tgR] at hx
@@ -140,12 +142,15 @@ theorem tgR_seg {x : RM T m AA} {ν : Bool} {j : Fin J} {i : Fin h} {ω : T.V (j
       ((x = .mid j e 1 ∧ (T.πV (T.vx i (T.e0 e)) : T.V (j + 1) i) = ω ∧ s(T.co i (hst T i (T.e0 e)), T.co i (T.e0 e)) = q) ∨
       (x = .mid j e 3 ∧ (T.πV (T.vx i (T.e1 e)) : T.V (j + 1) i) = ω ∧ s(T.co i (hst T i (T.e1 e)), T.co i (T.e1 e)) = q)) := by
   rcases x with ⟨a, c, γ, s⟩ | ⟨j', i', e⟩ | ⟨j', e, s⟩ | e
-  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with ⟨_, _, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
+  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s ν with
+      ⟨_, _, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
     · simp at hx
-    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;> rw [h'] at hx <;> simp at hx
+    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;>
+        rw [h'] at hx <;> simp at hx
   · simp [tgR] at hx
   · rcases tgR_mid_cases (R := R) (ch := ch) j' e s ν with he | ⟨rfl, rfl, he⟩ | ⟨_, _, he⟩ |
-      ⟨rfl, rfl, he⟩ | ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hx <;> simp at hx
+      ⟨rfl, rfl, he⟩ | ⟨_, _, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, _, he⟩ <;> rw [he] at hx <;>
+        simp only [Fin.isValue, reduceCtorEq, Tg.seg.injEq] at hx
     · obtain ⟨rfl, rfl, h3, h4⟩ := hx
       exact ⟨e, rfl, rfl, Or.inl ⟨rfl, eq_of_heq h3, h4⟩⟩
     · obtain ⟨rfl, rfl, h3, h4⟩ := hx
@@ -158,12 +163,15 @@ theorem tgR_mid {x : RM T m AA} {ν : Bool} {j : Fin J} {e : T.Ed j} {s : Fin 4}
       (s = 2 ∧ ((x = .mid j e 0 ∧ hst T (T.ty e) (T.e0 e) = T.π (T.e0 e)) ∨ x = .mid j e 1)) ∨
       (s = 3 ∧ x = .mid j e 2)) := by
   rcases x with ⟨a, c, γ, s'⟩ | ⟨j', i', e'⟩ | ⟨j', e', s'⟩ | e'
-  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s' ν with ⟨_, _, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
+  · rcases tgR_start_cases (R := R) (ch := ch) a c γ s' ν with
+      ⟨_, _, he⟩ | ⟨k, _, he⟩ <;> rw [he] at hx
     · simp at hx
-    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;> rw [h'] at hx <;> simp at hx
+    · rcases edgeO_cases (m := m) (AA := AA) (T := T) _ with h' | ⟨_, -, h'⟩ <;>
+        rw [h'] at hx <;> simp at hx
   · simp [tgR] at hx
-  · rcases tgR_mid_cases (R := R) (ch := ch) j' e' s' ν with he | ⟨_, _, he⟩ | ⟨_, _, he⟩ | ⟨_, _, he⟩ |
-      ⟨rfl, rfl, -, he⟩ | ⟨hs, rfl, he⟩ | ⟨rfl, rfl, -, he⟩ <;> rw [he] at hx <;> simp at hx
+  · rcases tgR_mid_cases (R := R) (ch := ch) j' e' s' ν with he | ⟨_, _, he⟩ | ⟨_, _, he⟩ |
+      ⟨_, _, he⟩ | ⟨rfl, rfl, -, he⟩ | ⟨hs, rfl, he⟩ | ⟨rfl, rfl, -, he⟩ <;> rw [he] at hx <;>
+        simp only [Fin.isValue, reduceCtorEq, Tg.nxt.injEq, RM.mid.injEq] at hx
     · obtain ⟨rfl, h2, rfl⟩ := hx
       obtain rfl := eq_of_heq h2
       simp
@@ -342,7 +350,8 @@ theorem alv_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j
       alv R ch FL lhat n o (⟨.inl ⟨.mid j e s, hx⟩, ν⟩ : NM R FL (ch := ch)) = 0) := by
   obtain ⟨hx0, h1⟩ := num_mid_le (FL := FL) (lhat := lhat) (n := n) (o := o) hr hb j e s hx
   have h2 := num_mid0 (FL := FL) (lhat := lhat) (n := n) (o := o) hr hb j e hx0
-  have h3 := alv_le_num (lhat := lhat) (n := n) (o := o) (⟨.mid j e s, hx⟩ : {x : RM T m AA // okR T R ch x}) ν
+  have h3 := alv_le_num (lhat := lhat) (n := n) (o := o)
+    (⟨.mid j e s, hx⟩ : {x : RM T m AA // okR T R ch x}) ν
   refine ⟨h3.trans (h1.trans h2.1), fun hn => ?_⟩
   have := h2.2 hn
   omega
