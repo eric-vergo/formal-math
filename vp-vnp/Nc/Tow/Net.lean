@@ -73,7 +73,7 @@ def rmEquiv (T : Tower h b D J r) (m AA : ℕ) : RM T m AA ≃ (Fin AA × Fin AA
 instance (T : Tower h b D J r) (m AA : ℕ) : Fintype (RM T m AA) := Fintype.ofEquiv _ (rmEquiv T m AA).symm
 
 /-- Sums over relays. -/
-theorem sum_RM {M : Type*} [AddCommMonoid M] (g : RM T m AA → M) : ∑ x, g x =
+theorem sum_RM {T : Tower h b D J r} {M : Type*} [AddCommMonoid M] (g : RM T m AA → M) : ∑ x, g x =
     (∑ a, ∑ c, ∑ γ, ∑ s, g (.start a c γ s)) + ((∑ j, ∑ i, ∑ e, g (.inn j i e)) +
       ((∑ j, ∑ e, ∑ s, g (.mid j e s)) + ∑ e, g (.fin e))) := by
   rw [← (rmEquiv T m AA).symm.sum_comp g]
