@@ -18,7 +18,7 @@ open MvPolynomial Nc
 
 universe u
 
-section Transfer
+section
 
 variable {F : Type*} {KK : Type} [Field F] [Field KK] [IsAlgClosed KK] {X : Type*}
 
@@ -78,7 +78,7 @@ theorem lem_transfer_approx (p : ℕ) [CharP F p] [CharP KK p] (q : MvPolynomial
   rw [coeff_map, AddMonoidAlgebra.coeff_mapRingHom, e1, coeff_map]
   split_ifs <;> simp
 
-end Transfer
+end
 
 /-- An exact circuit gives a coefficientwise approximation of the same size by
 viewing its constants as constant Laurent series. -/
