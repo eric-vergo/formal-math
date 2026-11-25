@@ -946,7 +946,7 @@ five theorems depend on it, with the letters explained above.
   * {bpref "flat_rate_approx_complete"}[its node] in {ref "chapter-flat"}[The flat case]
 *
   * {InlineLean.name}`Nc.LaurentApproximates.aeval`
-  * Affine projection of the finite witness preserves all nonpositive coefficients and multiplies the gate bound by five.
+  * After affine projection of the finite witness, all negative Laurent coefficients vanish and the degree-zero term equals the projected target. The gate bound increases by a factor of five.
   * all five
   * {bpref "lem_transfer_approx"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
 *
