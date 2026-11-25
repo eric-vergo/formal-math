@@ -25,3 +25,7 @@ Lean proof adaptations in Nc/Dl/Cut.lean, Nc/Flag/Act.lean, Nc/Tow/Slp2.lean, Nc
 Nc/Tow/Slp4.lean, and Paper/Pieces.lean use work by Helen Kwok, available under Apache License, Version 2.0
 from https://github.com/helenkwok/formal-math at 939ca3e07458f4ab2359781ad7b76730f23b9250 and
 932c9f971310eaf3195f2b2256dc338cb3a17060. Adaptations by Eric Vergo and GPT-6.2 (OpenAI).
+
+The Lean 4.36 port and original fork blueprint are by Eric Vergo and Claude (Anthropic).
+The cleanup of the port and revisions to the blueprint are by Eric Vergo and GPT-6.2 (OpenAI),
+with a proof-cleanup round directed by Claude Fable 5.2 and edited by Claude Opus 5.5 (Anthropic).

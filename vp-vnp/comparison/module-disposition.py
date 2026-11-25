@@ -13,6 +13,7 @@ from compare import PROOF_LIBRARIES, REPO, load, table
 
 
 DISPOSITIONS = {
+    "Paper/Next.lean": ("Deleted", "`Paper/ApproxRound.lean`, `Paper/ApproxScales.lean`", "Two arithmetic estimates moved. The approximate iteration carries constant preservation and yields K.6. The standalone exact round and K.5 statement were removed."),
     "Nc/CaseI/Cube.lean": ("Combined", "`Nc/CaseI/Geo.lean`", "The opposite-corners argument lives with the geometric construction."),
     "Nc/Cat/Prod.lean": ("Combined", "`Nc/Cat/Core.lean`", "The product metric belongs with the CAT space primitives."),
     "Nc/Cat/Space.lean": ("Combined", "`Nc/Cat/Core.lean`", "The convexity, metric-depth and midpoint definitions share their core module."),

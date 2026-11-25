@@ -8,11 +8,11 @@ Research artifact. Not maintained and not accepting contributions.
 
 ## Proof cleanup
 
-Eric Vergo and GPT-6.2 (OpenAI) revised the Lean proofs and accompanying blueprint on this fork. The paper and its original attribution are preserved. The cleanup starts at the Lean 4.36 port, commit `9fd368ad`. It preserves the bytes of `Statement.lean`, the Comparator challenge, solution and configuration, and the original PDF. From this directory, check those files against the port with:
+Eric Vergo worked with GPT-6.2 (OpenAI) on the proof cleanup and blueprint. Claude Fable 5.2 (Anthropic) directed a middle round with Claude Opus 5.5 agents making its edits. The earlier Lean 4.36 port and original fork blueprint are by Eric Vergo and Claude (Anthropic). Six Lean files adapt work by Helen Kwok under Apache 2.0. [Attribution and comparison sources](comparison/related-proofs.md). The paper and its original attribution are preserved. The cleanup starts at the Lean 4.36 port, commit `9fd368ad`. It preserves the bytes of `Statement.lean`, the Comparator challenge, solution and configuration, and the original PDF. From this directory, check those files against the port with:
 
     git diff --exit-code 9fd368ad HEAD -- Statement.lean Comparator paper.pdf
 
-The real permanent bound specializes the all-fields theorem, whose exact lower bound follows from the corresponding border bound. The qualitative flat-case bound follows from the quantitative bound. The blueprint gives both the printed arguments and the compiled routes. [Before and after comparison](comparison/README.md) · [Measurement method](comparison/inventory-method.md).
+The real permanent bound specializes the all-fields theorem, whose exact lower bound follows from the corresponding border bound. The qualitative flat-case bound follows from the quantitative bound. Across the four proof libraries the cleanup reduced 72,739 physical lines in 320 files to 67,960 in 312. The five public conclusions keep their statements. Some intermediate paper claims no longer have standalone Lean proofs, including E.5’s explicit geometric construction and sharper constant, the exact accelerator form of K.3, K.5’s exact scale-up, and H.2(c)’s law-layer bound. The blueprint identifies where the compiled route diverges from the paper. [Before and after comparison](comparison/README.md) · [Measurement method](comparison/inventory-method.md).
 
 ## Lean 4.36 port at `9fd368ad`
 

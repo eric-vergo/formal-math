@@ -11,6 +11,7 @@ import json
 from math import ceil
 from pathlib import Path
 import statistics
+import subprocess
 from urllib.parse import quote
 
 
@@ -26,7 +27,7 @@ EXAMPLES = [
     ("Real polynomial and class corollaries", ["Paper.thm_simple", "Paper.cor_classes"],
      ["Paper.thm_simple", "Paper.cor_classes"]),
     ("Flat polynomial lower bound", ["Paper.thm_flat_simple"], ["Paper.thm_flat_simple"]),
-    ("Flat displacement estimate", ["Paper.prop_flat_lower_lengths"], ["Paper.prop_flat_lower_lengths"]),
+    ("Flat displacement estimate", ["Paper.prop_flat_lower_lengths"], []),
     ("One-cut assembly", ["Paper.thm_onecut"], ["Paper.thm_onecut"]),
     ("Tape automaton piece bounds", ["Paper.prop_pieces"], ["Paper.prop_pieces"]),
     ("Guarded sum of states", ["Nc.Dl.mem_execAll"], ["Nc.Dl.mem_execAll"]),
@@ -131,6 +132,8 @@ def proof_sizes(inventory):
 
 
 def proof_example(inventory, paths, names):
+    if not names:
+        return "Removed standalone statement", "—"
     records = {item["name"]: item for item in inventory["proofs"].values()}
     links, lines = [], 0
     for name in names:
@@ -193,12 +196,25 @@ def exposition_proofs(inventory, paths):
             if p["name"] in cited and p["module"] != "Comparator.VpVnp.Challenge"}
 
 
-def benchmark_rows(source, revisions):
+def proof_revision(integrated, frozen):
+    if frozen is None:
+        return integrated
+    project = Path(__file__).resolve().parents[1]
+    inputs = ["Nc", "NS1", "Ov", "Paper", "Paper.lean", "Statement.lean", "Comparator",
+              "lean-toolchain", "lakefile.toml", "lake-manifest.json", "scripts", "paper.pdf"]
+    revision = subprocess.check_output(["git", "rev-parse", "--verify", f"{frozen}^{{commit}}"],
+                                       cwd=project, text=True).strip()
+    subprocess.run(["git", "diff", "--exit-code", "--no-ext-diff", "--quiet",
+                    revision, integrated, "--", *inputs], cwd=project, check=True)
+    return revision
+
+
+def benchmark_rows(source, revisions, proof_revisions):
     main_stage = {"clean": "proof", "warm": "proof", "foundation": "edited", "branch": "edited", "chapter": "edited"}
     conditions = None
     archive = load(source) if source.is_file() else None
     for scenario, stage in main_stage.items():
-        for side, revision in zip(("before", "after"), revisions, strict=True):
+        for side, revision in zip(("before", "after"), revisions if scenario == "chapter" else proof_revisions, strict=True):
             stages = []
             for trial in range(1, 4):
                 path = f"{side}/{scenario}-{trial}.jsonl"
@@ -239,7 +255,7 @@ def module_benchmarks(archive):
                    f"{statistics.median(readings):g}" if all(reading is not None for reading in readings) else "—"]
 
 
-def verification(archive, revisions):
+def verification(archive, revisions, proof_revisions):
     def stages(side, name, revision):
         metadata, *rows = archive[f"{side}/{name}.jsonl"]
         if metadata["revision"] != revision or any(r.get("exit_code", 0) for r in rows):
@@ -247,7 +263,7 @@ def verification(archive, revisions):
         return {r["stage"]: r for r in rows if "stage" in r}
 
     sides = ("before", "after")
-    replays = [stages(side, "replay", rev) for side, rev in zip(sides, revisions, strict=True)]
+    replays = [stages(side, "replay", rev) for side, rev in zip(sides, proof_revisions, strict=True)]
     print("### Fresh replay of the five judged roots\n")
     print("Each checker's stage is an executed command. The counts are the checkers' reported declaration totals.\n")
     table(["Revision", "Export records", "Export bytes", "Export wall (s)", "con-leche accepted", "con-leche wall (s)",
@@ -293,13 +309,19 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("before", "after"):
         parser.add_argument(f"--{name}", type=Path, required=True)
+    parser.add_argument("--proof-after", help="separate proof benchmark/replay pin with identical proof inputs")
     parser.add_argument("--timings", type=Path)
     parser.add_argument("--verification", type=Path, help="archive from capture-results.py with both verification runs")
     args = parser.parse_args()
     before, after = load(args.before), load(args.after)
     inventories = [before, after]
+    revisions = [inv["revision"] for inv in inventories]
+    proof_revisions = [revisions[0], proof_revision(revisions[1], args.proof_after)]
     print("# Comparison data\n")
     print(f"Before `{before['revision']}`\n\nAfter `{after['revision']}`\n")
+    if revisions != proof_revisions:
+        print(f"After proof build samples and direct replay use `{proof_revisions[1]}`. "
+              "Git confirms identical proof sources, build inputs, scripts, Comparator and PDF at the after inventory pin.\n")
     scopes = [
         ("All tracked project files", lambda f: True),
         ("Proof libraries", lambda f: f["library"] in PROOF_LIBRARIES),
@@ -375,7 +397,7 @@ def main():
         print("### Local build benchmark\n")
         table(["Scenario", "Revision", "Wall trials (s)", "Wall median (range), s", "CPU median (s)",
                "OS peak RSS median (GiB)", "Project modules rebuilt per trial"],
-              benchmark_rows(args.timings, [inv["revision"] for inv in inventories]))
+              benchmark_rows(args.timings, revisions, proof_revisions))
         if args.timings.is_file():
             print("### Selected module job timings from the clean builds\n")
             print("The values are Lake’s reported elapsed job times, with its rounding and shared CPU load. "
@@ -383,7 +405,7 @@ def main():
             table(["Module", "Revision", "Lake elapsed trials (s)", "Median (s)"],
                   module_benchmarks(load(args.timings)))
     if args.verification:
-        verification(load(args.verification), [inv["revision"] for inv in inventories])
+        verification(load(args.verification), revisions, proof_revisions)
 
 
 if __name__ == "__main__":
