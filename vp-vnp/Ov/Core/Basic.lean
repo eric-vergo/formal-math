@@ -23,7 +23,7 @@ open Finset
 
 namespace Ten
 
-variable {K : Type} [Field K] {I J : Type} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+variable {K : Type} [CommSemiring K] {I J : Type} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
 
 /-! ### Values of the constructions -/
 
@@ -207,7 +207,7 @@ theorem Restr.of_map' {s t : Ten K I} (g : ∀ p, s.ι p → t.ι p)
   Restr.of_map (fun _ _ => 1) g (by simpa using h)
 
 /-- 1 is a restriction of every tensor with an entry that is not 0, if there is a party. -/
-theorem Restr.one_le [Nonempty I] {t : Ten K I} {y : ∀ p, t.ι p} (h : t.val y ≠ 0) :
+theorem Restr.one_le {K : Type} [Field K] [Nonempty I] {t : Ten K I} {y : ∀ p, t.ι p} (h : t.val y ≠ 0) :
     Restr 1 t := by
   classical
   let p₀ : I := Classical.arbitrary I

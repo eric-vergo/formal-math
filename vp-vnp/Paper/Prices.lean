@@ -462,7 +462,8 @@ on I₂, and let n_p be its index sizes. For two further parties o₁, o₂ it i
 parties." In Lean the paper's I is A, its part I₁ is given by the predicate S, and α j, β j are the factors of the j-th
 product, functions of the indices in I₁ and in I₂. The map π places the parties of A among those of a set I that also
 contains o₁ and o₂, in any way; lem_hubs_further is the case of two further parties. -/
-theorem lem_hubs {A : Type} [Fintype A] [DecidableEq A] (π : A → I) (t : Ten K A) (S : A → Prop) [DecidablePred S]
+theorem lem_hubs {K : Type} [CommSemiring K] {A : Type} [Fintype A] [DecidableEq A] (π : A → I)
+    (t : Ten K A) (S : A → Prop) [DecidablePred S]
     {r : ℕ} (α β : Fin r → (∀ a, t.ι a) → K)
     (hα : ∀ j x x', (∀ a, S a → x a = x' a) → α j x = α j x')
     (hβ : ∀ j x x', (∀ a, ¬ S a → x a = x' a) → β j x = β j x')
@@ -534,7 +535,8 @@ theorem lem_hubs {A : Type} [Fintype A] [DecidableEq A] (π : A → I) (t : Ten 
     exact Restr.refl _
 
 /-- Lemma lem:hubs as printed, "for two further parties o₁, o₂": the parties are I₁ ⊔ I₂ and the two hubs. -/
-theorem lem_hubs_further {I₁ I₂ : Type} [Fintype I₁] [DecidableEq I₁] [Fintype I₂] [DecidableEq I₂]
+theorem lem_hubs_further {K : Type} [CommSemiring K] {I₁ I₂ : Type}
+    [Fintype I₁] [DecidableEq I₁] [Fintype I₂] [DecidableEq I₂]
     (t : Ten K (I₁ ⊕ I₂)) {r : ℕ} (α : Fin r → (∀ p, t.ι (Sum.inl p)) → K) (β : Fin r → (∀ p, t.ι (Sum.inr p)) → K)
     (hs : ∀ x, t.val x = ∑ j, α j (fun p => x (Sum.inl p)) * β j fun p => x (Sum.inr p)) :
     Restr (Ten.push (Sum.inl : I₁ ⊕ I₂ → (I₁ ⊕ I₂) ⊕ Bool) t)

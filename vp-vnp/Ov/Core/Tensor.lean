@@ -10,8 +10,8 @@ import Mathlib
 
 Paper: the subsection "Tensors". A tensor over a set I of parties is an array
 with one index for each party. This file defines local maps, restrictions, sums of restrictions,
-products, powers, push-forwards (`push`), and spectral points. The field is any field (where more is
-needed, it is a hypothesis).
+products, powers, and push-forwards (`push`) over a commutative semiring. Spectral points are defined
+over a field.
 -/
 
 namespace Ov
@@ -30,7 +30,7 @@ attribute [instance] Ten.fin Ten.dec
 
 namespace Ten
 
-variable {K : Type} [Field K] {I J : Type} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
+variable {K : Type} [CommSemiring K] {I J : Type} [Fintype I] [DecidableEq I] [Fintype J] [DecidableEq J]
 
 /-- Linear maps on the legs, as matrices: from the legs of t to the legs of s. -/
 abbrev Loc (s t : Ten K I) : Type := ∀ p, s.ι p → t.ι p → K
@@ -81,12 +81,12 @@ def push (π : J → I) (t : Ten K J) : Ten K I where
   val := fun x => t.val (fun j => x (π j) ⟨j, rfl⟩)
 
 /-- The unit tensor ⟨r⟩_J of size r on J. -/
-def unit (K : Type) [Field K] (J : Type) [Fintype J] [DecidableEq J] (r : ℕ) : Ten K J where
+def unit (K : Type) [CommSemiring K] (J : Type) [Fintype J] [DecidableEq J] (r : ℕ) : Ten K J where
   ι := fun _ => Fin r
   val := fun x => if ∀ i j, x i = x j then 1 else 0
 
 /-- The wire ⟨n⟩_pq of dimension n between p and q. If p = q and n > 0 it is equivalent to 1. -/
-def wire (K : Type) [Field K] {I : Type} [Fintype I] [DecidableEq I] (n : ℕ) (p q : I) : Ten K I :=
+def wire (K : Type) [CommSemiring K] {I : Type} [Fintype I] [DecidableEq I] (n : ℕ) (p q : I) : Ten K I :=
   push ![p, q] (unit K (Fin 2) n)
 
 /-- A tensor has rank at most r if it is a restriction of the unit tensor of size r. (If there is a
