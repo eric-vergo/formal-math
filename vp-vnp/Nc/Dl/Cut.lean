@@ -84,6 +84,23 @@ theorem gets_parts (hnl : KT.val nl = ℓ) (z : Tree) :
     | part κ => exact absurd (List.mem_map.2 ⟨κ, List.mem_finRange κ, rfl⟩) hy
     | _ => rfl
 
+/-- Testing a list against the indicator of one of its members gives a nonzero sum. -/
+theorem indicator_sum_ne_zero {α : Type*} [DecidableEq α] {xs : List α} {x : α} (hx : x ∈ xs) :
+    (xs.map fun y => if y = x then (1 : ℤ) else 0).sum ≠ 0 := by
+  have h := List.single_le_sum (l := xs.map fun y => if y = x then (1 : ℤ) else 0)
+    (List.forall_mem_map.2 fun y _ => by split <;> norm_num) 1
+    (List.mem_map.2 ⟨x, hx, by simp⟩)
+  omega
+
+/-- A nonzero guarded sum has a nonzero summand satisfying its guard. -/
+theorem exists_guarded_summand {ι B : Type*} [Fintype ι] [AddCommMonoid B]
+    {p : ι → Prop} [DecidablePred p] {f : ι → B} (h : (∑ i, if p i then f i else 0) ≠ 0) :
+    ∃ i, p i ∧ f i ≠ 0 := by
+  obtain ⟨i, -, hi⟩ := Finset.exists_ne_zero_of_sum_ne_zero h
+  by_cases hp : p i
+  · exact ⟨i, hp, by simpa only [ite_eq_left hp] using hi⟩
+  · simp only [ite_eq_right hp, ne_self_iff_false] at hi
+
 /-- **All states are good.** -/
 theorem mem_execAll (hK : 0 < K) [Nonempty Q] [Nonempty (Fin U1)] {pt : Fin K → Tree} {σ : List Bool → Tree}
     (hσ : σ ∈ execAll ub (allSteps C tab qn hU0 hU1 i e) (byPath C.nm (S0 pt))) :
@@ -94,35 +111,16 @@ theorem mem_execAll (hK : 0 < K) [Nonempty Q] [Nonempty (Fin U1)] {pt : Fin K �
       Final C tab qn pt q ρ n o b st ∧ σ = byPath C.nm st := by
   classical
   obtain ⟨st, hf, hs⟩ := sum_allSteps (ub := ub) C tab pt qn i e hU0 hU1 hK
-  by_contra hno
-  have h := hs ℤ fun σ' => if σ' = σ then 1 else 0
-  have hz : ∀ (q : Fin (K + 1) → Q) (ρ : Option S → Fin (K + K) → RowData (K + K)) (n : NN K U0) (o : M.N → Fin U1)
-      (b : G.Uid (K + K) U0 M.N U1 → UW ub), (q 0 = i ∧ q (Fin.last K) = e) → ValidRows ρ → tab.valid n →
-      (∀ x, P.good n o x) → (∀ id, b id ≠ none ↔ id ∈ cutUnits (G.hold0 M.np) (G.hold1 M.np) (grp n o) (P.cur n o E)) →
-      byPath C.nm (st q ρ n o b) ≠ σ := fun q ρ n o b h1 h2 h3 h4 h5 h6 =>
-    hno ⟨q, ρ, n, o, b, st q ρ n o b, h1, h2, h3, h4, h5, hf q ρ n o b, h6.symm⟩
-  have hR : (∑ q : Fin (K + 1) → Q, if q 0 = i ∧ q (Fin.last K) = e then
-        ∑ ρ : Option S → Fin (K + K) → RowData (K + K), if ValidRows ρ then
-          ∑ n : NN K U0, if tab.valid n then ∑ o : M.N → Fin U1, if ∀ x, P.good n o x then
-            ∑ b : G.Uid (K + K) U0 M.N U1 → UW ub,
-              if ∀ id, b id ≠ none ↔ id ∈ cutUnits (G.hold0 M.np) (G.hold1 M.np) (grp n o) (P.cur n o E) then
-                (if byPath C.nm (st q ρ n o b) = σ then (1 : ℤ) else 0) else 0
-            else 0 else 0 else 0 else 0) = 0 := by
-    refine Finset.sum_eq_zero fun q _ => ite_eq_right_iff.2 fun h1 => ?_
-    refine Finset.sum_eq_zero fun ρ _ => ite_eq_right_iff.2 fun h2 => ?_
-    refine Finset.sum_eq_zero fun n _ => ite_eq_right_iff.2 fun h3 => ?_
-    refine Finset.sum_eq_zero fun o _ => ite_eq_right_iff.2 fun h4 => ?_
-    refine Finset.sum_eq_zero fun b _ => ite_eq_right_iff.2 fun h5 => ?_
-    exact ite_eq_right (hz q ρ n o b h1 h2 h3 h4 h5)
-  rw [hR] at h
-  have hpos : (0 : ℤ) < ((execAll ub (allSteps C tab qn hU0 hU1 i e) (byPath C.nm (S0 pt))).map
-      fun σ' => if σ' = σ then (1 : ℤ) else 0).sum := by
-    refine lt_of_lt_of_le (b := (if σ = σ then (1 : ℤ) else 0)) (by simp) ?_
-    refine List.single_le_sum (fun x hx => ?_) _ (List.mem_map.2 ⟨σ, hσ, rfl⟩)
-    rw [List.mem_map] at hx
-    obtain ⟨σ', -, rfl⟩ := hx
-    split_ifs <;> norm_num
-  omega
+  have h := indicator_sum_ne_zero hσ
+  rw [hs ℤ _] at h
+  obtain ⟨q, hq, h⟩ := exists_guarded_summand h
+  obtain ⟨ρ, hρ, h⟩ := exists_guarded_summand h
+  obtain ⟨n, hn, h⟩ := exists_guarded_summand h
+  obtain ⟨o, ho, h⟩ := exists_guarded_summand h
+  obtain ⟨b, hb, h⟩ := exists_guarded_summand h
+  refine ⟨q, ρ, n, o, b, _, hq, hρ, hn, ho, hb, hf q ρ n o b, ?_⟩
+  by_contra hne
+  simp [Ne.symm hne] at h
 
 variable {mu : Letter S Unit Γ → Matrix Q Q A} {τ s τ' s' t : ℕ}
 

@@ -28,31 +28,15 @@ theorem mem_steps18 (hK : 0 < K) [Nonempty Q] [Nonempty (Fin U1)] {σ : List Boo
       σ = byPath C.nm st := by
   classical
   obtain ⟨st, hf, hs⟩ := sum_steps18 (m := m) C tab pt qn i e hU0 hU1 hK
-  by_contra hno
-  have h := hs ℤ fun σ' => if σ' = σ then 1 else 0
-  have hR : (∑ q : Fin (K + 1) → Q, if q 0 = i ∧ q (Fin.last K) = e then
-        ∑ ρ : Option S → Fin (K + K) → RowData (K + K), ∑ n : NN K U0, ∑ o : M.N → Fin U1,
-          if ValidRows ρ ∧ tab.valid n ∧ ∀ x, P.good n o x then
-            (if byPath C.nm (st q ρ n o) = σ then (1 : ℤ) else 0) else 0
-        else 0) = 0 := by
-    refine Finset.sum_eq_zero fun q _ => ?_
-    split_ifs
-    swap
-    · rfl
-    refine Finset.sum_eq_zero fun ρ _ => Finset.sum_eq_zero fun n _ => Finset.sum_eq_zero fun o _ => ?_
-    split_ifs with h5 h6
-    · exact absurd ⟨q, ρ, n, o, st q ρ n o, h5.2.1, h5.2.2, hf q ρ n o, h6.symm⟩ hno
-    · rfl
-    · rfl
-  rw [hR] at h
-  have hpos : (0 : ℤ) < ((execAll m (steps18 C tab qn i e hU0 hU1) (byPath C.nm (S0 pt))).map
-      fun σ' => if σ' = σ then (1 : ℤ) else 0).sum := by
-    refine lt_of_lt_of_le (b := (if σ = σ then (1 : ℤ) else 0)) (by simp) ?_
-    refine List.single_le_sum (fun x hx => ?_) _ (List.mem_map.2 ⟨σ, hσ, rfl⟩)
-    rw [List.mem_map] at hx
-    obtain ⟨σ', -, rfl⟩ := hx
-    split_ifs <;> norm_num
-  omega
+  have h := indicator_sum_ne_zero hσ
+  rw [hs ℤ _] at h
+  obtain ⟨q, -, h⟩ := exists_guarded_summand h
+  obtain ⟨ρ, -, h⟩ := Finset.exists_ne_zero_of_sum_ne_zero h
+  obtain ⟨n, -, h⟩ := Finset.exists_ne_zero_of_sum_ne_zero h
+  obtain ⟨o, ⟨-, hn, ho⟩, h⟩ := exists_guarded_summand h
+  refine ⟨q, ρ, n, o, _, hn, ho, hf q ρ n o, ?_⟩
+  by_contra hne
+  simp [Ne.symm hne] at h
 
 section Nine
 
