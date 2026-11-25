@@ -256,7 +256,8 @@ def benchmark_tables(source, revisions, proof_revisions):
 
 
 def module_benchmarks(archive):
-    modules = ("Paper.Pieces", "Nc.Dl.Cut", "Nc.Flag.Act", "Nc.Tow.Slp2", "Nc.Tow.Slp3", "Nc.Tow.Slp4", "Paper.Cuts")
+    modules = ("Paper.Pieces", "Nc.Dl.Cut", "Nc.Flag.Act", "Nc.Tow.Slp2", "Nc.Tow.Slp3", "Nc.Tow.Slp4", "Paper.Cuts",
+               "Paper.CircuitPhi")
     for module in modules:
         for side in ("before", "after"):
             readings = []

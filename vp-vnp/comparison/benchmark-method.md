@@ -10,8 +10,8 @@ before_work=/absolute/path/to/baseline/worktree/vp-vnp
 proof_work=/absolute/path/to/frozen-proof/worktree/vp-vnp
 after_work=/absolute/path/to/integrated/worktree/vp-vnp
 proof_rev=34a072623bbb19c9b6dbe15f48bd62e60c804618
-before_rev=9fd368ad
-after_rev=REPLACE_WITH_THE_REPORTS_AFTER_REVISION
+before_rev=9fd368ad9bbb717511e76e5560d6c3803915f922
+after_rev=246c5eac849a9e15ba429570c310686cf793d41a
 runner="$PWD/vp-vnp/comparison/benchmark.py"
 out="$PWD/vp-vnp/_out/comparison-timing"
 
@@ -41,7 +41,6 @@ run_pairs() {
   done
 }
 run_pairs clean warm foundation branch
-run_pairs chapter
 ```
 
 - Clean removes only the detached worktree's `vp-vnp/.lake/build` then runs the default proof targets with Lake cache downloads disabled. Dependency artifacts and the host's filesystem cache are retained. Warm repeats that command after clean.
@@ -49,6 +48,8 @@ run_pairs chapter
 - `LEAN_NUM_THREADS=4` is fixed across the paired commands. This is the Lean runtime's task-pool setting. Lake can launch more than one Lean process, so it gives no global cap of four runnable threads. File cache, background system load, and differences in dependency preparation can influence timings. See the hardware, toolchain, dependency-manifest digest, recorded start load and trial rows in the raw data.
 - The harness measures wall time around the timed subprocess. CPU time adds user and system time from the operating system's `wait4` resource usage, including descendant usage accounted to that subprocess. On macOS `ru_maxrss` is reported in bytes. On Linux the harness multiplies the reported KiB by 1,024. The resulting maximum resident set size is the OS-reported high-water figure for the waited command and usage propagated to it. It cannot give total memory held by concurrent descendants at one instant. CPU time can exceed elapsed wall time when processes run in parallel.
 - Rebuilt modules are the distinct project Lean modules that Lake logs as `Built`. Cached diagnostic replays and build facets such as `:c.o` are excluded. `lake_built_jobs` retains the separate count of all `Built` jobs, including dependency jobs and non-module facets. Each stage includes its command, wall time, CPU times, RSS, exit code, log path and SHA-256. The outer JSON Lines rows retain all three edit phases and each individual sample.
+
+The first baseline clean sample started at 22:40:53 UTC on November 24, 2026. Its after partner started at 13:59:07 UTC on November 25. The driver reused this completed baseline run after confirming its revision, scenario, trial, thread setting, completed stage and zero exit status. This pair has an overnight gap. The metadata retain the start load and timestamp of every sample.
 
 The capture step archives Lake’s elapsed job times for project modules in the three clean logs. The report shows the trials and medians for selected rewrites. These figures retain Lake’s rounding and include contention from other jobs in the same build.
 
@@ -69,10 +70,18 @@ The full site verification sets `VERSO_BLUEPRINT_KERNEL_REPLAY_RECORD` to an emp
 
 The proof of each challenge theorem deliberately uses `sorry`. The proof build verifies that the five corresponding warnings come from `Comparator/VpVnp/Challenge.lean` and fails if it sees any other `sorry` warning. The complete project inventory and declaration command totals count the challenge declarations in their own source scope. The proof-body size distribution and the five solution kernel closures exclude the challenge proofs. The blueprint's rendered progress and external replay coverage reflect the rendered node set and checker policy. A checked Lean declaration and a paper-to-formal claim are different kinds of evidence. The site's informal claims and intentionally unchecked prose are reported separately.
 
-
-For both baseline verification scenarios use the baseline revision and private worktree. The capture script accepts a baseline site directory only with its matching verification JSONL. It verifies the recorded sizes and hashes before extracting additional baseline page statistics. Each raw JSONL must remain beside its log directory. The compressed archive includes per-command log hashes, command lines, the reported start load, timings, tool fingerprints and checker results.
+After site verification, build the Assembly target once in each worktree before running the three chapter pairs. The preprime places both sides on a prepared chapter build. Every individual sample still performs and records its own prime, edited build and restore. Only the edited build contributes to the chapter timing comparison.
 
 ```bash
+(cd "$before_work" && LEAN_NUM_THREADS=4 lake --no-cache --no-ansi build VpVnpBlueprint.Chapters.Assembly)
+(cd "$after_work" && LEAN_NUM_THREADS=4 lake --no-cache --no-ansi build VpVnpBlueprint.Chapters.Assembly)
+run_pairs chapter
+```
+
+For both baseline verification scenarios use the baseline revision and private worktree. In the historical baseline site run, the generator found an identical previously accepted export. The frozen five-root runs invoked both checker executables directly. The integrated site requires fresh execution of both checkers. The capture script accepts a baseline site directory only with its matching verification JSONL. It verifies the recorded sizes and hashes before extracting additional baseline page statistics. Each raw JSONL must remain beside its log directory. The compressed archive includes per-command log hashes, command lines, the reported start load, timings, tool fingerprints and checker results.
+
+```bash
+cd vp-vnp
 python3 comparison/capture-results.py --runs "$out" --output comparison/benchmark-results.json.gz
 python3 comparison/compare.py --before comparison/inventory-baseline.json.gz \
   --after comparison/inventory-after.json.gz --proof-after "$proof_rev" \
