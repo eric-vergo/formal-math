@@ -213,14 +213,14 @@ section Program
 
 variable {F : Type} [CommRing F] {h b D J r m Uu AA A' U0 U1 : ℕ} {T : Tower h b D J r}
 variable {R : Routes T m Uu} {ch : Fin AA ↪ T.X 0} {FL : FlagLaws F T} {Pl : Place T ch A'} {lhat : ℕ}
-variable {Inp ι : Type} {Dd Y p TM : ℕ} {inp : ι → Inp → Fin Dd} {H : Set (Inp → ℕ)}
+variable {Inp ι : Type} {Dd Y p : ℕ} {inp : ι → Inp → Fin Dd} {H : Set (Inp → ℕ)}
 variable {nI : Inp → Fin AA → Fin AA → Fin (U0 + 1)} {oI : Inp → (sys R FL Pl).N → Fin U1}
 
 /-- The program of the tower plan, with the parents and the loads. -/
-theorem tree_slp (hA : Alph Dd Y) (hB : Bnd R ch FL U0 U1 Y) (hB2 : Bnd2 R FL Pl U0 U1 Y TM) (hh : 0 < h) (hb : 0 < b)
+theorem tree_slp (hA : Alph Dd Y) (hB : Bnd R ch FL U0 U1 Y) (hB2 : Bnd2 R FL Pl U0 U1 Y) (hh : 0 < h) (hb : 0 < b)
     (hS : SlpN inp p H) (hn : ∀ a c, (fun x => ((nI x a c : Fin (U0 + 1)) : ℕ)) ∈ H)
     (ho : ∀ ν, (fun x => ((oI x ν : Fin U1) : ℕ)) ∈ H) (lhat : ℕ) :
-    ∃ H', SlpN inp (p + Y ^ 16) H' ∧ Units nI oI lhat TM H' ∧
+    ∃ H', SlpN inp (p + Y ^ 16) H' ∧ Units nI oI lhat H' ∧
       HostOk hh (fun x => load R ch FL lhat (nn (nI x)) (oo R FL Pl (oI x))) H' ∧
       ∀ (j : ℕ) (_ : j ≤ J) (c : T.X j), (fun x => fb (lev (load R ch FL lhat (nn (nI x)) (oo R FL Pl (oI x)))) j c) ∈ H' := by
   have hR : Rng (nX nI) (oX oI : Inp → NM R FL (ch := ch) → ℕ) U0 U1 := rng
@@ -238,12 +238,12 @@ theorem tree_slp (hA : Alph Dd Y) (hB : Bnd R ch FL U0 U1 Y) (hB2 : Bnd2 R FL Pl
   refine ⟨H4, ?_, (f2.weaken u3).weaken u4, fun j hj c c' => u4 (f3 j hj c c'), f4⟩
   refine SlpN.le hA.zero_lt ?_ s4
   have h3 := hA.three
-  have h4 : 0 + 11 + 8 * Y + 9 + 1 + 1 ≤ Y ^ 4 := by
+  have h4 : 0 + 11 + 8 * Y + 5 + 1 + 1 ≤ Y ^ 4 := by
     have e1 : Y ^ 4 = Y ^ 3 * Y := by ring
     have e2 : 3 ^ 3 ≤ Y ^ 3 := Nat.pow_le_pow_left h3 3
     have e3 : 3 ^ 3 * Y ≤ Y ^ 3 * Y := Nat.mul_le_mul_right _ e2
     omega
-  have h5 : (0 + 11 + 8 * Y + 9 + 1 + 1) * Y ^ 12 ≤ Y ^ 16 := by
+  have h5 : (0 + 11 + 8 * Y + 5 + 1 + 1) * Y ^ 12 ≤ Y ^ 16 := by
     calc _ ≤ Y ^ 4 * Y ^ 12 := Nat.mul_le_mul_right _ h4
       _ = Y ^ 16 := by ring
   exact Nat.add_le_add_left h5 p

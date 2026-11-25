@@ -395,10 +395,9 @@ theorem tree_computed (hH : THypR FL ρ) {V : ℕ} (hV : 3 ≤ V) (hm : m ≤ V)
       have h1 : b * Fintype.card (Sym2 T.Fl) * Fintype.card (Un R FL Pl N U1) ≤ V * V * (18 * V ^ 7) := by gcongr
       have h2 : V * V * (18 * V ^ 7) = 18 * V ^ 9 := by ring
       omega }
-  have hB2 : Bnd2 R FL Pl N U1 Y 0 := {
+  have hB2 : Bnd2 R FL Pl N U1 Y := {
     zm := by rw [hZM]; omega
-    un := by omega
-    tm := Nat.zero_le _ }
+    un := by omega }
   have hYY : Y < Y ^ 4 := by
     calc Y = Y ^ 1 := (pow_one Y).symm
       _ < Y ^ 4 := Nat.pow_lt_pow_right (by omega) (by norm_num)

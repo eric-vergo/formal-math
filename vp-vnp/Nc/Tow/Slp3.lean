@@ -161,14 +161,13 @@ theorem cy_numF (hm : ∀ τ, (fun x => L x τ) ∈ H) (hi : ∀ j i, ind (fun x
 structure Chosen (L : Inp → Tg T m AA → ℕ) (R : Routes T m Uu) (ch : Fin AA ↪ T.X 0) (FL : FlagLaws F T)
     (H : Set (Inp → ℕ)) : Prop where
   isMin : ∀ j i, ind (fun x => IsMin (L x) j i) ∈ H
-  tmin : ∀ l : LMv T FL, (fun x => tmin FL (L x) l) ∈ H
   pick : ∀ l : LMv T FL, ind (fun x => Pick FL (L x) l) ∈ H
   numF : ∀ mv : Mv T R ch FL, (fun x => numF R ch FL (L x) mv) ∈ H
 
 omit hA hB hb hL in
 theorem Chosen.weaken {L : Inp → Tg T m AA → ℕ} {H H' : Set (Inp → ℕ)} (hc : Chosen L R ch FL H) (hH : H ⊆ H') :
     Chosen L R ch FL H' :=
-  ⟨fun j i => hH (hc.isMin j i), fun l => hH (hc.tmin l), fun l => hH (hc.pick l), fun mv => hH (hc.numF mv)⟩
+  ⟨fun j i => hH (hc.isMin j i), fun l => hH (hc.pick l), fun mv => hH (hc.numF mv)⟩
 
 theorem pick_stage (hS : SY inp Y p c H) (hm : ∀ τ, (fun x => L x τ) ∈ H) :
     ∃ H', SY inp Y p (c + 5) H' ∧ H ⊆ H' ∧ Chosen L R ch FL H' := by
@@ -193,7 +192,7 @@ theorem pick_stage (hS : SY inp Y p c H) (hm : ∀ τ, (fun x => L x τ) ∈ H) 
     (by rw [pow_one]; exact hB.mv) (fun mv => cy_numF hA hB hb hL m4 (fun j i => u4 (u3 (f2 (j, i)))) (fun l => u4 (f3 l)) f4 mv)
     (by omega)
   exact ⟨H5, s5, u1.trans (u2.trans (u3.trans (u4.trans u5))), fun j i => u5 (u4 (u3 (f2 (j, i)))),
-    fun l => u5 (u4 (f3 l)), fun l => u5 (f4 l), f5⟩
+    fun l => u5 (f4 l), f5⟩
 
 end Loads
 
