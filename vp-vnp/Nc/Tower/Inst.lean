@@ -51,11 +51,8 @@ noncomputable def evX {j : ℕ} : XX h n j → SL2 h :=
 theorem evX_mk {j : ℕ} (g : G h n) : evX (QuotientGroup.mk g : XX h n j) = evG g := rfl
 
 theorem evX_smul {j : ℕ} (g : G h n) (c : XX h n j) : evX (g • c) = evG g * evX c := by
-  induction c using QuotientGroup.induction_on with
-  | H a =>
-    change evX (QuotientGroup.mk (g * a) : XX h n j) = _
-    rw [evX_mk, map_mul]
-    rfl
+  induction c using QuotientGroup.induction_on
+  simp_all [evX_mk, map_mul]
 
 /-- The covering. -/
 noncomputable def pr {j : ℕ} : XX h n j → XX h n (j + 1) := Subgroup.quotientMapOfLE (Gam_le h n j)
@@ -161,10 +158,7 @@ theorem edge_type {j : ℕ} (h2 : 2 ≤ h) (k : Fin h) (c : XX h n j) : (edge h2
 
 theorem edge_end {j : ℕ} (h2 : 2 ≤ h) (k : Fin h) (c : XX h n j) :
     (edge h2 k c).1.2 = c ∨ (edge h2 k c).1.2 = (gen h2 k : G h n) • c := by
-  unfold edge
-  split_ifs
-  · exact Or.inl rfl
-  · exact Or.inr rfl
+  grind only [edge]
 
 theorem edge_self {j : ℕ} (h2 : 2 ≤ h) (e : EE h n h2 j) : edge h2 e.1.1 e.1.2 = e := by
   unfold edge

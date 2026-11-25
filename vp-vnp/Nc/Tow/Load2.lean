@@ -21,11 +21,8 @@ variable {F : Type} [CommRing F] {h b D J r m Uu AA : ℕ} {T : Tower h b D J r}
 
 theorem alv_le_num (x : {x : RM T m AA // okR T R ch x}) (ν : (kindM R ch FL (.inl x)).Cn) :
     alv R ch FL lhat n o ⟨.inl x, ν⟩ ≤ num R ch FL lhat n o (.inl x) := by
-  unfold alv
-  rw [alvN_inl]
-  split_ifs
-  · exact le_rfl
-  · exact Nat.zero_le _
+  rw [alv, alvN_inl]
+  split <;> simp
 
 theorem load_def (τ : Tg T m AA) : load R ch FL lhat n o τ = bt R ch lhat n τ +
     ∑ ν : NM R FL (ch := ch), if tgM R ch FL ν.1 ν.2 = τ then alv R ch FL lhat n o ν else 0 := rfl
@@ -65,12 +62,7 @@ theorem tgB_cases (a c : Fin AA) (k : ℕ) : (tgB T R ch a c k = .done) ∨
       · exact Or.inr (Or.inr ⟨e, h1, h2, hac, fun hh => hs ⟨by omega, hh⟩⟩)
 
 theorem bt_zero {τ : Tg T m AA} (hτ : ∀ a c k, tgB T R ch a c k ≠ τ) : bt R ch lhat n τ = 0 := by
-  unfold bt
-  split_ifs
-  · refine Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun c _ => ?_
-    rw [card_eq_zero]
-    exact filter_false_of_mem fun k _ => hτ a c k
-  · rfl
+  simp_all [bt]
 
 theorem bt_edge_succ (j : Fin J) (e : T.Ed (j + 1)) : bt R ch lhat n (.edge j.succ e) = 0 := by
   refine bt_zero fun a c k hk => ?_
@@ -206,11 +198,8 @@ include hr hb
 
 theorem num_inl (x : {x : RM T m AA // okR T R ch x}) : num R ch FL lhat n o (.inl x) ≤
     load R ch FL lhat n o (inpR T x.1) := by
-  classical
   rw [num_eq, numF]
-  split_ifs
-  · exact le_rfl
-  · exact Nat.zero_le _
+  split <;> simp
 
 theorem num_mid0 (j : Fin J) (e : T.Ed j) (hx : okR T R ch (.mid j e 0)) :
     num R ch FL lhat n o (.inl ⟨.mid j e 0, hx⟩) ≤ load R ch FL lhat n o (.edge j.castSucc e) ∧

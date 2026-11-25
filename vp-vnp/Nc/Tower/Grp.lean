@@ -133,12 +133,7 @@ noncomputable def tt (k : Fin h) : R (n + 1) := if k = 0 then t (n + 1) else 1
 
 theorem sub_one_ne (h2 : 2 ≤ h) (k : Fin h) : k - 1 ≠ k := by
   intro e
-  have : (1 : Fin h) = 0 := by
-    have := congrArg (fun x => k - x) e
-    simpa using this
-  have := congrArg Fin.val this
-  rw [Fin.val_one', Fin.val_zero, Nat.mod_eq_of_lt (by omega)] at this
-  omega
+  simp_all
 
 /-- The generators: involutions of type k. -/
 noncomputable def gen (h2 : 2 ≤ h) (k : Fin h) : G h n :=

@@ -27,11 +27,7 @@ theorem snd_bindL (l : List (A × α)) (f : α → List (A × β)) :
 theorem snd_foldL {f : ε → β → List (A × β)} {f' : ε → β → List (B' × β)}
     (h : ∀ x s, (f x s).map Prod.snd = (f' x s).map Prod.snd) (xs : List ε) (s : β) :
     (foldL f xs s).map Prod.snd = (foldL f' xs s).map Prod.snd := by
-  induction xs generalizing s with
-  | nil => rfl
-  | cons x xs ih =>
-    rw [foldL, foldL, snd_bindL, snd_bindL, h]
-    exact List.flatMap_congr fun a _ => ih a
+  induction xs generalizing s <;> simp_all [foldL, snd_bindL]
 
 theorem snd_segsL (sep : List Bool) (items : List Item) (accs : List (List Bool)) :
     (segsL A sep items accs).map Prod.snd = (segsL B' sep items accs).map Prod.snd := by

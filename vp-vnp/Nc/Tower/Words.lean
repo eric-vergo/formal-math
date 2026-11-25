@@ -134,17 +134,10 @@ theorem zero_sub_one (h2 : 2 ≤ h) : (0 : Fin h) - 1 = last h := by
   rfl
 
 theorem lt_last {i : Fin h} (hi : i ≠ last h) : i < last h := by
-  rw [Fin.lt_def]
-  have h1 := i.2
-  have h3 : i.1 ≠ h - 1 := fun e => hi (Fin.ext e)
-  simp only [last]
-  omega
+  grind only [Fin.lt_def, last]
 
 theorem zero_ne_last (h2 : 2 ≤ h) : last h ≠ 0 := by
-  intro e
-  have := congrArg Fin.val e
-  simp [last] at this
-  omega
+  grind only [last]
 
 theorem exists_third (h3 : 3 ≤ h) (i j : Fin h) : ∃ k, i ≠ k ∧ k ≠ j := by
   by_contra hc

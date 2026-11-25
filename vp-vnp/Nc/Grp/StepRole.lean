@@ -39,11 +39,7 @@ theorem length_kNew (r : M.R) (ν : (M.kind r.1).CnAt r.2) : (kNew o key r ν).l
 theorem mem_kNew {r : M.R} {ν : (M.kind r.1).CnAt r.2} {k : List Bool} :
     k ∈ kNew o key r ν ↔ ∃ i : Fin U1, i ≤ o ⟨r.1, ν.1⟩ ∧ k = key (M.rp r, .new ⟨r.1, ν.1⟩ i) := by
   simp only [kNew, List.mem_map, List.mem_filter, List.mem_finRange, true_and, decide_eq_true_eq]
-  constructor
-  · rintro ⟨i, hi, rfl⟩
-    exact ⟨i, hi, rfl⟩
-  · rintro ⟨i, hi, rfl⟩
-    exact ⟨i, hi, rfl⟩
+  exact exists_congr fun _ => and_congr_right fun _ => eq_comm
 
 /-- What a role writes. -/
 noncomputable def PN (o : M.N → Fin U1) (key : Cell M U0 U1 → List Bool) (r : M.R) {B : ℕ}

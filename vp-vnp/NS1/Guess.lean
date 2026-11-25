@@ -174,12 +174,7 @@ theorem expand_charge_le (K : KT R) {u k B X c w : ℕ} (hK : K.nds ≤ u ^ k) (
   exact (Nat.mul_le_mul_left _ hw).trans (K.expand_cost_le hK hB hc)
 
 theorem ht_comb (c : R) (n : ℕ) : (comb c n).ht ≤ n := by
-  induction n generalizing c with
-  | zero => exact le_rfl
-  | succ n ih =>
-    have := ih (c ^ 2)
-    simp only [comb, ht]
-    omega
+  induction n generalizing c <;> simp_all [comb, ht]
 
 theorem ht_expand (B : ℕ) (K : KT R) : (K.expand B).ht ≤ K.ht + B := by
   induction K with

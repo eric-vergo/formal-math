@@ -106,15 +106,7 @@ theorem connect {R : Submodule F2 (Fin m → F2)} (hR : Module.finrank F2 R + 2 
 /-! ### Matrices u xᵀ -/
 
 theorem vec_ne_zero {u x : Fin m → F2} : vecMulVec u x ≠ 0 ↔ u ≠ 0 ∧ x ≠ 0 := by
-  constructor
-  · intro h
-    refine ⟨?_, ?_⟩ <;> rintro rfl <;> simp at h
-  · rintro ⟨hu, hx⟩ h
-    obtain ⟨i, hi⟩ := Function.ne_iff.1 hu
-    obtain ⟨j, hj⟩ := Function.ne_iff.1 hx
-    have := congrFun (congrFun h i) j
-    rw [vecMulVec_apply] at this
-    exact (mul_ne_zero hi hj) this
+  simp
 
 theorem colSpace_vec (u : Fin m → F2) {x : Fin m → F2} (hx : x ≠ 0) : colSpace (vecMulVec u x) = span F2 {u} := by
   have hc : ∀ j, (vecMulVec u x).col j = x j • u := fun j => by
@@ -159,33 +151,7 @@ theorem iSupIndep_two {B C : Submodule F2 (Fin m → F2)} : iSupIndep ![B, C] �
 
 theorem iSupIndep_three {B C D : Submodule F2 (Fin m → F2)} :
     iSupIndep ![B, C, D] ↔ Disjoint B (C ⊔ D) ∧ Disjoint C (B ⊔ D) ∧ Disjoint D (B ⊔ C) := by
-  have e0 : (⨆ (j : Fin 3) (_ : j ≠ 0), ![B, C, D] j) = C ⊔ D := by
-    refine le_antisymm (iSup₂_le fun j hj => ?_) (sup_le (le_iSup₂_of_le 1 (by decide) le_rfl)
-      (le_iSup₂_of_le 2 (by decide) le_rfl))
-    fin_cases j
-    · exact absurd rfl hj
-    · exact le_sup_left
-    · exact le_sup_right
-  have e1 : (⨆ (j : Fin 3) (_ : j ≠ 1), ![B, C, D] j) = B ⊔ D := by
-    refine le_antisymm (iSup₂_le fun j hj => ?_) (sup_le (le_iSup₂_of_le 0 (by decide) le_rfl)
-      (le_iSup₂_of_le 2 (by decide) le_rfl))
-    fin_cases j
-    · exact le_sup_left
-    · exact absurd rfl hj
-    · exact le_sup_right
-  have e2 : (⨆ (j : Fin 3) (_ : j ≠ 2), ![B, C, D] j) = B ⊔ C := by
-    refine le_antisymm (iSup₂_le fun j hj => ?_) (sup_le (le_iSup₂_of_le 0 (by decide) le_rfl)
-      (le_iSup₂_of_le 1 (by decide) le_rfl))
-    fin_cases j
-    · exact le_sup_left
-    · exact le_sup_right
-    · exact absurd rfl hj
-  rw [iSupIndep_def, Fin.forall_fin_succ, Fin.forall_fin_succ, Fin.forall_fin_succ]
-  constructor
-  · rintro ⟨h0, h1, h2, -⟩
-    exact ⟨e0 ▸ h0, e1 ▸ h1, e2 ▸ h2⟩
-  · rintro ⟨h0, h1, h2⟩
-    exact ⟨e0.symm ▸ h0, e1.symm ▸ h1, e2.symm ▸ h2, fun i => i.elim0⟩
+  simp_all [iSupIndep_def, Fin.forall_fin_succ]
 
 theorem disjoint_span_F2 {u : Fin m → F2} (hu : u ≠ 0) : Disjoint A (span F2 {u}) ↔ u ∉ A := by
   rw [disjoint_def]

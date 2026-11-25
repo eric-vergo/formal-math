@@ -125,11 +125,8 @@ variable (hr : 0 < r) (hb : 0 < b)
 include hr hb
 
 theorem num_inr_le (l : LMv T FL) : num R ch FL lhat n o (.inr l) ≤ tmin FL (load R ch FL lhat n o) l := by
-  classical
   rw [num_eq, numF]
-  split_ifs
-  · exact le_rfl
-  · exact Nat.zero_le _
+  split <;> simp
 
 theorem num_inr_zero {l : LMv T FL} (hl : ¬ IsMin (load R ch FL lhat n o) l.1.castSucc l.2.1 ∨
     ¬ Pick FL (load R ch FL lhat n o) l) : num R ch FL lhat n o (.inr l) = 0 := by

@@ -127,12 +127,7 @@ theorem ok_cons (t : Bt) (p : List Bool) (b : List (List Bool)) :
   cases Bt.dec p t <;> rfl
 
 theorem all_not_iff (w : List Bool) : (w.all (! ·)) = true ↔ KT.val w = 0 := by
-  induction w with
-  | nil => simp [KT.val]
-  | cons b w ih =>
-    cases b with
-    | true => simp [KT.val]
-    | false => simp [KT.val, ← ih]
+  induction w <;> simp_all [KT.val]
 
 theorem decw_val (w : List Bool) : (decw w = none ∧ KT.val w = 0) ∨ ∃ w', decw w = some w' ∧ KT.val w = KT.val w' + 1 := by
   induction w with

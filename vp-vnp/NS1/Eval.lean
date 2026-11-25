@@ -185,11 +185,7 @@ def simS (t : Bt) (l : List (Run A)) : List (Run A × Bt) :=
 
 theorem mem_simS {t : Bt} {l : List (Run A)} {q : Run A × Bt} (h : q ∈ simS t l) :
     q.1 ∈ l ∧ Bt.decAll q.1.bill t = some q.2 := by
-  rw [simS, List.mem_filterMap] at h
-  obtain ⟨r, hr, h⟩ := h
-  rw [Option.map_eq_some_iff] at h
-  obtain ⟨t', ht, rfl⟩ := h
-  exact ⟨hr, ht⟩
+  grind only [simS, List.mem_filterMap, Option.map_eq_some_iff]
 
 theorem simS_map {t : Bt} {l : List (Run A)} {G : Run A → Run A} (h : ∀ r, (G r).bill = r.bill) :
     simS t (l.map G) = (simS t l).map fun q => (G q.1, q.2) := by

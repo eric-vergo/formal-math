@@ -222,18 +222,7 @@ theorem codeShape_of_decode {c : Tree} {f : Fm} (h : Fm.ofTree c = f) : CodeShap
     interval_cases k <;> simp_all
 
 theorem ofTree_code (F : Fm) : ofTree F.code = F := by
-  induction F with
-  | quote c => rw [code, ofTree]; rfl
-  | id => rw [code, ofTree]; rfl
-  | hd a ih => rw [code, ofTree]; simp [ih]
-  | tl a ih => rw [code, ofTree]; simp [ih]
-  | cons a b iha ihb => rw [code, ofTree]; simp [iha, ihb]
-  | ite a b c iha ihb ihc => rw [code, ofTree]; simp [iha, ihb, ihc]
-  | run a b iha ihb => rw [code, ofTree]; simp [iha, ihb]
-  | guess => rw [code, ofTree]; simp
-  | fail => rw [code, ofTree]; simp
-  | theta a ih => rw [code, ofTree]; simp [ih]
-  | mul a ih => rw [code, ofTree]; simp [ih]
+  induction F <;> simp_all [code, ofTree]
 
 end Fm
 

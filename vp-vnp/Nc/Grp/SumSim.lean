@@ -30,11 +30,7 @@ theorem sumL_runL_succ {Λ : Type} {nC nI nO : ℕ} (tab : Fin nC → (Fin nI �
 
 theorem foldL_append {β ε : Type} (f : ε → β → List (A × β)) (xs ys : List ε) (s : β) (G : β → A) :
     sumL (foldL f (xs ++ ys) s) G = sumL (foldL f xs s) fun s' => sumL (foldL f ys s') G := by
-  induction xs generalizing s with
-  | nil => rw [List.nil_append, foldL, sumL_single]
-  | cons x xs ih =>
-    rw [List.cons_append, foldL, foldL, sumL_bindL, sumL_bindL]
-    exact sumL_congr fun p _ => ih _
+  induction xs generalizing s <;> simp_all [foldL, sumL_bindL]
 
 section sim
 
