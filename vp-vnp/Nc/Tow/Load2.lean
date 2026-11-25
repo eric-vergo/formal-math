@@ -19,7 +19,7 @@ variable {F : Type} [CommRing F] {h b D J r m Uu AA : ℕ} {T : Tower h b D J r}
   {ch : Fin AA ↪ T.X 0} {FL : FlagLaws F T} {lhat : ℕ} {n : Fin AA → Fin AA → ℕ}
   {o : NM R FL (ch := ch) → ℕ}
 
-theorem alv_le_num (hr : 0 < r) (hb : 0 < b) (x : {x : RM T m AA // okR T R ch x}) (ν : (kindM R ch FL (.inl x)).Cn) :
+theorem alv_le_num (x : {x : RM T m AA // okR T R ch x}) (ν : (kindM R ch FL (.inl x)).Cn) :
     alv R ch FL lhat n o ⟨.inl x, ν⟩ ≤ num R ch FL lhat n o (.inl x) := by
   unfold alv
   rw [alvN_inl]
@@ -267,7 +267,7 @@ include hr hb
 theorem num_inl (x : {x : RM T m AA // okR T R ch x}) : num R ch FL lhat n o (.inl x) ≤
     load R ch FL lhat n o (inpR T x.1) := by
   classical
-  rw [num_eq hr hb, numF]
+  rw [num_eq, numF]
   split_ifs
   · exact le_rfl
   · exact Nat.zero_le _
@@ -277,7 +277,7 @@ theorem num_mid0 (j : Fin J) (e : T.Ed j) (hx : okR T R ch (.mid j e 0)) :
     (¬ IsMin (load R ch FL lhat n o) j.castSucc (T.ty e) → num R ch FL lhat n o (.inl ⟨.mid j e 0, hx⟩) = 0) := by
   classical
   refine ⟨num_inl hr hb _, fun hn => ?_⟩
-  rw [num_eq hr hb, numF, ite_eq_right]
+  rw [num_eq, numF, ite_eq_right]
   intro ha
   exact hn (ha rfl)
 
@@ -300,7 +300,7 @@ theorem num_mid3_le_mid2 (j : Fin J) (e : T.Ed j) (hx3 : okR T R ch (.mid j e 3)
       exact mem_singleton_self _
     · simp [tgM] at hν
   · rw [Finset.sum_singleton]
-    exact alv_le_num hr hb _ _
+    exact alv_le_num _ _
 
 /-- The relays of an edge are given at most what is on the edge. -/
 theorem num_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j e s)) :
@@ -326,7 +326,7 @@ theorem num_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j
         exact mem_singleton_self _
       · simp [tgM] at hν
     · rw [Finset.sum_singleton]
-      exact alv_le_num hr hb _ _
+      exact alv_le_num _ _
   have two : ∀ hx2 : okR T R ch (.mid j e 2), num R ch FL lhat n o (.inl ⟨.mid j e 2, hx2⟩) ≤
       num R ch FL lhat n o (.inl ⟨.mid j e 0, hx0⟩) := by
     intro hx2
@@ -349,7 +349,7 @@ theorem num_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j
           exact mem_singleton_self _
         · simp [tgM] at hν
       · rw [Finset.sum_singleton]
-        exact alv_le_num hr hb _ _
+        exact alv_le_num _ _
     · have hx1 : okR T R ch (.mid j e 1) := ⟨fun _ => hh, fun h3 => absurd h3 (by decide)⟩
       refine (load_le_sum {(⟨.inl ⟨.mid j e 1, hx1⟩, true⟩ : NM R FL (ch := ch))} (bt_mid j e 2) ?_).trans ?_
       · rintro ⟨⟨x, hx'⟩ | l, ν⟩ hν -
@@ -367,7 +367,7 @@ theorem num_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j
           exact mem_singleton_self _
         · simp [tgM] at hν
       · rw [Finset.sum_singleton]
-        exact (alv_le_num hr hb _ _).trans (one hx1)
+        exact (alv_le_num _ _).trans (one hx1)
   fin_cases s
   · exact le_rfl
   · exact one hx
@@ -381,7 +381,7 @@ theorem alv_mid_le (j : Fin J) (e : T.Ed j) (s : Fin 4) (hx : okR T R ch (.mid j
       alv R ch FL lhat n o (⟨.inl ⟨.mid j e s, hx⟩, ν⟩ : NM R FL (ch := ch)) = 0) := by
   obtain ⟨hx0, h1⟩ := num_mid_le (FL := FL) (lhat := lhat) (n := n) (o := o) hr hb j e s hx
   have h2 := num_mid0 (FL := FL) (lhat := lhat) (n := n) (o := o) hr hb j e hx0
-  have h3 := alv_le_num (lhat := lhat) (n := n) (o := o) hr hb (⟨.mid j e s, hx⟩ : {x : RM T m AA // okR T R ch x}) ν
+  have h3 := alv_le_num (lhat := lhat) (n := n) (o := o) (⟨.mid j e s, hx⟩ : {x : RM T m AA // okR T R ch x}) ν
   refine ⟨h3.trans (h1.trans h2.1), fun hn => ?_⟩
   have := h2.2 hn
   omega

@@ -128,7 +128,7 @@ variable {mu : Letter S Unit Γ → Matrix Q Q A} {τ s τ' s' t : ℕ}
 
 open Classical in
 /-- **One cut.** -/
-theorem deal_cut (hK : 0 < K) [Nonempty Q] [Nonempty (Fin U1)] (hnl : KT.val nl = ℓ) (hnub : KT.val nub = ub)
+theorem deal_cut (hK : 0 < K) [Nonempty Q] [Nonempty (Fin U1)]
     (hd1 : ∀ d : Fin D, C.dt d = d1 ↔ d.1 = 1) (hgt : ∀ (d : Fin D) (g : Fin mm), C.dt d = gt g ↔ d.1 = g.1)
     -- the automaton
     (hU : ∀ z, z.size ≤ s → Plain θ τ z → runVal mu i e (K * T) (fun _ => wordG b0 b1 z) = pv θ z)

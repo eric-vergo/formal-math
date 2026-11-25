@@ -130,7 +130,7 @@ include hr hb
 
 theorem num_inr_le (l : LMv T FL) : num R ch FL lhat n o (.inr l) ≤ tmin FL (load R ch FL lhat n o) l := by
   classical
-  rw [num_eq hr hb, numF]
+  rw [num_eq, numF]
   split_ifs
   · exact le_rfl
   · exact Nat.zero_le _
@@ -142,7 +142,7 @@ theorem num_inr_zero {l : LMv T FL} (hl : ¬ IsMin (load R ch FL lhat n o) l.1.c
   · have h1 : tmin FL (load R ch FL lhat n o) l = 0 := tmin_zero fun q => seg_zero hr hb hl _ q
     have := num_inr_le (R := R) (ch := ch) (FL := FL) (lhat := lhat) (n := n) (o := o) hr hb l
     omega
-  · rw [num_eq hr hb, numF, ite_eq_right hl]
+  · rw [num_eq, numF, ite_eq_right hl]
 
 theorem alv_inr_zero {l : LMv T FL} (hl : ¬ IsMin (load R ch FL lhat n o) l.1.castSucc l.2.1 ∨
     ¬ Pick FL (load R ch FL lhat n o) l) (ν : (kindM R ch FL (.inr l)).Cn) :

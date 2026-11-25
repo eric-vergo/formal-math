@@ -300,7 +300,7 @@ theorem eE_lt {x y : Mv T R ch FL} (hxy : timeM R ch FL x < timeM R ch FL y) :
 noncomputable def sys : Sys F (AA + A') (Fintype.card (Mv T R ch FL)) where
   kind x := kindM R ch FL (eE R FL x)
   part x p := Pl.pt (partM R ch FL (eE R FL x) p)
-  inj x := Pl.pt.injective.comp (partM_inj R ch FL _)
+  inj _ := Pl.pt.injective.comp (partM_inj R ch FL _)
 
 /-- Channels by their moves. -/
 abbrev NM := Σ mv : Mv T R ch FL, (kindM R ch FL mv).Cn

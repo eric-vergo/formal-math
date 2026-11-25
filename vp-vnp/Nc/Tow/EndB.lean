@@ -35,7 +35,7 @@ include hr hb hh
 theorem num_inn (j : Fin J) (i : Fin h) (e : T.Ed j) (hx : okR T R ch (.inn j i e)) (hne : num R ch FL lhat n o (.inl ⟨.inn j i e, hx⟩) ≠ 0) :
     i = imin hh (lev (load R ch FL lhat n o)) j.1 := by
   classical
-  rw [num_eq hr hb, numF] at hne
+  rw [num_eq, numF] at hne
   split_ifs at hne with ha
   · exact (isMin_iff hh _ j.castSucc i).1 ha
   · exact absurd rfl hne
@@ -205,7 +205,7 @@ theorem sum_edge_end (j : Fin J) (e : T.Ed j) (β : Bool) : ∑ ν ∈ (univ : F
   have hnz : ∀ (x : {x : RM T m AA // okR T R ch x}), alv R ch FL lhat n o (⟨.inl x, β⟩ : NM R FL (ch := ch)) ≠ 0 →
       num R ch FL lhat n o (.inl x) ≠ 0 := by
     intro x hx
-    have := alv_le_num (lhat := lhat) (n := n) (o := o) (FL := FL) hr hb x β
+    have := alv_le_num (lhat := lhat) (n := n) (o := o) (FL := FL) x β
     omega
   refine sum_le_one _ _ _ ?_ ?_
   · intro ν hν ν' hν'
@@ -219,7 +219,7 @@ theorem sum_edge_end (j : Fin J) (e : T.Ed j) (β : Bool) : ∑ ν ∈ (univ : F
     rcases h3 with ⟨i, h3⟩ | ⟨s, h3⟩
     · simp only at h3
       subst h3
-      exact (alv_le_num hr hb _ _).trans (num_inl hr hb _)
+      exact (alv_le_num _ _).trans (num_inl hr hb _)
     · simp only at h3
       subst h3
       exact (alv_mid_le hr hb j e s hx β).1
@@ -299,7 +299,7 @@ theorem sum_child_last (c : T.X J) : (∑ ν : NM R FL (ch := ch), if IsCh R ch 
     intro e β
     simp only [C]
     rw [Finset.sum_singleton]
-    exact (alv_le_num hr hb _ _).trans (num_inl hr hb _)
+    exact (alv_le_num _ _).trans (num_inl hr hb _)
   have hall : ∀ ν : NM R FL (ch := ch), (if IsCh R ch FL ν ⟨Fin.last J, c⟩ then alv R ch FL lhat n o ν else 0) ≤
       if ν ∈ ((univ.filter fun e : T.Ed J => T.e0 e = c).biUnion fun e => C e false) ∪
         ((univ.filter fun e : T.Ed J => T.e1 e = c).biUnion fun e => C e true) then alv R ch FL lhat n o ν else 0 := by

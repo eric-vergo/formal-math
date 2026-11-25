@@ -72,7 +72,7 @@ noncomputable def plan (U0 U1 : ℕ) : Plan (sys R FL Pl) U0 U1 where
 
 variable {R FL Pl lhat n o}
 
-theorem ix_inj : Function.Injective (ix R FL Pl : Un R FL Pl U0 U1 → ℕ) := fun u v huv =>
+theorem ix_inj : Function.Injective (ix R FL Pl : Un R FL Pl U0 U1 → ℕ) := fun _ _ huv =>
   (Fintype.equivFin (Un R FL Pl U0 U1)).injective (Fin.ext huv)
 
 theorem mem_Al {u : Un R FL Pl U0 U1} : u ∈ Al R FL Pl lhat n o ↔ AlU R FL Pl lhat n o u := by

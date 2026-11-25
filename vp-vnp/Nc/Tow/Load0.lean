@@ -127,7 +127,7 @@ theorem num_start_le (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (hx : okR T R
   | zero =>
     have h1 : num R ch FL lhat n o (.inl ⟨.start a c γ ⟨0, hs⟩, hx⟩) ≤
         load R ch FL lhat n o (.nxt (.start a c γ ⟨0, hs⟩)) := by
-      rw [num_eq hr hb, numF]
+      rw [num_eq, numF]
       split_ifs
       · exact le_rfl
       · exact Nat.zero_le _
@@ -149,7 +149,7 @@ theorem num_start_le (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (hx : okR T R
       exact ⟨h1, by simp only at h2 ⊢; omega⟩
     have h1 : num R ch FL lhat n o (.inl ⟨.start a c γ ⟨s + 1, hs⟩, hx⟩) ≤
         load R ch FL lhat n o (.nxt (.start a c γ ⟨s + 1, hs⟩)) := by
-      rw [num_eq hr hb, numF]
+      rw [num_eq, numF]
       split_ifs
       · exact le_rfl
       · exact Nat.zero_le _
@@ -170,7 +170,7 @@ theorem num_start_le (a c : Fin AA) (γ : T.X 0) (s : Fin (2 * m)) (hx : okR T R
         exact mem_singleton_self _
       · simp [tgM] at hν
     · rw [Finset.sum_singleton]
-      exact (alv_le_num hr hb _ _).trans (ih hs0 hx0)
+      exact (alv_le_num _ _).trans (ih hs0 hx0)
 
 end
 
@@ -297,7 +297,7 @@ theorem load_start_le (e : T.Ed 0) : load R ch FL lhat n o (.edge 0 e) ≤
       split_ifs with hν
       · rcases ν with ⟨⟨x, hx⟩ | l, ν⟩
         · change tgR T R ch x ν = .edge 0 e at hν
-          have hnum := alv_le_num (lhat := lhat) (n := n) (o := o) (FL := FL) hr hb ⟨x, hx⟩ ν
+          have hnum := alv_le_num (lhat := lhat) (n := n) (o := o) (FL := FL) ⟨x, hx⟩ ν
           rcases x with ⟨a, c, γ, s⟩ | ⟨j', i', e'⟩ | ⟨j', e', s'⟩ | e'
           · have hB := hnum.trans (num_start_le (FL := FL) (lhat := lhat) (n := n) (o := o) hr hb a c γ s hx)
             refine le_trans ?_ (Finset.single_le_sum (f := fun a => ∑ c, ∑ γ, ∑ s : Fin (2 * m), _)

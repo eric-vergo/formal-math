@@ -50,7 +50,7 @@ structure Tower (h b D J r : ℕ) where
   /-- the vertex of a chamber -/
   vx : ∀ {j} i, X j → V j i
   /-- the place of a chamber at its vertex -/
-  co : ∀ {j} (i : Fin h), X j → Fl
+  co : ∀ {j}, Fin h → X j → Fl
   vx_co : ∀ {j}, j ≤ J → ∀ i, Function.Bijective fun c : X j => (vx i c, co i c)
   card_fl : Fintype.card Fl = b
   /-- the ends of a near pair -/

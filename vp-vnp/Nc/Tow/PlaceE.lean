@@ -20,7 +20,7 @@ variable {h b D J r AA : ℕ}
 /-- The node of a base party. -/
 def baseNd (T : Tower h b D J r) (ch : Fin AA ↪ T.X 0) : Fin AA ↪ Nd T where
   toFun a := nd T 0 (Nat.zero_le _) (ch a)
-  inj' a c hac := ch.injective (nd_inj.1 hac)
+  inj' _ _ hac := ch.injective (nd_inj.1 hac)
 
 /-- The number of extra parties. -/
 def extra (T : Tower h b D J r) (AA : ℕ) : ℕ := Fintype.card (Nd T) - AA

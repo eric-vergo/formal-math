@@ -70,7 +70,7 @@ theorem nR_mid1 (j : Fin J) (e : T.Ed j) : nR R ch FL lhat n o (.mid j e 1) ≤ 
   rw [dite_eq_left (ok_mid2 j e)]
   split_ifs with hx
   · have h1 : num R ch FL lhat n o (.inl ⟨.mid j e 2, ok_mid2 j e⟩) = load R ch FL lhat n o (.nxt (.mid j e 2)) := by
-      rw [num_eq hr hb, numF, ite_eq_left]
+      rw [num_eq, numF, ite_eq_left]
       · rfl
       · intro hh
         exact absurd hh (by decide)

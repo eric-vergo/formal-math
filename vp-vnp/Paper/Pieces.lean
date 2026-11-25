@@ -33,7 +33,7 @@ variable (mu : Nc.Letter S Unit Γ → Matrix Q Q A) {T c ub K N M b G₁ C : �
   {laws : List (G.Law A)} {γ : ℝ}
 
 /-- The contents of the units at a node, as copies of all units. -/
-def yOf {AA E U1 : ℕ} {sysN : Type} [Fintype sysN] [DecidableEq sysN] (n : Fin AA → Fin AA → Fin (N + 1)) (a : Fin AA)
+def yOf {AA U1 : ℕ} {sysN : Type} [Fintype sysN] [DecidableEq sysN] (n : Fin AA → Fin AA → Fin (N + 1)) (a : Fin AA)
     (w : {u : NetUnit (fun a c => (n a c).1) // u.1 = a ∨ u.2.1 = a} → Fin ub → Bool) :
     Uid AA N sysN U1 → UW ub
   | .init p q k => if h : k.1 < (n p q).1 ∧ (p = a ∨ q = a) then some (w ⟨⟨p, q, ⟨k.1, h.1⟩⟩, h.2⟩) else none
@@ -45,7 +45,7 @@ variable (TT : ThinTrees A laws (K + K) N ub M b G₁ C γ) (q : Fin (K + 1) →
 /-- The tables of the blocks and parts, as tables of the units at them. -/
 noncomputable def runTab (a : Fin (K + K)) : NodeTable A (fun a c => (n a c).1) ub a := fun w =>
   G.tabInit mu T cb q x (fun s => ρ s a) (fun a b => (n a b).1) a
-    (yOf (E := TT.E) (U1 := TT.U1) (sysN := TT.sys.N) n a w)
+    (yOf (U1 := TT.U1) (sysN := TT.sys.N) n a w)
 
 variable {mu cb TT q x ρ n}
 
@@ -267,7 +267,7 @@ theorem yhat_pos : 0 < yhat N M C := by
 
 theorem pieceFin_val (p : Fin (K + K + TT.A')) : (pieceFin TT k n o p : ℕ) = pieceAt TT k n o p := by
   have h : pieceAt TT k n o p < pieceNum TT k := lt_min
-    (prop_pieces_count hk (by omega) (yhat_pos hn hg hK hM hk) ((sum_given _).le.trans hM) (TT.up_total n hn o hg)
+    (prop_pieces_count hk ((sum_given _).le.trans hM) (TT.up_total n hn o hg)
       (fun p hp => TT.children_le n o p hp) (TT.root_children_le n o) p)
     (Staged.piece_lt p)
   rw [pieceFin, dite_eq_left h]

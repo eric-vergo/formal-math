@@ -157,7 +157,7 @@ theorem exists_cons (hr : 0 < r) (hb : 0 < b) (hh : 0 < h) {u : Un R FL Pl U0 U1
     obtain ⟨d, hd⟩ := exists_pick L (⟨j, i, ω, d0⟩ : LMv T FL)
     have hd : Pick FL L (⟨j, i, ω, d⟩ : LMv T FL) := hd
     have hnum : num R ch FL lhat (nn n) (oo R FL Pl o) (.inr (⟨j, i, ω, d⟩ : LMv T FL)) = tmin FL L (⟨j, i, ω, d⟩ : LMv T FL) := by
-      rw [num_eq hr hb, numF, ite_eq_left hd]
+      rw [num_eq, numF, ite_eq_left hd]
     set t := tmin FL L (⟨j, i, ω, d⟩ : LMv T FL) with ht
     have hfit := hd.1 q hq
     have hrk : rkU R FL Pl lhat n o u < L (.seg j i ω q) := by

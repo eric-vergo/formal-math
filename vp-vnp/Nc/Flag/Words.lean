@@ -190,7 +190,7 @@ theorem exists_col (l : Len (U n)) (a : Fin n) (u : Fin n → F2) (hua : u a = 1
 /-- Reflection in the antidiagonal. -/
 def refl (A : U n) : U n :=
   mk (Matrix.of fun i j => mat A (Fin.rev j) (Fin.rev i))
-    (fun i j hij => mat_lt A (Fin.rev_lt_rev.2 hij)) (fun i => mat_diag A _)
+    (fun _ _ hij => mat_lt A (Fin.rev_lt_rev.2 hij)) (fun _ => mat_diag A _)
 
 theorem refl_apply (A : U n) (i j : Fin n) : mat (refl A) i j = mat A (Fin.rev j) (Fin.rev i) := rfl
 

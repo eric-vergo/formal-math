@@ -153,7 +153,7 @@ theorem nR_inn (j : Fin J) (i : Fin h) (e : T.Ed j) : nR R ch FL lhat n o (.inn 
   split_ifs with hx h1 h1
   · refine (num_inl hr hb _).trans (le_of_eq ?_)
     exact lev_castSucc j e
-  · rw [num_eq hr hb, numF, ite_eq_right]
+  · rw [num_eq, numF, ite_eq_right]
     intro ha
     exact h1 ((isMin_iff hh _ j.castSucc i).1 ha)
   · exact Nat.zero_le _

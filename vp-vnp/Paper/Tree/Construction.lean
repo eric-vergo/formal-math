@@ -173,7 +173,7 @@ theorem cur_tree (hH : THypR FL ρ) {n : Fin AA → Fin AA → Fin (N + 1)}
     intro hdone hmem hal'
     rcases w with ⟨⟨x, hx⟩ | l, β⟩
     · have hnum : num R ch FL N (nn n) (oo R FL Pl o) (.inl ⟨x, hx⟩) ≠ 0 := by
-        have := alv_le_num (lhat := N) (n := nn n) (o := oo R FL Pl o) (FL := FL) hr hb ⟨x, hx⟩ β
+        have := alv_le_num (lhat := N) (n := nn n) (o := oo R FL Pl o) (FL := FL) ⟨x, hx⟩ β
         omega
       obtain ⟨j, hj, c, h1, h2⟩ := done_hold hr hb hh hx (β := β) hdone hnum
       refine ⟨⟨⟨j, Nat.lt_succ_of_le hj⟩, c⟩, hmem _ ⟨⟨x, hx⟩, β, rfl, hdone, h1⟩, ?_⟩

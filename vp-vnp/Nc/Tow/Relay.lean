@@ -21,8 +21,8 @@ section Relay
 variable (F : Type) [CommRing F]
 
 /-- The table of a role of a relay. -/
-def relTab (p : Fin 3) (X : {e : Unit // (0 : Fin 3) = p ∨ (2 : Fin 3) = p} → Bool)
-    (g : ∀ ν : {ν : Bool // (if ν then (1 : Fin 3) else 0) = p ∨ (if ν then (2 : Fin 3) else 1) = p},
+def relTab (p : Fin 3) (X : {_e : Unit // (0 : Fin 3) = p ∨ (2 : Fin 3) = p} → Bool)
+    (g : {ν : Bool // (if ν then (1 : Fin 3) else 0) = p ∨ (if ν then (2 : Fin 3) else 1) = p} →
       Fin 1 → Bool) : F :=
   if h0 : p = 0 then if X ⟨(), Or.inl h0.symm⟩ = g ⟨false, by simp [h0]⟩ 0 then 1 else 0
   else if h1 : p = 1 then if g ⟨false, by simp [h1]⟩ 0 = g ⟨true, by simp [h1]⟩ 0 then 1 else 0
