@@ -2,6 +2,18 @@
 
 The Lean 4.36 port at `9fd368ad` has 72,739 physical lines in its four proof libraries. The frozen cleanup at `34a07262` has 67,960, a reduction of 4,779 lines (6.57%) across eight fewer files. The five public theorem statements, Comparator directory and original paper match the port byte for byte. All five solution proofs use exactly `propext`, `Classical.choice` and `Quot.sound`. Both external checkers accepted a fresh export of all five results together. Some intermediate paper claims have a different proof, weaker coverage or no standalone Lean counterpart. [Source by round](source-rounds.md) · [Review of mathematical changes](reviews/final-rounds.md) · [Paper concordance](paper-routes.tsv).
 
+The local clean build’s median wall time fell from 692.047 to 457.004 seconds (34.0%). The smaller edits had mixed results. Each side has three trials per scenario. The last column takes the median of the three within-pair differences, which can have a different sign from the difference between the two side medians. [Individual trials, CPU, memory and rebuilt modules](data.md#local-build-benchmark) · [Compressed benchmark and verification records](benchmark-results.json.gz).
+
+| Local scenario | Port median (s) | Cleanup median (s) | Median paired change (s) |
+| --- | ---: | ---: | ---: |
+| Clean default build | 692.047 | 457.004 | −158.401 |
+| Warm default build | 8.503 | 8.275 | +0.135 |
+| Foundation edit | 33.074 | 33.458 | +1.023 |
+| Branch edit | 34.497 | 31.299 | −3.420 |
+| Assembly chapter edit | 49.229 | 50.673 | −20.666 |
+
+The integrated blueprint and inventory use `246c5eac849a9e15ba429570c310686cf793d41a`. Its proof inputs are byte-identical to the frozen proof used for the four proof scenarios and the direct replay. Whole-project counts include the reporting tools and the comparison material already tracked at the integrated pin. They precede publication of these refreshed tables and archives. [All measured scopes](data.md) · [Port inventory](inventory-baseline.json.gz) · [Integrated inventory](inventory-after.json.gz).
+
 | Proof-library measure | Port | Frozen proof | Difference |
 | --- | ---: | ---: | ---: |
 | Lean files | 320 | 312 | −8 |
@@ -14,6 +26,8 @@ The Lean 4.36 port at `9fd368ad` has 72,739 physical lines in its four proof lib
 | Written declaration commands | 4,631 | 4,641 | +10 |
 | Written imports | 557 | 561 | +4 |
 | Direct imports of the Mathlib umbrella | 27 | 24 | −3 |
+
+The number of named theorem and lemma bodies grew from 3,264 to 3,282, while their total code fell from 46,110 to 41,470 lines. The median fell from seven lines to six and the longest from 340 to 237. Bodies over 200 lines fell from seven to two. Groups of identical normalized bodies of at least five lines fell from twelve to two. The local Comparator import graph fell from 321 to 313 modules and from 508 to 482 edges. Its longest path remains 38 edges. Compiled proof `.olean` files shrank from 279,018,704 to 261,753,344 bytes. [Proof body measurements](data.md#named-theorem-and-lemma-bodies) · [Local imports and compiled artifacts](data.md#local-import-dag).
 
 ## Changes across rounds
 
@@ -51,6 +65,14 @@ Three paired local proof builds used the same pinned dependencies, host and four
 The warm command rebuilt zero modules throughout and its paired differences ranged from −0.227 to +0.194 seconds. The foundation comment edit rebuilt one module per side. It took longer after cleanup in two pairs, with a median paired increase of 1.023 seconds. The branch comment edit also rebuilt one module per side and finished sooner in all three pairs, with a median paired decrease of 3.420 seconds. Comment edits exercise Lake’s handling of an unchanged interface. A mathematical change that alters a compiled interface can trigger more downstream work.
 
 Clean-build warnings also moved in both directions. Module-system import warnings rose from 56 to 116, while deprecation warnings fell from 1,327 to zero and linter/unused warnings fell from 81 to five. Each clean run printed five intentional challenge warnings. Lake’s reported median job duration for `Paper.Pieces` fell from 39.0 to 8.5 seconds, while `Paper.CircuitPhi` rose from 6.7 to 8.4 seconds. These module readings include shared CPU load and Lake’s rounding. [Measurement rules](benchmark-method.md).
+
+The Assembly edit rebuilt one module each time. The after build finished sooner in two pairs and later in the third. The paired changes were −20.666, −22.338 and +24.891 seconds. Both worktrees had a separate Assembly preprime after full site verification. The observed range and sign changes limit any claim about chapter elaboration speed.
+
+## Blueprint and replay coverage
+
+The site has 17 chapters at both pins. The graph grew from 2,173 to 2,196 nodes and from 7,844 to 8,104 edges. Large-neighbourhood drawings omitted by the renderer fell from 177 to 158. The integrated site contains 338 HTML pages, down from 342. Its consistency check found zero errors across 4,672 cache entries and 4,672 manifest entries. The five challenge verdicts read “Proved.” The site reports Lean-complete status for 945 of 949 theorem nodes and all 1,247 definition nodes. It records 170 informal statements whose correspondence to Lean requires human judgment. In the baseline, all 920 theorem and 1,253 definition nodes were Lean-complete. [Site artifact and coverage tables](data.md#rendered-artifacts).
+
+The integrated site freshly replayed the judged results together with 2,410 selected declarations and their dependencies. Both independent checkers accepted 63,716 constants in 61,329 declaration records. The baseline site reused a previously accepted identical export covering 64,356 constants and 2,403 selected declarations plus the judged results. The direct five-root runs on both sides were fresh. The authored blueprint now directly cites 42 source theorems or lemmas outside the five judged closures, up from 33. There are 25 written theorems or lemmas outside both the authored and judged closures, up from 22. [Site replay messages](data.md#rendered-project-stats) · [Named exposition proofs](data.md#named-exposition-proofs-outside-all-five-exports).
 
 ## Authorship and reproduction
 
