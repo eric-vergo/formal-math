@@ -27,7 +27,7 @@ EXAMPLES = [
     ("Real polynomial and class corollaries", ["Paper.thm_simple", "Paper.cor_classes"],
      ["Paper.thm_simple", "Paper.cor_classes"]),
     ("Flat polynomial lower bound", ["Paper.thm_flat_simple"], ["Paper.thm_flat_simple"]),
-    ("Flat displacement estimate", ["Paper.prop_flat_lower_lengths"], []),
+    ("Flat displacement estimate", ["Paper.prop_flat_lower_lengths"], ["Paper.prop_flat_lower_lengths"]),
     ("One-cut assembly", ["Paper.thm_onecut"], ["Paper.thm_onecut"]),
     ("Tape automaton piece bounds", ["Paper.prop_pieces"], ["Paper.prop_pieces"]),
     ("Guarded sum of states", ["Nc.Dl.mem_execAll"], ["Nc.Dl.mem_execAll"]),
@@ -132,9 +132,9 @@ def proof_sizes(inventory):
 
 
 def proof_example(inventory, paths, names):
-    if not names:
-        return "Removed standalone statement", "—"
     records = {item["name"]: item for item in inventory["proofs"].values()}
+    if names == ["Paper.prop_flat_lower_lengths"] and names[0] not in records:
+        return "Removed standalone statement", "—"
     links, lines = [], 0
     for name in names:
         item = records[name]
@@ -209,13 +209,15 @@ def proof_revision(integrated, frozen):
     return revision
 
 
-def benchmark_rows(source, revisions, proof_revisions):
+def benchmark_tables(source, revisions, proof_revisions):
     main_stage = {"clean": "proof", "warm": "proof", "foundation": "edited", "branch": "edited", "chapter": "edited"}
     conditions = None
+    rows, paired = [], []
     archive = load(source) if source.is_file() else None
     for scenario, stage in main_stage.items():
+        pair_walls, pair_starts = [], []
         for side, revision in zip(("before", "after"), revisions if scenario == "chapter" else proof_revisions, strict=True):
-            stages = []
+            stages, starts = [], []
             for trial in range(1, 4):
                 path = f"{side}/{scenario}-{trial}.jsonl"
                 if archive is None:
@@ -231,15 +233,26 @@ def benchmark_rows(source, revisions, proof_revisions):
                 if conditions is not None and conditions != settings:
                     raise ValueError(f"benchmarked under different conditions: {path}")
                 conditions = settings
+                required = ["prime", "edited", "restore"] if stage == "edited" else ["proof"]
+                if [r["stage"] for r in records if "stage" in r] != required:
+                    raise ValueError(f"incomplete timing run: {path}")
+                starts.append(metadata["started_utc"])
                 stages.append(next(r for r in records if r.get("stage") == stage))
             wall = [r["wall_seconds"] for r in stages]
             cpu = [r["cpu_user_seconds"] + r["cpu_system_seconds"] for r in stages]
             rss = [r["max_rss_bytes"] / 2**30 for r in stages]
             raw = ", ".join(f"{x:.3f}" for x in wall)
             wall_range = f"{min(wall):.3f}–{max(wall):.3f}"
-            yield [scenario, side, raw, f"{statistics.median(wall):.3f} ({wall_range})",
+            rows.append([scenario, side, raw, f"{statistics.median(wall):.3f} ({wall_range})",
                    f"{statistics.median(cpu):.3f}", f"{statistics.median(rss):.3f}",
-                   ", ".join(str(len(r["built_modules"])) for r in stages)]
+                   ", ".join(str(len(r["built_modules"])) for r in stages)])
+            pair_walls.append(wall)
+            pair_starts.append(starts)
+        deltas = [new - old for old, new in zip(*pair_walls, strict=True)]
+        order = ["before first" if old < new else "after first" for old, new in zip(*pair_starts, strict=True)]
+        paired.append([scenario, ", ".join(order), *(f"{d:+.3f}" for d in deltas),
+                       f"{statistics.median(deltas):+.3f}"])
+    return rows, paired
 
 
 def module_benchmarks(archive):
@@ -258,7 +271,7 @@ def module_benchmarks(archive):
 def verification(archive, revisions, proof_revisions):
     def stages(side, name, revision):
         metadata, *rows = archive[f"{side}/{name}.jsonl"]
-        if metadata["revision"] != revision or any(r.get("exit_code", 0) for r in rows):
+        if (metadata["revision"], metadata["scenario"]) != (revision, name) or any(r.get("exit_code", 0) for r in rows):
             raise ValueError(f"invalid {side} {name} result")
         return {r["stage"]: r for r in rows if "stage" in r}
 
@@ -276,6 +289,14 @@ def verification(archive, revisions, proof_revisions):
 
     checked = [stages(side, "verify", rev) for side, rev in zip(sides, revisions, strict=True)]
     sites = [runs["site-artifacts"] for runs in checked]
+    print("### Full verification stages\n")
+    print("These wall times describe one verification per side. The site replay messages below identify "
+          "fresh checker runs and previously accepted identical exports.\n")
+    table(["Stage", "Before wall (s)", "After wall (s)"], [
+        [stage, *(f"{runs[stage]['wall_seconds']:.3f}" for runs in checked)]
+        for stage in checked[0] if "wall_seconds" in checked[0][stage] and stage in checked[1]
+    ])
+
     for stage, label in (("proof-build", "Proof build warning lines"),
                          ("blueprint-build-and-replay", "Blueprint build warning lines")):
         paired(label, *(runs[stage]["warnings"] for runs in checked))
@@ -395,9 +416,13 @@ def main():
           trailing_blank=bool(args.timings or args.verification))
     if args.timings:
         print("### Local build benchmark\n")
+        rows, differences = benchmark_tables(args.timings, revisions, proof_revisions)
         table(["Scenario", "Revision", "Wall trials (s)", "Wall median (range), s", "CPU median (s)",
                "OS peak RSS median (GiB)", "Project modules rebuilt per trial"],
-              benchmark_rows(args.timings, revisions, proof_revisions))
+              rows)
+        print("The signed differences subtract the before wall time from the after wall time in each pair.\n")
+        table(["Scenario", "Observed pair order", "Trial 1 Δ (s)", "Trial 2 Δ (s)", "Trial 3 Δ (s)",
+               "Median paired Δ (s)"], differences)
         if args.timings.is_file():
             print("### Selected module job timings from the clean builds\n")
             print("The values are Lake’s reported elapsed job times, with its rounding and shared CPU load. "
