@@ -145,18 +145,14 @@ theorem literal_bound {B I E R₁ R₂ R₃ D IE : ℕ} (hB : 1 ≤ B) (hE : E �
     (h1 : R₁ ≤ 4 * B ^ 5) (h2 : R₂ ≤ 25 * B ^ 5) (hD : D ≤ 6 * B ^ 2) (h3 : R₃ ≤ 2 * B ^ 3)
     (hI : I ≤ B * B) (hIE : IE = I + E + 3) :
     (R₁ + R₂ + R₃ + (D + E * E) + I) * IE ≤ 1600 * B ^ 9 := by
-  have p := fun k (hk : k ≤ 6) => Nat.pow_le_pow_right (show 0 < B from hB) hk
-  have h5 := p 5 (by norm_num)
-  have h33 := p 3 (by norm_num)
-  have h22 := p 2 (by norm_num)
-  have hBB : B * B = B ^ 2 := (pow_two B).symm
-  have hE2 : E * E ≤ 81 * B ^ 6 := by
-    calc E * E ≤ (9 * B ^ 3) * (9 * B ^ 3) := Nat.mul_le_mul hE hE
-      _ = 81 * B ^ 6 := by ring
-  have h23 : B ^ 2 ≤ B ^ 3 := Nat.pow_le_pow_right hB (by norm_num)
-  have h03 : 1 ≤ B ^ 3 := Nat.one_le_pow _ _ hB
-  calc (R₁ + R₂ + R₃ + (D + E * E) + I) * IE ≤ 120 * B ^ 6 * (13 * B ^ 3) := Nat.mul_le_mul (by omega) (by omega)
-    _ ≤ 1600 * B ^ 9 := by ring_nf; omega
+  rw [hIE]
+  calc
+    _ ≤ (4 * B ^ 5 + 25 * B ^ 5 + 2 * B ^ 3 + (6 * B ^ 2 + (9 * B ^ 3) * (9 * B ^ 3)) +
+        B * B) * (B * B + 9 * B ^ 3 + 3) := by gcongr
+    _ ≤ 1600 * B ^ 9 := by
+      obtain ⟨b, rfl⟩ := Nat.exists_eq_add_of_le hB
+      ring_nf
+      omega
 
 variable {F : Type} [Field F] {Γ S Q : Type} [Fintype Γ] [DecidableEq Γ] [Fintype S] [DecidableEq S]
   [Fintype Q] [DecidableEq Q]

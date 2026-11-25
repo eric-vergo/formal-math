@@ -17,6 +17,16 @@ open Finset MvPolynomial
 
 variable {F X Y : Type*} [Field F]
 
+/-- Expand one output coefficient of a substitution over any finite set containing the support. -/
+private theorem coeff_aeval_sum {K : Type*} [CommSemiring K]
+    (M : X → MvPolynomial Y K) (p : MvPolynomial X K) (d : Y →₀ ℕ)
+    {s : Finset (X →₀ ℕ)} (hs : p.support ⊆ s) :
+    (aeval M p).coeff d = ∑ b ∈ s, p.coeff b * (∏ x ∈ b.support, M x ^ b x).coeff d := by
+  classical
+  rw [aeval_def, eval₂_eq, coeff_sum]
+  simp only [MvPolynomial.algebraMap_eq, coeff_C_mul]
+  exact Finset.sum_subset hs fun b _ hb => by rw [notMem_support_iff.1 hb, zero_mul]
+
 /-- An affine substitution keeps approximation; the number of gates grows by a factor
 at most 5. -/
 theorem Approximates.aeval {f : MvPolynomial X F} {s : ℕ} (h : Approximates f s) (M : X → MvPolynomial Y F)
@@ -28,33 +38,14 @@ theorem Approximates.aeval {f : MvPolynomial X F} {s : ℕ} (h : Approximates f 
     · exact Or.inl ⟨HahnSeries.C b, by rw [hb, map_C]⟩
     · exact Or.inr ⟨j, HahnSeries.C a, HahnSeries.C b, by rw [hb, map_add, map_mul, map_C, map_C, map_X]⟩
   · classical
-    have hsub : f.support ⊆ p.support := fun b hb => by
-      rw [mem_support_iff] at hb ⊢
-      intro h0
-      have h1 := hpf b 0 le_rfl
-      rw [h0, ite_eq_left rfl] at h1
-      exact hb (h1.symm.trans (by simp))
-    have e1 : (MvPolynomial.aeval (fun q => MvPolynomial.map (HahnSeries.C : F →+* LaurentSeries F) (M q)) p).coeff d =
-        ∑ b ∈ p.support, p.coeff b * HahnSeries.C ((MvPolynomial.aeval M (monomial b (1 : F))).coeff d) := by
-      conv_lhs => rw [p.as_sum, map_sum, coeff_sum]
-      refine Finset.sum_congr rfl fun b _ => ?_
-      rw [← mul_one (p.coeff b), ← C_mul_monomial, map_mul, aeval_C, MvPolynomial.algebraMap_eq, coeff_C_mul, mul_one]
-      congr 1
-      rw [← coeff_map, aeval_monomial, aeval_monomial, map_one, map_one, one_mul, one_mul, map_finsuppProd]
-      simp only [map_pow]
-    have e2 : (MvPolynomial.aeval M f).coeff d =
-        ∑ b ∈ p.support, f.coeff b * (MvPolynomial.aeval M (monomial b (1 : F))).coeff d := by
-      conv_lhs => rw [f.as_sum, map_sum, coeff_sum]
-      rw [Finset.sum_subset hsub (fun b _ hb => by rw [notMem_support_iff.1 hb, monomial_zero, map_zero, AddMonoidAlgebra.coeff_zero, Finsupp.zero_apply])]
-      refine Finset.sum_congr rfl fun b _ => ?_
-      rw [← mul_one (f.coeff b), ← C_mul_monomial, map_mul, aeval_C, MvPolynomial.algebraMap_eq, coeff_C_mul, mul_one]
+    let s := p.support ∪ f.support
+    have hp' : p.support ⊆ s := subset_union_left
+    have hf' : f.support ⊆ s := subset_union_right
     have e3 : ∀ (a : LaurentSeries F) (r : F), (a * HahnSeries.C r).coeff i = a.coeff i * r := by
       intro a r
       rw [mul_comm, HahnSeries.C_mul_eq_smul, HahnSeries.coeff_smul, smul_eq_mul, mul_comm]
-    rw [e1, HahnSeries.coeff_sum]
-    simp only [e3, hpf _ i hi]
-    by_cases h0 : i = 0
-    · simp only [ite_eq_left h0, e2]
-    · simp [h0]
+    rw [coeff_aeval_sum _ p d hp', HahnSeries.coeff_sum, coeff_aeval_sum M f d hf']
+    simp only [← map_pow, ← map_prod, coeff_map, e3, hpf _ i hi]
+    by_cases h0 : i = 0 <;> simp [h0]
 
 end Nc
