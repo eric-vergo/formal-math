@@ -20,39 +20,8 @@ variable {A : Type} [CommRing A] {θ : List Bool → A} {supp : Finset (List Boo
 theorem tot_seq3 (m : Run A → A) (la lb : List (Run A)) (L : Run A → Run A → List (Run A)) :
     tot m (la.flatMap fun r => lb.flatMap fun s => (L r s).map fun t => ((r.seq s).seq t).tick t.out) =
       tot (fun r => tot (fun s => tot (fun t => m (((r.seq s).seq t).tick t.out)) (L r s)) lb) la := by
-  rw [tot_flatMap]
-  unfold tot
-  congr 1
-  refine List.map_congr_left fun r _ => ?_
-  have h1 := tot_flatMap m lb fun s => (L r s).map fun t => ((r.seq s).seq t).tick t.out
-  unfold tot at h1
-  rw [h1]
-  by_cases hr : r.bill = []
-  · rw [ite_eq_left hr, ← List.sum_map_mul_left]
-    congr 1
-    refine List.map_congr_left fun s _ => ?_
-    rw [List.map_map]
-    by_cases hs : s.bill = []
-    · rw [ite_eq_left hs, ← List.sum_map_mul_left, ← List.sum_map_mul_left]
-      congr 1
-      refine List.map_congr_left fun t _ => ?_
-      simp only [Function.comp, Run.tick, Run.seq, hr, hs, List.nil_append]
-      split_ifs
-      · ring
-      · ring
-    · rw [ite_eq_right hs, mul_zero]
-      refine List.sum_eq_zero fun y hy => ?_
-      rw [List.mem_map] at hy
-      obtain ⟨t, -, rfl⟩ := hy
-      exact ite_eq_right fun h => hs (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 h).1).2
-  · rw [ite_eq_right hr]
-    refine List.sum_eq_zero fun y hy => ?_
-    rw [List.mem_map] at hy
-    obtain ⟨s, -, rfl⟩ := hy
-    refine List.sum_eq_zero fun y hy => ?_
-    rw [List.map_map, List.mem_map] at hy
-    obtain ⟨t, -, rfl⟩ := hy
-    exact ite_eq_right fun h => hr (List.append_eq_nil_iff.1 (List.append_eq_nil_iff.1 h).1).1
+  simp only [tot_eq_weighted_sum, sum_flatMap_map, List.map_map, Function.comp_def, wt_tick,
+    wt_seq, ← List.sum_map_mul_left, mul_assoc]
 
 theorem EvOK.run {a b : Fm} {x : Tree} {la lb : List (Run A)} {L : Run A → Run A → List (Run A)}
     (iha : EvOK θ supp a x la) (ihb : EvOK θ supp b x lb)
@@ -64,8 +33,7 @@ theorem EvOK.run {a b : Fm} {x : Tree} {la lb : List (Run A)} {L : Run A → Run
   obtain ⟨o, a', rfl, hl, rfl, rfl⟩ := Fm.codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   rw [tot_seq3]
-  refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-  have hm1' : σ1.mode = .D 6 := by rw [hm1]; congr 1; exact Fin.ext hl
+  refine toOp ok hm hc 6 hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
   refine dstep ok1 hm1' h11 .d6 rfl (by decide) rfl rfl ?_
   have ok2 := ok1.nx (θ := θ) (.inl .d6) 0 0 0
   obtain ⟨p, q, s, hrec, hp, hq⟩ := (h12.mono (heap_nx (θ := θ) σ1 (.inl .d6) 0 0 0)).load ok2
@@ -143,8 +111,7 @@ theorem EvOK.guess (x : Tree) : EvOK θ supp .guess x [.det 1 .nil, .det 1 Tree.
     rw [this] at hB1
     linarith
   obtain ⟨o, a, rfl, hl⟩ := Fm.codeShape_of_decode hF
-  refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-  have hm1' : σ1.mode = .D 7 := by rw [hm1]; congr 1; exact Fin.ext hl
+  refine toOp ok hm hc 7 hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
   have hrec := ok1.nil_load hm1' h11
   have hz : σ1.mode ≠ (UM θ supp).mh := by
     rw [hm1']
@@ -195,8 +162,7 @@ theorem EvOK.mul {a : Fm} {x : Tree} {l : List (Run A)} :
     simp
   rw [ht]
   obtain ⟨o, a', rfl, hl, -⟩ := Fm.codeShape_of_decode hF
-  refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-  have hm1' : σ1.mode = .D 10 := by rw [hm1]; congr 1; exact Fin.ext hl
+  refine toOp ok hm hc 10 hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
   have hrec := ok1.nil_load hm1' h11
   exact sumTo_stuck ok1 hrec (by rw [hm1']; rfl) (by rw [hm1']; simp) (by
       rw [hm1']
@@ -222,8 +188,7 @@ theorem EvOK.theta (hθ : ∀ q, q ∉ supp → θ q = 0) {a : Fm} {x : Tree} {l
     · rfl
   change Mach.SumTo (UM θ supp) σ (tot m (l.map f)) B
   rw [ht]
-  refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-  have hm1' : σ1.mode = .D 9 := by rw [hm1]; congr 1; exact Fin.ext hl
+  refine toOp ok hm hc 9 hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
   refine dstep ok1 hm1' h11 .d9 rfl (by decide) rfl rfl ?_
   have hh2 : σ.heap ⊆ (nx θ σ1 (.inl .d9) 0 0 0).heap := fun _ hc => heap_nx σ1 _ _ _ _ (hh1 hc)
   refine ih (nx θ σ1 (.inl .d9) 0 0 0) ⟨ok1.nx _ _ _ _, rfl, ⟨a', h12.mono (heap_nx σ1 _ _ _ _), rfl⟩, ?_⟩ _

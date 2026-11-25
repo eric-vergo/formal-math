@@ -31,28 +31,20 @@ theorem tot_flatMap (m : Run A → A) {ι : Type*} (l : List ι) (f : ι → Lis
   | nil => rfl
   | cons i l ih => rw [List.flatMap_cons, tot_append, ih, List.map_cons, List.sum_cons]
 
+/-- Setting every named constant to zero counts exactly the runs with empty bills. -/
+theorem tot_eq_weighted_sum (m : Run A → A) (l : List (Run A)) :
+    tot m l = (l.map fun r => wt (fun _ => (0 : A)) r * m r).sum := by
+  unfold tot
+  congr 1
+  refine List.map_congr_left fun r _ => ?_
+  cases h : r.bill <;> simp [wt, h]
+
 /-- One run after the other. -/
 theorem tot_seq (m : Run A → A) (la : List (Run A)) (L : Run A → List (Run A)) (o : Run A → Run A → Tree) :
     tot m (la.flatMap fun r => (L r).map fun s => (r.seq s).tick (o r s)) =
       tot (fun r => tot (fun s => m ((r.seq s).tick (o r s))) (L r)) la := by
-  rw [tot_flatMap]
-  unfold tot
-  congr 1
-  refine List.map_congr_left fun r _ => ?_
-  rw [List.map_map]
-  by_cases hr : r.bill = []
-  · rw [ite_eq_left hr, ← List.sum_map_mul_left]
-    congr 1
-    refine List.map_congr_left fun s _ => ?_
-    simp only [Function.comp, Run.tick, Run.seq, hr, List.nil_append]
-    split_ifs
-    · ring
-    · ring
-  · rw [ite_eq_right hr]
-    refine List.sum_eq_zero fun y hy => ?_
-    rw [List.mem_map] at hy
-    obtain ⟨s, -, rfl⟩ := hy
-    exact ite_eq_right fun h => hr (List.append_eq_nil_iff.1 h).1
+  simp only [tot_eq_weighted_sum, sum_flatMap_map, List.map_map, Function.comp_def, wt_tick,
+    wt_seq, ← List.sum_map_mul_left, mul_assoc]
 
 variable (supp) in
 /-- Steps of the machine for one step of the evaluation. -/
@@ -105,8 +97,7 @@ theorem EvOK.quote (c0 x : Tree) : EvOK θ supp (.quote c0) x [.det 1 c0] := by
       (inpA σ _ (by simp) (by simp) _ _ _) rfl
     exact (sumTo_ruleA ok hrec .en (by rw [hm]; rfl) (by rw [hm]; simp) (by rw [hm]; simp) (by rw [hm]; rfl) rfl h2).mono
       (by linarith)
-  · refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-    have hm1' : σ1.mode = .D 0 := by rw [hm1]; congr 1; exact Fin.ext hl
+  · refine toOp ok hm hc 0 hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
     refine dstep ok1 hm1' h11 .d0 rfl (by decide) rfl rfl ?_
     refine (hk (nx θ σ1 (.inl .d0) 0 0 0) (σ1.regs 2) (ok1.nx _ _ _ _) rfl rfl h14
       (fun _ h => heap_nx σ1 _ _ _ _ (hh1 h)) ((inpA σ1 _ (by simp) (by simp) _ _ _).trans hi1)
@@ -124,8 +115,7 @@ theorem EvOK.id (x : Tree) : EvOK θ supp .id x [.det 1 x] := by
     rw [this] at hB
     linarith
   obtain ⟨o, a, rfl, hl⟩ := Fm.codeShape_of_decode hF
-  refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-  have hm1' : σ1.mode = .D 1 := by rw [hm1]; congr 1; exact Fin.ext hl
+  refine toOp ok hm hc 1 hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
   refine dstep ok1 hm1' h11 .d1 rfl (by decide) rfl rfl ?_
   refine (hk (nx θ σ1 (.inl .d1) 0 0 0) (σ1.regs 3) (ok1.nx _ _ _ _) rfl rfl h14
     (fun _ h => heap_nx σ1 _ _ _ _ (hh1 h)) ((inpA σ1 _ (by simp) (by simp) _ _ _).trans hi1) ?_).mono (by linarith)
@@ -137,8 +127,7 @@ theorem EvOK.fail (x : Tree) : EvOK θ supp .fail x [] := by
   obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
   rw [tot_nil]
   obtain ⟨o, a, rfl, hl | hl⟩ := Fm.codeShape_of_decode hF
-  · refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-    have hm1' : σ1.mode = .D 8 := by rw [hm1]; congr 1; exact Fin.ext hl
+  · refine toOp ok hm hc 8 hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
     have hrec := ok1.nil_load hm1' h11
     exact sumTo_stuck ok1 hrec (by rw [hm1']; rfl) (by rw [hm1']; simp) (by
       rw [hm1']

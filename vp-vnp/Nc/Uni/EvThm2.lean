@@ -48,73 +48,62 @@ theorem cost_tick (r : Run A) (o : Tree) : ((r.tick o).cost : ℤ) = r.cost + 1 
 theorem cost_seq (r s : Run A) : ((r.seq s).cost : ℤ) = r.cost + s.cost := by
   simp [Run.seq]
 
-theorem EvOK.hd {a : Fm} {x : Tree} {l : List (Run A)} (ih : EvOK θ supp a x l) :
-    EvOK θ supp (.hd a) x (l.map fun r => r.tick r.out.hd) := by
-  intro σ hσ m Bd B h
-  obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
-  obtain ⟨o, a', rfl, hl, rfl⟩ := Fm.codeShape_of_decode hF
+/-- Both projections install a return frame, evaluate their operand, then load one child. -/
+private theorem EvOK.projection (tail : Bool) {a : Fm} {x : Tree} {l : List (Run A)} (ih : EvOK θ supp a x l) :
+    EvOK θ supp (if tail then .tl a else .hd a) x (l.map fun r => r.tick (if tail then r.out.tl else r.out.hd)) := by
+  let opcode : Fin 11 := if tail then 3 else 2
+  let enter : Ra := if tail then .d3 else .d2
+  let frame : Kd := if tail then .TL else .HD
+  let ret : Ra := if tail then .rtl else .rhd
+  let mode : Md (Nm supp) := if tail then .T else .H
+  let read (b : Bool) : Ra := if tail then .t b else .h b
+  intro σ ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ m Bd B h
+  obtain ⟨o, arg, rfl, hl, rfl⟩ : ∃ o arg, c = .cons o arg ∧ o.len = opcode.val ∧ Fm.ofTree arg = a := by
+    cases tail <;> exact Fm.codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   rw [tot_map]
-  refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-  have hm1' : σ1.mode = .D 2 := by rw [hm1]; congr 1; exact Fin.ext hl
-  refine dstep ok1 hm1' h11 .d2 rfl (by decide) rfl rfl ?_
-  have hh2 : σ.heap ⊆ (nx θ σ1 (.inl .d2) 0 0 0).heap := fun _ hc => heap_nx σ1 _ _ _ _ (hh1 hc)
-  refine ih (nx θ σ1 (.inl .d2) 0 0 0) ⟨ok1.nx _ _ _ _, rfl, ⟨a', h12.mono (heap_nx σ1 _ _ _ _), rfl⟩, ?_⟩ _
-    (fun r => Bd (r.tick r.out.hd) + 2) _ ?_
-  · change Rep _ (σ1.regs 3) x
-    rw [h13]
-    exact hx.mono hh2
+  refine toOp ok hm hc opcode hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
+  refine dstep ok1 hm1' h11 enter (by cases tail <;> rfl) (by cases tail <;> decide)
+    (by cases tail <;> rfl) (by cases tail <;> rfl) ?_
+  let σ2 := nx θ σ1 (.inl enter) 0 0 0
+  have hh2 : σ.heap ⊆ σ2.heap := fun _ hp => heap_nx σ1 _ _ _ _ (hh1 hp)
+  refine ih σ2 ⟨ok1.nx _ _ _ _, by cases tail <;> rfl, ⟨arg, ?_, rfl⟩, ?_⟩ _
+    (fun r => Bd (r.tick (if tail then r.out.tl else r.out.hd)) + 2) _ ?_
+  · cases tail <;> exact h12.mono (heap_nx _ _ _ _ _)
+  · have he : σ2.regs 2 = σ1.regs 3 := by cases tail <;> rfl
+    rw [he, h13]; exact hx.mono hh2
   · intro r hr hb
-    obtain ⟨k1, k2⟩ := h (r.tick r.out.hd) (List.mem_map.2 ⟨r, hr, rfl⟩) hb
+    obtain ⟨k1, k2⟩ := h _ (List.mem_map.2 ⟨r, hr, rfl⟩) hb
     rw [cost_tick] at k2
     refine ⟨fun σ3 v ok3 hm3 h31 h32 hh3 hi3 hv => ?_, by linarith⟩
-    have hfr : ((.HD, ![σ3.regs 2, σ1.regs 4, σ1.regs 0, σ1.regs 0]) : Rec Kd) ∈ σ3.heap := by
-      rw [h32]
-      exact hh3 (new_nx (θ := θ) σ1 (.inl .d2) 0 0 0)
-    refine rstep ok3 hm3 hfr .rhd rfl rfl rfl ?_
-    have ok4 := ok3.nx (θ := θ) (.inl .rhd) (σ1.regs 4) (σ1.regs 0) (σ1.regs 0)
+    have hfr : ((frame, ![σ3.regs 2, σ1.regs 4, σ1.regs 0, σ1.regs 0]) : Rec Kd) ∈ σ3.heap := by
+      rw [h32]; cases tail <;> exact hh3 (new_nx (θ := θ) σ1 _ 0 0 0)
+    refine rstep ok3 hm3 hfr ret (by cases tail <;> rfl) (by cases tail <;> rfl) (by cases tail <;> rfl) ?_
+    let σ4 := nx θ σ3 (.inl ret) (σ1.regs 4) (σ1.regs 0) (σ1.regs 0)
+    have ok4 : OKs σ4 := ok3.nx _ _ _ _
     subst h31
-    obtain ⟨p, q, s, hrec, hp, hq⟩ := (hv.mono (heap_nx (θ := θ) σ3 (.inl .rhd) (σ1.regs 4) (σ1.regs 0) (σ1.regs 0))).load ok4
+    obtain ⟨p, q, s, hrec, hp, hq⟩ := (hv.mono (heap_nx (θ := θ) σ3 (.inl ret) _ _ _)).load ok4
     generalize decide (r.out ≠ .nil) = b at hrec
-    refine heapStep ok4 (md := .H) rfl rfl hrec (.h b) (by cases b <;> rfl) (by simp) (by simp) rfl rfl ?_
-    refine (k1 (nx θ (nx θ σ3 (.inl .rhd) (σ1.regs 4) (σ1.regs 0) (σ1.regs 0)) (.inl (.h b)) p q s) p
-      (ok4.nx _ _ _ _) rfl rfl h14 (fun _ hc => heap_nx _ _ _ _ _ (heap_nx _ _ _ _ _ (hh3 (hh2 hc)))) ?_
-      (hp.mono (heap_nx _ _ _ _ _))).mono (by linarith)
-    rw [inpA _ _ (by simp) (by simp), inpA _ _ (by simp) (by simp), hi3, inpA _ _ (by simp) (by simp), hi1]
+    have hread : ((kb b, ![σ4.regs 1, p, q, s]) : Rec Kd) ∈ σ4.heap := by cases tail <;> exact hrec
+    refine heapStep ok4 (md := mode) (by cases tail <;> rfl) (by cases tail <;> rfl) hread (read b)
+      (by cases tail <;> cases b <;> rfl) (by cases tail <;> simp [mode]) (by cases tail <;> simp [mode])
+      (by cases tail <;> rfl) (by cases tail <;> rfl) ?_
+    let σ5 := nx θ σ4 (.inl (read b)) p q s
+    refine (k1 σ5 (if tail then q else p) (ok4.nx _ _ _ _) (by cases tail <;> rfl)
+      (by cases tail <;> rfl) (by cases tail <;> exact h14)
+      (fun _ hc => heap_nx _ _ _ _ _ (heap_nx _ _ _ _ _ (hh3 (hh2 hc)))) ?_ ?_).mono (by linarith)
+    · cases tail <;> simp only [σ5, σ4, read, ret, Bool.false_eq_true, ite_false, ite_true] <;>
+        rw [inpA _ _ (by simp) (by simp), inpA _ _ (by simp) (by simp), hi3] <;>
+        exact (inpA σ1 _ (by decide) (by decide) _ _ _).trans hi1
+    · cases tail
+      · exact hp.mono (heap_nx _ _ _ _ _)
+      · exact hq.mono (heap_nx _ _ _ _ _)
+
+theorem EvOK.hd {a : Fm} {x : Tree} {l : List (Run A)} (ih : EvOK θ supp a x l) :
+    EvOK θ supp (.hd a) x (l.map fun r => r.tick r.out.hd) := EvOK.projection false ih
 
 theorem EvOK.tl {a : Fm} {x : Tree} {l : List (Run A)} (ih : EvOK θ supp a x l) :
-    EvOK θ supp (.tl a) x (l.map fun r => r.tick r.out.tl) := by
-  intro σ hσ m Bd B h
-  obtain ⟨ok, hm, ⟨c, hc, hF⟩, hx⟩ := hσ
-  obtain ⟨o, a', rfl, hl, rfl⟩ := Fm.codeShape_of_decode hF
-  have hC := Cc_ge (supp := supp)
-  rw [tot_map]
-  refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-  have hm1' : σ1.mode = .D 3 := by rw [hm1]; congr 1; exact Fin.ext hl
-  refine dstep ok1 hm1' h11 .d3 rfl (by decide) rfl rfl ?_
-  have hh2 : σ.heap ⊆ (nx θ σ1 (.inl .d3) 0 0 0).heap := fun _ hc => heap_nx σ1 _ _ _ _ (hh1 hc)
-  refine ih (nx θ σ1 (.inl .d3) 0 0 0) ⟨ok1.nx _ _ _ _, rfl, ⟨a', h12.mono (heap_nx σ1 _ _ _ _), rfl⟩, ?_⟩ _
-    (fun r => Bd (r.tick r.out.tl) + 2) _ ?_
-  · change Rep _ (σ1.regs 3) x
-    rw [h13]
-    exact hx.mono hh2
-  · intro r hr hb
-    obtain ⟨k1, k2⟩ := h (r.tick r.out.tl) (List.mem_map.2 ⟨r, hr, rfl⟩) hb
-    rw [cost_tick] at k2
-    refine ⟨fun σ3 v ok3 hm3 h31 h32 hh3 hi3 hv => ?_, by linarith⟩
-    have hfr : ((.TL, ![σ3.regs 2, σ1.regs 4, σ1.regs 0, σ1.regs 0]) : Rec Kd) ∈ σ3.heap := by
-      rw [h32]
-      exact hh3 (new_nx (θ := θ) σ1 (.inl .d3) 0 0 0)
-    refine rstep ok3 hm3 hfr .rtl rfl rfl rfl ?_
-    have ok4 := ok3.nx (θ := θ) (.inl .rtl) (σ1.regs 4) (σ1.regs 0) (σ1.regs 0)
-    subst h31
-    obtain ⟨p, q, s, hrec, hp, hq⟩ := (hv.mono (heap_nx (θ := θ) σ3 (.inl .rtl) (σ1.regs 4) (σ1.regs 0) (σ1.regs 0))).load ok4
-    generalize decide (r.out ≠ .nil) = b at hrec
-    refine heapStep ok4 (md := .T) rfl rfl hrec (.t b) (by cases b <;> rfl) (by simp) (by simp) rfl rfl ?_
-    refine (k1 (nx θ (nx θ σ3 (.inl .rtl) (σ1.regs 4) (σ1.regs 0) (σ1.regs 0)) (.inl (.t b)) p q s) q
-      (ok4.nx _ _ _ _) rfl rfl h14 (fun _ hc => heap_nx _ _ _ _ _ (heap_nx _ _ _ _ _ (hh3 (hh2 hc)))) ?_
-      (hq.mono (heap_nx _ _ _ _ _))).mono (by linarith)
-    rw [inpA _ _ (by simp) (by simp), inpA _ _ (by simp) (by simp), hi3, inpA _ _ (by simp) (by simp), hi1]
+    EvOK θ supp (.tl a) x (l.map fun r => r.tick r.out.tl) := EvOK.projection true ih
 
 theorem EvOK.cons {a b : Fm} {x : Tree} {la lb : List (Run A)} (iha : EvOK θ supp a x la) (ihb : EvOK θ supp b x lb) :
     EvOK θ supp (.cons a b) x (la.flatMap fun r => lb.map fun s => (r.seq s).tick (.cons r.out s.out)) := by
@@ -123,8 +112,7 @@ theorem EvOK.cons {a b : Fm} {x : Tree} {la lb : List (Run A)} (iha : EvOK θ su
   obtain ⟨o, a', rfl, hl, rfl, rfl⟩ := Fm.codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   rw [tot_seq m la (fun _ => lb) fun r s => .cons r.out s.out]
-  refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-  have hm1' : σ1.mode = .D 4 := by rw [hm1]; congr 1; exact Fin.ext hl
+  refine toOp ok hm hc 4 hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
   refine dstep ok1 hm1' h11 .d4 rfl (by decide) rfl rfl ?_
   have ok2 := ok1.nx (θ := θ) (.inl .d4) 0 0 0
   obtain ⟨p, q, s, hrec, hp, hq⟩ := (h12.mono (heap_nx (θ := θ) σ1 (.inl .d4) 0 0 0)).load ok2
@@ -182,8 +170,7 @@ theorem EvOK.ite {a b c : Fm} {x : Tree} {la : List (Run A)} {L : Run A → List
   obtain ⟨o, a', rfl, hl, rfl, rfl, rfl⟩ := Fm.codeShape_of_decode hF
   have hC := Cc_ge (supp := supp)
   rw [tot_seq m la L fun r s => s.out]
-  refine (toOp (B := B - 11) ok hm hc (by omega) fun σ1 ok1 hm1 h11 h12 h13 h14 hh1 hi1 => ?_).mono (by omega)
-  have hm1' : σ1.mode = .D 5 := by rw [hm1]; congr 1; exact Fin.ext hl
+  refine toOp ok hm hc 5 hl fun σ1 ok1 hm1' h11 h12 h13 h14 hh1 hi1 => ?_
   refine dstep ok1 hm1' h11 .d5 rfl (by decide) rfl rfl ?_
   have ok2 := ok1.nx (θ := θ) (.inl .d5) 0 0 0
   obtain ⟨p, q, s, hrec, hp, hq⟩ := (h12.mono (heap_nx (θ := θ) σ1 (.inl .d5) 0 0 0)).load ok2
@@ -222,6 +209,15 @@ theorem EvOK.ite {a b c : Fm} {x : Tree} {la : List (Run A)} {L : Run A → List
         (List.mem_flatMap.2 ⟨r, hr, List.mem_map.2 ⟨s', hs', rfl⟩⟩) (by simp [Run.tick, Run.seq, hb, hb'])
       rw [cost_tick, cost_seq] at k2
       exact ⟨k1, by linarith⟩
+    have branch (y : Tree) (ih : EvOK θ supp (Fm.ofTree y) x (L r)) (st : St supp)
+        (okst : OKs st) (hmode : st.mode = .E) (hy : Rep st.heap (st.regs 1) y)
+        (harg : st.regs 2 = σ.regs 2) (hframe : st.regs 3 = σ.regs 3) (hheap : σ.heap ⊆ st.heap)
+        (hinput : st.inp = σ.inp) :
+        Mach.SumTo (UM θ supp) st (tot (fun s => m ((r.seq s).tick s.out)) (L r)) (B - Cc supp * r.cost - Cc supp) := by
+      apply ih st ⟨okst, hmode, ⟨y, hy, rfl⟩, harg ▸ hx.mono hheap⟩ _ (fun s => Bd ((r.seq s).tick s.out))
+      intro s hs hb
+      obtain ⟨k, hcost⟩ := hks s hs hb
+      exact ⟨hframe ▸ hinput ▸ k.heap hheap, hcost⟩
     by_cases ho : r.out = .nil
     · have hkb : kb (decide (r.out ≠ .nil)) = .N := by simp [kb, ho]
       rw [hkb] at hrec4'
@@ -233,22 +229,10 @@ theorem EvOK.ite {a b c : Fm} {x : Tree} {la : List (Run A)} {L : Run A → List
       generalize decide (a'.tl ≠ .nil) = bu at hrec5
       have hrec5' : ((kb bu, ![σ5.regs 1, z1, z2, z3]) : Rec Kd) ∈ σ5.heap := hrec5
       refine heapStep ok5 (md := .I2) rfl rfl hrec5' (.i2 bu) (by cases bu <;> rfl) (by simp) (by simp) rfl rfl ?_
-      have hh6 : σ.heap ⊆ (nx θ σ5 (.inl (.i2 bu)) z1 z2 z3).heap :=
-        fun _ hc => heap_nx _ _ _ _ _ (heap_nx _ _ _ _ _ (hh4 hc))
-      refine (ihc r hr ho (nx θ σ5 (.inl (.i2 bu)) z1 z2 z3) ⟨ok5.nx _ _ _ _, rfl,
-        ⟨a'.tl.tl, hz2.mono (heap_nx _ _ _ _ _), rfl⟩, ?_⟩ (fun s' => m ((r.seq s').tick s'.out))
-        (fun s' => Bd ((r.seq s').tick s'.out)) (B - Cc supp * r.cost - Cc supp) ?_).mono (by linarith)
-      · change Rep _ (σ2.regs 2) x
-        rw [hr2]
-        exact hx.mono hh6
-      · intro s' hs' hb'
-        obtain ⟨k1, k2⟩ := hks s' hs' hb'
-        refine ⟨?_, k2⟩
-        have e1 : (nx θ σ5 (.inl (.i2 bu)) z1 z2 z3).regs 3 = σ.regs 3 := hr3
-        have e2 : (nx θ σ5 (.inl (.i2 bu)) z1 z2 z3).inp = σ.inp := by
-          rw [inpA _ _ (by simp) (by simp), inpA _ _ (by simp) (by simp), hi4]
-        rw [e1, e2]
-        exact k1.heap hh6
+      refine (branch a'.tl.tl (ihc r hr ho) (nx θ σ5 (.inl (.i2 bu)) z1 z2 z3)
+        (ok5.nx _ _ _ _) rfl (hz2.mono (heap_nx _ _ _ _ _)) hr2 hr3
+        (fun _ hc => heap_nx _ _ _ _ _ (heap_nx _ _ _ _ _ (hh4 hc))) ?_).mono (by linarith)
+      rw [inpA _ _ (by simp) (by simp), inpA _ _ (by simp) (by simp), hi4]
     · have hkb : kb (decide (r.out ≠ .nil)) = .C := by simp [kb, ho]
       rw [hkb] at hrec4'
       refine heapStep ok4 (md := .I) rfl rfl hrec4' .ic rfl (by simp) (by simp) rfl rfl ?_
@@ -259,21 +243,9 @@ theorem EvOK.ite {a b c : Fm} {x : Tree} {la : List (Run A)} {L : Run A → List
       generalize decide (a'.tl ≠ .nil) = bu at hrec5
       have hrec5' : ((kb bu, ![σ5.regs 1, z1, z2, z3]) : Rec Kd) ∈ σ5.heap := hrec5
       refine heapStep ok5 (md := .I1) rfl rfl hrec5' (.i1 bu) (by cases bu <;> rfl) (by simp) (by simp) rfl rfl ?_
-      have hh6 : σ.heap ⊆ (nx θ σ5 (.inl (.i1 bu)) z1 z2 z3).heap :=
-        fun _ hc => heap_nx _ _ _ _ _ (heap_nx _ _ _ _ _ (hh4 hc))
-      refine (ihb r hr ho (nx θ σ5 (.inl (.i1 bu)) z1 z2 z3) ⟨ok5.nx _ _ _ _, rfl,
-        ⟨a'.tl.hd, hz1.mono (heap_nx _ _ _ _ _), rfl⟩, ?_⟩ (fun s' => m ((r.seq s').tick s'.out))
-        (fun s' => Bd ((r.seq s').tick s'.out)) (B - Cc supp * r.cost - Cc supp) ?_).mono (by linarith)
-      · change Rep _ (σ2.regs 2) x
-        rw [hr2]
-        exact hx.mono hh6
-      · intro s' hs' hb'
-        obtain ⟨k1, k2⟩ := hks s' hs' hb'
-        refine ⟨?_, k2⟩
-        have e1 : (nx θ σ5 (.inl (.i1 bu)) z1 z2 z3).regs 3 = σ.regs 3 := hr3
-        have e2 : (nx θ σ5 (.inl (.i1 bu)) z1 z2 z3).inp = σ.inp := by
-          rw [inpA _ _ (by simp) (by simp), inpA _ _ (by simp) (by simp), hi4]
-        rw [e1, e2]
-        exact k1.heap hh6
+      refine (branch a'.tl.hd (ihb r hr ho) (nx θ σ5 (.inl (.i1 bu)) z1 z2 z3)
+        (ok5.nx _ _ _ _) rfl (hz1.mono (heap_nx _ _ _ _ _)) hr2 hr3
+        (fun _ hc => heap_nx _ _ _ _ _ (heap_nx _ _ _ _ _ (hh4 hc))) ?_).mono (by linarith)
+      rw [inpA _ _ (by simp) (by simp), inpA _ _ (by simp) (by simp), hi4]
 
 end Nc.Uni
