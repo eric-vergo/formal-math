@@ -570,7 +570,7 @@ coefficient is covered by $`(2n\Delta + 1)^{|V|}` copies of the same tensor as b
 subexponential number.”
 :::
 
-:::theorem "flat_rate_approx_complete" (lean := "Paper.flat_rate_approximating, Paper.flat_rate_approx_complete, Paper.hubs_laurent, Nc.laurentApproximates_iff") (parent := "part-flat")
+:::theorem "flat_rate_approx_complete" (lean := "Paper.flat_rate_laurent, Paper.flat_rate_approximating, Paper.flat_rate_approx_complete, Paper.hubs_laurent, Nc.laurentApproximates_iff") (parent := "part-flat")
 *A paragraph of the paper after Lemma N.3* (page 62), quoted: “It follows that Proposition E.10,
 and with it Theorem E.11, holds for approximating circuits. Indeed, we apply Lemma E.4, which
 holds over every commutative ring, over $`\Bbbk((\varepsilon))`, cut the functionals off at a
@@ -579,14 +579,12 @@ parties, and use Lemma N.3 in place of Lemma E.7.”
 
 These Lean theorems have no number in the paper.
 
-- `Paper.flat_rate_approximating` is Proposition E.10 for approximating circuits, with a
-  different explicit number. Appendix Q.3 (page 68): “The flat bound for approximating circuits
-  has 14 where Proposition E.10 has 16.” Its conclusion is
-  $`\ell k\sqrt{k}/14 \leq \log s` for every `s` with a finite Laurent witness for `fkl K k ℓ` of size `s`, under
-  `Flat K`, $`k \geq 2` and $`\ell \geq 100\sqrt{k}`. This is the intermediate inequality of the
-  printed proof of Proposition E.10 and implies the bound $`2^{\ell k^{3/2}/16} \leq s` of that
-  proposition by `Paper.rate_pow`; no theorem of the development states Proposition E.10 for
-  approximating circuits in the form with $`16`.
+- `Paper.flat_rate_laurent` proves $`\ell k\sqrt{k}/14 \leq \log_2 s` for a finite Laurent
+  circuit witness of size `s` for `fkl K k ℓ`, assuming `Flat K`, $`k \geq 2` and
+  $`\ell \geq 100\sqrt{k}`. The series version, `Paper.flat_rate_approximating`, extracts a
+  finite Laurent witness at the same size and applies this theorem. Both conclusions use
+  the denominator $`14` identified in Appendix Q.3 (page 68). The numerical estimate
+  `Paper.rate_pow` gives the power-of-two bound with denominator $`16` printed in E.10.
 - `Paper.flat_rate_approx_complete` is Theorem E.11 for approximating circuits and for every
   family that is complete for grid sums, with the same bound $`2^{(\log m)^{4/3}/1600^2} < s`
   and the same uniformity as {bpref "flat_rate_complete"}[]. It is the flat half of the proof of
