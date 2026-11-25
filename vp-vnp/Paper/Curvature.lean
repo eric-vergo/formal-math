@@ -121,7 +121,8 @@ theorem prop_space_cauchy {X : Type*} [MetricSpace X] {a b m : ℕ → X} {x v :
     have h := (((((ha₁.dist hb₁).div_const 2).add (ha₁.dist ha₂)).pow 2).add
       ((((ha₁.dist hb₁).div_const 2).add (hb₁.dist hb₂)).pow 2)).div_const 2
     convert h.sub (((ha₂.dist hb₂).pow 2).div_const 4) using 1
-    all_goals simp [bound, Function.comp_def] <;> ring
+    all_goals simp [bound]
+    ring
   apply cauchySeq_iff_tendsto_dist_atTop_0.2
   refine squeeze_zero (fun _ => dist_nonneg) (fun p => Real.le_sqrt_of_sq_le (upper p.1 p.2)) ?_
   simpa using limit.sqrt
