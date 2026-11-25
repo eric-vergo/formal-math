@@ -23,14 +23,6 @@ def tot (m : Run A → A) (l : List (Run A)) : A := (l.map fun r => if r.bill = 
 
 theorem tot_nil (m : Run A → A) : tot m [] = 0 := rfl
 
-theorem tot_append (m : Run A → A) (l l' : List (Run A)) : tot m (l ++ l') = tot m l + tot m l' := by simp [tot]
-
-theorem tot_flatMap (m : Run A → A) {ι : Type*} (l : List ι) (f : ι → List (Run A)) :
-    tot m (l.flatMap f) = (l.map fun i => tot m (f i)).sum := by
-  induction l with
-  | nil => rfl
-  | cons i l ih => rw [List.flatMap_cons, tot_append, ih, List.map_cons, List.sum_cons]
-
 /-- Setting every named constant to zero counts exactly the runs with empty bills. -/
 theorem tot_eq_weighted_sum (m : Run A → A) (l : List (Run A)) :
     tot m l = (l.map fun r => wt (fun _ => (0 : A)) r * m r).sum := by

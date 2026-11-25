@@ -213,7 +213,7 @@ theorem sum_words (J n : ℕ) (c : R) :
   rw [sum_words_range J (fun k => if k = n then c else 0)]
   simp
 
-theorem sum_flatMap_map {α β : Type*} (l : List α) (f : α → List β) (g : β → R) :
+theorem sum_flatMap_map {α β R : Type*} [AddMonoid R] (l : List α) (f : α → List β) (g : β → R) :
     ((l.flatMap f).map g).sum = (l.map fun a => ((f a).map g).sum).sum := by
   induction l with
   | nil => simp
