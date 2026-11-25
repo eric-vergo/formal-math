@@ -34,13 +34,11 @@ inline = {n.strip() for n in re.findall(r'\{InlineLean\.name[^}]*\}\x60([^`]+)`'
 qualified = set(re.findall(r'\b(?:Paper|Statement|Solution|Nc|NS1|Ov)(?:\.[\w\x27]+)+', docs))
 roots = output / "blueprint-roots.txt"
 roots.write_text("\n".join(sorted(direct | inline | qualified)) + "\n")
-modules = sorted({
-    ".".join(p.relative_to(source).with_suffix("").parts)
-    for p in source.glob("**/*.lean")
-    if p.relative_to(source).parts[0] in {"Nc", "NS1", "Ov", "Paper", "Paper.lean",
-                                         "Statement.lean", "Comparator"}
-    and p.stem != "Challenge"
-})
+proof_files = [source / "Paper.lean", source / "Statement.lean"]
+for directory in ("Nc", "NS1", "Ov", "Paper", "Comparator"):
+    proof_files.extend((source / directory).rglob("*.lean"))
+modules = sorted(".".join(p.relative_to(source).with_suffix("").parts)
+                 for p in proof_files if p.stem != "Challenge")
 with (output / "kernel.json").open("w") as kernel:
     subprocess.run(["lake", "env", "lean", "--run", helpers.parent / "scripts/InventoryKernel.lean",
                     roots, *modules], stdout=kernel, check=True)
