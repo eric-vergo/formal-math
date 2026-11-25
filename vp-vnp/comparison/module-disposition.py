@@ -120,6 +120,7 @@ def main():
     if (args.reviews / "comparison.md").is_file():
         print("- [Tower and cut proofs](reviews/comparison.md)")
     print()
+    print("These depth labels describe the baseline review. [Later rounds](reviews/final-rounds.md) document mathematical changes and focused follow-up checks. [Proof probes](reviews/proof-probes.tsv) lists each selected declaration and its result.\n")
     print("## Baseline proof modules\n")
     table(["Baseline source", "Outcome", "After location", "Review cohort", "Documented depth", "Retained mathematics"], rows)
     print("## Added proof module paths\n")

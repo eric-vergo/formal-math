@@ -2,35 +2,46 @@
 
 Use a provisioned detached worktree for each revision. Give each worktree a private `vp-vnp/.lake/build`; the same pinned dependency sources and compiled dependency artifacts may be provisioned in both. Provision the proof, vbp, and the generated blueprint sources before collecting the samples. The driver verifies the checked-out revision, refuses tracked changes, and refuses symlinked project build directories. Use one host and avoid overlapping builds, replay, publishing, or interactive Lean work during measurements.
 
-Run this Bash driver from the repository root. Supply the two absolute paths and the exact after revision used for the source inventory. Neither result directory may already contain records from another run.
+Run this Bash driver from the repository root. Supply detached worktrees for the baseline, frozen proof, and integrated blueprint. Use the exact after revision of the source inventory for chapter and site measurements. Neither result directory may already contain records from another run.
 
 ```bash
 set -euo pipefail
 before_work=/absolute/path/to/baseline/worktree/vp-vnp
-after_work=/absolute/path/to/cleanup/worktree/vp-vnp
+proof_work=/absolute/path/to/frozen-proof/worktree/vp-vnp
+after_work=/absolute/path/to/integrated/worktree/vp-vnp
+proof_rev=34a072623bbb19c9b6dbe15f48bd62e60c804618
 before_rev=9fd368ad
 after_rev=REPLACE_WITH_THE_REPORTS_AFTER_REVISION
 runner="$PWD/vp-vnp/comparison/benchmark.py"
 out="$PWD/vp-vnp/_out/comparison-timing"
 
-for trial in 1 2 3; do
-  sides=(before after)
-  if [[ "$trial" == 2 ]]; then sides=(after before); fi
-  for scenario in clean warm foundation branch chapter; do
-    for side in "${sides[@]}"; do
-      if [[ "$side" == before ]]; then
-        work="$before_work"
-        revision="$before_rev"
-      else
-        work="$after_work"
-        revision="$after_rev"
-      fi
-      python3 "$runner" --work "$work" --revision "$revision" \
-        --scenario "$scenario" --trial "$trial" --threads 4 \
-        --output "$out/$side/$scenario-$trial.jsonl"
+run_pairs() {
+  local trial scenario side work revision
+  local -a sides
+  for trial in 1 2 3; do
+    sides=(before after)
+    if [[ "$trial" == 2 ]]; then sides=(after before); fi
+    for scenario in "$@"; do
+      for side in "${sides[@]}"; do
+        if [[ "$side" == before ]]; then
+          work="$before_work"
+          revision="$before_rev"
+        elif [[ "$scenario" == chapter ]]; then
+          work="$after_work"
+          revision="$after_rev"
+        else
+          work="$proof_work"
+          revision="$proof_rev"
+        fi
+        python3 "$runner" --work "$work" --revision "$revision" \
+          --scenario "$scenario" --trial "$trial" --threads 4 \
+          --output "$out/$side/$scenario-$trial.jsonl"
+      done
     done
   done
-done
+}
+run_pairs clean warm foundation branch
+run_pairs chapter
 ```
 
 - Clean removes only the detached worktree's `vp-vnp/.lake/build` then runs the default proof targets with Lake cache downloads disabled. Dependency artifacts and the host's filesystem cache are retained. Warm repeats that command after clean.
@@ -50,10 +61,22 @@ Run the following separately from the paired timing samples. A successful site r
 ```bash
 python3 "$runner" --work "$after_work" --revision "$after_rev" \
   --scenario verify --threads 4 --output "$out/after/verify.jsonl"
-python3 "$runner" --work "$after_work" --revision "$after_rev" \
+python3 "$runner" --work "$proof_work" --revision "$proof_rev" \
   --scenario replay --threads 4 --output "$out/after/replay.jsonl"
 ```
 
 The full site verification sets `VERSO_BLUEPRINT_KERNEL_REPLAY_RECORD` to an empty string for the site command. At the pinned VersoBlueprint revision this disables reading and writing the acceptance record. The harness requires two fresh checker run lines and a combined acceptance. The separate `replay` scenario reads the five roots from the pinned Comparator JSON, exports their transitive terms with the toolchain's `leanexport`, and invokes `con-leche` and `con-ron` directly with `--verified --jobs=4`. It requires each process to report accepting at least all the exported declaration records. This run checks only the five roots and their dependencies. It uses a disposable export file and records its size, SHA-256, and declaration count along with each checker binary's fingerprint. The site replay has a wider scope because it also includes selected blueprint nodes.
 
 The proof of each challenge theorem deliberately uses `sorry`. The proof build verifies that the five corresponding warnings come from `Comparator/VpVnp/Challenge.lean` and fails if it sees any other `sorry` warning. The complete project inventory and declaration command totals count the challenge declarations in their own source scope. The proof-body size distribution and the five solution kernel closures exclude the challenge proofs. The blueprint's rendered progress and external replay coverage reflect the rendered node set and checker policy. A checked Lean declaration and a paper-to-formal claim are different kinds of evidence. The site's informal claims and intentionally unchecked prose are reported separately.
+
+
+For both baseline verification scenarios use the baseline revision and private worktree. The capture script accepts a baseline site directory only with its matching verification JSONL. It verifies the recorded sizes and hashes before extracting additional baseline page statistics. Each raw JSONL must remain beside its log directory. The compressed archive includes per-command log hashes, command lines, the reported start load, timings, tool fingerprints and checker results.
+
+```bash
+python3 comparison/capture-results.py --runs "$out" --output comparison/benchmark-results.json.gz
+python3 comparison/compare.py --before comparison/inventory-baseline.json.gz \
+  --after comparison/inventory-after.json.gz --proof-after "$proof_rev" \
+  --timings comparison/benchmark-results.json.gz --verification comparison/benchmark-results.json.gz
+```
+
+The renderer checks the recorded revision separately for each timing and replay scenario. When the after pins differ, it requires Git-tree equality across the proof libraries, public specification, Comparator, proof scripts, Lake configuration and manifest, toolchain pin and paper PDF. The chapter and full site require the integrated pin. The three trials are paired by index and order, with the second pair reversed. Ranges and medians describe the observed local runs. Background load and OS caching can move all three readings in one direction. Three trials do not establish a population speedup or attribute a change in time to an individual proof.

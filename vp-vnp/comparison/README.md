@@ -1,70 +1,52 @@
 # VP versus VNP proof cleanup
 
-The baseline is the Lean 4.36 port at `9fd368ad`. The after revision `eeff2161cb51c2ac871ffba3afccdee7028e56e4` names the cleaned proof and the revised blueprint. Both use the same pinned Lean, Mathlib, and blueprint dependencies. The measured after revision precedes the generated comparison tables and data, so the tracked-size comparison excludes those reporting outputs. It includes the measurement code already present at the pinned revision.
+The Lean 4.36 port at `9fd368ad` has 72,739 physical lines in its four proof libraries. The frozen cleanup at `34a07262` has 67,960, a reduction of 4,779 lines (6.57%) across eight fewer files. The five public theorem statements, Comparator directory and original paper match the port byte for byte. All five solution proofs use exactly `propext`, `Classical.choice` and `Quot.sound`. Both external checkers accepted a fresh export of all five results together. Some intermediate paper claims have a different proof, weaker coverage or no standalone Lean counterpart. [Source by round](source-rounds.md) · [Review of mathematical changes](reviews/final-rounds.md) · [Paper concordance](paper-routes.tsv).
 
-| Proof-library measure | Before | After |
-| --- | ---: | ---: |
-| Lean files | 320 | 313 |
-| Physical lines | 72,739 | 70,286 |
-| Code lines | 58,774 | 56,398 |
-| Total named theorem and lemma body lines | 46,110 | 43,822 |
-| Median body lines | 7 | 6 |
-| Longest body lines | 340 | 275 |
-| Bodies over 200 lines | 7 | 4 |
-| Exact matches among normalized bodies, groups of at least five lines | 12 | 4 |
+| Proof-library measure | Port | Frozen proof | Difference |
+| --- | ---: | ---: | ---: |
+| Lean files | 320 | 312 | −8 |
+| Physical lines | 72,739 | 67,960 | −4,779 |
+| Code lines including mixed lines | 58,774 | 54,026 | −4,748 |
+| Comment lines including mixed lines | 11,415 | 11,010 | −405 |
+| Mixed code/comment lines | 5,010 | 4,600 | −410 |
+| Blank lines | 7,560 | 7,524 | −36 |
+| Source bytes | 3,419,272 | 3,212,736 | −206,536 |
+| Written declaration commands | 4,631 | 4,641 | +10 |
+| Written imports | 557 | 561 | +4 |
+| Direct imports of the Mathlib umbrella | 27 | 24 | −3 |
 
-The local build samples and full-site verification are in progress. The source measurements below use the measured revision.
+## Changes across rounds
 
-[All measurements](data.md) · [Disposition of every baseline module](modules.md) · [Source counting rules](inventory-method.md) · [Benchmark procedure](benchmark-method.md) · [Related proofs and forks](related-proofs.md)
+Eric Vergo and GPT-6.2 (OpenAI) removed 2,453 physical proof lines in the first round. The real permanent theorem specializes the all-fields result, and exact circuits enter the shared border proof by lifting constants at the same size. The real class-separation corollary still uses permanent membership via Ryser’s formula. The machine decoder uses one opcode inversion theorem. Common VNP packaging serves Hamiltonian cycles and the permanent, each with its own witness. The tree assembly separates specification, construction and quantitative bounds. [Source by round](source-rounds.md) · [Initial review ledgers](modules.md).
 
-## How the proof changed
+Claude Fable 5.2 (Anthropic) directed the next round and Claude Opus 5.5 agents made its edits. It removed a further 1,089 physical proof lines and one module, reaching 69,197 lines. Exact flat and contracting bounds follow from the border bounds. The approximate scale-up carries a predicate on the constants, allowing exact recovery for K.6. Coverage changed for E.5’s explicit configuration and sharper 1/6 bound, K.3’s exact accelerator, K.5’s standalone exact scale-up, and H.2(c)’s layer count. The retained flat route gives the logarithmic estimate with divisor 14 and E.10’s printed bound with divisor 16. [Claim-by-claim review](reviews/final-rounds.md).
 
-- The real permanent bound `Paper.thm_main` specializes the all-fields theorem at characteristic zero. The exact bound maps each gate to Laurent series with unchanged size and applies `Paper.border_rate_allfields`. The shared lemma absorbs the separate exact-rate dispatch. The printed exact flat-case, contracting and transfer lemmas remain formalized and documented. `Paper.common_family_threshold` combines the Hamiltonian-cycle threshold and, away from characteristic two, the permanent threshold. The real class-separation corollary still uses permanent membership via Ryser's formula.
-- `Paper.thm_flat_simple` follows from the quantitative `Paper.thm_flat_rate`. The lemma `Paper.excludes_poly_size` uses the growing exponent to handle any fixed polynomial budget. The separate sharper estimate `Paper.prop_flat_lower` remains a distinct geometric argument.
-- `Paper.exists_thinTrees` assembles the network specification, construction and estimates in separate modules. A shared estimate gives both the per-node power saving and the total packet bound used to choose the final tree. Separating those obligations shortens the assembly body and leaves the numerical estimates visible at their own statements.
-- `Paper.thm_onecut` fixes a uniform evaluator bound over every admissible symbol code before choosing the scale. Separate lemmas give the common law-role alphabet bound and show that the universal evaluation fits within the rounded block budget.
-- Machine proofs now use `NS1.Fm.codeShape_of_decode` to obtain the opcode and operands from one inversion theorem. For dealing, `Nc.Grp.GroupOK` gives the producer's group evaluator specification and both callers use that cost model. Code reuse respects the separate obligations for machine state, value and acceptance.
-- `Nc.Hc.mem_VNP_of_quartic_witness` supplies the common VNP packaging for Hamiltonian cycles and the permanent. Each polynomial still has its own witness circuit and its own proof that summing the witness produces that polynomial.
+The final Codex rounds removed a further 1,237 physical proof lines. The scale induction uses 3α cuts and an explicit larger intermediate budget. The cut theorem consumes the exact block count. Finite joint laws give the random price extension directly. Finite Laurent circuits persist through field transfer, affine projection and both rate branches. Balanced hubs work over commutative semirings. The finite circuit has the same gate budget as its arbitrary-series counterpart. Affine projection has a separate factor-five simulation. [Quantifiers, constants and lost intermediates](reviews/final-rounds.md).
 
-The named proof comparison gives body sizes and source locations. [Selected proof rewrites](data.md#selected-proof-rewrites). The one-cut body goes from 340 to 275 code lines. Its whole module goes from 578 to 585 physical lines and from 523 to 520 code lines. The piece-bound proof grows by 12 body lines against baseline and succeeds at the default heartbeat limit after expressing the bounds explicitly. The adaptations credit Helen Kwok’s work and the independent research comparison credits OpenAI’s proof. [Related proofs and forks](related-proofs.md).
+An assisted tactic search selected 441 short live proof bodies in 42 files across six machine, group, tower and flag directories. It favored files with multiple short tactic proofs and tried short scripts derived from the existing proof. Eighteen bodies in 13 files passed the review and replacement, with 20 inserted and 123 deleted physical lines at `1a93f42`. The other 423 have no accepted replacement from this search. The yield measures this selected sample and tactic family. It cannot predict the percentage of all proofs admitting simplification. [All probe outcomes](reviews/proof-probes.tsv) · [Accepted patch](https://github.com/eric-vergo/formal-math/commit/1a93f42).
 
-The full five-export closure drops from 63,353 to 63,231 constants, including a drop from 10,291 to 10,145 project constants. Sharing the coefficientwise argument has a cost when checking an exact result on its own. The real permanent closure grows from 58,716 to 63,120 constants. The closures of both border exports shrink by 78 each. The local Comparator import DAG drops from 321 to 314 modules and from 508 to 488 edges. Its longest path grows from 38 to 39 edges. [All five closures](data.md#kernel-dependency-closures).
+## Kernel dependencies and external replay
 
-The authored blueprint directly cites 47 source theorems outside the five export closures, up from 33. The paper concordance separates principal statements from supporting declarations and records the compiled routes. The source inventory also identifies 21 theorems outside both the judged and authored blueprint closures. The late shared border route added none to this list. Examples retained for exposition include the Meixner generating-series equations, mean-norm homogeneity, and the loop-free spelling of the thin-tree formula. Several other entries are public simplification rules. [Exposition-only proofs](data.md#named-exposition-proofs-outside-all-five-exports) · [Paper concordance routes](paper-routes.tsv).
+| Checked root | Port constants | Frozen constants | Change |
+| --- | ---: | ---: | ---: |
+| Exact all-fields lower bound | 61,727 | 57,576 | −4,151 |
+| Exact class separation | 61,823 | 57,669 | −4,154 |
+| Border all-fields lower bound | 63,277 | 57,650 | −5,627 |
+| Closure separation | 63,281 | 57,654 | −5,627 |
+| Real permanent | 58,716 | 57,576 | −1,140 |
+| Union of the five | 63,353 | 57,687 | −5,666 |
+| Project-owned constants in that union | 10,291 | 9,969 | −322 |
 
-## What was checked
+The intermediate Fable handback used 63,091 distinct constants and 10,007 project constants across the five roots. At an earlier checkpoint, sharing the border argument enlarged the real permanent root from 58,716 to 63,120 constants. At the freeze it fell below baseline. In a focused component comparison the closure of `Paper.prop_random_finite` fell from 36,409 to 29,183 constants. That local difference of 7,226 cannot be added to differences at other roots. The final whole-graph walk independently confirms that `PMF.ofFintype` and `MeasureTheory.integral` disappeared from the union. The fully general measurable price theorem remains available. [Measurement definitions](inventory-method.md) · [Finite-law construction](../Paper/Prices.lean).
 
-The public statement, whole Comparator directory and `paper.pdf` match the baseline byte for byte. All five solution exports have only `propext`, `Classical.choice` and `Quot.sound` in their kernel dependencies. The five challenge proofs intentionally use `sorry`. They contribute explicit warning lines and written declarations in the project totals. The solution closure and proof-size distribution exclude them.
+The fresh five-root export fell from 61,815 declaration records (629,490,907 bytes) to 56,219 (573,775,162 bytes). Both `con-leche --verified` and `con-ron --verified` accepted the full export in each run. The final export SHA-256 is `bfc31ba34d18983778a7bf88107f20fb79cdd059cbb8737c2d21c029a76e9175`. Lean's graph walk counts reachable constant names, including names that the export format does not enumerate as individual declaration records. The site replay includes a wider selection of blueprint roots and is measured separately. [Benchmark procedure](benchmark-method.md).
 
-The render comparison tracks graph nodes and edges, Lean-backed progress, and external checker coverage separately. A node can have a checked Lean declaration and an informal statement. An informal statement's correspondence to the declaration is a human claim. The blueprint keeps those claims and the paper's meaning audit visible. The graph renderer omits a neighbourhood drawing when it exceeds 150 nodes or would exceed the 192 MiB drawing budget. The full graph node and edge totals still count the underlying graph. The compiled dependency inventory counts named source theorems separately from compiler-generated constants, and tracks authored exposition outside the judged export closures. Generated listings cover whatever source the generator sees.
+## Imports and build measurements
 
-The integrated proof build, the five kernel axiom checks and the paper concordance route audit passed at the after revision.
+Narrowing imports can increase the number of explicit import commands. In focused module checks the Mathlib-prefixed module count fell from the umbrella’s 8,713 to 1,111 at `Nc.LowDegree` and 960 at `Nc.Tape.Rep`. Along the sum-machine chain, the total imported-module environment fell from 11,126 to 2,502 at `NS1.Machine`, from 11,129 to 2,526 at `NS1.Eval`, from 11,135 to 2,787 at `NS1.Comp`, from 11,137 to 3,507 at `NS1.Main`, and from 11,138 to 3,569 at `NS1.ApproxOrd`. These counts use different filters, recorded for the affected module environments. Other roots still import Mathlib. Neither the local environment count nor the kernel constant count measures compile time. [Proof source by round](source-rounds.md) · [Build protocol](benchmark-method.md).
 
-## Hosted workflow timings
+## Authorship and reproduction
 
-These are single GitHub Actions observations. The hosted project-and-site step combines operations outside the local proof-only benchmark and is reported separately.
+The original paper and formalization are by Claude (Anthropic). The port and initial fork blueprint are by Eric Vergo and Claude. Helen Kwok’s Apache-2.0 adaptations appear in six credited files. Comparison with OpenAI’s independent manuscript informed an intermediate square calculation that was subsequently removed. OpenAI’s published Lean comparator has its own scope. [Attribution, source pins and licenses](related-proofs.md) · [Notice](../NOTICE).
 
-| Hosted phase | Before | After |
-| --- | ---: | ---: |
-| Build job | 27m 52s | Pending |
-| Project and site step | 21m 56s | Pending |
-| Deploy job | 20s | Pending |
-
-[Baseline GitHub Actions run](https://github.com/eric-vergo/formal-math/actions/runs/45355758423)
-
-## Independent source reviews
-
-The module ledger accounts for all 319 baseline modules in four review cohorts. Independent reviews covered the ten longest bodies, repeated proof patterns, and the public and paper specifications. [Longest proofs](reviews/longest.md) · [Duplication review](reviews/duplicates.md) · [Specification review](reviews/specification.md).
-
-## Regenerating the tables
-
-```bash
-cd vp-vnp/comparison
-python3 compare.py --before inventory-baseline.json.gz --after inventory-after.json.gz > data.md
-python3 module-disposition.py --before inventory-baseline.json.gz --after inventory-after.json.gz \
-  --reviews reviews > modules.md
-```
-
-The local measurement host was an Apple M2 Ultra with 64 GiB of unified memory, 16 performance cores and eight efficiency cores. The raw rows record host load at the start of each sample.
-
-The two inventories hold the per-file, per-proof and compiled-export inputs. [Baseline inventory](inventory-baseline.json.gz) · [After inventory](inventory-after.json.gz).
+The source-round table can be regenerated with `python3 -B comparison/source-rounds.py` from the project directory. The complete inventory and runtime reports use separate compiled and rendered inputs. [Source inventory method](inventory-method.md) · [Build, site and replay method](benchmark-method.md).
