@@ -143,14 +143,15 @@ theorem lem_few_approx {K : Type} [Field K] {V : Type} [Fintype V] [DecidableEq 
     (M := univ.sup' univ_nonempty fun j => φ.F (T j)) (fun j => Finset.le_sup' (fun j => φ.F (T j)) (mem_univ j))
   rwa [Fintype.card_fin] at this
 
-/-- **Paper: Lemma lem:few.** "Let P ⊆ V, let t be a tensor on P and T_1, …, T_J tensors on V, and suppose that
-t = ∑_j ⟨f_j|T_j⟩, where each f_j consists of one functional at every party outside P. Then φ(t) ≤ J^g(P) max_j φ(T_j)
-for every spectral point on V." (A tensor on P is one on V with legs of size at most one outside P.) It is Lemma
-lem:few-approx with constant local maps. -/
-theorem lem_few {K : Type} [Field K] {V : Type} [Fintype V] [DecidableEq V] [Nonempty V] (φ : Spec K V) (P : Finset V)
-    (t : Ten K V) (ht : ∀ q, q ∉ P → Subsingleton (t.ι q)) {J : ℕ} [NeZero J] (T : Fin J → Ten K V)
-    (h : Ten.SumRestr t T) :
-    φ.F t ≤ (J : ℝ) ^ hexp φ (Subtype.val : P → V) * univ.sup' univ_nonempty fun j => φ.F (T j) := by
+/-- **Paper: Lemma lem:few.** "Let P ⊆ V, let t be a tensor on P and T_1, …, T_J tensors on V,
+and suppose that t = ∑_j ⟨f_j|T_j⟩, where each f_j consists of one functional at every party outside
+P. Then φ(t) ≤ J^g(P) max_j φ(T_j) for every spectral point on V." (A tensor on P is one on V with
+legs of size at most one outside P.) It is Lemma lem:few-approx with constant local maps. -/
+theorem lem_few {K : Type} [Field K] {V : Type} [Fintype V] [DecidableEq V] [Nonempty V]
+    (φ : Spec K V) (P : Finset V) (t : Ten K V) (ht : ∀ q, q ∉ P → Subsingleton (t.ι q)) {J : ℕ}
+    [NeZero J] (T : Fin J → Ten K V) (h : Ten.SumRestr t T) :
+    φ.F t ≤ (J : ℝ) ^ hexp φ (Subtype.val : P → V) *
+      univ.sup' univ_nonempty fun j => φ.F (T j) := by
   obtain ⟨L, hL⟩ := h
   refine lem_few_approx φ P t ht T (fun j p a b => LaurentPolynomial.C (L j p a b)) fun x i _ => ?_
   have e : ∑ j, ∑ y : ∀ p, (T j).ι p, (∏ p, LaurentPolynomial.C (L j p (x p) (y p))) *
@@ -291,8 +292,8 @@ theorem flat_rate_approximating {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk
   simp only [map_sum, HahnSeries.coeff_sum]
   exact Finset.sum_congr rfl fun j _ => Finset.sum_congr rfl fun y _ => hterm j y
 
-/-- **Paper: Proposition prop:flat-rate.** "In the flat case, for k ≥ 2 and ℓ ≥ 100√k every circuit over k for f_{k,ℓ}
-has at least 2^(ℓk^(3/2)/16) gates." An exact circuit approximates with the same number of gates. -/
+/-- **Paper: Proposition prop:flat-rate.** "In the flat case, for k ≥ 2 and ℓ ≥ 100√k every
+circuit over k for f_{k,ℓ} has at least 2^(ℓk^(3/2)/16) gates." -/
 theorem prop_flat_rate {K : Type} [Field K] (hK : Flat K) {k : ℕ} (hk : 2 ≤ k) {ℓ s : ℕ}
     (hℓ : 100 * √k ≤ (ℓ : ℝ)) (hcomp : Computes (fkl K k ℓ) s) :
     (2 : ℝ) ^ ((ℓ : ℝ) * (k : ℝ) ^ (3 / 2 : ℝ) / 16) ≤ s := by
@@ -319,23 +320,25 @@ theorem flat_rate_approx_complete (κ : ℕ) : ∃ m₀ : ℕ, ∀ (K : Type) [F
   obtain ⟨Q, ⟨l, -, a, ha, -⟩, -⟩ := hap
   omega
 
-/-- Theorem thm:flat-rate for every family that is complete for grid sums ("the factor 3 becomes 40"). -/
+/-- Theorem thm:flat-rate for every family that is complete for grid sums ("the factor 3 becomes
+40"). -/
 theorem flat_rate_complete (κ : ℕ) : ∃ m₀ : ℕ, ∀ (K : Type) [Field K], Flat K →
     ∀ G : ∀ S : ℕ, MvPolynomial (Fin S × Fin S) K, GridComplete K G κ →
-    ∀ m ≥ m₀, ∀ s : ℕ, Computes (G m) s → (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
+    ∀ m ≥ m₀, ∀ s : ℕ, Computes (G m) s →
+      (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
   obtain ⟨m₀, h⟩ := flat_rate_approx_complete κ
   exact ⟨m₀, fun K _ hK G hG m hm s hs => h K hK G hG m hm s (approximates_of_computes hs)⟩
 
-/-- **Paper: Theorem thm:flat-rate.** "In the flat case there is m₀ such that for m ≥ m₀ every circuit over k for PERM_m
-has more than 2^((log m)^(4/3)/1600²) gates." -/
+/-- **Paper: Theorem thm:flat-rate.** "In the flat case there is m₀ such that for m ≥ m₀ every
+circuit over k for PERM_m has more than 2^((log m)^(4/3)/1600²) gates." -/
 theorem thm_flat_rate {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) :
     ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Computes (genPerm K m) s →
       (2 : ℝ) ^ (Real.logb 2 m ^ (4 / 3 : ℝ) / 1600 ^ 2) < s := by
   obtain ⟨M, h⟩ := flat_rate_complete 3
   exact ⟨M, h K hK _ (gridComplete_perm h2)⟩
 
-/-- **Paper: Theorem thm:flat-simple.** "In the flat case, for every C there is m₀ such that PERM_m has no circuit
-over k with m^C gates for m ≥ m₀." -/
+/-- **Paper: Theorem thm:flat-simple.** "In the flat case, for every C there is m₀ such that PERM_m
+has no circuit over k with m^C gates for m ≥ m₀." -/
 theorem thm_flat_simple {K : Type} [Field K] (hK : Flat K) (h2 : (2 : K) ≠ 0) (C : ℕ) :
     ∃ m₀ : ℕ, ∀ m ≥ m₀, ¬ Computes (genPerm K m) (m ^ C) := by
   obtain ⟨A, hA⟩ := thm_flat_rate hK h2
@@ -358,12 +361,13 @@ open NS1 in
 /-- The contracting case for a family that is complete for grid sums. -/
 theorem contracting_complete {K : Type} [Field K] (hK : Contracting K)
     {G : ∀ S, MvPolynomial (Fin S × Fin S) K} {κ : ℕ} (hG : Nc.GridComplete K G κ) :
-    ∃ C M₁ : ℕ, ∀ M ≥ M₁, ∀ a : ℕ, lg M ^ (C * a) ≤ M → ¬ Nc.Computes (G M) (M ^ a) := by
+    ∃ C M₁ : ℕ, ∀ M ≥ M₁, ∀ a : ℕ, lg M ^ (C * a) ≤ M →
+      ¬ Nc.Computes (G M) (M ^ a) := by
   obtain ⟨C, M₁, h⟩ := contracting_approx_complete hK hG
   exact ⟨C, M₁, fun M hM a ha hc => h M hM a ha (approximates_of_computes hc)⟩
 
-/-- **Paper: Theorem thm:contracting.** "In the contracting case there are c > 0 and m₀ such that for m ≥ m₀ every
-circuit over k for PERM_m has more than 2^(c(log m)²/log log m) gates." -/
+/-- **Paper: Theorem thm:contracting.** "In the contracting case there are c > 0 and m₀ such that
+for m ≥ m₀ every circuit over k for PERM_m has more than 2^(c(log m)²/log log m) gates." -/
 theorem thm_contracting {K : Type} [Field K] (hK : Contracting K) (h2 : (2 : K) ≠ 0) :
     ∃ c : ℝ, 0 < c ∧ ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s, Nc.Computes (Nc.genPerm K m) s →
       (2 : ℝ) ^ (c * Real.logb 2 m ^ 2 / Real.logb 2 (Real.logb 2 m)) < s := by

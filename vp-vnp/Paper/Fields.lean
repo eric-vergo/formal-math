@@ -85,8 +85,8 @@ theorem thm_simple (C : ℕ) : ∃ m₀ : ℕ, ∀ m ≥ m₀, ∀ s : ℕ, s �
   obtain ⟨c, hc, A, hA⟩ := thm_main
   exact excludes_poly_size hc hA C
 
-/-- **Paper: Corollary cor:classes.** "Over ℝ, VP is a proper subset of VNP." This is Corollary cor:allclasses
-over ℝ. -/
+/-- **Paper: Corollary cor:classes.** "Over ℝ, VP is a proper subset of VNP." This is Corollary
+cor:allclasses over ℝ. -/
 theorem cor_classes : VP ℝ ⊂ VNP ℝ :=
   cor_allclasses ℝ
 
