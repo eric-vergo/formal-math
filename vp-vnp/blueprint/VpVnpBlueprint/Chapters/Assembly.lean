@@ -235,7 +235,7 @@ the parameters.”
    characteristic $`p` in the lowest universe. Everything from Appendix A to Appendix K is applied
    to this one field.
 3. The lemma `Paper.approx_rate_closed` splits on the field dichotomy. In the flat case it
-   applies the grid bound for approximating circuits. In the contracting case it applies the
+   applies the grid bound with a threshold depending only on the projection factor, uniformly over flat fields. In the contracting case it applies the
    approximate accelerator bound, and {bpref "thm_allfields_exceeds"}[] compares the two rates.
 4. The Hamiltonian cycle polynomial is complete for grid sums with factor 40 in every
    characteristic. The permanent is complete with factor 3 when $`p\ne 2`. The lemma
@@ -323,11 +323,10 @@ $`\varepsilon^i` with $`i < 0` and has the coefficient of `f` at `d` as its term
 $`\varepsilon^0`. `Paper.VPBar` repeats the definition of VP with `Approximates` for `Computes`.
 
 *The respelled line.* The coefficient of `p` at `d` is written `p.coeff d` in this build, where the
-paper's file and upstream write `coeff d p`. Besides the definition
-{bpref "Statement.Approximates"}[`Statement.Approximates`], three theorems of the `Paper` library
-have this coefficient in their statements, and all three are in this chapter: `Paper.def_approx`,
-`Paper.lem_transfer_approx` ({bpref "lem_transfer_approx"}[Lemma N.2]) and
-`Paper.approx_rate_closed` (under {bpref "thm_approx"}[Theorem N.5]). What supports reading the
+paper's file and upstream write `coeff d p`. At port baseline `9fd368ad` the spelling occurred in
+{bpref "Statement.Approximates"}[`Statement.Approximates`] and three paper declarations.
+Today {bpref "lem_transfer_approx"}[Lemma N.2] and `Paper.approx_rate_closed` use
+{InlineLean.name}`Nc.LaurentApproximates` to express the finite coefficient conditions. What supports reading the
 two spellings as the same coefficient, and which part of that support is checked by Lean in this
 build and which is not, is set out in
 {ref "statement-spelling"}[The one line this build spells differently];
@@ -350,9 +349,8 @@ As for Lemma M.1, the Lean statement has any algebraically closed field `KK` of 
 $`p` in the lowest universe for $`\mathbb{K}`, and a field `F` in any universe (Section Q.3, page
 68, quoted under Lemma M.1). Its conclusion is a polynomial `P` over `LaurentPolynomial KK` with a
 circuit of at most `s` gates whose coefficients have no negative powers of $`\varepsilon` and have
-the coefficients of $`f` at $`\varepsilon^0`. This is one of the three theorems whose coefficient
-is spelled `P.coeff d` in this build, where upstream has `coeff d P`
-({ref "statement-spelling"}[the section on that line]).
+the coefficients of $`f` at $`\varepsilon^0`. The statement packages the witness and these conditions in
+{InlineLean.name}`Nc.LaurentApproximates`.
 :::
 
 :::proof "lem_transfer_approx"
@@ -388,29 +386,23 @@ degree, but the program of Lemma K.2 gives its part of degree at most $`d`, whic
 $`\varepsilon` times that part of $`g`. Proposition N.4 excludes them, with the calculation of
 Theorems K.7 and M.3. For the last claim, $`(\mathrm{HC}_m)` is in VNP.”
 
-*Reading (gloss).* `Paper.border_rate_allfields` supplies the quantitative conclusion of both this theorem and {bpref "thm_allfields"}[Theorem M.3]. `approx_rate_closed` is the bound over one field `K` in the lowest
-universe, for a family complete for grid sums and a circuit over `LaurentPolynomial K` whose
-output has the coefficient property (this is the third theorem with the respelled coefficient,
-see {bpref "def_approx"}[Definition N.1]): it turns the circuit back into `Approximates (G m) s`
-over `K` (`Nc.Approximates.of_laurentPolynomial`) and splits on {bpref "thm_alt"}[`thm_alt K`],
-with {bpref "flat_rate_approx_complete"}[`flat_rate_approx_complete`] in the flat case and, in the
-contracting case, `contracting_approx_rate` followed by the same `thm_allfields_exceeds`.
-`contracting_approx_rate` is `contracting_approx_complete`
-({bpref "lem_circuit_approx"}[the approximate form of Lemma K.3], which rests on
-{bpref "prop_approx_acc"}[Proposition N.4]) with `quasi_of_exponents`. Here the permanent, for
-$`p \neq 2`, is treated as a family complete for grid sums (`gridComplete_perm`), like the
-Hamiltonian cycle polynomial, so that Theorems E.11 and K.7 themselves are not used.
-Both endpoints use {bpref "lem_transfer_approx"}[`lem_transfer_approx`]. The second
-sentence is proved as Corollary M.4, with {bpref "hc_mem_VNP"}[`hc_mem_VNP`] and
-`exists_beyond_poly`.
+*The checked proof.* {InlineLean.name}`Paper.border_rate_allfields` first chooses an algebraically
+closed field of the prescribed characteristic. {bpref "lem_transfer_approx"}[Lemma N.2] transfers
+an approximating circuit from the input field to a finite Laurent polynomial circuit of the
+same size in this field. The coefficient at exponent zero is the target, and every negative
+coefficient vanishes. {InlineLean.name}`Nc.LaurentApproximates.aeval` preserves both conditions
+under grid projection with a factor-five size bound.
 
-Section Q.3 (page 70) on the route: “Theorem N.5 does not cite Lemma K.3, Theorem K.7 and Theorem
-M.3. Instead it uses the step `thm_allfields_exceeds` of the proof of the last of them and
-approximate analogues of the first two, which share their steps with them; the analogues are
-`lem_circuit_approx` and `contracting_approx_complete`. On the way the constants are cut off
-twice.” And: “The form of the constants in Lemma N.2 is derived again in the proof of Theorem N.5.”
-Section Q.3 (page 68) also notes: “The flat bound for approximating circuits has 14 where
-Proposition E.10 has 16.”
+The flat branch uses {InlineLean.name}`Paper.flat_rate_laurent` and constructs the hub tensor
+over the Laurent polynomial ring before clearing denominators. The contracting branch uses
+{bpref "lem_circuit_approx"}[the approximate circuit lemma] and
+{InlineLean.name}`Paper.contracting_approx_complete`. Both receive the finite witness directly.
+Thus the second cutoff described in Section Q.3 belongs to the paper's account of the original
+formalization. The resulting threshold applies to every input field of the chosen characteristic.
+Hamiltonian cycle supplies the family in every characteristic. The permanent also supplies a
+complete family when the characteristic differs from two. For separation from the closure the
+proof uses {bpref "hc_mem_VNP"}[Hamiltonian cycle membership in VNP] and growth beyond every
+polynomial bound.
 :::
 
 *Remark N.6 of the paper* (determinantal complexity; page 64), quoted in full: “This remark is the

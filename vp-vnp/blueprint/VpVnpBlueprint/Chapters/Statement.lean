@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), GPT-6.2 (OpenAI)
 -/
 import VersoManual
 import VersoBlueprint
@@ -329,7 +329,7 @@ definition in the form just stated, the two give the same sizes, in the gate cou
   {InlineLean.name}`Nc.Approximates.of_laurentPolynomial` is the converse. These are stated for
   the definition {InlineLean.name}`Nc.Approximates` of the proof, whose body is that of
   `Statement.Approximates` (with a type of variables in any universe); Lean accepts the one for
-  the other, as the `example` below shows. Since
+  the other, by definitional equality. Since
   $`F[\varepsilon, \varepsilon^{-1}] \subset F(\varepsilon)`, and a Laurent polynomial without
   negative powers is a polynomial in $`\varepsilon`, this is approximation in the usual sense
   with $`s` gates. The truncation is the first step of the paper's proof of Lemma N.2 (page 62):
@@ -338,18 +338,9 @@ definition in the form just stated, the two give the same sizes, in the gate cou
   at most $`2^L` in the constants, the cut changes it only in the positive powers of
   $`\varepsilon`.”
 
-The second direction in one statement, which compiles against this build after
-`import Comparator.VpVnp.Solution` and `open MvPolynomial` (it was compiled again for this
-revision) and is not part of the repository:
-
-```
-example {F V : Type} [Field F] (f : MvPolynomial V F) (s : ℕ) :
-    Statement.Approximates f s ↔
-      ∃ p : MvPolynomial V (LaurentPolynomial F), Statement.Computes p s ∧
-        ∀ (d : V →₀ ℕ) (i : ℤ), i ≤ 0 → (p.coeff d).coeff i = if i = 0 then f.coeff d else 0 :=
-  ⟨fun h => Nc.Approximates.exists_laurentPolynomial h,
-   fun ⟨_, hp, h⟩ => Nc.Approximates.of_laurentPolynomial hp h⟩
-```
+{InlineLean.name}`Nc.laurentApproximates_iff` proves the equivalence at the same gate bound.
+The finite predicate {InlineLean.name}`Nc.LaurentApproximates` records the circuit and
+its coefficient condition together.
 
 What is and is not established, then. Machine-checked in this build: `Approximates f s` is
 equivalent to the existence of a circuit with at most $`s` gates over

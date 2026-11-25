@@ -135,8 +135,14 @@ The theorems with prefix `Paper.` “state the numbered statements” (Section Q
 Section Q.3 lists, over four pages, where they differ. None of the differences can affect the
 five theorems, whose statements are fixed by `Statement.lean`; each limits what may be said when
 a printed lemma is set beside a Lean name. {ref "chapter-table3"}[The paper's statements and
-their Lean names] has a verdict for every numbered statement, with the counts. The differences
-that the paper names are of four kinds.
+their Lean names] has a verdict for every numbered statement, with the counts. Four rows have further limitations in the frozen proof. Proposition E.5 retains the hub
+decomposition and the flat rate uses divisor 16 for fixed width at sufficiently large length.
+The larger constant in the paper's divisor-six bound requires a separate argument. Theorem H.2(c)
+omits the sum over law layers. Lemma K.3 constructs an approximate accelerator, and Proposition
+K.5 propagates its approximation invariant to arbitrarily large scales. The exact accelerator
+used for the diagonal argument is extracted later.
+
+Section Q.3 describes four kinds of difference in the original formalization.
 
 - _More general in Lean._ Lemmas A.3, E.4, E.7, F.1, F.2, I.2, K.3, M.1, N.2, N.3 and
   Proposition B.2, by the paper's list (page 68).

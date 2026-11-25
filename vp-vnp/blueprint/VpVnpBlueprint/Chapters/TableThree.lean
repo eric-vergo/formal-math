@@ -34,13 +34,12 @@ the printed statement.
 
 # How to read the table
 
-The Lean names are those of Table 3, with the prefix `Paper.` written out, and for the statements
-of Section 1 also the theorems of `Solution.lean`. Every name in this chapter resolves in the
+The Lean column names declarations in the frozen proof. Where a printed guarantee has only a partial result or an approximate analogue, the scope column identifies the difference. The Section 1 rows also give the corresponding Solution exports. Every name in this chapter resolves in the
 build that the site is generated from; hovering over it shows its Lean statement. The first
 column links to the node of this site that shows the printed statement beside the Lean
 declaration.
 
-The column _Lean statement_ has one of three entries.
+The column _Lean statement_ records the scope of the correspondence.
 
 - _matches_: the Lean statement says what the printed statement says, up to the encoding (types
   for sets, coercions, a finite sum with possibly zero summands for “at most”).
@@ -49,7 +48,9 @@ The column _Lean statement_ has one of three entries.
   quotation marks enclose the paper's words. Most of these differences make the Lean statement
   more general or more explicit, or move hypotheses and clauses into structures. The chapter that
   presents the statement gives the difference in full.
-- _no Lean counterpart_: Remark N.6 only.
+- _partial_: the node identifies the surviving clauses and the printed bound or construction outside the checked statement.
+- _approximate analogue_: the cited declaration takes or produces an approximate accelerator. The standalone exact assertion is outside the frozen proof.
+- _no Lean counterpart_: Remark N.6.
 
 These entries are a reading of the printed statements against the Lean statements, made for this
 blueprint by AI models from the paper and the Lean sources. No tool checks such a comparison,
@@ -80,18 +81,17 @@ row:
   `Solution.mainTheorem`, S for `Solution.separation`, A for `Solution.mainTheoremApprox`, C for
   `Solution.separationClosure` and R for `Solution.permanent_over_real`;
 - _no_: none of the five depends on it;
-- _definition_: the row is a definition, whose Lean theorem restates a Lean definition (the
-  paper counts these as not on the route).
+- _—_: the row names no Lean declaration.
 
-The four exceptions named by the paper remain outside the five export closures. The fan argument uses the parallelogram identity of
-`Paper.lem_means_norm` directly, so the full existential statement of Lemma C.2 is
-also outside the five closures. Corollary E.2, Lemma E.3 and Theorems E.11 and K.7 specialize general grid-family results
-to the permanent. Those four statements lie outside the five closures. So do the exact-circuit
-lemmas E.7, K.3 and M.1 and Proposition E.10. The proof treats exact circuits as constant-series
-circuits and uses the coefficientwise bound for both families. Lemmas N.2 and N.3 and
-Proposition N.4 occur in all five closures. A dependency recorded here is
+For partial rows and approximate analogues, the route describes the cited Lean declaration.
+For definitions it gives the actual compiled membership. In particular, the definition
+{InlineLean.name}`NS1.HasAcc` occurs in the proof. The general measurable version of A.8,
+the existential form of C.2, the permanent specializations E.2, E.3, E.11 and K.7,
+and the exact-circuit forms E.7, E.10 and M.1 all lie outside the five closures.
+All five use the finite joint-law version of A.8 and the finite Laurent circuit route
+through N.2, N.3 and N.4. A dependency recorded here is
 one of Lean constants: `Solution.mainTheoremApprox` and `Solution.separationClosure` are the two
-conjuncts of one Lean theorem, `Paper.thm_approx`, and so depend on the same constants. And
+conjuncts of one Lean theorem, `Paper.thm_approx`, but their export types also contribute dependencies. And
 several of the theorems that Table 3 names second for a statement are used by none of the five;
 the notes say which.
 
@@ -100,7 +100,7 @@ M.3, Corollary 1.2 is Corollary M.4, Definition 1.3 is Definition N.1, Theorem 1
 N.5, and Definition 2.1 and Theorem 2.2 are Definition D.1 and Theorem D.2 with the hypotheses
 stated for spectral points. So the 70 rows for numbered statements are 64 different statements;
 two further rows are the displays (B.2) and (F.1), which Table 3 also names. Of the 70 rows, 30
-match, 39 differ as the paper says, and one has no Lean counterpart.
+match, 35 differ as the paper says, two have partial coverage, two have approximate analogues, and one has no Lean counterpart.
 
 # Sections 1 and 2
 
@@ -131,7 +131,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 2
   * {InlineLean.name}`Paper.def_approx`, {InlineLean.name}`Paper.VPBar`, {InlineLean.name}`Statement.Approximates`, {InlineLean.name}`Statement.VPBar`
   * differs as the paper says
-  * definition
+  * no
   * {ref "chapter-claim"}[What is claimed]. The same statement as Definition N.1; see there.
 *
   * {bpref "Solution.mainTheoremApprox"}[Theorem 1.4]
@@ -145,7 +145,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 4–5
   * {InlineLean.name}`Paper.def_cases`, {InlineLean.name}`Paper.Flat`, {InlineLean.name}`Paper.Contracting`
   * differs as the paper says
-  * definition
+  * no
   * {ref "chapter-overview"}[The shape of the proof]. Page 5: “The Lean definition states both hypotheses for prices”; the form of Definition D.1. No Lean theorem states that the two forms of the contracting hypothesis agree; the paper asserts it (page 5).
 *
   * {bpref "thm_alt"}[Theorem 2.2]
@@ -171,7 +171,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 19
   * {InlineLean.name}`Paper.def_spectral`, {InlineLean.name}`Paper.def_spectral_congr`
   * differs as the paper says
-  * definition
+  * no
   * {ref "chapter-spectral"}[Tensors, spectral points and prices]. Page 66: “Lean does not identify equivalent tensors (`def_spectral_congr` shows that spectral points respect the identifications)”.
 *
   * {bpref "lem_exponents"}[Lemma A.2]
@@ -186,13 +186,13 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.lem_hubs`, {InlineLean.name}`Paper.lem_hubs_further`
   * differs as the paper says
   * yes
-  * {ref "chapter-spectral"}[Tensors, spectral points and prices]. More general: the tensor is pushed forward along an arbitrary map of parties; `lem_hubs_further` is the form with two further parties (page 68). `lem_hubs_further` is not used by the five theorems.
+  * {ref "chapter-spectral"}[Tensors, spectral points and prices]. More general: the tensor is pushed forward along an arbitrary map of parties; `lem_hubs_further` is the form with two further parties (page 68). `lem_hubs_further` is not used by the five theorems. The hub construction works over any commutative semiring, including Laurent polynomials.
 *
   * {bpref "def_price"}[Definition A.4]
   * 20
   * {InlineLean.name}`Paper.def_price`
   * matches
-  * definition
+  * no
   * {ref "chapter-spectral"}[Tensors, spectral points and prices]
 *
   * {bpref "prop_gauge"}[Proposition A.5]
@@ -218,10 +218,10 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
 *
   * {bpref "prop_random"}[Proposition A.8]
   * 21
-  * {InlineLean.name}`Paper.prop_random`
+  * {InlineLean.name}`Paper.prop_random`, {InlineLean.name}`Paper.prop_random_finite`
   * matches
-  * yes
-  * {ref "chapter-spectral"}[Tensors, spectral points and prices]. The random map is a family of measurable maps with finite ranges on a probability space. The paper does not remark on this encoding.
+  * no
+  * {ref "chapter-spectral"}[Tensors, spectral points and prices]. The measurable random-map theorem is available separately. All five exports use the finite joint-law theorem, which assembles finite tables by compactness.
 :::
 
 # Appendix B
@@ -319,7 +319,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 30
   * {InlineLean.name}`Paper.def_cases`
   * matches
-  * definition
+  * no
   * {ref "chapter-dichotomy"}[The two cases]
 *
   * {bpref "thm_alt"}[Theorem D.2]
@@ -371,10 +371,10 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
 *
   * {bpref "prop_flat_lower"}[Proposition E.5]
   * 33
-  * {InlineLean.name}`Paper.prop_flat_lower`, {InlineLean.name}`Paper.prop_flat_lower_printed`
-  * differs as the paper says
-  * no
-  * {ref "chapter-flat"}[The flat case]. As for Lemma E.3.
+  * {InlineLean.name}`Paper.prop_flat_lower_sum`, {InlineLean.name}`Paper.prop_flat_rate_printed`
+  * partial
+  * yes
+  * {ref "chapter-flat"}[The flat case]. The circuit gives a balanced hub decomposition. For fixed $`k` and sufficiently large $`ℓ`, the E.10 bound implies the weaker divisor 16. The printed divisor 6 and its explicit Euclidean configuration have no standalone Lean proof.
 *
   * {bpref "thm_flat_simple"}[Theorem E.6]
   * 35
@@ -495,7 +495,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 42
   * {InlineLean.name}`Paper.def_law`
   * differs as the paper says
-  * definition
+  * no
   * {ref "chapter-laws"}[Rerouting laws and tree networks]. The notion is the structure `Nc.G.Law`; `def_law` “lists only three of the fields of the structure, in one direction, so that it rests on reading the structure that it is the printed notion” (page 68).
 *
   * {bpref "thm_laws"}[Theorem G.2]
@@ -527,9 +527,9 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {bpref "thm_tree"}[Theorem H.2]
   * 45–46
   * {InlineLean.name}`Paper.thm_tree`, {InlineLean.name}`Paper.thm_tree_good`
-  * differs as the paper says
+  * partial
   * yes
-  * {ref "chapter-laws"}[Rerouting laws and tree networks]. The clauses are fields of a structure (`ThinTrees`); “no theorem restates this as the value of a network as defined in Section H” (page 69); the laws are standing hypotheses. Parts (d), (e): the printed proof defers to Lean (page 17). `thm_tree_good` is not used by the five theorems.
+  * {ref "chapter-laws"}[Rerouting laws and tree networks]. The structure records the routing and load bounds and the outcome laws. The last sentence of H.2(c), bounding the sum of the layer counts of law moves, has no Lean counterpart. The integral converse in thm_tree_good is a separate declaration.
 :::
 
 # Appendix I
@@ -573,7 +573,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 52
   * {InlineLean.name}`Paper.def_cut`
   * matches
-  * definition
+  * no
   * {ref "chapter-programs"}[Programs, automata and cutting]
 *
   * {bpref "prop_pieces"}[Proposition J.2]
@@ -581,7 +581,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.prop_pieces`, {InlineLean.name}`Paper.prop_pieces_identity`
   * differs as the paper says
   * yes
-  * {ref "chapter-programs"}[Programs, automata and cutting]. The clauses are fields of a structure (`PieceCut`); outcomes range below a bound that is part of the data, and the identity sums over those (page 69). Its last claim rests on Theorem H.2(d), (e) (formalization note, page 52).
+  * {ref "chapter-programs"}[Programs, automata and cutting]. The clauses are fields of a structure (`PieceCut`); outcomes range below a bound that is part of the data, and the identity sums over those (page 69). Its last claim rests on Theorem H.2(d), (e) (formalization note, page 52). The block count is chosen before the time and width. The returned cut includes the input contribution in its width and load bounds.
 *
   * {bpref "thm_onecut"}[Theorem J.3]
   * 53
@@ -611,10 +611,10 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
 *
   * {bpref "def_acc"}[Definition K.1]
   * 55
-  * {InlineLean.name}`Paper.def_acc`
+  * {InlineLean.name}`NS1.HasAcc`, {InlineLean.name}`NS1.IsAccT`
   * matches
-  * definition
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
+  * yes
+  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. The definitions give the size and the per-input correctness and time clauses directly.
 *
   * {bpref "lem_lowdeg"}[Lemma K.2]
   * 56
@@ -625,10 +625,10 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
 *
   * {bpref "lem_circuit"}[Lemma K.3]
   * 56
-  * {InlineLean.name}`Paper.lem_circuit`, {InlineLean.name}`Paper.lem_circuit_perm`
-  * differs as the paper says
-  * no
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. More general: for every family that is complete for grid sums and every $`H \ge 32` (page 68). `lem_circuit_phi` “states what is used of $`\Phi`, not that it equals the printed sum over words” (page 70). `lem_circuit_perm` is not used by the five theorems.
+  * {InlineLean.name}`Paper.lem_circuit_approx`
+  * approximate analogue
+  * yes
+  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. The printed result produces an exact accelerator. Lean projects a finite Laurent circuit and produces an approximate accelerator at the stated size. An exact circuit can enter this proof as a constant Laurent circuit; the output guarantee remains approximate.
 *
   * {bpref "lem_postpone"}[Lemma K.4]
   * 57
@@ -639,17 +639,17 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
 *
   * {bpref "prop_next"}[Proposition K.5]
   * 57–58
-  * {InlineLean.name}`Paper.prop_next`, {InlineLean.name}`Paper.scales_setting`
-  * differs as the paper says
+  * {InlineLean.name}`Paper.prop_approx_acc_scales`
+  * approximate analogue
   * yes
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. Does not assume the contracting case: the conclusion of Theorem J.4 is a hypothesis (`CutHyp`), with $`H = 16h`, $`h \ge 17`; `scales_setting` is the instance in the contracting case ({bpref "scales_setting"}[its node]; page 69).
+  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. The printed result scales an exact accelerator. Lean preserves the approximate invariant at arbitrarily large scales, using a scale bound chosen before the requested lower scale. It extracts an exact accelerator later for the diagonal argument.
 *
   * {bpref "thm_noacc"}[Theorem K.6]
   * 58
-  * {InlineLean.name}`Paper.thm_noacc`, {InlineLean.name}`Paper.scales_setting`
+  * {InlineLean.name}`Paper.thm_noacc`
   * differs as the paper says
   * yes
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. As for Proposition K.5; here $`A` has to be finitely generated (page 69).
+  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. The cut hypothesis and finite generation enter explicitly. The proof extracts an exact accelerator at a large scale and uses the diagonal contradiction.
 *
   * {bpref "thm_contracting"}[Theorem K.7]
   * 59
@@ -747,15 +747,15 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * 62
   * {InlineLean.name}`Paper.def_approx`, {InlineLean.name}`Paper.VPBar`
   * differs as the paper says
-  * definition
+  * no
   * {ref "chapter-assembly"}[All fields and approximate computation]. `def_approx` states the second sentence of the definition; “the last sentence of the definition is the definition of `Paper.VPBar`, and the match rests on reading it” (page 69).
 *
   * {bpref "lem_transfer_approx"}[Lemma N.2]
   * 62
-  * {InlineLean.name}`Paper.lem_transfer_approx`
+  * {InlineLean.name}`Paper.lem_transfer_approx`, {InlineLean.name}`Nc.LaurentApproximates`
   * differs as the paper says
   * yes
-  * {ref "chapter-assembly"}[All fields and approximate computation]. As for Lemma M.1.
+  * {ref "chapter-assembly"}[All fields and approximate computation]. The witness is a circuit over Laurent polynomials with the same gate count. After specialization to the common algebraically closed field, all negative coefficients vanish and the constant coefficient agrees with the target.
 *
   * {bpref "lem_few_approx"}[Lemma N.3]
   * 62
@@ -769,7 +769,7 @@ match, 39 differ as the paper says, and one has no Lean counterpart.
   * {InlineLean.name}`Paper.prop_approx_acc`, {InlineLean.name}`Paper.prop_approx_acc_setting`
   * differs as the paper says
   * yes
-  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. As for Proposition K.5; `prop_approx_acc_setting` is the instance in the contracting case (page 69). The printed proof defers to Lean (page 17).
+  * {ref "chapter-accelerators"}[Accelerators and the diagonal argument]. As for Proposition K.5; `prop_approx_acc_setting` is the instance in the contracting case (page 69). The printed proof defers to Lean (page 17). The amplified approximate time reserves one power of the scale for exact extraction.
 *
   * {bpref "thm_approx"}[Theorem N.5]
   * 64
@@ -867,7 +867,7 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Paper.flat_rate_approximating`
   * Proposition E.10 for approximating circuits, in the form $`\ell k\sqrt{k}/14 \le \log s`.
-  * all five
+  * none
   * {bpref "flat_rate_approx_complete"}[its node] in {ref "chapter-flat"}[The flat case]
 *
   * {InlineLean.name}`Paper.flat_rate_approx_complete`
@@ -932,8 +932,33 @@ five theorems depend on it, with the letters explained above.
 *
   * {InlineLean.name}`Nc.Approximates.of_laurentPolynomial`
   * The converse.
-  * all five
+  * M S R
   * {ref "chapter-statement"}[The statement to trust], {ref "chapter-assembly"}[All fields and approximate computation]
+*
+  * {InlineLean.name}`Paper.prop_random_finite`
+  * Finite probability tables for the random extension in the price construction.
+  * all five
+  * {bpref "prop_random"}[its node] in {ref "chapter-spectral"}[Spectral points and prices]
+*
+  * {InlineLean.name}`Paper.flat_rate_laurent`
+  * The flat rate from the hub decomposition over Laurent polynomials.
+  * all five
+  * {bpref "flat_rate_approx_complete"}[its node] in {ref "chapter-flat"}[The flat case]
+*
+  * {InlineLean.name}`Nc.LaurentApproximates.aeval`
+  * Affine projection of the finite witness preserves all nonpositive coefficients and multiplies the gate bound by five.
+  * all five
+  * {bpref "lem_transfer_approx"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
+*
+  * {InlineLean.name}`Nc.laurentApproximates_iff`
+  * Finite and series approximation witnesses are equivalent at the same gate bound.
+  * M S R
+  * {bpref "def_approx"}[its node] in {ref "chapter-assembly"}[All fields and approximate computation]
+*
+  * {InlineLean.name}`Paper.prop_approx_acc_scales`
+  * Approximate accelerators at arbitrarily large scales, carrying a rescaling-stable property of their constants.
+  * all five
+  * {bpref "prop_approx_acc_scales"}[its node] in {ref "chapter-accelerators"}[Accelerators and the diagonal argument]
 :::
 
 The declarations of the development that no chapter names are listed, module by module, in the

@@ -1,7 +1,7 @@
 /-
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
-Authors: Eric Vergo, Claude (Anthropic)
+Authors: Eric Vergo, Claude (Anthropic), GPT-6.2 (OpenAI)
 -/
 import VersoManual
 import VersoBlueprint
@@ -242,7 +242,7 @@ characteristic two only; the bound for $`\mathrm{HC}_m` is claimed over every fi
 
 *Determinantal complexity.* The paper draws a consequence for the determinantal complexity of the
 permanent from Theorem 1.4 (Section 1.2 and Remark N.6). It is the one numbered statement with no
-Lean counterpart. Section 3 (page 11): “Every numbered statement of this paper, in Sections 1 and
+Lean counterpart. E.5 and H.2 retain partial results, and K.3 and K.5 have approximate analogues. Section 3 (page 11): “Every numbered statement of this paper, in Sections 1 and
 2 and in the appendix, has a Lean equivalent proved from Mathlib and the standard axioms, with one
 exception: Remark N.6, the consequence for determinantal complexity that Section 1.2 draws from
 Theorem 1.4.” Nothing on this site is evidence for it beyond the paper's prose.
@@ -258,7 +258,7 @@ cases holds, and uses functionals that exist by Zorn's lemma.
 
 # Provenance
 
-The README of the folder {repoFile "vp-vnp"}[`vp-vnp`], quoted: “The result was discovered by an
+The original Anthropic README for the folder {repoFile "vp-vnp"}[`vp-vnp`], quoted: “The result was discovered by an
 internal research Claude model. This folder holds the paper and its Lean 4 formalization. Both
 were written by AI models, and no human mathematician has checked the proof.” And: “Research
 artifact. Not maintained and not accepting contributions.”
@@ -269,7 +269,7 @@ human mathematician has checked the proofs.”
 This blueprint is built from a branch of a fork of the repository, in which the development is
 ported from Lean 4.33.1 to Lean 4.36.0 and the corresponding Mathlib. The port changed the
 spelling of one coefficient in four statements, `Statement.Approximates` among them, and repaired
-proofs; {repoFile "vp-vnp/PORTING.md"}[`PORTING.md`] lists every change. The blueprint's
+proofs; {repoFile "vp-vnp/PORTING.md"}[`PORTING.md`] documents the port. Eric Vergo and Claude wrote the original fork blueprint. Eric Vergo and GPT-6.2 (OpenAI) revised the port and blueprint, including proof adaptations from Helen Kwok. Claude Fable 5.2 directed a cleanup round with Claude Opus 5.5. The licenses and file-level credits appear in {repoFile "vp-vnp/NOTICE"}[`NOTICE`]. The blueprint's
 exposition was written by AI models and has not been reviewed by a human mathematician either.
 
 # Who or what has checked what

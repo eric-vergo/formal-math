@@ -199,11 +199,11 @@ For the determinant the arrows *P* are missing, and a Boolean circuit does not p
 *
   * *C*: inside the circuit
   * $`f_{k,\ell} = \sum_S f_S` over the balanced sets $`S`, the tensor of $`f_S` of rank at most $`L` across $`S` ({InlineLean.name}`Paper.lem_balanced`)
-  * an accelerator at the scale $`v`: sums over $`v^H` steps in $`v^{H-16}` steps ({InlineLean.name}`Paper.lem_lowdeg`, {InlineLean.name}`Paper.lem_circuit`)
+  * an approximate accelerator at the scale $`v`: sums over $`v^H` steps in $`v^{H-16}` steps ({InlineLean.name}`Paper.lem_lowdeg`, {InlineLean.name}`Paper.lem_circuit_approx`)
 *
   * Conclusion
   * comparison of lengths: $`\log L \ge \ell k^{3/2}/16` ({InlineLean.name}`Paper.lem_hubs`, {InlineLean.name}`Paper.prop_flat_rate`); with $`k = r^2`, $`\ell = 100r`: {InlineLean.name}`Paper.thm_flat_rate`
-  * accelerators at all larger scales ({InlineLean.name}`Paper.lem_postpone`, {InlineLean.name}`Paper.prop_next`); a diagonal argument shows there are none ({InlineLean.name}`Paper.thm_noacc`): {InlineLean.name}`Paper.thm_contracting`
+  * approximate accelerators at arbitrarily large scales ({InlineLean.name}`Paper.lem_postpone`, {InlineLean.name}`Paper.prop_approx_acc_scales`); a diagonal argument shows there are none ({InlineLean.name}`Paper.thm_noacc`): {InlineLean.name}`Paper.thm_contracting`
 :::
 
 *The permanent* enters through an explicit form of Valiant's completeness theorem. Both
@@ -244,7 +244,7 @@ $`k(k-1)/2` wires. A circuit with $`L` gates gives $`f = \sum_S f_S` over the ba
 $`f_S` of rank at most $`L` across $`S`, so for every spectral point with hubs $`o_S`, $`o'_S`,
 and for some balanced $`S`, the paper's inequality (2.4):
 $$`\text{length of } f \;\le\; k + \text{length of the wires to the hubs of } S + d_\phi(o_S, o'_S) \log L .`
-The flat hypothesis supplies one spectral point that realizes, up to any $`\delta`, a chosen
+In the printed E.5 argument the flat hypothesis supplies one spectral point that realizes, up to any $`\delta`, a chosen
 Euclidean configuration of all ends and all hubs in $`\mathbb{R}^k`: for $`a < b` the end
 $`(a,b)` at $`\tfrac12 e_a` and the end $`(b,a)` at $`-\tfrac12 e_a`, and the hubs of $`S` at
 distance of order $`k^{-1/2}` from the origin in the direction of the sum of the ends on the
@@ -260,6 +260,10 @@ $`\ell = 100r` and $`\log m` of order $`k\ell = 100 r^3`, $`\log L` is of order
 $`r^4 = (\log m)^{4/3}` up to constants: the bound of {bpref "thm_flat_rate"}[Theorem E.11],
 {InlineLean.name}`Paper.thm_flat_rate`, which is $`2^{(\log m)^{4/3}/1600^2}` for all large
 $`m`.
+
+Lean retains the balanced hub decomposition. For fixed $`k` and sufficiently large
+$`ℓ`, Proposition E.10 also gives the divisor-16 bound. The paper's divisor-six bound
+uses the explicit configuration above.
 
 Why the complete network: Figure 3 of the paper (page 9) contrasts it with a path, “the network
 of an iterated matrix product”, which “has balanced sets that a single wire crosses”.
@@ -315,21 +319,14 @@ pieces $`y` that the run lists. A run lists at most $`\tau v^2/v^H` pieces, and 
 $`v^H`-plain and short, that is, of size at most $`v^{H-32}`.”
 {ref "chapter-programs"}[Programs, automata and cutting].
 
-*Step 5: accelerators and the diagonal.* Only now a circuit is assumed: $`v^a` gates for
-$`\mathrm{PERM}_m`, with $`m` a large power of $`v` and $`(\log v)^{O(a)} \le v`. The reduction
-gives a circuit with $`O(v^a)` gates for $`\Phi`, and the evaluation lemma turns it into an
-_accelerator_ at the scale $`v` ({InlineLean.name}`Paper.def_acc`,
-{InlineLean.name}`Paper.lem_circuit`; {bpref "def_acc"}[Definition K.1],
-{bpref "lem_circuit"}[Lemma K.3]): “a program of size $`v^{O(a+1)}`, with as many named
-constants, whose value on every short $`v^H`-plain $`z` is $`\mathrm{sum}(z)` and whose accepting
-runs take at most $`v^{H-16}` steps.” The constants it names are coefficients that depend on the
-circuit and not on the input: advice. “At the scale $`v` this advice is longer than the running
-times, so we cannot diagonalize there.” The names can be moved in front of the sum over the runs
-({InlineLean.name}`Paper.lem_postpone`, {bpref "lem_postpone"}[Lemma K.4]), and cutting the
-resulting plain instances and running the accelerator on every piece gives, after at most
-$`3\alpha` rounds, a program that is again correct on all short plain instances and as fast,
-with the same constants, at the scale $`v^\alpha` ({InlineLean.name}`Paper.prop_next`,
-{bpref "prop_next"}[Proposition K.5]). Correctness of an
+*Step 5: accelerators and the diagonal.* The printed exact argument converts a small circuit
+into an exact accelerator at the initial scale and propagates it by Proposition K.5.
+{bpref "lem_circuit"}[Lemma K.3] and {bpref "prop_next"}[Proposition K.5] mark those paper steps.
+The checked construction uses a finite Laurent circuit and an approximate accelerator
+({InlineLean.name}`Paper.lem_circuit_approx`). Postponing named constants and cutting the
+remaining instances preserve the approximation invariant at arbitrarily large scales
+({InlineLean.name}`Paper.prop_approx_acc_scales`). The proof extracts an exact accelerator at
+a sufficiently large scale for the diagonal contradiction. Correctness of an
 accelerator is a family of identities in its constants over $`A`, so it survives reduction to a
 finite field, in which boundedly many names cover all powers of the constants. At a scale that is
 large compared with that field a program $`\mathsf{P}` that on $`x` guesses a bit and either

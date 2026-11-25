@@ -464,7 +464,7 @@ From “Notation and conventions” (pages 17–18).
   * {InlineLean.name}`NS1.KT`
 *
   * accelerator
-  * Appendix P: “a program that evaluates sums over $`v^H` steps within $`v^{H-16}` steps” ({bpref "def_acc"}[Definition K.1])
+  * Appendix P: “a program that evaluates sums over $`v^H` steps within $`v^{H-16}` steps” ({bpref "def_acc"}[Definition K.1], {InlineLean.name}`NS1.HasAcc`)
   * {InlineLean.name}`NS1.HasAcc`, {InlineLean.name}`NS1.IsAccT`
 *
   * short instance
