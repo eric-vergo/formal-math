@@ -71,18 +71,20 @@ theorem Ev.app {p x : Tree} {e : Fm} {le : List (Run A)} (he : Ev θ e x le)
   rw [List.flatMap_cons, List.flatMap_nil, List.append_nil] at this
   exact this
 
+/-- The value of a dynamic program call is the weighted sum over its programs and arguments. -/
+theorem sumF_run {lp lx : List (Run A)} {f : Tree → R} :
+    sumF κ (lp.flatMap fun r => lx.flatMap fun s => (evl θ (Fm.ofTree r.out) s.out).map
+      fun t => ((r.seq s).seq t).tick t.out) f =
+      sumF κ lp fun p => sumF κ lx fun x => sumF κ (evl θ (Fm.ofTree p) x) f := by
+  simp only [sumF, sum_flatMap_map, List.map_map, Function.comp_def, wt_tick, wt_seq,
+    ← List.sum_map_mul_left, mul_assoc]
+  rfl
+
 theorem sumF_app {p : Tree} {le : List (Run A)} {f : Tree → R} :
     sumF κ (le.flatMap fun s => (NS1.evl θ (Fm.ofTree p) s.out).map fun t =>
       ((Run.det 1 p).seq s).seq t |>.tick t.out) f = sumF κ le fun o => sumF κ (NS1.evl θ (Fm.ofTree p) o) f := by
-  simp only [sumF]
-  rw [sum_flatMap_map]
-  congr 1
-  refine List.map_congr_left fun s _ => ?_
-  rw [List.map_map, ← List.sum_map_mul_left]
-  congr 1
-  refine List.map_congr_left fun t _ => ?_
-  show wt κ (((Run.det 1 p).seq s).seq t) * f t.out = wt κ s * (wt κ t * f t.out)
-  rw [wt_seq, wt_seq, wt_det, one_mul, mul_assoc]
+  simpa [sumF, Run.det, List.flatMap_cons, List.flatMap_nil, wt] using
+    (sumF_run (κ := κ) (θ := θ) (lp := [Run.det 1 p]) (lx := le) (f := f))
 
 theorem mem_app {p : Tree} {le : List (Run A)} {u : Run A}
     (h : u ∈ le.flatMap fun s => (NS1.evl θ (Fm.ofTree p) s.out).map fun t =>

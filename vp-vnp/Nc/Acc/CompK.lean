@@ -235,14 +235,12 @@ theorem app_gives {p o : Tree} (hF : Gives θ F x o c) (hG : KV θ κ S (Fm.ofTr
 /-- Apply a program that is the value of a formula. -/
 theorem run {p y : Tree} {e : ℕ} (hF : Gives θ F x p c) (hG : Gives θ G x y d)
     (h : KV θ κ S (Fm.ofTree p) y w e) : KV θ κ S (.run F G) x w (c + d + e + 1) := by
+  have hprog := hF.sumF κ
+  have harg := hG.sumF κ
   obtain ⟨l, e1, e2, e3⟩ := hF
   obtain ⟨l', f1, f2, f3⟩ := hG
   have ho : ∀ r ∈ l, r.out = p := Gives.output_of_mem e2
   have ho' : ∀ r ∈ l', r.out = y := Gives.output_of_mem f2
-  have hOne := (KV.of_gives (κ := κ) (S := S) (⟨l, e1, e2, e3⟩ : Gives θ F x p c)).evl.2
-  have hOne' := (KV.of_gives (κ := κ) (S := S) (⟨l', f1, f2, f3⟩ : Gives θ G x y d)).evl.2
-  rw [e1.evl] at hOne
-  rw [f1.evl] at hOne'
   refine ⟨_, Ev.run' e1 f1 fun r hr s hs => by rw [ho r hr, ho' s hs]; exact h.hl, ?_, ?_⟩
   · intro u hu
     simp only [List.mem_flatMap, List.mem_map] at hu
@@ -256,20 +254,7 @@ theorem run {p y : Tree} {e : ℕ} (hF : Gives θ F x p c) (hG : Gives θ G x y 
       omega
     · simp only [Run.seq, Run.tick, a1, b1, List.nil_append] at hp
       exact c2 p hp
-  · rw [val, sum_flatMap_map]
-    suffices ∀ r ∈ l, val κ (l'.flatMap fun s => (NS1.evl θ (Fm.ofTree r.out) s.out).map
-        fun t => ((r.seq s).seq t).tick t.out) = wt κ r * w by
-      simp only [val] at this
-      rw [List.map_congr_left this, List.sum_map_mul_right, ← val, hOne, one_mul]
-    intro r hr
-    rw [val, sum_flatMap_map]
-    have hinner (s : Run A) (hs : s ∈ l') :
-        val κ ((NS1.evl θ (Fm.ofTree r.out) s.out).map fun t => ((r.seq s).seq t).tick t.out) =
-          wt κ s * (wt κ r * w) := by
-      rw [val_map_seq, ho r hr, ho' s hs, h.evl.2, wt_seq]
-      ring
-    simp only [val] at hinner
-    rw [List.map_congr_left hinner, List.sum_map_mul_right, ← val, hOne', one_mul]
+  · rw [val_eq_sumF, sumF_run, ← e1.evl, ← f1.evl, hprog, harg, ← val_eq_sumF, h.evl.2]
 
 /-- The universal program on a plain instance uses no named constants and returns its plain sum. -/
 theorem uf {z : Tree} {T : ℕ} (pl : Plain θ T z) :

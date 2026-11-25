@@ -83,6 +83,23 @@ theorem Gives.output_of_mem {l : List (Run A)} {o : Tree} {c : ℕ}
   subst q
   exact hout.symm
 
+/-- A unit-weight singleton computation evaluates any algebra-valued function at its output. -/
+theorem Gives.sumF {F : Fm} {x o : Tree} {c : ℕ} (h : Gives θ F x o c)
+    {R : Type} [CommRing R] [Algebra A R] (κ : List Bool → R) (f : Tree → R) :
+    sumF κ (evl θ F x) f = f o := by
+  obtain ⟨l, ev, hr, hsum⟩ := h
+  have hone : (l.map fun r => algebraMap A R r.th).sum = 1 := by
+    simpa [wsum, map_list_sum, List.map_map, Function.comp_def] using
+      congrArg (algebraMap A R) (hsum fun _ => 1)
+  rw [ev.evl, NS1.sumF]
+  calc _ = (l.map fun r => algebraMap A R r.th * f o).sum :=
+        congrArg List.sum (List.map_congr_left fun r h => by simp [wt, (hr r h).1, Gives.output_of_mem hr r h])
+    _ = _ := by rw [List.sum_map_mul_right, hone, one_mul]
+
+private theorem sumF_unit (l : List (Run A)) (f : Tree → A) :
+    sumF (fun _ => (1 : A)) l f = (l.map fun r => r.th * f r.out).sum := by
+  simp [sumF, wt]
+
 namespace Does
 
 variable {F G H : Fm} {x : Tree} {Q : List (A × Tree)} {c d : ℕ}
@@ -216,6 +233,8 @@ theorem letk {R : Tree → List (A × Tree)} (hF : Does θ F x Q c) (hG : ∀ q 
 /-- Apply a program that is the value of a formula. -/
 theorem run {p y : Tree} {R : List (A × Tree)} {e : ℕ} (hF : Gives θ F x p c) (hG : Gives θ G x y d)
     (h : Does θ (Fm.ofTree p) y R e) : Does θ (.run F G) x R (c + d + e + 1) := by
+  have hprog := hF.sumF (fun _ => (1 : A))
+  have harg := hG.sumF (fun _ => (1 : A))
   obtain ⟨l, e1, e2, e3⟩ := hF
   obtain ⟨l', f1, f2, f3⟩ := hG
   have ho : ∀ r ∈ l, r.out = p := Gives.output_of_mem e2
@@ -231,27 +250,8 @@ theorem run {p y : Tree} {R : List (A × Tree)} {e : ℕ} (hF : Gives θ F x p c
     refine ⟨by simp [Run.seq, Run.tick, a1, b1, c1], ?_, c3⟩
     simp only [Run.seq, Run.tick]
     omega
-  · rw [sum_flatMap_map]
-    have h1 : ∀ r ∈ l, ((l'.flatMap fun s => (NS1.evl θ (Fm.ofTree r.out) s.out).map fun t =>
-        ((r.seq s).seq t).tick t.out).map fun u => u.th * φ u.out).sum = r.th * wsum R φ := by
-      intro r hr
-      rw [sum_flatMap_map]
-      have h2 : ∀ s ∈ l', (((NS1.evl θ (Fm.ofTree r.out) s.out).map fun t =>
-          ((r.seq s).seq t).tick t.out).map fun u => u.th * φ u.out).sum = s.th * (r.th * wsum R φ) := by
-        intro s hs
-        rw [ho r hr, ho' s hs, List.map_map, ← h.evl.2 φ, ← List.sum_map_mul_left, ← List.sum_map_mul_left]
-        congr 1
-        refine List.map_congr_left fun t _ => ?_
-        simp only [Function.comp_apply, Run.seq, Run.tick]
-        ring
-      rw [List.map_congr_left h2]
-      have := f3 fun _ => r.th * wsum R φ
-      rw [this]
-      simp [wsum]
-    rw [List.map_congr_left h1]
-    have := e3 fun _ => wsum R φ
-    rw [this]
-    simp [wsum]
+  · rw [← sumF_unit, sumF_run, ← e1.evl, ← f1.evl, hprog, harg, sumF_unit]
+    exact h.evl.2 φ
 
 private theorem ite_of_gives {o : Tree} (hF : Gives θ F x o c)
     (hbranch : Does θ (if o = .nil then H else G) x Q d) :
