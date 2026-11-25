@@ -185,10 +185,28 @@ theorem IsAccA.mono {H v t t' : ℕ} {K : KT E[T;T⁻¹]} {B B' : ℕ} {D : Tree
 /-- The universal program needs no constants. -/
 theorem UF_preA (θ : List Bool → A) (H v : ℕ) (B : ℕ) :
     IsPreA (E := E) θ H v (v ^ H + 5) KT.none B UF.code := by
-  have h := UF_pre (A := A) (R := E[T;T⁻¹]) θ H v KT.none B
-  refine ⟨h.run, fun z hz hp => ?_⟩
-  rw [h.val z hz hp, sub_self]
-  exact OrdGE.zero 1
+  constructor
+  · intro z _ hp
+    have e := UF_ev hp.1.ev
+    rw [Fm.ofTree_code]
+    refine ⟨e.hl, fun r hr => ?_⟩
+    rw [e.evl, List.mem_map] at hr
+    obtain ⟨s, hs, rfl⟩ := hr
+    obtain ⟨h1, h2⟩ := hp.2 s hs
+    refine ⟨?_, ?_⟩
+    · simp only [Run.delay]
+      omega
+    · simp [Run.delay, h1]
+  · intro z _ hp
+    have e := UF_ev hp.1.ev
+    rw [Fm.ofTree_code, e.evl, val_plain, sub_eq_zero.2]
+    · exact OrdGE.zero 1
+    · congr 1
+      simp [pval, pv, Function.comp_def, Run.delay]
+    · intro r hr
+      rw [List.mem_map] at hr
+      obtain ⟨s, hs, rfl⟩ := hr
+      exact (hp.2 s hs).1
 
 /-- An exact accelerator with constants in E[ε,ε⁻¹] is an approximate one. -/
 theorem IsAccT.isAccA {H v t : ℕ} {K : KT E[T;T⁻¹]} {B : ℕ} {D : Tree}

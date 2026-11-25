@@ -5,7 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 -/
 import NS1.ApproxScale
 import NS1.ApproxBack
-import Paper.Next
 
 /-!
 # The paper, appendix "Approximate computation": one round, and back to exact values
@@ -19,6 +18,59 @@ open NS1
 open _root_.NS1.Tree LaurentPolynomial
 
 variable {A : Type} [CommRing A] {θ : List Bool → A} {E : Type} [CommRing E] [Algebra A E]
+
+/-- Exponent bounds common to a single accelerator round and to its iteration. -/
+theorem round_exponent_bounds {h α : ℕ} (hh : 17 ≤ h) (hα : 5 ≤ α) :
+    5 * h ≤ h * α ∧ 17 * α ≤ h * α ∧ α * (16 * h - 32) = 16 * (h * α) - 32 * α := by
+  refine ⟨by simpa only [Nat.mul_comm h α] using Nat.mul_le_mul_right h hα,
+    Nat.mul_le_mul_right α hh, ?_⟩
+  simp only [Nat.mul_sub, Nat.mul_comm, Nat.mul_left_comm, Nat.mul_assoc]
+
+/-- Time and size of the plain instances submitted to the cut in a round. -/
+theorem round_plain_bounds {u h α B J X e ht nB ps : ℕ}
+    (hu4 : 2000 ≤ u) (hW : WF.code.size + 3 ≤ u) (hX10 : 10 ≤ X) (hX2 : 10 * X ≤ X ^ 2)
+    (hX3 : 10 * X ^ 2 ≤ X ^ 3) (hXu : 1000 * X ^ 3 ≤ u) (hX : ht + B + J + 1 ≤ X)
+    (hps : ps ≤ u ^ (4 * h * α)) (hp : 4 * h * α ≤ α * (16 * h - 32))
+    (he : h * α + 2 ≤ e + 8) (hd : h * α + 2 ≤ α * (16 * h - 32))
+    (hnBX : ∀ c, c * X ^ 2 ≤ 1000 * X ^ 3 → nB * (c * X) ≤ 2 * u ^ (h * α + 1)) :
+    MM (ht + B + J + 1) * u ^ (e + 8) + 40 * (nB * (J + 1)) + 40 ≤ u ^ (e + 9) ∧
+      WF.code.size + ps + (u ^ α) ^ (16 * h - 32) + 4 * (nB * (J + 1)) + 3 ≤ u ^ (α * (16 * h - 32) + 1) := by
+  have hu1 : 1 ≤ u := by omega
+  have hJX : J + 1 ≤ X := by omega
+  have pu := pow_succ' u
+  have pbig (a : ℕ) : 2000 * u ^ a ≤ u ^ (a + 1) := by rw [pu]; exact Nat.mul_le_mul_right _ hu4
+  have ppos (a : ℕ) : 1 ≤ u ^ a := Nat.one_le_pow _ _ hu1
+  have budget_le (c d : ℕ) (hc : c * X ^ 2 ≤ 1000 * X ^ 3) (hd : h * α + 2 ≤ d) :
+      c * (nB * (J + 1)) ≤ u ^ d := by
+    calc c * (nB * (J + 1)) ≤ c * (nB * X) := Nat.mul_le_mul_left _ (Nat.mul_le_mul_left _ hJX)
+      _ = nB * (c * X) := by ring
+      _ ≤ 2 * u ^ (h * α + 1) := hnBX c hc
+      _ ≤ u ^ (h * α + 2) := (Nat.mul_le_mul_right _ (by decide : 2 ≤ 2000)).trans (pbig _)
+      _ ≤ u ^ d := pow_le_pow hu1 hd
+  constructor
+  · -- time of the plain instances
+    have m1 : MM (ht + B + J + 1) + 2 ≤ u := by
+      unfold MM
+      omega
+    have m2 := budget_le 40 (e + 8) (by omega) (by omega)
+    have m3 : 40 ≤ u ^ (e + 8) := by
+      have h7 : 2000 * u ^ (e + 7) ≤ u ^ (e + 8) := pbig (e + 7)
+      have := ppos (e + 7)
+      omega
+    calc MM (ht + B + J + 1) * u ^ (e + 8) + 40 * (nB * (J + 1)) + 40
+        ≤ (MM (ht + B + J + 1) + 2) * u ^ (e + 8) := by rw [add_mul]; omega
+      _ ≤ u * u ^ (e + 8) := Nat.mul_le_mul_right _ m1
+      _ = u ^ (e + 9) := (pu (e + 8)).symm
+  · -- size of the plain instances
+    have m1 : WF.code.size + 3 ≤ u ^ (α * (16 * h - 32)) := by
+      calc WF.code.size + 3 ≤ u ^ 1 := by rw [pow_one]; omega
+        _ ≤ _ := pow_le_pow hu1 (by omega)
+    have m2 : ps ≤ u ^ (α * (16 * h - 32)) := hps.trans (pow_le_pow hu1 hp)
+    have m3 : (u ^ α) ^ (16 * h - 32) = u ^ (α * (16 * h - 32)) := by rw [← pow_mul]
+    have m4 := budget_le 4 (α * (16 * h - 32)) (by omega) (by omega)
+    have := pbig (α * (16 * h - 32))
+    rw [m3]
+    omega
 
 /-- **Paper: proof of Proposition prop:approx-acc, one round.** "So the new value lies in ∑_e λ^e(pv(z_e) + ε^r E[ε]) ⊆
 (value of p) + εE[ε] ⊆ pv(z) + εE[ε]": the new program guesses e, cuts z_e, and lets the interpreter run D on all
