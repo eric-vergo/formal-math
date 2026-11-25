@@ -17,13 +17,15 @@ namespace Nc
 
 open Finset MvPolynomial
 
-variable {F : Type*} [Field F]
+variable {F : Type*}
 variable {ι α θ : Type*} [Fintype ι] [Fintype α] [Fintype θ] [DecidableEq ι] [DecidableEq α] [DecidableEq θ]
 
 /-- Constant, or affine in one variable. -/
-def IsAffine (p : MvPolynomial ι F) : Prop := (∃ b, p = C b) ∨ ∃ i a b, p = C a * X i + C b
+def IsAffine [CommSemiring F] (p : MvPolynomial ι F) : Prop := (∃ b, p = C b) ∨ ∃ i a b, p = C a * X i + C b
 
 section Proof
+
+variable [Field F]
 
 /-- The constants and, for `some i`, the span of the constants and `X i`. -/
 noncomputable def affIn (o : Option ι) : Submodule F (MvPolynomial ι F) :=
@@ -61,9 +63,11 @@ noncomputable def genPerm (F : Type*) [Field F] (S : ℕ) : MvPolynomial (Fin S 
   (Matrix.of fun i j => X (i, j) : Matrix (Fin S) (Fin S) (MvPolynomial (Fin S × Fin S) F)).permanent
 
 omit [Fintype ι] [DecidableEq ι] in
-theorem aeval_genPerm {S : ℕ} (M : Matrix (Fin S) (Fin S) (MvPolynomial ι F)) :
+theorem aeval_genPerm [Field F] {S : ℕ} (M : Matrix (Fin S) (Fin S) (MvPolynomial ι F)) :
     aeval (fun p : Fin S × Fin S => M p.1 p.2) (genPerm F S) = M.permanent := by
   simp [genPerm, Matrix.permanent, map_sum, map_prod]
+
+variable [CommSemiring F]
 
 omit [Fintype ι] [DecidableEq ι] in
 /-- Simulate one circuit gate by five gates after an affine substitution.

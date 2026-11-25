@@ -218,12 +218,17 @@ section Approx
 
 variable {F X : Type*} [Field F] {s : ℕ}
 
+/-- A circuit with Laurent polynomial constants whose nonpositive coefficients agree with
+those of the target polynomial viewed as constant in ε. -/
+def LaurentApproximates (f : MvPolynomial X F) (s : ℕ) : Prop :=
+  ∃ p : MvPolynomial X (LaurentPolynomial F), Computes p s ∧
+    ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (p.coeff d).coeff i = if i = 0 then f.coeff d else 0
+
 /-- A polynomial f that is approximated by a circuit with s gates is approximated
 by one whose constants are Laurent polynomials in ε: this circuit computes a polynomial p over the Laurent polynomials
 in which no negative power of ε occurs and in which the terms without ε are those of f. -/
 theorem Approximates.exists_laurentPolynomial {f : MvPolynomial X F} (h : Approximates f s) :
-    ∃ p : MvPolynomial X (LaurentPolynomial F), Computes p s ∧
-      ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (p.coeff d).coeff i = if i = 0 then f.coeff d else 0 := by
+    LaurentApproximates f s := by
   obtain ⟨_, ⟨l, hl, k, hk, rfl⟩, hp⟩ := h
   obtain ⟨L, hL, hr⟩ := exists_truncated_steps hl 1
   obtain ⟨r, hr, e⟩ := hr k hk
@@ -235,6 +240,11 @@ theorem Approximates.of_laurentPolynomial {f : MvPolynomial X F} {p : MvPolynomi
     (hp : Computes p s) (h : ∀ (d : X →₀ ℕ) (i : ℤ), i ≤ 0 → (p.coeff d).coeff i = if i = 0 then f.coeff d else 0) :
     Approximates f s :=
   ⟨map (laurentToSeries F) p, hp.map _, fun d i hi => by rw [coeff_map, coeff_laurentToSeries, h d i hi]⟩
+
+/-- Truncation and the inclusion into Laurent series preserve the number of gates. -/
+theorem laurentApproximates_iff {f : MvPolynomial X F} :
+    LaurentApproximates f s ↔ Approximates f s :=
+  ⟨fun ⟨_, hp, hc⟩ => .of_laurentPolynomial hp hc, Approximates.exists_laurentPolynomial⟩
 
 end Approx
 
