@@ -251,34 +251,19 @@ private theorem middleRelayBound (P : Nd T) : ∀ j : Fin J, (∑ e : T.Ed j, �
         · exact le_rfl
       · rw [(hs s).2 ht]
         split_ifs <;> exact Nat.zero_le _
-    have hle : ∀ s (p : Prop) [Decidable p], (if p then nR R ch FL lhat n o (.mid j e s) else 0) ≤
-        if p then Lf j e else 0 := by
-      intro s p _
-      split_ifs
-      · exact (hs s).1
-      · exact le_rfl
-    have hp : ∀ s (p : Prop) [Decidable p], s = 1 ∨ s = 2 ∨ s = 3 → (if p then nR R ch FL lhat n o (.mid j e s) else 0) ≤
-        if p then nR R ch FL lhat n o (.mid j e 2) else 0 := by
-      intro s p _ hs'
-      split_ifs
-      · rcases hs' with rfl | rfl | rfl
-        · exact h4
-        · exact le_rfl
-        · exact h3
-      · exact le_rfl
-    rw [Fin.sum_univ_four, Fin.sum_univ_three, Fin.sum_univ_three, Fin.sum_univ_three, Fin.sum_univ_three]
-    have a0 := hle 0 (nd T j j.2.le (T.e0 e) = P)
-    have b0 := hle 0 (nd T j j.2.le (T.e1 e) = P)
-    have b1 := hle 1 (nd T j j.2.le (T.e1 e) = P)
-    have b2 := hle 2 (nd T j j.2.le (T.e1 e) = P)
-    have b3 := hle 3 (nd T j j.2.le (T.e1 e) = P)
+    have mask {v w : ℕ} (hvw : v ≤ w) (p : Prop) [Decidable p] :
+        (if p then v else 0) ≤ if p then w else 0 := by split <;> simp_all
+    simp only [Fin.sum_univ_four, Fin.sum_univ_three]
+    have a0 := mask (hs 0).1 (nd T j j.2.le (T.e0 e) = P)
+    have b0 := mask (hs 0).1 (nd T j j.2.le (T.e1 e) = P)
+    have b1 := mask (hs 1).1 (nd T j j.2.le (T.e1 e) = P)
+    have b2 := mask (hs 2).1 (nd T j j.2.le (T.e1 e) = P)
+    have b3 := mask (hs 3).1 (nd T j j.2.le (T.e1 e) = P)
     have c0 := hH 0 (T.e0 e)
     have c1 := hH 1 (T.e0 e)
     have c3 := hH 3 (T.e1 e)
-    have d1 := hp 1 (nd T (j + 1) j.2 (T.π (T.e0 e)) = P) (Or.inl rfl)
-    have d2 := hp 2 (nd T (j + 1) j.2 (T.π (T.e0 e)) = P) (Or.inr (Or.inl rfl))
-    have d3 := hp 2 (nd T (j + 1) j.2 (T.π (T.e1 e)) = P) (Or.inr (Or.inl rfl))
-    have d4 := hp 3 (nd T (j + 1) j.2 (T.π (T.e1 e)) = P) (Or.inr (Or.inr rfl))
+    have d1 := mask h4 (nd T (j + 1) j.2 (T.π (T.e0 e)) = P)
+    have d4 := mask h3 (nd T (j + 1) j.2 (T.π (T.e1 e)) = P)
     change ((if nd T j j.2.le (T.e0 e) = P then _ else 0) + (if nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)) = P then _ else 0) +
         if nd T j j.2.le (T.e1 e) = P then _ else 0) +
       ((if nd T (j + 1) j.2 (hst T (T.ty e) (T.e0 e)) = P then _ else 0) +
