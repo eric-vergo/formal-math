@@ -178,6 +178,39 @@ theorem thm_laws_ring {K : Type} [CommRing K] {Di : Type} [Finite Di] (L : Di �
       map_add' := fun _ _ => rfl }
   exact Algebra.FiniteType.of_surjective f.toIntAlgHom fun y => ⟨⟨y.1, (hmem y.1).2 y.2⟩, rfl⟩
 
+/-- Rounding each coordinate of a demand divided by the scale costs at most the norm
+of the all-ones vector. The same finite set of loads covers demands at every scale. -/
+private theorem rounded_load_cover {E : Type} [Fintype E] {α : E → ℝ} (hα : ∀ e, 0 < α e)
+    {r : ℝ} (hr : 0 ≤ r) (n : E → ℕ) (d : ℕ) (hn : nrm α (fun e => (n e : ℝ)) ≤ r * d) :
+    ∃ σ : Loads α (r + nrm α (fun _ => 1)), ∀ e, n e ≤ σ.1 e * d := by
+  rcases Nat.eq_zero_or_pos d with rfl | hd
+  · refine ⟨⟨fun _ => 0, by simpa only [Nat.cast_zero, nrm_zero] using add_nonneg hr (nrm_nonneg α (fun _ => 1))⟩, fun e => ?_⟩
+    have h := le_nrm α hα (fun e => (n e : ℝ)) e
+    simp only [Nat.cast_zero, mul_zero] at hn ⊢
+    exact_mod_cast h.trans (mul_nonpos_of_nonpos_of_nonneg hn (Real.sqrt_nonneg _))
+  · have hd' : (0 : ℝ) < d := by exact_mod_cast hd
+    let x (e : E) := (d : ℝ)⁻¹ * n e
+    have hx : nrm α x ≤ r := by
+      change nrm α (fun e => (d : ℝ)⁻¹ * n e) ≤ r
+      rw [nrm_smul α (inv_nonneg.mpr hd'.le), inv_mul_le_iff₀ hd']
+      simpa only [mul_comm] using hn
+    refine ⟨⟨fun e => ⌈x e⌉₊, ?_⟩, fun e => ?_⟩
+    · exact (nrm_ceil_le hα (fun e => by dsimp [x]; positivity)).trans (add_le_add hx le_rfl)
+    · have h := Nat.le_ceil (x e)
+      change (d : ℝ)⁻¹ * n e ≤ _ at h
+      rw [inv_mul_le_iff₀ hd'] at h
+      exact_mod_cast h.trans_eq (mul_comm _ _)
+
+/-- Every cover index fits in a binary word of any width above its real logarithmic bound. -/
+private theorem binary_labels {m width : ℕ} {s : ℝ} (hm : (m : ℝ) ≤ 2 ^ s) (hs : s ≤ width) :
+    ∃ f : Fin m → Fin width → Bool, Function.Injective f := by
+  have bound := hm.trans (Real.rpow_le_rpow_of_exponent_le (by norm_num) hs)
+  rw [Real.rpow_natCast] at bound
+  have hc : m ≤ 2 ^ width := by exact_mod_cast bound
+  obtain ⟨f⟩ := Function.Embedding.nonempty_of_card_le
+    (show Fintype.card (Fin m) ≤ Fintype.card (Fin width → Bool) by simpa using hc)
+  exact ⟨f, f.injective⟩
+
 /-- The proof of Theorem thm:laws up to the choice of the ring: for one h and a Poincaré inequality with the integer
 C₀, finitely many laws over K with the clauses (a) and (b). "Let a be a large integer", the loads σ_x = ⌈ax⌉, then
 duality with one q, codes of λ ≤ εq+2 bits, and a₁ = aq. -/
@@ -273,17 +306,8 @@ theorem thm_laws_over_field {K : Type} [Field K] {h : ℕ} [NeZero h] (h2 : 2 �
   choose m v hm hv tab htab using fun t => hq₀ t q
     ((Finset.single_le_sum (fun _ _ => Nat.zero_le _) (Finset.mem_univ t)).trans (Nat.le_succ _))
   set lam : ℕ := ⌈ε * q⌉₊ + 1 with hlam
-  have hlab : ∀ t, ∃ f : Fin (m t) → Fin lam → Bool, Function.Injective f := by
-    intro t
-    have h1 : (m t : ℝ) ≤ 2 ^ ((⌈ε * q⌉₊ : ℕ) : ℝ) :=
-      (hm t).trans (Real.rpow_le_rpow_of_exponent_le (by norm_num) (Nat.le_ceil _))
-    rw [Real.rpow_natCast] at h1
-    have h2 : m t ≤ 2 ^ ⌈ε * q⌉₊ := by exact_mod_cast h1
-    have hcard : Fintype.card (Fin (m t)) ≤ Fintype.card (Fin lam → Bool) := by
-      simpa using h2.trans (Nat.pow_le_pow_right (by omega) (Nat.le_succ _))
-    obtain ⟨f⟩ := Function.Embedding.nonempty_of_card_le hcard
-    exact ⟨f, f.injective⟩
-  choose lab hlab using hlab
+  choose lab hlab using fun t => binary_labels (hm t) ((Nat.le_ceil _).trans
+    (show ((⌈ε * q⌉₊ : ℕ) : ℝ) ≤ lam by exact_mod_cast Nat.le_succ _))
   have hm0 : ∀ t, 0 < m t := by
     intro t
     by_contra h0
@@ -331,48 +355,14 @@ theorem thm_laws_over_field {K : Type} [Field K] {h : ℕ} [NeZero h] (h2 : 2 �
     have hcard : ∀ (d : Loads α ((a : ℝ) + Z₁)) (e : E), (univ.filter fun s : (L d).Sl =>
         s((Equiv.refl (L d).Ro) ((L d).a s), (Equiv.refl (L d).Ro) ((L d).b s)) = e.1).card = q * d.1 e := by
       intro d e
-      have e1 : (univ.filter fun s : (Σ e : E, Fin (q * d.1 e)) => s(s.1.1.out.1, s.1.1.out.2) = e.1) =
-          Finset.univ.map ⟨fun j : Fin (q * d.1 e) => (⟨e, j⟩ : Σ e : E, Fin (q * d.1 e)),
-            fun i j hij => by simpa using hij⟩ := by
-        ext ⟨e', j⟩
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_map, out_mk]
-        constructor
-        · intro he
-          obtain rfl : e' = e := Subtype.ext he
-          exact ⟨j, rfl⟩
-        · rintro ⟨i, hi⟩
-          rw [← (Sigma.mk.inj_iff.1 hi).1]
-      refine Eq.trans ?_ ((congrArg Finset.card e1).trans (by simp))
-      rfl
-    rcases Nat.eq_zero_or_pos t with rfl | ht0
-    · refine ⟨⟨fun _ => 0, by simp only [Nat.cast_zero, nrm_zero]; positivity⟩, fun p hp => ?_⟩
-      have h0 := le_nrm α hα (fun e => (n e.1 : ℝ)) ⟨p, hp⟩
-      rw [Nat.cast_zero, mul_zero] at ht
-      have h1 : (n p : ℝ) ≤ 0 := h0.trans (mul_nonpos_of_nonpos_of_nonneg ht (Real.sqrt_nonneg _))
-      have : n p = 0 := by exact_mod_cast le_antisymm h1 (Nat.cast_nonneg _)
-      omega
-    · have ht1 : (0 : ℝ) < t := by exact_mod_cast ht0
-      set xx : E → ℝ := fun e => ((a : ℝ) * q * t)⁻¹ * n e.1 with hxx
-      have hx0 : ∀ e, 0 ≤ xx e := fun e => by positivity
-      have hx1 : nrm α xx ≤ 1 := by
-        rw [hxx, nrm_smul _ (by positivity), inv_mul_le_iff₀ (by positivity), mul_one]
-        exact ht
-      have hσ : nrm α (fun e => ((⌈(a : ℝ) * xx e⌉₊ : ℕ) : ℝ)) ≤ (a : ℝ) + Z₁ := by
-        refine (nrm_mono α hα (fun e => Nat.cast_nonneg _) fun e =>
-          (Nat.ceil_lt_add_one (mul_nonneg (Nat.cast_nonneg a) (hx0 e))).le).trans ?_
-        refine (nrm_add_le α hα _ _).trans (add_le_add ?_ le_rfl)
-        rw [nrm_smul α (Nat.cast_nonneg a)]
-        exact mul_le_of_le_one_right (Nat.cast_nonneg a) hx1
-      refine ⟨⟨_, hσ⟩, fun p hp => le_trans ?_ (Nat.mul_le_mul_right t (hcard ⟨_, hσ⟩ ⟨p, hp⟩).ge)⟩
-      have h6 : (n p : ℝ) ≤ ((q * ⌈(a : ℝ) * xx ⟨p, hp⟩⌉₊ * t : ℕ) : ℝ) := by
-        have e2 : (q : ℝ) * ((a : ℝ) * xx ⟨p, hp⟩) * t = n p := by
-          rw [hxx]
-          field_simp
-        rw [← e2]
-        push_cast
-        gcongr
-        exact Nat.le_ceil _
-      exact_mod_cast h6
+      change (univ.filter fun s : Σ e : E, Fin (q * d.1 e) => s(s.1.1.out.1, s.1.1.out.2) = e.1).card = _
+      rw [Finset.card_filter, Fintype.sum_sigma]
+      simp [out_mk, ← Subtype.ext_iff, -Finset.sum_boole]
+    obtain ⟨σ, hσ⟩ := rounded_load_cover hα (Nat.cast_nonneg a) (fun e : E => n e.1) (q * t)
+      (by push_cast; simpa only [mul_assoc] using ht)
+    refine ⟨σ, fun p hp => ?_⟩
+    rw [hcard σ (⟨p, hp⟩ : E)]
+    simpa only [mul_assoc, mul_left_comm, mul_comm] using hσ (⟨p, hp⟩ : E)
   · -- (b)
     intro t i
     have e0 : √(b / 2 * ∑ ν, (((L t).lam + (L t).len i ν : ℕ) : ℝ) ^ 2) =

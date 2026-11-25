@@ -104,6 +104,12 @@ theorem finite_loads {N : Type} [Fintype N] (β : N → ℝ) (hβ : ∀ ν, 0 < 
     exact mul_le_mul_of_nonneg_right hx (Real.sqrt_nonneg _)
   exact this.to_subtype
 
+/-- Rounding a nonnegative vector up increases its weighted norm by at most the norm of one. -/
+theorem nrm_ceil_le {E : Type} [Fintype E] {α : E → ℝ} (hα : ∀ e, 0 < α e) {x : E → ℝ}
+    (hx : ∀ e, 0 ≤ x e) : nrm α (fun e => (⌈x e⌉₊ : ℝ)) ≤ nrm α x + nrm α (fun _ => 1) :=
+  (nrm_mono α hα (fun _ => Nat.cast_nonneg _) fun e => (Nat.ceil_lt_add_one (hx e)).le).trans
+    (nrm_add_le α hα x (fun _ => 1))
+
 /-- One price: if Σα·w² ≤ Σβ·w′² and ‖n‖ ≤ R, then for S large (S·η·R ≥ ‖1‖) there is a natural
 load x with ‖x‖ ≤ (1+η)·S·R and Σ S·n·w ≤ Σ x·w′. -/
 theorem exists_load {E N : Type} [Fintype E] [Fintype N] (α : E → ℝ) (hα : ∀ e, 0 < α e)
@@ -133,18 +139,15 @@ theorem exists_load {E N : Type} [Fintype E] [Fintype N] (α : E → ℝ) (hα :
     · rw [← h0, mul_zero] at h1
       simpa using h1
   · refine ⟨fun ν => ⌈S * R / W * (β ν * w' ν)⌉₊, ?_, ?_⟩
-    · have h2 : nrm β (fun ν => ((⌈S * R / W * (β ν * w' ν)⌉₊ : ℕ) : ℝ)) ≤
-          nrm β (fun ν => S * R / W * (β ν * w' ν) + 1) := by
-        refine nrm_mono β hβ (fun ν => Nat.cast_nonneg _) fun ν => ?_
-        exact (Nat.ceil_lt_add_one (mul_nonneg (by positivity)
-          (mul_nonneg (hβ ν).le (hw' ν)))).le
+    · have h2 := nrm_ceil_le hβ (fun ν => mul_nonneg (show 0 ≤ S * R / W by positivity)
+        (mul_nonneg (hβ ν).le (hw' ν)))
       have h3 : nrm β (fun ν => β ν * w' ν) = W := by
         rw [nrm, hW]
         congr 1
         refine Finset.sum_congr rfl fun ν _ => ?_
         have := (hβ ν).ne'
         field_simp
-      refine h2.trans ((nrm_add_le β hβ _ _).trans ?_)
+      refine h2.trans ?_
       rw [nrm_smul β (by positivity), h3, div_mul_cancel₀ _ h0.ne']
       linarith
     · refine h1.trans ?_
