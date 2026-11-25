@@ -84,10 +84,47 @@ def dstepF (n : List Bool) : Fm := .ite (.hd (.hd .id))
   (lett (.cons .id (pickF (getF (getF (.hd (.tl (.hd .id))) (.tl .id)) (.tl (.tl (.hd .id))))))
     (assignF (.tl .id) (.tl (.hd .id))))
 
+/-- The weighted list `Q` of a computation is, after `g`, the list `L` with weight one each. -/
+def UnitImage {β : Type*} (Q : List (A × Tree)) (g : Tree → β) (L : List β) : Prop :=
+  Q.map (fun q => (q.1, g q.2)) = L.map ((1 : A), ·)
+
+theorem UnitImage.mem {β : Type*} {Q : List (A × Tree)} {g : Tree → β} {L : List β} (h : UnitImage Q g L)
+    {q : A × Tree} (hq : q ∈ Q) : g q.2 ∈ L := by
+  have : (q.1, g q.2) ∈ L.map ((1 : A), ·) := h ▸ List.mem_map_of_mem hq
+  obtain ⟨b, hb, e⟩ := List.mem_map.1 this
+  simp only [Prod.mk.injEq] at e
+  exact e.2 ▸ hb
+
+theorem UnitImage.wsum {β : Type*} {Q : List (A × Tree)} {g : Tree → β} {L : List β} (h : UnitImage Q g L)
+    (Φ : β → A) : wsum Q (fun o => Φ (g o)) = (L.map Φ).sum := by
+  have := congrArg (fun l : List (A × β) => (l.map fun p => p.1 * Φ p.2).sum) h
+  simpa [NS1.wsum, Function.comp_def] using this
+
+theorem UnitImage.bindW {β : Type*} {Q : List (A × Tree)} {R : Tree → List (A × Tree)} {g : Tree → β}
+    {L : List β} {M : β → List β} (hQ : UnitImage Q g L) (hR : ∀ q ∈ Q, UnitImage (R q.2) g (M (g q.2))) :
+    UnitImage (bindW Q R) g (L.flatMap M) := by
+  induction Q generalizing L with
+  | nil =>
+    cases L with
+    | nil => rfl
+    | cons b L => simp [UnitImage] at hQ
+  | cons q Q ih =>
+    cases L with
+    | nil => simp [UnitImage] at hQ
+    | cons b L =>
+      simp only [UnitImage, List.map_cons, List.cons.injEq, Prod.mk.injEq] at hQ
+      obtain ⟨⟨h1, h2⟩, h3⟩ := hQ
+      have hr := hR q (List.mem_cons_self ..)
+      have ht := ih h3 fun q' hq' => hR q' (List.mem_cons_of_mem _ hq')
+      unfold UnitImage at hr ht ⊢
+      simp only [NS1.bindW, List.flatMap_cons, List.map_append, List.map_map, Function.comp_def, h1, one_mul]
+        at hr ht ⊢
+      rw [ht, ← h2, hr]
+
+/-- One step: its outcomes are exactly the states after the step, each with weight one. -/
 theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
     Does θ (dstepF n) (.cons st.tree W) Q (st.cost (KT.val n) n.length (gets W)) ∧
-    (∀ q ∈ Q, gets q.2 ∈ st.exec (KT.val n) (gets W)) ∧
-    ∀ Φ : (List Bool → Tree) → A, wsum Q (fun o => Φ (gets o)) = ((st.exec (KT.val n) (gets W)).map Φ).sum := by
+    UnitImage Q gets (st.exec (KT.val n) (gets W)) := by
   cases st with
   | check p =>
     have hg : Gives θ (getF (.tl (.hd .id)) (.tl .id)) (.cons (DStep.check p).tree W) (tget p W)
@@ -99,20 +136,16 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
     · rw [h] at hg
       refine ⟨[], ((Does.ite_true (Gives.id _).hd.hd (by simp [DStep.tree, num]) (Does.ite_true (Gives.id _).hd.hd.tl
         (by simp [DStep.tree, num]) (Does.ite_true (Gives.id _).hd.hd.tl.tl (by simp [DStep.tree, num])
-        (Does.ite_false hg (Does.fail _)))))).mono ?_, by simp, fun Φ => ?_⟩
+        (Does.ite_false hg (Does.fail _)))))).mono ?_, ?_⟩
       · simp only [DStep.cost]
         omega
-      · simp [DStep.exec, gets, h]
+      · simp [UnitImage, DStep.exec, gets, h]
     · refine ⟨[(1, W)], ((Does.ite_true (Gives.id _).hd.hd (by simp [DStep.tree, num]) (Does.ite_true (Gives.id _).hd.hd.tl
         (by simp [DStep.tree, num]) (Does.ite_true (Gives.id _).hd.hd.tl.tl (by simp [DStep.tree, num])
-        (Does.ite_true hg h (Gives.id _).tl))))).mono ?_, ?_, fun Φ => ?_⟩
+        (Does.ite_true hg h (Gives.id _).tl))))).mono ?_, ?_⟩
       · simp only [DStep.cost]
         omega
-      · intro q hq
-        rw [List.mem_singleton] at hq
-        subst hq
-        simp [DStep.exec, gets, h]
-      · simp [DStep.exec, gets, h]
+      · simp [UnitImage, DStep.exec, gets, h]
   | bits p dst =>
     have hg : Gives θ (getF (.hd (.tl (.hd .id))) (.tl .id)) (.cons (DStep.bits p dst).tree W) (tget p W)
         (4 + 2 + 30 * p.length + 20) := by
@@ -123,16 +156,13 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
     · rw [h] at hg
       refine ⟨[(1, W)], ((Does.ite_true (Gives.id _).hd.hd (by simp [DStep.tree, num]) (Does.ite_true (Gives.id _).hd.hd.tl
         (by simp [DStep.tree, num]) (Does.ite_false (Gives.id _).hd.hd.tl.tl
-        (Does.ite_false hg (Gives.id _).tl))))).mono ?_, ?_, fun Φ => ?_⟩
+        (Does.ite_false hg (Gives.id _).tl))))).mono ?_, ?_⟩
       · simp only [DStep.cost, gets, h, ite_true]
         omega
-      · intro q hq
-        rw [List.mem_singleton] at hq
-        subst hq
-        simp [DStep.exec, gets, h]
-      · simp [DStep.exec, gets, h]
-    · obtain ⟨Q, d, h1, h2⟩ := bitsF_does (θ := θ) n (.cons (DStep.bits p dst).tree W)
-      have hs : ∀ q ∈ Q, Does θ (setF (.tl (.tl (.hd (.hd .id)))) (.tl .id) (.tl (.hd .id)))
+      · simp [UnitImage, DStep.exec, gets, h]
+    · have d := bitsF_does (θ := θ) n (.cons (DStep.bits p dst).tree W)
+      have hs : ∀ q ∈ (allBits (KT.val n)).map fun u => ((1 : A), ofBits u.reverse),
+          Does θ (setF (.tl (.tl (.hd (.hd .id)))) (.tl .id) (.tl (.hd .id)))
           (.cons (.cons (DStep.bits p dst).tree W) q.2) [(1, tset dst q.2 W)] (5 + 2 + 3 + 60 * dst.length + 30) := by
         intro q _
         have := setF_gives (Gives.id (θ := θ) (.cons (.cons (DStep.bits p dst).tree W) q.2)).hd.hd.tl.tl (Gives.id _).tl
@@ -141,21 +171,11 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
         exact this
       refine ⟨_, ((Does.ite_true (Gives.id _).hd.hd (by simp [DStep.tree, num]) (Does.ite_true (Gives.id _).hd.hd.tl
         (by simp [DStep.tree, num]) (Does.ite_false (Gives.id _).hd.hd.tl.tl
-        (Does.ite_true hg h (Does.letk (R := fun o => [(1, tset dst o W)]) d hs)))))).mono ?_, ?_, fun Φ => ?_⟩
+        (Does.ite_true hg h (Does.letk (R := fun o => [(1, tset dst o W)]) d hs)))))).mono ?_, ?_⟩
       · simp only [DStep.cost, gets, h, ite_false]
         omega
-      · intro q hq
-        obtain ⟨q1, hq1, r, hr, e, -⟩ := mem_bindW hq
-        rw [List.mem_singleton] at hr
-        subst hr
-        obtain ⟨u, hu, hu'⟩ := h1 q1 hq1
-        rw [e, gets_tset, hu']
-        simp only [DStep.exec, gets, h, ite_false]
-        exact List.mem_map.2 ⟨u, hu, rfl⟩
-      · rw [wsum_bindW]
-        simp only [wsum_cons, wsum_nil, one_mul, add_zero, gets_tset]
-        rw [h2 fun o => Φ (Function.update (gets W) dst o)]
-        simp [DStep.exec, gets, h, Function.comp_def]
+      · have hW : gets W p ≠ .nil := h
+        simp [UnitImage, bindW, DStep.exec, gets_tset, hW, Function.comp_def, List.flatMap_map, ← List.map_eq_flatMap]
   | op p q dst φ =>
     have hp : Gives θ (getF (.hd (.tl (.hd .id))) (.tl .id)) (.cons (DStep.op p q dst φ).tree W) (tget p W)
         (4 + 2 + 30 * p.length + 20) := by
@@ -171,16 +191,11 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
     have hs := setF_gives (Gives.id (θ := θ) (.cons (DStep.op p q dst φ).tree W)).hd.tl.tl.tl.hd hφ (Gives.id _).tl
     simp only [DStep.tree, hd_cons, tl_cons, path_ofBits, len_ofBits] at hs
     refine ⟨[(1, tset dst (tget (tget q W).path (tget (tget p W).path φ)) W)], (Does.ite_true (Gives.id _).hd.hd
-      (by simp [num]) (Does.ite_false (Gives.id _).hd.hd.tl hs)).mono ?_, ?_, fun Φ => ?_⟩
+      (by simp [num]) (Does.ite_false (Gives.id _).hd.hd.tl hs)).mono ?_, ?_⟩
     · simp only [DStep.cost, gets]
       omega
-    · intro r hr
-      rw [List.mem_singleton] at hr
-      subst hr
-      rw [gets_tset]
-      simp [DStep.exec, gets]
-    · simp only [wsum_cons, wsum_nil, one_mul, add_zero, gets_tset]
-      simp [DStep.exec, gets]
+    · simp [UnitImage, DStep.exec, gets_tset]
+      simp [gets]
   | pick p tab =>
     have hp : Gives θ (getF (.hd (.tl (.hd .id))) (.tl .id)) (.cons (DStep.pick p tab).tree W) (tget p W)
         (4 + 2 + 30 * p.length + 20) := by
@@ -205,22 +220,13 @@ theorem dstepF_does (n : List Bool) (st : DStep) (W : Tree) : ∃ Q,
         (fun _ _ => Nat.zero_le _) _ (List.mem_map.2 ⟨o, ho', rfl⟩)
       simp only [tl_cons]
       omega
-    refine ⟨_, (Does.ite_false (Gives.id _).hd.hd (Does.letk (R := fun o => [(1, assignT W o)]) hpk hs)).mono ?_, ?_,
-      fun Φ => ?_⟩
+    refine ⟨_, (Does.ite_false (Gives.id _).hd.hd
+      (Does.letk (R := fun o => [(1, assignT W o)]) hpk hs)).mono ?_, ?_⟩
     · simp only [DStep.cost, gets, ← ho]
       omega
-    · intro r hr
-      obtain ⟨q1, hq1, r', hr', e, -⟩ := mem_bindW hr
-      rw [List.mem_singleton] at hr'
-      subst hr'
-      rw [List.mem_map] at hq1
-      obtain ⟨o, ho', rfl⟩ := hq1
-      rw [e, gets_assign]
-      simp only [DStep.exec, gets, ← ho]
-      exact List.mem_map.2 ⟨o, ho', rfl⟩
-    · rw [wsum_bindW]
-      simp only [wsum_cons, wsum_nil, one_mul, add_zero, gets_assign]
-      simp [DStep.exec, gets, ← ho, wsum, Function.comp_def]
+    · simp [UnitImage, bindW, DStep.exec, gets_assign, Function.comp_def, List.flatMap_map, ← List.map_eq_flatMap]
+      rw [ho]
+      rfl
 
 /-- The states after a list of steps. -/
 def execAll (m : ℕ) : List DStep → (List Bool → Tree) → List (List Bool → Tree)
@@ -250,8 +256,7 @@ theorem dstepsF_does (n : List Bool) (sts : List DStep) {wf : Fm} {x W : Tree} {
     Does θ (dstepsF n sts wf) x Q (cw + (sts.map fun st => c st + 30).sum + 30) ∧
     (∀ q ∈ Q, gets q.2 ∈ execAll (KT.val n) sts (gets W)) ∧
     ∀ Φ : (List Bool → Tree) → A, wsum Q (fun o => Φ (gets o)) = ((execAll (KT.val n) sts (gets W)).map Φ).sum := by
-  choose f hf1 hf2 hf3 using fun st W => dstepF_does (θ := θ) n st W
-  -- a function of trees
+  choose f hf1 hf2 using fun st W => dstepF_does (θ := θ) n st W
   classical
   have hinj : Function.Injective DStep.tree := by
     intro st st' h
@@ -264,33 +269,15 @@ theorem dstepsF_does (n : List Bool) (sts : List DStep) {wf : Fm} {x W : Tree} {
   let F := Function.extend DStep.tree f (fun _ _ => [])
   have hF' (st : DStep) (W : Tree) : F st.tree W = f st W :=
     congrFun (hinj.extend_apply f _ st) W
-  have hsum : ∀ (sts : List DStep) (W : Tree) (Φ : (List Bool → Tree) → A),
-      wsum (foldW F (sts.map DStep.tree) W) (fun o => Φ (gets o)) = ((execAll (KT.val n) sts (gets W)).map Φ).sum := by
+  have himg : ∀ (sts : List DStep) (W : Tree),
+      UnitImage (foldW F (sts.map DStep.tree) W) gets (execAll (KT.val n) sts (gets W)) := by
     intro sts
     induction sts with
-    | nil =>
-      intro W Φ
-      simp [foldW, execAll]
+    | nil => intro W; rfl
     | cons st sts ih =>
-      intro W Φ
-      rw [List.map_cons, foldW, wsum_bindW, sum_execAll_cons, ← hf3 st W, hF']
-      exact wsum_congr fun q _ => ih q.2 Φ
-  have hmem : ∀ (sts : List DStep) (W : Tree), ∀ q ∈ foldW F (sts.map DStep.tree) W,
-      gets q.2 ∈ execAll (KT.val n) sts (gets W) := by
-    intro sts
-    induction sts with
-    | nil =>
-      intro W q hq
-      simp only [List.map_nil, foldW, List.mem_singleton] at hq
-      subst hq
-      simp [execAll]
-    | cons st sts ih =>
-      intro W q hq
-      rw [List.map_cons, foldW] at hq
-      obtain ⟨q1, hq1, r, hr, e, -⟩ := mem_bindW hq
-      rw [hF'] at hq1
-      rw [e, execAll, List.mem_flatMap]
-      exact ⟨_, hf2 st W q1 hq1, ih q1.2 r hr⟩
+      intro W
+      rw [List.map_cons, foldW, hF']
+      exact (hf2 st W).bindW fun q _ => ih q.2
   let d := Function.extend DStep.tree c (fun _ => 0)
   have hd (st : DStep) : d st.tree = c st := hinj.extend_apply c _ st
   have hfold := foldF_does (f := F) (xs := sts.map DStep.tree) (d := d)
@@ -304,8 +291,8 @@ theorem dstepsF_does (n : List Bool) (sts : List DStep) {wf : Fm} {x W : Tree} {
         obtain ⟨rfl, rfl⟩ := h1
         obtain ⟨h3, h4⟩ := hI st sts' _ h2
         rw [hF', hd]
-        exact ⟨(hf1 st W).mono h3, fun q hq => ⟨sts', rfl, h4 _ (hf2 st W q hq)⟩⟩) ⟨sts, rfl, hW⟩
-  refine ⟨_, hfold.mono ?_, hmem sts W, hsum sts W⟩
+        exact ⟨(hf1 st W).mono h3, fun q hq => ⟨sts', rfl, h4 _ ((hf2 st W).mem hq)⟩⟩) ⟨sts, rfl, hW⟩
+  refine ⟨_, hfold.mono ?_, fun q hq => (himg sts W).mem hq, (himg sts W).wsum⟩
   rw [List.map_map]
   have e : (sts.map ((fun x => d x + 30) ∘ DStep.tree)) = sts.map fun st => c st + 30 :=
     List.map_congr_left fun st _ => by simp only [Function.comp_apply, hd]
