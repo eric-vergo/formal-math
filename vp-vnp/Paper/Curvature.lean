@@ -97,69 +97,34 @@ theorem prop_space_cauchy {X : Type*} [MetricSpace X] {a b m : ℕ → X} {x v :
     (hb : Tendsto b atTop (𝓝 v))
     (hm : ∀ n z, dist z (m n) ^ 2 ≤ (dist z (a n) ^ 2 + dist z (b n) ^ 2) / 2 - dist (a n) (b n) ^ 2 / 4) :
     CauchySeq m := by
-  have hR : Tendsto (fun n => dist (a n) (b n)) atTop (𝓝 (dist x v)) := ha.dist hb
-  have hmid : ∀ n, dist (a n) (m n) ≤ dist (a n) (b n) / 2 ∧
-      dist (b n) (m n) ≤ dist (a n) (b n) / 2 := by
-    intro n
-    have h1 := hm n (a n)
-    have h2 := hm n (b n)
-    rw [dist_self] at h1 h2
-    rw [dist_comm (b n) (a n)] at h2
-    constructor
-    · apply abs_le_of_sq_le_sq' _ (by positivity) |>.2
-      nlinarith
-    · apply abs_le_of_sq_le_sq' _ (by positivity) |>.2
-      nlinarith
-  rw [Metric.cauchySeq_iff]
-  intro ε hε
-  set R := dist x v + 1 with hRdef
-  have hR0 : 0 < R := by positivity
-  set δ := min 1 (ε ^ 2 / (2 * (2 * R + 4))) with hδ
-  have hδ0 : 0 < δ := by positivity
-  obtain ⟨N₁, hN₁⟩ := Metric.cauchySeq_iff.1 ha.cauchySeq (δ / 2) (by positivity)
-  obtain ⟨N₂, hN₂⟩ := Metric.cauchySeq_iff.1 hb.cauchySeq (δ / 2) (by positivity)
-  obtain ⟨N₃, hN₃⟩ := eventually_atTop.1 (hR.eventually (gt_mem_nhds (show dist x v < R by linarith)))
-  refine ⟨max N₁ (max N₂ N₃), fun l hl k hk => ?_⟩
-  have l1 := (le_max_left _ _).trans hl
-  have l2 := ((le_max_left _ _).trans (le_max_right _ _)).trans hl
-  have k1 := (le_max_left _ _).trans hk
-  have k2 := ((le_max_left _ _).trans (le_max_right _ _)).trans hk
-  have k3 := ((le_max_right _ _).trans (le_max_right _ _)).trans hk
-  have e1 := hN₁ l l1 k k1
-  have e2 := hN₂ l l2 k k2
-  have e3 := hN₃ k k3
-  set e := dist (a l) (a k) + dist (b l) (b k) with he
-  have he0 : 0 ≤ e := by positivity
-  have hed : e < δ := by linarith
-  have d1 : dist (m l) (a k) ≤ dist (a k) (b k) / 2 + 2 * e := by
-    have t1 := dist_triangle (m l) (a l) (a k)
-    have t2 := dist_triangle4 (a l) (a k) (b k) (b l)
-    rw [dist_comm (m l) (a l)] at t1
-    rw [dist_comm (b k) (b l)] at t2
-    have := (hmid l).1
-    have := dist_nonneg (x := b l) (y := b k)
-    linarith
-  have d2 : dist (m l) (b k) ≤ dist (a k) (b k) / 2 + 2 * e := by
-    have t1 := dist_triangle (m l) (b l) (b k)
-    have t2 := dist_triangle4 (a l) (a k) (b k) (b l)
-    rw [dist_comm (m l) (b l)] at t1
-    rw [dist_comm (b k) (b l)] at t2
-    have := (hmid l).2
-    have := dist_nonneg (x := a l) (y := a k)
-    linarith
-  have d3 := hm k (m l)
-  have d4 := pow_le_pow_left₀ dist_nonneg d1 2
-  have d5 := pow_le_pow_left₀ dist_nonneg d2 2
-  have d6 : dist (m l) (m k) ^ 2 ≤ (2 * R + 4) * e := by
-    have e4 : e ≤ 1 := hed.le.trans (min_le_left _ _)
-    have e5 : dist (a k) (b k) * e ≤ R * e := mul_le_mul_of_nonneg_right e3.le he0
-    nlinarith
-  have d7 : (2 * R + 4) * e < ε ^ 2 := by
-    have e4 : e < ε ^ 2 / (2 * (2 * R + 4)) := hed.trans_le (min_le_right _ _)
-    rw [lt_div_iff₀ (by positivity)] at e4
-    have : 0 < ε ^ 2 := by positivity
-    nlinarith
-  exact lt_of_pow_lt_pow_left₀ 2 hε.le (d6.trans_lt d7)
+  have midpt (n : ℕ) : IsPt (a n) (b n) (1 / 2) (m n) := fun z => by linarith [hm n z]
+  -- Bound the midpoint discrepancy by the two endpoint errors and the two chord lengths.
+  let bound (p : ℕ × ℕ) :=
+    ((dist (a p.1) (b p.1) / 2 + dist (a p.1) (a p.2)) ^ 2 +
+      (dist (a p.1) (b p.1) / 2 + dist (b p.1) (b p.2)) ^ 2) / 2 - dist (a p.2) (b p.2) ^ 2 / 4
+  have upper (i j : ℕ) : dist (m i) (m j) ^ 2 ≤ bound (i, j) := by
+    refine (hm j (m i)).trans ?_
+    apply sub_le_sub_right
+    apply div_le_div_of_nonneg_right _ (by norm_num)
+    apply add_le_add <;> apply pow_le_pow_left₀ dist_nonneg
+    · have h := (midpt i).dist_left (by norm_num) (by norm_num)
+      linarith [dist_triangle (a j) (a i) (m i), dist_comm (a j) (a i), dist_comm (a j) (m i)]
+    · have h := (midpt i).dist_right (by norm_num) (by norm_num)
+      linarith [dist_triangle (m i) (b i) (b j)]
+  have hfst : Tendsto (Prod.fst : ℕ × ℕ → ℕ) atTop atTop := by rw [← prod_atTop_atTop_eq]; exact tendsto_fst
+  have hsnd : Tendsto (Prod.snd : ℕ × ℕ → ℕ) atTop atTop := by rw [← prod_atTop_atTop_eq]; exact tendsto_snd
+  have limit : Tendsto bound atTop (𝓝 0) := by
+    have ha₁ := ha.comp hfst
+    have ha₂ := ha.comp hsnd
+    have hb₁ := hb.comp hfst
+    have hb₂ := hb.comp hsnd
+    have h := (((((ha₁.dist hb₁).div_const 2).add (ha₁.dist ha₂)).pow 2).add
+      ((((ha₁.dist hb₁).div_const 2).add (hb₁.dist hb₂)).pow 2)).div_const 2
+    convert h.sub (((ha₂.dist hb₂).pow 2).div_const 4) using 1
+    all_goals simp [bound, Function.comp_def] <;> ring
+  apply cauchySeq_iff_tendsto_dist_atTop_0.2
+  refine squeeze_zero (fun _ => dist_nonneg) (fun p => Real.le_sqrt_of_sq_le (upper p.1 p.2)) ?_
+  simpa using limit.sqrt
 
 /-- "The completion satisfies (CN)": a complete metric space is CAT(0) if any two points x, v of a dense subset S have a
 point m for which (CN) holds at all z in S. -/
