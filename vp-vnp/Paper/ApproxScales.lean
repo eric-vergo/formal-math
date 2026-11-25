@@ -46,13 +46,13 @@ theorem def_approx_acc (θ : List Bool → A) (R : Type) [CommRing R] [Algebra A
     exact ⟨K, B, D, ⟨h1, fun z hz hp i hi => h2 z hz hp i (by omega)⟩, h3, h4, h5, h6⟩
 
 /-- The scales that are large enough. -/
-structure LargeScale (h cB U : ℕ) : Prop where
+structure LargeScale (cB U : ℕ) : Prop where
   two : 4 ≤ U
   cst_le : cst ≤ U
   poly : ∀ u, U ≤ u → 1000 * (3 * cB) ^ 3 * lg u ^ 9 ≤ u
 
 /-- The bound of all logarithmic quantities. -/
-theorem cube_le {h cB U u X : ℕ} (hL : LargeScale h cB U) (hu : U ≤ u) (hX : X ≤ 3 * cB * lg u ^ 3) :
+theorem cube_le {cB U u X : ℕ} (hL : LargeScale cB U) (hu : U ≤ u) (hX : X ≤ 3 * cB * lg u ^ 3) :
     1000 * X ^ 3 ≤ u := by
   calc 1000 * X ^ 3 ≤ 1000 * (3 * cB * lg u ^ 3) ^ 3 := Nat.mul_le_mul_left _ (Nat.pow_le_pow_left hX 3)
     _ = 1000 * (3 * cB) ^ 3 * lg u ^ 9 := by ring
@@ -62,7 +62,7 @@ set_option maxHeartbeats 1000000 in
 /-- **Paper: proof of Proposition prop:approx-acc, One round, repeated from a scale to its fifth power.** "The time again
 has a factor u to spare." The new constants keep every property `Q` of the old ones that rescaling keeps. -/
 theorem prop_approx_acc_step {h cB U Δ cΔ b₀ : ℕ} (hh : 17 ≤ h) (hC : ∀ u, U ≤ u → CutAt θ (16 * h) u 10)
-    (hL : LargeScale h (2 * cB) U) (hcB : 2000 * h ≤ cB) (hcΔ : 4 * cB ≤ cΔ) {Q : E[T;T⁻¹] → Prop}
+    (hL : LargeScale (2 * cB) U) (hcB : 2000 * h ≤ cB) (hcΔ : 4 * cB ≤ cΔ) {Q : E[T;T⁻¹] → Prop}
     (hQ : RescaleStable A Q) {u : ℕ} {K : KT E[T;T⁻¹]} {B : ℕ} {D : Tree}
     (hI : InvA θ h cB U Δ cΔ b₀ u K B D) (hK : K.All Q) :
     ∃ (K' : KT E[T;T⁻¹]) (B' : ℕ) (D' : Tree), InvA θ h cB U Δ cΔ b₀ (u ^ 5) K' B' D' ∧ K'.All Q ∧
@@ -140,7 +140,7 @@ theorem prop_approx_acc_step {h cB U Δ cΔ b₀ : ℕ} (hh : 17 ≤ h) (hC : �
 /-- Arbitrarily large scales, with one power of time to spare; the constants keep every property `Q` of the given ones
 that rescaling keeps. -/
 theorem prop_approx_acc_all_scales {h cB U Δ cΔ b₀ : ℕ} (hh : 17 ≤ h) (hC : ∀ u, U ≤ u → CutAt θ (16 * h) u 10)
-    (hL : LargeScale h (2 * cB) U) (hcB : 2000 * h ≤ cB) (hcΔ : 4 * cB ≤ cΔ) {Q : E[T;T⁻¹] → Prop}
+    (hL : LargeScale (2 * cB) U) (hcB : 2000 * h ≤ cB) (hcΔ : 4 * cB ≤ cΔ) {Q : E[T;T⁻¹] → Prop}
     (hQ : RescaleStable A Q) {u : ℕ} {K : KT E[T;T⁻¹]} {B : ℕ} {D : Tree}
     (hI : InvA θ h cB U Δ cΔ b₀ u K B D) (hK : K.All Q) (n : ℕ) :
     ∃ (u' : ℕ) (K' : KT E[T;T⁻¹]) (B' : ℕ) (D' : Tree), n ≤ u' ∧ InvA θ h cB U Δ cΔ b₀ u' K' B' D' ∧
@@ -427,7 +427,7 @@ theorem prop_approx_acc_scales {h : ℕ} (hh : 17 ≤ h) {C₀ v₀ : ℕ} (hcut
   obtain ⟨cs, hcs⟩ : ∃ n, n = cst := ⟨_, rfl⟩
   obtain ⟨U, hU⟩ : ∃ U, U = v₀ + n1 + n2 + cs + 4 := ⟨_, rfl⟩
   have hh3 : h ≤ h ^ 3 := Nat.le_self_pow (by norm_num) h
-  have hL : LargeScale h (2 * cB) U := ⟨by omega, by rw [← hcs]; omega, fun u hu => hn2 u (by omega)⟩
+  have hL : LargeScale (2 * cB) U := ⟨by omega, by rw [← hcs]; omega, fun u hu => hn2 u (by omega)⟩
   obtain ⟨C, hCdef⟩ : ∃ n, n = 2 * C₀ + 40 := ⟨_, rfl⟩
   obtain ⟨n3, hn3⟩ := poly_lg 1 (C * 10)
   obtain ⟨cc, hcc⟩ : ∃ n, n = 1000 * (7000 * h ^ 3) ^ 3 := ⟨_, rfl⟩
