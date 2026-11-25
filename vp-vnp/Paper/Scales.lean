@@ -3,9 +3,7 @@ Copyright (c) 2026 Anthropic, PBC. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
-import Paper.NoAcc
-import Paper.Circuit
-import Paper.Cuts
+import Nc.End.PermThm
 
 /-!
 # The paper, section "One scale is all scales"

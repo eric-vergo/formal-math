@@ -4,10 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 SPDX-License-Identifier: Apache-2.0
 -/
 import Paper.Scales
-import Nc.Acc.ApproxMain
-import Nc.Rate.Circuit
+import Paper.NoAcc
+import Paper.Circuit
+import Paper.Cuts
 import Paper.ApproxRound
-import NS1.ApproxMain
 
 /-!
 # The paper, appendix "Approximate computation": no approximate accelerators
@@ -468,35 +468,6 @@ theorem prop_approx_acc_setting {K : Type} [Field K] (hK : Contracting K) :
         ¬ HasAccA θ R (16 * h) v (v ^ a) := by
   obtain ⟨A, hA, θ, h, C₀, v₀, hθ, hh, hcut⟩ := exists_setting hK
   exact ⟨A, hA, θ, h, C₀, v₀, hθ, hh, hcut, prop_approx_acc hh hcut⟩
-
-open Nc.Acc in
-/-- **Paper: proof of Theorem thm:approx, Lemma lem:circuit for approximating circuits.** "The proofs of Lemmas lem:lowdeg
-and lem:circuit work over this ring and give approximate accelerators: the output Φ + εg may have a large degree, but the
-program gives the part of degree at most d, which is Φ plus ε times that part of g." -/
-theorem lem_circuit_approx (hθ : (Function.support θ).Finite) {H : ℕ} (hH : 32 ≤ H) (κ : ℕ) :
-    ∃ B₀ C v₀ : ℕ, 0 < B₀ ∧ ∀ (F : Type) [Field F] [Algebra A F] (G : ∀ S, MvPolynomial (Fin S × Fin S) F),
-      Nc.GridComplete F G κ → ∀ v, v₀ ≤ v → ∀ a, lg v ^ (C * a) ≤ v → ∀ m, v ^ B₀ ≤ m →
-        Nc.Approximates (G m) (v ^ a) → HasAccA θ F H v (v ^ (C * (a + 1))) := by
-  obtain ⟨B₀, Z, hB₀, hproj⟩ := lem_circuit_universal hθ hH κ
-  obtain ⟨c, hc⟩ := lem_circuit_program H hH
-  obtain ⟨n₀, hn₀⟩ := poly_lg (c * (H + 7)) 1
-  refine ⟨B₀, H + 35, Z + n₀ + 2 ^ (c + H + 8) + 100, hB₀, fun F _ _ G hG v hv a hl m hm hs => ?_⟩
-  have hp := Nat.one_le_two_pow (n := c + H + 8)
-  have hlv : c + H + 8 + 1 ≤ lg v := le_lg_of_two_pow_le (by omega)
-  have hcv := lem_circuit_bound hlv (by simpa using hn₀ v (by omega)) hl
-  obtain ⟨Mat, hMat, hdeg, hev⟩ := hproj F G hG v m (by omega) hm
-  have hgates : 5 * v ^ a ≤ v ^ (a + 5) := by
-    rw [pow_add, Nat.mul_comm]
-    exact Nat.mul_le_mul_left _ (le_trans (by omega : 5 ≤ v) (Nat.le_self_pow (by norm_num) v))
-  obtain ⟨p, hp', hpf⟩ := (hs.aeval Mat hMat).exists_laurentPolynomial
-  obtain ⟨K, D, hD, hn, hsz, hht⟩ := hc v (a + 5) (by omega) hcv A F[T;T⁻¹] θ (5 * v ^ a) p hgates hp'
-  have hle : v ^ (3 * (a + 5) + H + 20) ≤ v ^ ((H + 35) * (a + 1)) :=
-    Nat.pow_le_pow_right (by omega) (by nlinarith)
-  have hlg := lg_mono (max_le_max (le_refl (v ^ H)) hle)
-  refine ⟨K, 1, D, ⟨fun z hz => ⟨(hD z hz).1, (hD z hz).2.1⟩, fun z hz hpl => ?_⟩, hn.trans hle, hsz.trans hle,
-    (lem_circuit_names (by omega) hht).trans (Nat.pow_le_pow_left hlg 2), Nat.one_le_pow _ _ (Nat.succ_pos _)⟩
-  rw [(hD z hz).2.2, ← Finset.sum_congr rfl (fun i _ => line_coeff_eq _ p i)]
-  exact ordGE_sum_coeff_sub hpf hdeg (by omega) _ _ (hev z hz hpl)
 
 /-- The contracting case for approximating circuits of a family that is complete for grid sums. -/
 theorem contracting_approx_complete {K : Type} [Field K] (hK : Contracting K)
