@@ -149,15 +149,11 @@ theorem time {κ : ℕ} (hκ : κ ≤ m) : κ * (2 * (Lc + 1) * (T + ub + 2) + �
         X ^ 4 * 1000 * (Lc + 1) * k) := by ring
     _ ≤ m * (τ * m ^ 3 + τ * m ^ 3 + τ * m ^ 7 + τ) := Nat.mul_le_mul hκ
         (Nat.add_le_add (Nat.add_le_add (Nat.add_le_add A1 A2) A3) A4)
-    _ ≤ m * (τ * m ^ 7 + τ * m ^ 7 + τ * m ^ 7 + τ * m ^ 7) := by
-        refine Nat.mul_le_mul_left _ ?_
-        have e1 : τ * m ^ 3 ≤ τ * m ^ 7 := Nat.mul_le_mul_left _ (h.mpow (by norm_num))
-        have e2 : τ ≤ τ * m ^ 7 := Nat.le_mul_of_pos_right _ (Nat.pow_pos hm)
-        omega
-    _ = τ * m ^ 8 * 4 := by ring
-    _ ≤ τ * m ^ 8 * m := Nat.mul_le_mul_left _ (le_trans (by norm_num) h.m_ge)
-    _ = τ * m ^ 9 := by ring
-    _ ≤ τ * m ^ 10 := Nat.mul_le_mul_left _ (h.mpow (by norm_num))
+    _ ≤ τ * m ^ 10 := by
+      obtain ⟨r, hr⟩ := Nat.exists_eq_add_of_le (show 2 ≤ m by have := h.m_ge; omega)
+      rw [hr]
+      ring_nf
+      omega
 
 omit h in
 /-- The fixed part of the script size is cubic in the number and length of its codes. -/
@@ -256,21 +252,17 @@ theorem deal : dealB Lc X K mm ub (mm * bd) (4 * (X * X) + 10 * X) s ≤ (s + τ
   have D3 : 60 * s + s * (60 * Lc + 100) ≤ s * (200 * m) := by
     calc 60 * s + s * (60 * Lc + 100) = s * (60 * Lc + 160) := by ring
       _ ≤ s * (200 * m) := Nat.mul_le_mul_left _ (by omega)
-  have e10 : s * (200 * m) ≤ s * m ^ 10 := Nat.mul_le_mul_left _ (by
-    calc 200 * m ≤ m * m := Nat.mul_le_mul_right _ (le_trans (by norm_num) hm1)
-      _ = m ^ 2 := by ring
-      _ ≤ m ^ 10 := h.mpow (by norm_num))
-  have e11 : τ * k / v ^ 256 * m ^ 3 + τ * k / v ^ 256 ≤ τ * k / v ^ 256 * m ^ 10 := by
-    calc τ * k / v ^ 256 * m ^ 3 + τ * k / v ^ 256 ≤ τ * k / v ^ 256 * m ^ 3 + τ * k / v ^ 256 * m ^ 3 :=
-          Nat.add_le_add_left (Nat.le_mul_of_pos_right _ (Nat.pow_pos hm)) _
-      _ = τ * k / v ^ 256 * m ^ 3 * 2 := by ring
-      _ ≤ τ * k / v ^ 256 * m ^ 3 * m := Nat.mul_le_mul_left _ (le_trans (by norm_num) hm1)
-      _ = τ * k / v ^ 256 * m ^ 4 := by ring
-      _ ≤ _ := Nat.mul_le_mul_left _ (h.mpow (by norm_num))
-  have e12 : (s + K) * (60 * Lc + 100) = s * (60 * Lc + 100) + K * (60 * Lc + 100) := by ring
-  have e13 : (s + τ * k / v ^ 256) * m ^ 10 = s * m ^ 10 + τ * k / v ^ 256 * m ^ 10 := by ring
-  unfold dealB
-  omega
+  set t := τ * k / v ^ 256
+  calc
+    _ ≤ s * (200 * m) + t * m ^ 3 + t := by
+      unfold dealB
+      rw [add_mul s K]
+      omega
+    _ ≤ (s + t) * m ^ 10 := by
+      obtain ⟨r, hr⟩ := Nat.exists_eq_add_of_le (show 200 ≤ m by omega)
+      rw [hr]
+      ring_nf
+      omega
 
 end CutNums
 
