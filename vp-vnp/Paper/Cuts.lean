@@ -265,34 +265,29 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
   have hsK : s ≤ K * ℓ := hℓ ▸ (Nat.lt_mul_div_succ s hK0).le
   -- numbers below X
   obtain ⟨hD, hst, hA', hE, hU0, hU1⟩ := pc.steps_le
-  have hCX : v ^ Cp + 1 ≤ X := by
-    calc v ^ Cp + 1 ≤ v ^ Cp * v := by
-          have : 1 ≤ v ^ Cp := vpos Cp
-          have : v ^ Cp * 2 ≤ v ^ Cp * v := Nat.mul_le_mul_left _ (by omega)
-          omega
-      _ = v ^ (Cp + 1) := (pow_succ v Cp).symm
+  -- Every index of a unit has size at most B. A unit name uses at most three indices.
+  set B := v ^ (Cp + e + 2) with hB
+  have hCB : v ^ Cp ≤ B := vpow (by omega)
+  have hKB : K + K ≤ B := by
+    have := Nat.mul_le_mul (show 2 ≤ v by omega) hKe
+    rw [← pow_succ'] at this
+    exact (Nat.two_mul K ▸ this).trans (vpow (by omega))
+  have hBpos : 1 ≤ B := vpos _
+  have hBB : B * B ≤ B ^ 3 := by simpa [pow_two] using
+    (Nat.pow_le_pow_right hBpos (show 2 ≤ 3 by decide))
+  have hBX : 4 * B ^ 3 ≤ X := by
+    calc 4 * B ^ 3 ≤ v * B ^ 3 := Nat.mul_le_mul_right _ (by omega)
+      _ = v ^ ((Cp + e + 2) * 3 + 1) := by rw [hB, ← pow_mul, pow_succ']
       _ ≤ X := vX _ (by omega)
-  have h3K : 3 * K ≤ v * K := Nat.mul_le_mul_right _ (by omega)
-  have hK2 : K + K + 1 ≤ X := by
-    calc K + K + 1 ≤ v * K := by omega
-      _ ≤ v * v ^ (e + 1) := Nat.mul_le_mul_left _ hKe
-      _ = v ^ (e + 2) := (pow_succ' v (e + 1)).symm
-      _ ≤ X := vX _ (by omega)
+  have hB3 := Nat.le_self_pow (show 3 ≠ 0 by decide) B
+  have hCX : v ^ Cp + 1 ≤ X := by omega
+  have hK2 : K + K + 1 ≤ X := by omega
   have hcId : Fintype.card (Nc.G.Uid (K + K) pc.U0 pc.sys.N pc.U1) ≤ X := by
     refine Nc.Dl.card_uid_le.trans ?_
-    have g1 : (K + K) * (K + K) * pc.U0 ≤ v ^ (b₁ - 1) := by
-      calc (K + K) * (K + K) * pc.U0 ≤ (v * K) * (v * K) * v ^ Cp :=
-          Nat.mul_le_mul (Nat.mul_le_mul (by omega) (by omega)) hU0
-        _ ≤ (v * v ^ (e + 1)) * (v * v ^ (e + 1)) * v ^ Cp := by gcongr
-        _ = v ^ (2 * e + 4 + Cp) := by ring
-        _ ≤ _ := vpow (by omega)
-    have g2 : Fintype.card pc.sys.N * pc.U1 ≤ v ^ (b₁ - 1) := by
-      calc _ ≤ v ^ Cp * v ^ Cp := Nat.mul_le_mul pc.outcomes_le hU1
-        _ = v ^ (Cp + Cp) := (pow_add _ _ _).symm
-        _ ≤ _ := vpow (by omega)
-    calc _ ≤ v ^ (b₁ - 1) + v ^ (b₁ - 1) := Nat.add_le_add g1 g2
-      _ ≤ v * v ^ (b₁ - 1) := by rw [← Nat.two_mul]; exact Nat.mul_le_mul_right _ (by omega)
-      _ = X := by rw [hX, ← pow_succ']; congr 1; omega
+    have hInit : (K + K) * (K + K) * pc.U0 ≤ B ^ 3 := by
+      simpa only [pow_succ B 2, pow_two] using Nat.mul_le_mul (Nat.mul_le_mul hKB hKB) (hU0.trans hCB)
+    have hNew := Nat.mul_le_mul (pc.outcomes_le.trans hCB) (hU1.trans hCB)
+    omega
   have hkind : ∀ r : pc.sys.R, ∃ t : ℕ, kinds[t]? = some ⟨pc.sys.kind r.1, r.2⟩ := fun r =>
     List.mem_iff_getElem?.1 (pc.kinds_mem r)
   choose tg htg using hkind
@@ -309,10 +304,8 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
       _ ≤ X := vX _ (by omega)
   have hrow : Fintype.card (Nc.Cut.RowData (K + K)) ≤ X := by
     rw [Nc.Dl.card_row]
-    calc 2 * ((K + K) * (K + K)) = 8 * (K * K) := by ring
-      _ ≤ v * (v ^ (e + 1) * v ^ (e + 1)) := Nat.mul_le_mul (by omega) (Nat.mul_le_mul hKe hKe)
-      _ = v ^ (2 * e + 3) := by ring
-      _ ≤ X := vX _ (by omega)
+    have := Nat.mul_le_mul hKB hKB
+    omega
   have hSX : Fintype.card (Option S) ≤ X := by
     rw [Fintype.card_option]
     omega
@@ -334,15 +327,11 @@ theorem thm_onecut {θ : List Bool → A} (hθ : Generates θ) {h : ℕ} [NeZero
     have h2 := lg_mul_sq_le (τ := τ) (v := v)
     rw [← hl] at h2 hlτ
     calc Lc + 1 ≤ 3 * b₁ * l + (l ^ 2 + 2 * l + 3) := by omega
-      _ ≤ l * l + (l * l + l * l + l * l) := by
-          have : 3 * b₁ * l ≤ l * l := Nat.mul_le_mul_right _ (by omega)
-          have : 2 * l ≤ l * l := Nat.mul_le_mul_right _ (by omega)
-          have : 3 ≤ l * l := le_trans (by omega : 3 ≤ l) (Nat.le_mul_self l)
-          rw [pow_two]
-          omega
-      _ = 4 * (l * l) := by ring
-      _ ≤ l * (l * l) := Nat.mul_le_mul_right _ (by omega)
-      _ = l ^ 3 := by ring
+      _ ≤ l ^ 3 := by
+        obtain ⟨d, hd⟩ := Nat.exists_eq_add_of_le (show 3 * b₁ + 4 ≤ l by omega)
+        rw [hd]
+        ring_nf
+        omega
       _ ≤ m := hml' 3 (by omega)
   have hX30 : 60 ≤ X := by omega
   have hX32 : ∀ n, n ≤ 60 * (X * X) → n ≤ 2 ^ Lc := by
