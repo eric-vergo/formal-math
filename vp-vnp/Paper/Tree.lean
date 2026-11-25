@@ -285,8 +285,6 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
     good_iff := fun n o x => ?_
     poss_good := fun n o x hp => thm_tree_poss_good hℓ n o x hp
     edge := fun n hv o hg u hu => ?_
-    node_le := fun n hv o hg p => ?_
-    total_le := fun n hv o hg => ?_
     between_le := fun n hv o hg p hp => tree_between hH (valid_of n hv) hg hp
     up_node := fun n hv o hg p => ?_
     up_total := fun n hv o hg => ?_
@@ -343,10 +341,6 @@ theorem exists_thinTrees (R : Routes T m Uu) (FL : FlagLaws F T) {laws : List (G
     obtain ⟨hu, hd⟩ := mem_sdiff.1 hu
     obtain ⟨s, -, hs⟩ := cur_tree hH (valid_of n hv) hg hu hd hl'
     exact ⟨_, fun e => Option.some_ne_none s (Pl.pt.injective e), hs⟩
-  · -- the units at one node
-    exact (Nat.cast_le.2 (tree_node_le (R := R) (FL := FL) (Pl := Pl) hH (valid_of n hv) hg hC.b_le hC.bot p)).trans hnode
-  · -- all units
-    exact (tree_total_le hH (valid_of n hv) hg).trans htot
   · exact (Nat.cast_le.2 (tree_up_node hH n o hC.b_le hC.bot p)).trans hnode
   · exact (tree_up_total hH n o).trans htot
   · -- copies

@@ -264,12 +264,6 @@ structure ThinTrees (R : Type) [CommRing R] (laws : List (G.Law R)) (AA N ℓ M 
   edge : ∀ n, (∀ a, ∑ c, ((n a c).1 + (n c a).1) ≤ N) → ∀ o, (∀ x, plan.good n o x) →
     ∀ u ∈ cutUnits (hold0 sys.np) (hold1 sys.np) id (plan.cur n o E \ dead o),
       ∃ p, p ≠ root ∧ s(hold0 sys.np u, hold1 sys.np u) = s(p, par n o p)
-  node_le : ∀ n, (∀ a, ∑ c, ((n a c).1 + (n c a).1) ≤ N) → ∀ o, (∀ x, plan.good n o x) →
-    ∀ p, (((cutUnits (hold0 sys.np) (hold1 sys.np) id (plan.cur n o E \ dead o)).filter
-        (Holds (hold0 sys.np) (hold1 sys.np) p)).card : ℝ) ≤
-      (lg M ^ C : ℕ) * (M : ℝ) ^ (1 - γ) * (N + (M : ℝ) ^ 2)
-  total_le : ∀ n, (∀ a, ∑ c, ((n a c).1 + (n c a).1) ≤ N) → ∀ o, (∀ x, plan.good n o x) →
-    (cutUnits (hold0 sys.np) (hold1 sys.np) id (plan.cur n o E \ dead o)).card ≤ lg M ^ C * M * (N + M ^ 2)
   between_le : ∀ n, (∀ a, ∑ c, ((n a c).1 + (n c a).1) ≤ N) → ∀ o, (∀ x, plan.good n o x) → ∀ p, p ≠ root →
     ((cutUnits (hold0 sys.np) (hold1 sys.np) id (plan.cur n o E \ dead o)).filter
       (fun u => s(hold0 sys.np u, hold1 sys.np u) = s(p, par n o p))).card ≤ up n o p
@@ -305,6 +299,63 @@ structure ThinTrees (R : Type) [CommRing R] (laws : List (G.Law R)) (AA N ℓ M 
     (∀ p q, (ind fun x => par x.1 x.2 p = q) ∈ H) ∧ (∀ u, (ind fun x => u ∈ plan.cur x.1 x.2 E) ∈ H) ∧
     (∀ z u, (ind fun x => u ∈ plan.cons x.1 x.2 z) ∈ H) ∧ (∀ y, (fun x => plan.num x.1 x.2 y) ∈ H) ∧
     (∀ p, (fun x => up x.1 x.2 p) ∈ H) ∧ ∀ y, (ind fun x => plan.good x.1 x.2 y) ∈ H
+
+namespace ThinTrees
+
+variable {R : Type} [CommRing R] {laws : List (G.Law R)} {AA N ℓ M b G₁ C : ℕ} {γ : ℝ}
+  (TT : ThinTrees R laws AA N ℓ M b G₁ C γ)
+
+open Classical in
+/-- **Paper: Theorem thm:tree(b), for one node.** "All other units join a node and its parent. Their
+number is at most ΛM^(1−γ)(N+M²) for one node, its children included." A unit of the tree that a
+node holds joins it to its parent or to a child (`edge`), so the bound is that of the loads
+(`between_le`, `up_node`). -/
+theorem node_le (n : Fin AA → Fin AA → Fin (N + 1)) (hv : ∀ a, ∑ c, ((n a c).1 + (n c a).1) ≤ N)
+    (o : TT.sys.N → Fin TT.U1) (hg : ∀ x, TT.plan.good n o x) (p : Fin (AA + TT.A')) :
+    (((cutUnits (hold0 TT.sys.np) (hold1 TT.sys.np) id (TT.plan.cur n o TT.E \ TT.dead o)).filter
+        (Holds (hold0 TT.sys.np) (hold1 TT.sys.np) p)).card : ℝ) ≤
+      (lg M ^ C : ℕ) * (M : ℝ) ^ (1 - γ) * (N + (M : ℝ) ^ 2) := by
+  set T := cutUnits (hold0 TT.sys.np) (hold1 TT.sys.np) id (TT.plan.cur n o TT.E \ TT.dead o)
+  set Ch := univ.filter fun q => q ≠ TT.root ∧ TT.par n o q = p
+  have hsub : T.filter (Holds (hold0 TT.sys.np) (hold1 TT.sys.np) p) ⊆
+      ((insert p Ch).filter (· ≠ TT.root)).biUnion fun q =>
+        T.filter fun u => s(hold0 TT.sys.np u, hold1 TT.sys.np u) = s(q, TT.par n o q) := by
+    intro u hu
+    obtain ⟨hu, hp⟩ := mem_filter.1 hu
+    obtain ⟨q, hq, he⟩ := TT.edge n hv o hg u hu
+    have hm : p ∈ s(q, TT.par n o q) := he ▸ Sym2.mem_iff.2 hp
+    refine mem_biUnion.2 ⟨q, mem_filter.2 ⟨?_, hq⟩, mem_filter.2 ⟨hu, he⟩⟩
+    rcases Sym2.mem_iff.1 hm with rfl | h
+    · exact mem_insert_self _ _
+    · exact mem_insert_of_mem (mem_filter.2 ⟨mem_univ _, hq, h.symm⟩)
+  refine le_trans ?_ (TT.up_node n hv o hg p)
+  refine Nat.cast_le.2 ((card_le_card hsub).trans (card_biUnion_le.trans ?_))
+  refine (sum_le_sum fun q hq => TT.between_le n hv o hg q (mem_filter.1 hq).2).trans ?_
+  refine (sum_le_sum_of_subset (filter_subset _ _)).trans ?_
+  by_cases hp : p ∈ Ch
+  · rw [insert_eq_of_mem hp]
+    exact Nat.le_add_left _ _
+  · rw [sum_insert hp]
+
+open Classical in
+/-- **Paper: Theorem thm:tree(b), in all.** "All other units join a node and its parent. Their
+number is … at most ΛM(N+M²) in all." Every unit of the tree joins some node other than the root
+to its parent (`edge`), so the bound is that of all loads (`between_le`, `up_total`). -/
+theorem total_le (n : Fin AA → Fin AA → Fin (N + 1)) (hv : ∀ a, ∑ c, ((n a c).1 + (n c a).1) ≤ N)
+    (o : TT.sys.N → Fin TT.U1) (hg : ∀ x, TT.plan.good n o x) :
+    (cutUnits (hold0 TT.sys.np) (hold1 TT.sys.np) id (TT.plan.cur n o TT.E \ TT.dead o)).card ≤
+      lg M ^ C * M * (N + M ^ 2) := by
+  set T := cutUnits (hold0 TT.sys.np) (hold1 TT.sys.np) id (TT.plan.cur n o TT.E \ TT.dead o)
+  have hsub : T ⊆ (univ.filter (· ≠ TT.root)).biUnion fun q =>
+      T.filter fun u => s(hold0 TT.sys.np u, hold1 TT.sys.np u) = s(q, TT.par n o q) := by
+    intro u hu
+    obtain ⟨q, hq, he⟩ := TT.edge n hv o hg u hu
+    exact mem_biUnion.2 ⟨q, mem_filter.2 ⟨mem_univ _, hq⟩, mem_filter.2 ⟨hu, he⟩⟩
+  refine (card_le_card hsub).trans (card_biUnion_le.trans ?_)
+  refine (sum_le_sum fun q hq => TT.between_le n hv o hg q (mem_filter.1 hq).2).trans ?_
+  exact (sum_le_sum_of_subset (filter_subset _ _)).trans (TT.up_total n hv o hg)
+
+end ThinTrees
 
 /-- The integer of the test for good outcomes: "the test for good outcomes compare[s] integers, as C₀ is an integer". -/
 noncomputable def goodBound (C₁ : ℝ) (a₁ : ℕ) : ℕ := ⌊2 * C₁ * (a₁ : ℝ) ^ 2⌋₊

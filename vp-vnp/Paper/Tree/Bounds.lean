@@ -149,63 +149,6 @@ theorem card_treeChildren (hh : 0 < h) (n : Fin AA → Fin AA → Fin (N + 1)) (
     exact h1.trans (card_ndChildren _ _ hν)
 
 open Classical in
-/-- The units at one node. -/
-theorem tree_node_le (hH : THypR FL ρ) {n : Fin AA → Fin AA → Fin (N + 1)}
-    (hv : Valid N (nn n)) {o : (sys R FL Pl).N → Fin U1} (hg : ∀ x, (Tow.plan R FL Pl N N U1).good n o x)
-    (hb : b ≤ c) (hX : Fintype.card (T.X J) ≤ c) (p : Fin (AA + A')) :
-    ((cutUnits (hold0 (sys R FL Pl).np) (hold1 (sys R FL Pl).np) id
-      ((Tow.plan R FL Pl N N U1).cur n o (Fintype.card (Mv T R ch FL)) \ deadU R FL Pl N o)).filter
-      (Holds (hold0 (sys R FL Pl).np) (hold1 (sys R FL Pl).np) p)).card ≤ (c + 1) * BhN FL Uu AA N ρ := by
-  let S := (univ : Finset (Σ j : Fin (J + 1), T.X j)).filter fun s =>
-    Pl.pt (some s) = p ∨ treePar R FL Pl hH.h_pos n o (Pl.pt (some s)) = p
-  refine le_trans (card_le_card (t := S.biUnion (AsU R FL Pl N n o)) ?_) ?_
-  · intro u hu
-    obtain ⟨hu1, hu2⟩ := mem_filter.1 hu
-    obtain ⟨hu1, hu4⟩ := mem_filter.1 hu1
-    obtain ⟨hu1, hu3⟩ := mem_sdiff.1 hu1
-    obtain ⟨s, hs1, hs2⟩ := cur_tree hH hv hg hu1 hu3 hu4
-    refine mem_biUnion.2 ⟨s, mem_filter.2 ⟨mem_univ _, ?_⟩, hs1⟩
-    have h2 : p ∈ s(Pl.pt (some s), treePar R FL Pl hH.h_pos n o (Pl.pt (some s))) := by
-      rw [← hs2, Sym2.mem_iff]
-      exact hu2
-    rw [Sym2.mem_iff] at h2
-    exact h2.imp Eq.symm Eq.symm
-  refine card_biUnion_le.trans ((Finset.sum_le_sum fun s _ => (card_AsU hH.r_pos hH.b_pos hH.h_pos s).trans
-    (fb_le hH.r_pos hH.b_pos hH.h_pos hH.bD hH.ρ_pos hH.gain hH.two _ (Nat.le_of_lt_succ s.1.2) _)).trans ?_)
-  rw [Finset.sum_const, smul_eq_mul]
-  refine Nat.mul_le_mul_right _ ?_
-  calc S.card ≤ ({p} ∪ univ.filter fun v => v ≠ Pl.pt none ∧ treePar R FL Pl hH.h_pos n o v = p : Finset _).card := by
-        refine card_le_card_of_injOn (fun s => Pl.pt (some s)) ?_ (fun s _ s' _ e => Option.some.inj (Pl.pt.injective e))
-        intro s hs
-        rcases (mem_filter.1 (mem_coe.1 hs)).2 with h3 | h3
-        · exact mem_coe.2 (mem_union_left _ (mem_singleton.2 h3))
-        · exact mem_coe.2 (mem_union_right _ (mem_filter.2
-            ⟨mem_univ _, fun e => Option.some_ne_none s (Pl.pt.injective e), h3⟩))
-    _ ≤ 1 + (univ.filter fun v => v ≠ Pl.pt none ∧ treePar R FL Pl hH.h_pos n o v = p).card :=
-        (card_union_le _ _).trans (by simp)
-    _ ≤ c + 1 := by
-        have := card_treeChildren (R := R) (FL := FL) (Pl := Pl) hH.h_pos n o p
-        split_ifs at this <;> omega
-
-open Classical in
-/-- All units of the tree. -/
-theorem tree_total_le (hH : THypR FL ρ) {n : Fin AA → Fin AA → Fin (N + 1)}
-    (hv : Valid N (nn n)) {o : (sys R FL Pl).N → Fin U1} (hg : ∀ x, (Tow.plan R FL Pl N N U1).good n o x) :
-    (cutUnits (hold0 (sys R FL Pl).np) (hold1 (sys R FL Pl).np) id
-      ((Tow.plan R FL Pl N N U1).cur n o (Fintype.card (Mv T R ch FL)) \ deadU R FL Pl N o)).card ≤
-      YhN FL Uu AA N ρ := by
-  refine le_trans (card_le_card (t := univ.biUnion (AsU R FL Pl N n o)) ?_) ?_
-  · intro u hu
-    obtain ⟨hu, hu4⟩ := mem_filter.1 hu
-    obtain ⟨hu1, hu3⟩ := mem_sdiff.1 hu
-    obtain ⟨s, hs1, -⟩ := cur_tree hH hv hg hu1 hu3 hu4
-    exact mem_biUnion.2 ⟨s, mem_univ _, hs1⟩
-  refine card_biUnion_le.trans ((Finset.sum_le_sum fun s _ => card_AsU hH.r_pos hH.b_pos hH.h_pos s).trans ?_)
-  rw [Fintype.sum_sigma, Fin.sum_univ_eq_sum_range
-    (fun j => ∑ x : T.X j, fb (lev (load R ch FL N (nn n) (oo R FL Pl o))) j x) (J + 1)]
-  exact sum_fb_le hH.r_pos hH.b_pos hH.h_pos hH.bD hH.ρ_pos hH.ρ_lt hH.gain hH.two
-
-open Classical in
 /-- The units between a party and its parent are at most the load at it. -/
 theorem tree_between (hH : THypR FL ρ) {n : Fin AA → Fin AA → Fin (N + 1)} (hv : Valid N (nn n))
     {o : (sys R FL Pl).N → Fin U1} (hg : ∀ x, (Tow.plan R FL Pl N N U1).good n o x) {p : Fin (AA + A')}
